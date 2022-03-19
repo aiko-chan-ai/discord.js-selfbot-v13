@@ -66,3 +66,6 @@ See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.
 
 ## Need help?
 Contact me in Discord [Shiraori#1782] (UserID: 721746046543331449)
+
+## Contribute
+Thank you <img src="https://avatars.githubusercontent.com/u/64450187" alt="." width="16" height="16"/> [TheDevYellowy](https://github.com/TheDevYellowy/) for the help!
