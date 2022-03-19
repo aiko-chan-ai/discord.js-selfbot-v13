@@ -1,0 +1,54 @@
+{
+  "name": "discord.js-selfbot-v13",
+  "version": "1.1.3",
+  "description": "A unofficial discord.js fork for creating selfbots [Based on discord.js v13]",
+  "main": "./src/index.js",
+  "types": "./typings/index.d.ts",
+  "files": [
+    "src",
+    "typings"
+  ],
+  "directories": {
+    "lib": "src",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aiko-chan-ai/discord.js-selfbot-v13.git"
+  },
+  "keywords": [
+    "discord.js",
+    "selfbot",
+    "djs",
+    "api",
+    "bot",
+    "node"
+  ],
+  "author": "aiko-chan-ai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues"
+  },
+  "contributors": [
+    "TheDevYellowy <Yellowy#0001>"
+  ],
+  "homepage": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.12.0",
+    "@discordjs/collection": "^0.5.0",
+    "@sapphire/async-queue": "^1.3.0",
+    "@sapphire/snowflake": "^3.2.0",
+    "@types/ws": "^8.5.2",
+    "crypto": "^1.0.1",
+    "discord-api-types": "^0.27.3",
+    "form-data": "^4.0.0",
+    "lodash.snakecase": "^4.1.1",
+    "node-fetch": "^3.2.2",
+    "undici": "^4.15.0",
+    "ws": "^8.5.0"
+  },
+  "engines": {
+    "node": ">=16.9.0",
+    "npm": ">=7.0.0"
+  }
+}
