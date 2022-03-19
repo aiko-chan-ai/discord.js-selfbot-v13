@@ -2,7 +2,7 @@
 
 const CachedManager = require('./CachedManager');
 const { default: Collection } = require('@discordjs/collection');
-const { Error } = require('../errors/DJSError');
+const { Error, TypeError } = require('../errors/DJSError');
 /**
  * Manages API methods for users and stores their cache.
  * @extends {CachedManager}
@@ -152,6 +152,17 @@ class ClientUserSettingManager extends CachedManager {
 	 */
 	async setDisplayCompactMode(value) {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
+		if (
+			typeof value !== 'boolean' &&
+			typeof value !== 'null' &&
+			typeof value !== 'undefined'
+		)
+			throw new TypeError(
+				'INVALID_TYPE',
+				'value',
+				'boolean | null | undefined',
+				true,
+			);
 		if (!value) value = !this.compactMode;
 		if (value !== this.compactMode) {
 			await this.edit({ message_display_compact: value });
@@ -166,6 +177,7 @@ class ClientUserSettingManager extends CachedManager {
 	async setTheme(value) {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
 		const validValues = ['dark', 'light'];
+		if (typeof value !== 'string' && typeof value !== 'null' && typeof value !== 'undefined') throw new TypeError('INVALID_TYPE', 'value', 'string | null | undefined', true);
 		if (!validValues.includes(value)) {
 			value == validValues[0]
 				? (value = validValues[1])
@@ -177,7 +189,7 @@ class ClientUserSettingManager extends CachedManager {
 		return this.theme;
 	}
 	/**
-	 * Locale Setting, must be one of:
+	 * * Locale Setting, must be one of:
 	 * * `DANISH`
 	 * * `GERMAN`
 	 * * `ENGLISH_UK`
@@ -208,21 +220,19 @@ class ClientUserSettingManager extends CachedManager {
 	 * * `JAPANESE`
 	 * * `TAIWAN_CHINESE`
 	 * * `KOREAN`
-	 * @typedef {string} LocaleStrings
-	 */
-	/**
-	 *
-	 * @param {LocaleStrings} value
+	 * @param {string} value
 	 * @returns {locale}
 	 */
 	async setLocale(value) {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
+		if (typeof value !== 'string') throw new TypeError('INVALID_TYPE', 'value', 'string', true);
 		if (!localeObject[value]) throw new Error('INVALID_LOCALE');
 		if (localeObject[value] !== this.locale) {
 			await this.edit({ locale: localeObject[value] });
 		}
 		return this.locale;
 	}
+	// TODO: Guild positions & folders
 }
 
 module.exports = ClientUserSettingManager;
