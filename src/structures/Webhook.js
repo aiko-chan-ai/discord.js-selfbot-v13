@@ -5,7 +5,49 @@ const { Routes, WebhookType } = require('discord-api-types/v9');
 const MessagePayload = require('./MessagePayload');
 const { Error } = require('../errors');
 const DataResolver = require('../util/DataResolver');
+const DiscordAPIError = require('../rest/DiscordAPIError');
 
+const _send = (client, webhookID, webhookToken, data, files, query, auth = false) => {
+	return new Promise((resolve, reject) => {
+		require('axios')({
+			method: 'post',
+			url: `${client.options.http.api}/v${client.options.http.version}/webhooks/${webhookID}/${webhookToken}`,
+			headers: {
+				authorization: client.token,
+				Accept: '*/*',
+				'Accept-Language': 'en-US,en;q=0.9',
+				'Cache-Control': 'no-cache',
+				Pragma: 'no-cache',
+				Referer: 'https://discord.com/channels/@me',
+				'Sec-Ch-Ua': '" Not A;Brand";v="99" "',
+				'Sec-Ch-Ua-Mobile': '?0',
+				'Sec-Ch-Ua-Platform': '"iOS"',
+				'Sec-Fetch-Dest': 'empty',
+				'Sec-Fetch-Mode': 'cors',
+				'Sec-Fetch-Site': 'same-origin',
+				'X-Debug-Options': 'bugReporterEnabled',
+				'X-Discord-Locale': 'en-US',
+				Origin: 'https://discord.com',
+			},
+			data,
+			files,
+		})
+			.then((res) => resolve(res.data))
+			.catch((err) => {
+				err.request.options = {
+					data,
+					files,
+				};
+				return reject(
+					new DiscordAPIError(
+						err.response.data,
+						err.response.status,
+						err.request,
+					),
+				);
+			});
+	});
+};
 /**
  * Represents a webhook.
  */
@@ -206,7 +248,7 @@ class Webhook {
     }
 
     const { body, files } = await messagePayload.resolveFiles();
-    const d = await this.client.api.webhooks(this.id, this.token).post({ body, files, query, auth: false });
+    const d = await _send(this.client, this.id, this.token, body, files, query, false);
     return this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
   }
 
