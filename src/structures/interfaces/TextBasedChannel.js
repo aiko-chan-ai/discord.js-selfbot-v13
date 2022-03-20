@@ -218,7 +218,6 @@ class TextBasedChannel {
 		console.log(body);
 		// const d = await this.client.api.channels[this.id].messages.post({ body, files });
 		const d = await _send(this.client, this.id, body, files);
-		console.log(d);
 		return this.messages.cache.get(d.id) ?? this.messages._add(d);
 	}
 
