@@ -186,6 +186,8 @@ const Messages = {
 	INVALID_BOT_METHOD: `Bot accounts cannot use this method`,
 	INVALID_USER_METHOD: `User accounts cannot use this method`,
 	INVALID_LOCALE: 'Unable to select this location',
+	FOLDER_NOT_FOUND: 'Server directory not found',
+	FOLDER_POSITION_INVALID: 'The server index in the directory is invalid',
 };
 
 Messages.AuthenticationFailed = Messages.TOKEN_INVALID;

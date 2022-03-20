@@ -5,7 +5,7 @@ const User = require('../../../structures/User');
 let ClientUser;
 
 module.exports = (client, { d: data }, shard) => {
-  //console.log(data);
+  // console.log(data);
 
   client.session_id = data.session_id;
   if (client.user) {
@@ -17,6 +17,8 @@ module.exports = (client, { d: data }, shard) => {
   }
 
   client.user.setAFK(true);
+
+  client.setting.fetch();
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;

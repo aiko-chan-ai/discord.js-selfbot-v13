@@ -446,7 +446,8 @@ class Guild extends AnonymousGuild {
 	 */
 	get position() {
 		return (
-			this.client.setting.guildMetadata.get(this.id.toString())?.guildIndex || null
+			this.client.setting.guildMetadata.get(this.id.toString())?.guildIndex ||
+			null
 		);
 	}
 
@@ -456,9 +457,7 @@ class Guild extends AnonymousGuild {
 	 * @readonly
 	 */
 	get folder() {
-		return (
-			this.client.setting.guildMetadata.get(this.id.toString()) || {}
-		);
+		return this.client.setting.guildMetadata.get(this.id.toString()) || {};
 	}
 
 	/**
@@ -1160,6 +1159,61 @@ class Guild extends AnonymousGuild {
 	 */
 	setRulesChannel(rulesChannel, reason) {
 		return this.edit({ rulesChannel }, reason);
+	}
+
+	/**
+	 * Change Guild Position (from * to Folder or Home)
+	 * @param {number} position  Guild Position
+	 * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
+	 * @param {String|Number} type Move to folder or home
+	 * * `FOLDER`: 1
+	 * * `HOME`: 2
+	 * @param {String|Number|void|null} folderID If you want to move to folder
+	 * @returns {Promise<Guild>}
+	 * @example
+	 * // Move guild to folderID 123456, index 1
+	 * guild.setPosition(1, 'FOLDER', 123456)
+	 * .then(guild => console.log(`Guild moved to folderID ${guild.folder.folderId}`));
+	 */
+	async setPosition(position, type, folderID) {
+		if (type == 1 || `${type}`.toUpperCase() === 'FOLDER') {
+			folderID = folderID || this.folder.folderId;
+			if (!['number', 'string'].includes(typeof folderID)) 
+				throw new TypeError(
+					'INVALID_TYPE',
+					'folderID',
+					'String | Number',
+			);
+			// Get Data from Folder ID
+			const folder = await this.client.setting.rawSetting.guild_folders.find(
+				(obj) => obj.id == folderID,
+			);
+			if (!folder) throw new Error('FOLDER_NOT_FOUND');
+			if (folder.guild_ids.length - 1 < position || position < 0)
+				throw new Error('FOLDER_POSITION_INVALID');
+			if (position !== folder.guild_ids.indexOf(this.id)) {
+				await this.client.setting.guildChangePosition(
+					this.id,
+					position,
+					1,
+					folderID,
+				);
+			}
+		} else if (type == 2 || `${type}`.toUpperCase() === 'HOME') {
+			if (this.client.setting.guild_positions - 1 < position || position < 0)
+				throw new Error('FOLDER_POSITION_INVALID');
+			if (position !== this.position) {
+				await this.client.setting.guildChangePosition(
+					this.id,
+					position,
+					2,
+					null,
+				);
+			}
+		} else {
+			throw new TypeError('INVALID_TYPE', 'type', '`Folder`| `Home`');
+		}
+		return this;
 	}
 
 	/**

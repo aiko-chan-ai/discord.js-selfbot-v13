@@ -3,6 +3,7 @@
 const CachedManager = require('./CachedManager');
 const { default: Collection } = require('@discordjs/collection');
 const { Error, TypeError } = require('../errors/DJSError');
+const { remove } = require('lodash');
 /**
  * Manages API methods for users and stores their cache.
  * @extends {CachedManager}
@@ -67,6 +68,11 @@ class ClientUserSettingManager extends CachedManager {
 		// Guild folder and position
 		this.guildMetadata = new Collection();
 	}
+	/**
+	 *
+	 * @param {Object} data Raw Data to patch
+	 * @private
+	 */
 	_patch(data) {
 		this.rawSetting = data;
 		if ('locale' in data) {
@@ -177,7 +183,17 @@ class ClientUserSettingManager extends CachedManager {
 	async setTheme(value) {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
 		const validValues = ['dark', 'light'];
-		if (typeof value !== 'string' && typeof value !== 'null' && typeof value !== 'undefined') throw new TypeError('INVALID_TYPE', 'value', 'string | null | undefined', true);
+		if (
+			typeof value !== 'string' &&
+			typeof value !== 'null' &&
+			typeof value !== 'undefined'
+		)
+			throw new TypeError(
+				'INVALID_TYPE',
+				'value',
+				'string | null | undefined',
+				true,
+			);
 		if (!validValues.includes(value)) {
 			value == validValues[0]
 				? (value = validValues[1])
@@ -225,7 +241,8 @@ class ClientUserSettingManager extends CachedManager {
 	 */
 	async setLocale(value) {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-		if (typeof value !== 'string') throw new TypeError('INVALID_TYPE', 'value', 'string', true);
+		if (typeof value !== 'string')
+			throw new TypeError('INVALID_TYPE', 'value', 'string', true);
 		if (!localeObject[value]) throw new Error('INVALID_LOCALE');
 		if (localeObject[value] !== this.locale) {
 			await this.edit({ locale: localeObject[value] });
@@ -233,6 +250,81 @@ class ClientUserSettingManager extends CachedManager {
 		return this.locale;
 	}
 	// TODO: Guild positions & folders
+	// Change Index in Array [Hidden]
+	/**
+	 *
+	 * @param {Array} array Array
+	 * @param {Number} from Index1
+	 * @param {Number} to Index2
+	 * @returns {Array}
+	 * @private
+	 */
+	_move(array, from, to) {
+		array.splice(to, 0, array.splice(from, 1)[0]);
+		return array;
+	}
+	// TODO: Move Guild
+	// folder to folder
+	// folder to home
+	// home to home
+	// home to folder
+	/**
+	 * Change Guild Position (from * to Folder or Home)
+	 * @param {GuildIDResolve} guildId guild.id
+	 * @param {Number} newPosition Guild Position
+	 * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
+	 * @param {number} type Move to folder or home
+	 * * `FOLDER`: 1
+	 * * `HOME`: 2
+	 * @param {FolderID} folderId If you want to move to folder
+	 * @private
+	 */
+	async guildChangePosition(guildId, newPosition, type, folderId) {
+		// get Guild default position
+		// Escape
+		const oldGuildFolderPosition = this.rawSetting.guild_folders.findIndex(
+			(value) => value.guild_ids.includes(guildId),
+		);
+		const newGuildFolderPosition = this.rawSetting.guild_folders.findIndex((value) =>
+			value.guild_ids.includes(this.rawSetting.guild_positions[newPosition]),
+		);
+		if (type == 2 || `${type}`.toUpperCase() == 'HOME') {
+			// Delete GuildID from Folder and create new Folder
+			// Check it is folder
+			const folder = this.rawSetting.guild_folders[oldGuildFolderPosition];
+			if (folder.id) {
+				this.rawSetting.guild_folders[oldGuildFolderPosition].guild_ids =
+					this.rawSetting.guild_folders[
+						oldGuildFolderPosition
+					].guild_ids.filter((v) => v !== guildId);
+			}
+			this.rawSetting.guild_folders = this._move(
+				this.rawSetting.guild_folders,
+				oldGuildFolderPosition,
+				newGuildFolderPosition,
+			);
+			this.rawSetting.guild_folders[newGuildFolderPosition].id = null;
+		} else if (type == 1 || `${type}`.toUpperCase() == 'FOLDER') {
+			// Delete GuildID from oldFolder
+			this.rawSetting.guild_folders[oldGuildFolderPosition].guild_ids =
+				this.rawSetting.guild_folders[oldGuildFolderPosition].guild_ids.filter(
+					(v) => v !== guildId,
+				);
+			// Index new Folder
+			const folderIndex = this.rawSetting.guild_folders.findIndex(
+				(value) => value.id == folderId,
+			);
+			const folder = this.rawSetting.guild_folders[folderIndex];
+			folder.guild_ids.push(guildId);
+			folder.guild_ids = [...new Set(folder.guild_ids)];
+			folder.guild_ids = this._move(
+				folder.guild_ids,
+				folder.guild_ids.findIndex((v) => v == guildId),
+				newPosition,
+			);
+		}
+		this.edit({ guild_folders: this.rawSetting.guild_folders });
+	}
 }
 
 module.exports = ClientUserSettingManager;
