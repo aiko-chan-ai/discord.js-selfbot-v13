@@ -60,12 +60,10 @@ client.login('token');
 
 ## Contributing
 
-Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
+- Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
 [documentation](https://discord.js.org/#/docs).  
-See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
+- See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
+- <strong>Thanks to <img src="https://avatars.githubusercontent.com/u/64450187" alt="." width="16" height="16"/> [TheDevYellowy](https://github.com/TheDevYellowy/) for patching this module!</strong>
 
 ## Need help?
 Contact me in Discord [Shiraori#1782] (UserID: 721746046543331449)
-
-## Contribute
-Thank you <img src="https://avatars.githubusercontent.com/u/64450187" alt="." width="16" height="16"/> [TheDevYellowy](https://github.com/TheDevYellowy/) for the help!
