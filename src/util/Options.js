@@ -2,6 +2,7 @@
 
 const process = require('node:process');
 const Transformers = require('./Transformers');
+const JSONBig = require('json-bigint');
 
 /**
  * @typedef {Function} CacheFactory
@@ -71,61 +72,63 @@ class Options extends null {
    */
   static createDefault() {
     return {
-      waitGuildTimeout: 15_000,
-      shardCount: 1,
-      makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
-      messageCacheLifetime: 0,
-      messageSweepInterval: 0,
-      invalidRequestWarningInterval: 0,
-      intents: 32767,
-      partials: [],
-      restWsBridgeTimeout: 5_000,
-      restRequestTimeout: 15_000,
-      restGlobalRateLimit: 0,
-      retryLimit: 1,
-      restTimeOffset: 500,
-      restSweepInterval: 60,
-      failIfNotExists: true,
-      userAgentSuffix: [],
-      presence: {},
-      sweepers: {},
-      ws: {
-        large_threshold: 50,
-        compress: false,
-        properties: {
-          $os: 'iPhone14,5',
-          $browser: 'Discord iOS',
-          $device: 'iPhone14,5 OS 15.2',
-        },
-        version: 9,
-      },
-      http: {
-        headers: {
-          "Accept": "*/*",
-          "Accept-Encoding": "gzip, deflate, br",
-          "Accept-Language": 'en-US,en;q=0.9',
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache",
-          "Referer": "https://discord.com/channels/@me",
-          "Sec-Ch-Ua": '" Not A;Brand";v="99" "',
-          "Sec-Ch-Ua-Mobile": '?0',
-          "Sec-Ch-Ua-Platform": '"iOS"',
-          "Sec-Fetch-Dest": "empty",
-          "Sec-Fetch-Mode": "cors",
-          "Sec-Fetch-Site": "same-origin",
-          "X-Debug-Options": "bugReporterEnabled",
-          "X-Discord-Locale": 'en-US',
-          "Origin": "https://discord.com"
-        },
-        agent: {},
-        version: 9,
-        api: 'https://discord.com/api',
-        cdn: 'https://cdn.discordapp.com',
-        invite: 'https://discord.gg',
-        template: 'https://discord.new',
-        scheduledEvent: 'https://discord.com/events',
-      },
-    };
+			waitGuildTimeout: 15_000,
+			shardCount: 1,
+			makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
+			messageCacheLifetime: 0,
+			messageSweepInterval: 0,
+			invalidRequestWarningInterval: 0,
+			intents: 32767,
+			partials: [],
+			restWsBridgeTimeout: 5_000,
+			restRequestTimeout: 15_000,
+			restGlobalRateLimit: 0,
+			retryLimit: 1,
+			restTimeOffset: 500,
+			restSweepInterval: 60,
+			failIfNotExists: true,
+			userAgentSuffix: [],
+			presence: {},
+			sweepers: {},
+			ws: {
+				large_threshold: 50,
+				compress: false,
+				properties: {
+					$os: 'iPhone14,5',
+					$browser: 'Discord iOS',
+					$device: 'iPhone14,5 OS 15.2',
+				},
+				version: 9,
+			},
+			http: {
+				headers: {
+					Accept: '*/*',
+					// 'Accept-Encoding': 'gzip, deflate, br',
+					'Accept-Language': 'en-US,en;q=0.9',
+					'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json',
+					Pragma: 'no-cache',
+					Referer: 'https://discord.com/channels/@me',
+					'Sec-Ch-Ua': '" Not A;Brand";v="99" "',
+					'Sec-Ch-Ua-Mobile': '?0',
+					'Sec-Ch-Ua-Platform': '"iOS"',
+					'Sec-Fetch-Dest': 'empty',
+					'Sec-Fetch-Mode': 'cors',
+					'Sec-Fetch-Site': 'same-origin',
+					'X-Debug-Options': 'bugReporterEnabled',
+					'X-Discord-Locale': 'en-US',
+					Origin: 'https://discord.com',
+				},
+				agent: {},
+				version: 9,
+				api: 'https://discord.com/api',
+				cdn: 'https://cdn.discordapp.com',
+				invite: 'https://discord.gg',
+				template: 'https://discord.new',
+				scheduledEvent: 'https://discord.com/events',
+			},
+			jsonTransformer: (object) => JSONBig.stringify(object),
+		};
   }
 
   /**

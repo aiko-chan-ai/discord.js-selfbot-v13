@@ -1,7 +1,7 @@
 'use strict';
 
 const { Buffer } = require('node:buffer');
-const { isJSONEncodable } = require('@discordjs/builders');
+const { BaseMessageComponent, MessageEmbed } = require('discord.js');
 const { MessageFlags } = require('discord-api-types/v9');
 const { RangeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
@@ -109,7 +109,6 @@ class MessagePayload {
 
     return content;
   }
-
   /**
    * Resolves the body.
    * @returns {MessagePayload}
@@ -131,9 +130,9 @@ class MessagePayload {
       }
     }
 
-    const components = this.options.components?.map(c =>
-      isJSONEncodable(c) ? c.toJSON() : this.target.client.options.jsonTransformer(c),
-    );
+    const components = this.options.components?.map((c) =>
+			BaseMessageComponent.create(c).toJSON(),
+		);
 
     let username;
     let avatarURL;
@@ -193,22 +192,27 @@ class MessagePayload {
     }
 
     this.body = {
-      content,
-      tts,
-      nonce,
-      embeds: this.options.embeds?.map(embed =>
-        isJSONEncodable(embed) ? embed.toJSON() : this.target.client.options.jsonTransformer(embed),
-      ),
-      components,
-      username,
-      avatar_url: avatarURL,
-      allowed_mentions:
-        typeof content === 'undefined' && typeof message_reference === 'undefined' ? undefined : allowedMentions,
-      flags,
-      message_reference,
-      attachments: this.options.attachments,
-      sticker_ids: this.options.stickers?.map(sticker => sticker.id ?? sticker),
-    };
+			content,
+			tts,
+			nonce,
+			embeds: this.options.embeds?.map((embed) =>
+				new MessageEmbed(embed).toJSON(),
+			),
+			components,
+			username,
+			avatar_url: avatarURL,
+			allowed_mentions:
+				typeof content === 'undefined' &&
+				typeof message_reference === 'undefined'
+					? undefined
+					: allowedMentions,
+			flags,
+			message_reference,
+			attachments: this.options.attachments,
+			sticker_ids: this.options.stickers?.map(
+				(sticker) => sticker.id ?? sticker,
+			),
+		};
     return this;
   }
 
