@@ -44,6 +44,8 @@ client.login('token');
 ## Selfbot feature ?
 - Friends and Block Members
 - Discord Apps Setting [Theme, Language, ...]
+- Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, ...]
+- Setting Position Guild and Folder
 - You can request more features for my module by placing an issue!
 
 ## Links [Discord.js]
