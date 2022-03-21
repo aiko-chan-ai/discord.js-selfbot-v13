@@ -1843,7 +1843,7 @@ module.exports = (function (e) {
         });
     },
     function (e, t) {
-      e.exports = require("../../../package.json");
+      e.exports = require("../../package.json");
     },
   ]);
   
