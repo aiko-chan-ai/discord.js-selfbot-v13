@@ -103,7 +103,7 @@ class ClientUserSettingManager extends CachedManager {
 			this.showEmojiReactions = data.render_reactions;
 		}
 		if ('custom_status' in data) {
-			this.customStatus = data.custom_status || {};
+			this.customStatus = data.custom_status || {}; // Thanks PinkDuwc._#3443 reported this issue
 			this.customStatus.status = data.status;
 		}
 		if ('guild_folders' in data) {

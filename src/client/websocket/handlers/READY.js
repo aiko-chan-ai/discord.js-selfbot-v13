@@ -17,13 +17,13 @@ const checkUpdate = async () => {
 		if (lastest_tag !== Discord.version) {
 			return console.log(`${chalk.yellowBright(
 				'[WARNING]',
-			)} New Discord.js-selfbot-v13 Stable version.
-${chalk.redBright(Discord.version)} => ${chalk.greenBright(lastest_tag)}`);
+			)} New Discord.js-selfbot-v13 version.
+Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`);
 		}
 		return console.log(
 			`${chalk.greenBright(
 				'[OK]',
-			)} Discord.js-selfbot-v13 [Stable] is up to date. Version: ${chalk.blueBright(
+			)} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(
 				Discord.version,
 			)}`,
 		);
