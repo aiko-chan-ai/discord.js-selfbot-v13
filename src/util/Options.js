@@ -128,6 +128,7 @@ class Options extends null {
 				scheduledEvent: 'https://discord.com/events',
 			},
 			jsonTransformer: (object) => JSONBig.stringify(object),
+      checkUpdate: true,
 		};
   }
 
