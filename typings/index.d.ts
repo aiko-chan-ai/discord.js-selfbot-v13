@@ -2404,10 +2404,11 @@ export class User extends PartialTextBasedChannel(Base) {
   public equals(user: User): boolean;
   public fetch(force?: boolean): Promise<User>;
   public fetchFlags(force?: boolean): Promise<UserFlags>;
-  public friend(): Promise<User>;
-  public block(): Promise<User>;
-  public unfriend(): Promise<User>;
-  public unblock(): Promise<User>;
+  public setFriend(): Promise<User>;
+  public setBlock(): Promise<User>;
+  public sendFriendRequest(): Promise<User>;
+  public unFriend(): Promise<User>;
+  public unBlock(): Promise<User>;
   public getProfile(): Promise<User>;
   public toString(): UserMention;
 }

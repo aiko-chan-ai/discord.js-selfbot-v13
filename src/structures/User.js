@@ -158,21 +158,36 @@ class User extends Base {
   }
 
   /**
-   * Friends the user
+   * Friends the user and send Request [If no request]
    * @returns {Promise<User>} the user object
    */
-  async friend() {
-    return this.client.api
-      .user('@me')
-      .relationships[this.id].put({data:{type:1}})
-      .then(_ => _)
+  async setFriend() {
+    return await this.client.api
+			.user('@me')
+			.relationships[this.id].put({ data: { type: 1 } })
+			.then((_) => _);
   }
 
+  /**
+   * Send Friend Request to the user
+   * @returns {Promise<User>} the user object
+   */
+  async sendFriendRequest() {
+    return await this.client.api
+			.users('@me')
+			.relationships.post({
+				data: {
+					username: this.username,
+					discriminator: parseInt(this.discriminator),
+				},
+			})
+			.then((_) => _);
+  }
   /**
    * Blocks the user
    * @returns {Promise<User>} the user object
    */
-  async block() {
+  async setBlock() {
     return this.client.api
       .users('@me')
       .relationships[this.id].put({data:{type: 2}})
@@ -183,7 +198,7 @@ class User extends Base {
    * Removes the user from your blocks list
    * @returns {Promise<User>} the user object
    */
-  async unblock() {
+  async unBlock() {
     return this.client.api
       .users('@me')
       .relationships[this.id].delete
@@ -194,7 +209,7 @@ class User extends Base {
    * Removes the user from your friends list
    * @returns {Promise<User>} the user object
    */
-  async unfriend() {
+  async unFriend() {
     return this.client.api
       .users('@me')
       .relationships[this.id].delete

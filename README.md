@@ -27,7 +27,8 @@
 ```sh-session
 npm install discord.js-selfbot-v13
 ```
-
+## Patched
+Click [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md) to see the patched functions
 ## Example
 
 ```js
