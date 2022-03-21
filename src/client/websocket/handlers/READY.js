@@ -59,6 +59,7 @@ module.exports = (client, { d: data }, shard) => {
 			} else {
 				custom_status.setUnicodeEmoji(res.rawSetting.custom_status.emoji_name);
 			}
+      custom_status.setState(res.rawSetting.custom_status?.text);
 		}
     client.user.setPresence({
 			activities: custom_status ? [custom_status.toDiscord()] : [],

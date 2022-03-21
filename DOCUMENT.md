@@ -146,7 +146,26 @@ Guild
 
 <details>
 <summary><strong>Click to show</strong></summary>
-- Document come soon !
+Custom Status
+
+```js
+const { RichPresence } = require('discord.js-selfbot-v13');
+const custom = new RichPresence.CustomStatus()
+	.setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
+    .setDiscordEmoji({ // Set Custom Emoji (Nitro) [Using one]
+        name: 'nom',
+        id: '737373737373737373',
+        animated: false,
+    })
+	.setState('Testing') // Name of presence
+    .toDiscord();
+client.user.setActivity(custom);
+```
+
+Rich Presence
+```js
+Come back soon !
+```
 </details>
 
 ## More features

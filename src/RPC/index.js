@@ -520,7 +520,7 @@ module.exports = (function (e) {
 							name: 'Custom Status',
 							emoji: null,
 							type: 4,
-							state: '??',
+							state: null,
 						}),
 							e && (this.game = e);
           }
@@ -1843,7 +1843,7 @@ module.exports = (function (e) {
         });
     },
     function (e, t) {
-      e.exports = require("../package.json");
+      e.exports = require("../../../package.json");
     },
   ]);
   

@@ -21,7 +21,6 @@ class ClientPresence extends Presence {
   set(presence) {
     const packet = this._parse(presence);
     this._patch(packet);
-    console.log(packet);
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: GatewayOpcodes.PresenceUpdate, d: packet });
     } else if (Array.isArray(presence.shardId)) {
