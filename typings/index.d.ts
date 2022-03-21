@@ -144,7 +144,6 @@ import {
 } from './rawDataTypes';
 
 //#region Classes
-
 export class Activity {
   private constructor(presence: Presence, data?: RawActivityData);
   public applicationId: Snowflake | null;

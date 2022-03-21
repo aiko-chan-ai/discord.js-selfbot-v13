@@ -9,7 +9,6 @@ exports.ShardingManager = require('./sharding/ShardingManager');
 exports.WebhookClient = require('./client/WebhookClient');
 
 // Utilities
-exports.RichPresence = require('./RPC/index');
 exports.ActivityFlagsBitField = require('./util/ActivityFlagsBitField');
 exports.ApplicationFlagsBitField = require('./util/ApplicationFlagsBitField');
 exports.BaseManager = require('./managers/BaseManager');
@@ -72,6 +71,8 @@ exports.WebSocketManager = require('./client/websocket/WebSocketManager');
 exports.WebSocketShard = require('./client/websocket/WebSocketShard');
 
 // Structures
+// exports.RichPresence = require('./RPC/index');
+exports.RichPresence = require('discord-rpc-contructor');
 exports.ActionRow = require('./structures/ActionRow');
 exports.Activity = require('./structures/Presence').Activity;
 exports.AnonymousGuild = require('./structures/AnonymousGuild');
