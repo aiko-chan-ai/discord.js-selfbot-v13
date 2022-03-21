@@ -9,6 +9,7 @@ exports.ShardingManager = require('./sharding/ShardingManager');
 exports.WebhookClient = require('./client/WebhookClient');
 
 // Utilities
+exports.RichPresence = require('../RPC/index');
 exports.ActivityFlagsBitField = require('./util/ActivityFlagsBitField');
 exports.ApplicationFlagsBitField = require('./util/ApplicationFlagsBitField');
 exports.BaseManager = require('./managers/BaseManager');
@@ -43,6 +44,7 @@ exports.BaseGuildEmojiManager = require('./managers/BaseGuildEmojiManager');
 exports.CachedManager = require('./managers/CachedManager');
 exports.ChannelManager = require('./managers/ChannelManager');
 exports.ClientVoiceManager = require('./client/voice/ClientVoiceManager');
+exports.ClientUserSettingManager = require('./managers/ClientUserSettingManager');
 exports.DataManager = require('./managers/DataManager');
 exports.GuildApplicationCommandManager = require('./managers/GuildApplicationCommandManager');
 exports.GuildBanManager = require('./managers/GuildBanManager');

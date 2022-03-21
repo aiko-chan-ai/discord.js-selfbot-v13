@@ -142,6 +142,13 @@ Guild
 ```
 </details>
 
+## Custom Status and RPC
+
+<details>
+<summary><strong>Click to show</strong></summary>
+- Document come soon !
+</details>
+
 ## More features
 
 <details>

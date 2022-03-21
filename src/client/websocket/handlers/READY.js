@@ -5,7 +5,7 @@ const User = require('../../../structures/User');
 let ClientUser;
 const chalk = require('chalk');
 const axios = require('axios');
-const Discord = require('discord.js-selfbot-v13');
+const Discord = require('../../../index');
 
 const checkUpdate = async () => {
 	const res_ = await axios.get(
@@ -43,7 +43,28 @@ module.exports = (client, { d: data }, shard) => {
 
   client.user.setAFK(true);
 
-  client.setting.fetch();
+  client.setting.fetch()
+  .then(async res => {
+    let custom_status;
+    if (
+			res.rawSetting.custom_status?.text ||
+			res.rawSetting.custom_status?.emoji_name
+		) {
+			custom_status = new Discord.RichPresence.CustomStatus();
+			if (res.rawSetting.custom_status.emoji_id) {
+				const emoji = await client.emojis.resolve(
+					res.rawSetting.custom_status.emoji_id,
+				);
+				if (emoji) custom_status.setDiscordEmoji(emoji);
+			} else {
+				custom_status.setUnicodeEmoji(res.rawSetting.custom_status.emoji_name);
+			}
+		}
+    client.user.setPresence({
+			activities: custom_status ? [custom_status.toDiscord()] : [],
+			status: res.rawSetting.status,
+		});
+  })
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;

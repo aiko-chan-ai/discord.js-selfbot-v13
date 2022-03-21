@@ -10,7 +10,7 @@ const { TypeError } = require('../errors');
  */
 class ClientPresence extends Presence {
   constructor(client, data = {}) {
-    super(client, Object.assign(data, { status: data.status ?? 'online', user: { id: null } }));
+    super(client, Object.assign(data, { status: data.status || client.setting.status || 'online', user: { id: null } }));
   }
 
   /**
@@ -21,6 +21,7 @@ class ClientPresence extends Presence {
   set(presence) {
     const packet = this._parse(presence);
     this._patch(packet);
+    console.log(packet);
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: GatewayOpcodes.PresenceUpdate, d: packet });
     } else if (Array.isArray(presence.shardId)) {
@@ -50,21 +51,18 @@ class ClientPresence extends Presence {
       for (const [i, activity] of activities.entries()) {
         if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
         activity.type ??= 0;
-
-        data.activities.push({
-          type: activity.type,
-          name: activity.name,
-          url: activity.url,
-        });
+        data.activities.push(activity);
       }
     } else if (!activities && (status || afk || since) && this.activities.length) {
       data.activities.push(
-        ...this.activities.map(a => ({
-          name: a.name,
-          type: a.type,
-          url: a.url ?? undefined,
-        })),
-      );
+				...this.activities.map((a) =>
+					Object.assign(a, {
+						name: a.name,
+						type: a.type,
+						url: a.url ?? undefined,
+					}),
+				),
+			);
     }
 
     return data;
