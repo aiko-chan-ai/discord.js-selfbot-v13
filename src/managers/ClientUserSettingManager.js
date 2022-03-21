@@ -130,7 +130,6 @@ class ClientUserSettingManager extends CachedManager {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
 		try {
 			const data = await this.client.api.users('@me').settings.get();
-			console.log(data);
 			this._patch(data);
 			return this;
 		} catch (e) {
