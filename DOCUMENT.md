@@ -149,7 +149,7 @@ Guild
 Custom Status
 
 ```js
-const { RichPresence } = require('discord.js-selfbot-v13');
+const RichPresence = require('discord-rpc-contructor'); // My module :))
 const custom = new RichPresence.CustomStatus()
 	.setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
     .setDiscordEmoji({ // Set Custom Emoji (Nitro) [Using one]
