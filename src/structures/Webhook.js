@@ -7,11 +7,21 @@ const { Error } = require('../errors');
 const DataResolver = require('../util/DataResolver');
 const DiscordAPIError = require('../rest/DiscordAPIError');
 
-const _send = (client, webhookID, webhookToken, data, files, query, auth = false) => {
+const _send = (
+	client,
+	webhookID,
+	webhookToken,
+	data,
+	files,
+	query,
+	auth = false,
+) => {
 	return new Promise((resolve, reject) => {
 		require('axios')({
 			method: 'post',
-			url: `${client.options.http.api}/v${client.options.http.version}/webhooks/${webhookID}/${webhookToken}`,
+			url: `${client.options.http.api}/v${
+				client.options.http.version
+			}/webhooks/${webhookID}/${webhookToken}${query ? `?${query}` : ''}`,
 			headers: {
 				authorization: client.token,
 				Accept: '*/*',
@@ -31,6 +41,58 @@ const _send = (client, webhookID, webhookToken, data, files, query, auth = false
 			},
 			data,
 			files,
+			auth,
+		})
+			.then((res) => resolve(res.data))
+			.catch((err) => {
+				err.request.options = {
+					data,
+					files,
+				};
+				return reject(
+					new DiscordAPIError(
+						err.response.data,
+						err.response.status,
+						err.request,
+					),
+				);
+			});
+	});
+};
+const _edit = (
+	client,
+	webhookID,
+	webhookToken,
+  messageID,
+	data,
+	files,
+	query,
+	auth = false,
+) => {
+	return new Promise((resolve, reject) => {
+		require('axios')({
+			method: 'patch',
+			url: `${client.options.http.api}/v${client.options.http.version}/webhooks/${webhookID}/${webhookToken}/messages/${messageID}${query ? `?${query}` : ''}`,
+			headers: {
+				authorization: client.token,
+				Accept: '*/*',
+				'Accept-Language': 'en-US,en;q=0.9',
+				'Cache-Control': 'no-cache',
+				Pragma: 'no-cache',
+				Referer: 'https://discord.com/channels/@me',
+				'Sec-Ch-Ua': '" Not A;Brand";v="99" "',
+				'Sec-Ch-Ua-Mobile': '?0',
+				'Sec-Ch-Ua-Platform': '"iOS"',
+				'Sec-Fetch-Dest': 'empty',
+				'Sec-Fetch-Mode': 'cors',
+				'Sec-Fetch-Site': 'same-origin',
+				'X-Debug-Options': 'bugReporterEnabled',
+				'X-Discord-Locale': 'en-US',
+				Origin: 'https://discord.com',
+			},
+			data,
+			files,
+			auth,
 		})
 			.then((res) => resolve(res.data))
 			.catch((err) => {
@@ -358,9 +420,24 @@ class Webhook {
 
     const { body, files } = await messagePayload.resolveBody().resolveFiles();
 
+    /*
     const d = await this.client.api.webhooks(this.id, this.token).messages(typeof message === 'string' ? message : message.id).patch({
       body, files, query: messagePayload.options.threadId ? new URLSearchParams({ thread_id: messagePayload.options.threadId }) : undefined, auth: false
     });
+    */
+
+    const d = await _edit(
+			this.client,
+			this.id,
+			this.token,
+			typeof message === 'string' ? message : message.id,
+			body,
+			files,
+			messagePayload.options.threadId
+				? new URLSearchParams({ thread_id: messagePayload.options.threadId })
+				: undefined,
+      false
+		);
 
     const messageManager = this.client.channels?.cache.get(d.channel_id)?.messages;
     if (!messageManager) return d;
