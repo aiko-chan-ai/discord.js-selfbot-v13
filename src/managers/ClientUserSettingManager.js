@@ -103,7 +103,7 @@ class ClientUserSettingManager extends CachedManager {
 			this.showEmojiReactions = data.render_reactions;
 		}
 		if ('custom_status' in data) {
-			this.customStatus = data.custom_status;
+			this.customStatus = data.custom_status || {};
 			this.customStatus.status = data.status;
 		}
 		if ('guild_folders' in data) {
@@ -130,6 +130,7 @@ class ClientUserSettingManager extends CachedManager {
 		if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
 		try {
 			const data = await this.client.api.users('@me').settings.get();
+			console.log(data);
 			this._patch(data);
 			return this;
 		} catch (e) {
