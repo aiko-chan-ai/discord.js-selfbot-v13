@@ -59,9 +59,16 @@ module.exports = (function (e) {
       const r = s(1),
         i = s(9),
         n = s(10);
-      var o = ["PLAYING", "STREAMING", "LISTENING", "WATCHING"],
-        a = [0, 1, 2, 3],
-        l = [].concat(a).concat(o);
+      var o = [
+					'PLAYING',
+					'STREAMING',
+					'LISTENING',
+					'WATCHING',
+					'CUSTOM',
+					'COMPETING',
+				],
+				a = [0, 1, 2, 3, 4, 5],
+				l = [].concat(a).concat(o);
       async function u(e) {
         if (!e || "string" != typeof e)
           throw new c(
@@ -94,388 +101,404 @@ module.exports = (function (e) {
         }
       }
       class h {
-        constructor(e, t = !1) {
-          (this.game = null), (this.game = e || null), t && this.lock();
-        }
-        lock() {
-          Object.freeze(this.game);
-        }
-        toDiscord() {
-          return { game: this.game };
-        }
-        toObject() {
-          return this.game;
-        }
-        toString() {
-          return this.game
-            ? `${this.game.name}${
-                this.game.application_id
-                  ? " (" + this.game.application_id + ")"
-                  : ""
-              } `
-            : "No game";
-        }
-        setName(e) {
-          return this.verifyNull(), (this.game.name = e), this;
-        }
-        setApplicationId(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.application_id, this)
-              : ((this.game.application_id = e), this)
-          );
-        }
-        setType(e) {
-          let t = 0;
-          if ("string" == typeof e) {
-            if (!o.includes(e))
-              throw new c(
-                `'${e}' không phải là Presence hợp lệ: ${l.join(
-                  ", "
-                )}`
-              );
-            t = o.indexOf(e);
-          } else t = e;
-          return this.verifyNull(), (this.game.type = t), this;
-        }
-        setUrl(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.url, this)
-              : ((this.game.url = e), this)
-          );
-        }
-        setDetails(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.details, this)
-              : ((this.game.details = e), this)
-          );
-        }
-        setState(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.state, this)
-              : ((this.game.state = e), this)
-          );
-        }
-        setSyncId(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.sync_id, this)
-              : ((this.game.sync_id = e), this)
-          );
-        }
-        setId(e) {
-          return (
-            this.verifyNull(),
-            null === e ? (delete this.game.id, this) : ((this.game.id = e), this)
-          );
-        }
-        setSessionId(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.session_id, this)
-              : ((this.game.session_id = e), this)
-          );
-        }
-        setParty(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.party, this)
-              : ((this.game.party = e), this)
-          );
-        }
-        setFlags(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.flags, this)
-              : ((this.game.flags = e), this)
-          );
-        }
-        setCreatedAt(e) {
-          return (
-            this.verifyNull(),
-            null === e
-              ? (delete this.game.created_at, this)
-              : ((this.game.created_at = e), this)
-          );
-        }
-        setAssets(e) {
-          this.verifyNull();
-          let t = {
-            setLargeImage: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.large_image = e), t
-              );
-            }.bind(this),
-            setSmallImage: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.small_image = e), t
-              );
-            }.bind(this),
-            setLargeText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.large_text = e), t
-              );
-            }.bind(this),
-            setSmallText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.small_text = e), t
-              );
-            }.bind(this),
-            setNull: function () {
-              return (this.game.assets = null), t;
-            }.bind(this),
-          };
-          return e(t), this;
-        }
-        setAssetsLargeImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.large_image, this)
-              : ((this.game.assets.large_image = e), this)
-          );
-        }
-        setAssetsSmallImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.small_image, this)
-              : ((this.game.assets.small_image = e), this)
-          );
-        }
-        setAssetsLargeText(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.large_text, this)
-              : ((this.game.assets.large_text = e), this)
-          );
-        }
-        setAssetsSmallText(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.small_text, this)
-              : ((this.game.assets.small_text = e), this)
-          );
-        }
-        setStartTimestamp(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullTimestamps(),
-            null === e
-              ? (delete this.game.timestamps.start, this)
-              : ((this.game.timestamps.start = e), this)
-          );
-        }
-        setEndTimestamp(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullTimestamps(),
-            null === e
-              ? (delete this.game.timestamps.end, this)
-              : ((this.game.timestamps.end = e), this)
-          );
-        }
-        setPartySize(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullParty(),
-            null === e
-              ? (delete this.game.party.size, this)
-              : ((this.game.party.size = e), this)
-          );
-        }
-        setPartyId(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullParty(),
-            null === e
-              ? (delete this.game.party.id, this)
-              : ((this.game.party.id = e), this)
-          );
-        }
-        setJoinSecret(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullSecrets(),
-            null === e
-              ? (delete this.game.secrets.join, this)
-              : ((this.game.secrets.join = e), this)
-          );
-        }
-        setSpectateSecret(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullSecrets(),
-            null === e
-              ? (delete this.game.secrets.spectate, this)
-              : ((this.game.secrets.spectate = e), this)
-          );
-        }
-        setMatch(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullSecrets(),
-            null === e
-              ? (delete this.game.secrets.match, this)
-              : ((this.game.secrets.match = e), this)
-          );
-        }
-        setSecrets(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullSecrets(),
-            null === e
-              ? (delete this.game.secrets, this)
-              : ((this.game.secrets = e), this)
-          );
-        }
-        setTwitchAssets(e) {
-          this.verifyNull();
-          let t = {
-            setLargeImage: function (e) {
-              return (
-                this.verifyNullAssets(),
-                (this.game.assets.large_image =
-                  "twitch:" + e.replace(/twitch\:/g, "")),
-                t
-              );
-            }.bind(this),
-            setSmallImage: function (e) {
-              return (
-                this.verifyNullAssets(),
-                (this.game.assets.small_image =
-                  "twitch:" + e.replace(/twitch\:/g, "")),
-                t
-              );
-            }.bind(this),
-            setLargeText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.large_text = e), t
-              );
-            }.bind(this),
-            setSmallText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.small_text = e), t
-              );
-            }.bind(this),
-            setNull: function () {
-              return (this.game.assets = null), t;
-            }.bind(this),
-          };
-          return e(t), this;
-        }
-        setTwitchAssetsLargeImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.large_image, this)
-              : ((this.game.assets.large_image =
-                  "twitch:" + e.replace(/twitch\:/g, "")),
-                this)
-          );
-        }
-        setTwitchAssetsSmallImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.small_image, this)
-              : ((this.game.assets.small_image =
-                  "twitch:" + e.replace(/twitch\:/g, "")),
-                this)
-          );
-        }
-        setSpotifyAssets(e) {
-          this.verifyNull();
-          let t = {
-            setLargeImage: function (e) {
-              return (
-                this.verifyNullAssets(),
-                (this.game.assets.large_image =
-                  "spotify:" + e.replace(/spotify\:/g, "")),
-                t
-              );
-            }.bind(this),
-            setSmallImage: function (e) {
-              return (
-                this.verifyNullAssets(),
-                (this.game.assets.small_image =
-                  "spotify:" + e.replace(/spotify\:/g, "")),
-                t
-              );
-            }.bind(this),
-            setLargeText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.large_text = e), t
-              );
-            }.bind(this),
-            setSmallText: function (e) {
-              return (
-                this.verifyNullAssets(), (this.game.assets.small_text = e), t
-              );
-            }.bind(this),
-            setNull: function () {
-              return (this.game.assets = null), t;
-            }.bind(this),
-          };
-          return e(t), this;
-        }
-        setSpotifyAssetsLargeImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.large_image, this)
-              : ((this.game.assets.large_image =
-                  "spotify:" + e.replace(/spotify\:/g, "")),
-                this)
-          );
-        }
-        setSpotifyAssetsSmallImage(e) {
-          return (
-            this.verifyNull(),
-            this.verifyNullAssets(),
-            null === e
-              ? (delete this.game.assets.small_image, this)
-              : ((this.game.assets.small_image =
-                  "spotify:" + e.replace(/spotify\:/g, "")),
-                this)
-          );
-        }
-        verifyNull() {
-          this.game || (this.game = { name: "", type: 0 });
-        }
-        verifyNullAssets() {
-          this.game.assets || (this.game.assets = {});
-        }
-        verifyNullTimestamps() {
-          this.game.timestamps || (this.game.timestamps = {});
-        }
-        verifyNullParty() {
-          this.game.party || (this.game.party = { id: "" });
-        }
-        verifyNullSecrets() {
-          this.game.secrets || (this.game.secrets = {});
-        }
-      }
+				constructor(e, t = !1) {
+					(this.game = null), (this.game = e || null), t && this.lock();
+				}
+				lock() {
+					Object.freeze(this.game);
+				}
+				toDiscord() {
+					return { game: this.game };
+				}
+				toObject() {
+					return this.game;
+				}
+				toString() {
+					return this.game
+						? `${this.game.name}${
+								this.game.application_id
+									? ' (' + this.game.application_id + ')'
+									: ''
+						  } `
+						: 'No game';
+				}
+				setButton(array) {
+					// Check value
+					if (!Array.isArray(array)) throw new c(`'${array}' not an array`);
+					if (array.length > 2) throw new c(`'${array}' length > 2`);
+					if (array.find((o) => !o?.label)) 	throw new c(`'${array}' has button with noname`);
+					return (
+						this.verifyNull(),
+						this.verifyNullButton(),
+						null === array
+							? (delete this.game.buttons, this)
+							: ((this.game.buttons = array), this)
+					);
+				}
+				setName(e) {
+					return this.verifyNull(), (this.game.name = e), this;
+				}
+				setApplicationId(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.application_id, this)
+							: ((this.game.application_id = e), this)
+					);
+				}
+				setType(e) {
+					let t = 0;
+					if ('string' == typeof e) {
+						if (!o.includes(e))
+							throw new c(
+								`'${e}' không phải là Presence hợp lệ: ${l.join(', ')}`,
+							);
+						t = o.indexOf(e);
+					} else t = e;
+					return this.verifyNull(), (this.game.type = t), this;
+				}
+				setUrl(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.url, this)
+							: ((this.game.url = e), this)
+					);
+				}
+				setDetails(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.details, this)
+							: ((this.game.details = e), this)
+					);
+				}
+				setState(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.state, this)
+							: ((this.game.state = e), this)
+					);
+				}
+				setSyncId(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.sync_id, this)
+							: ((this.game.sync_id = e), this)
+					);
+				}
+				setId(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.id, this)
+							: ((this.game.id = e), this)
+					);
+				}
+				setSessionId(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.session_id, this)
+							: ((this.game.session_id = e), this)
+					);
+				}
+				setParty(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.party, this)
+							: ((this.game.party = e), this)
+					);
+				}
+				setFlags(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.flags, this)
+							: ((this.game.flags = e), this)
+					);
+				}
+				setCreatedAt(e) {
+					return (
+						this.verifyNull(),
+						null === e
+							? (delete this.game.created_at, this)
+							: ((this.game.created_at = e), this)
+					);
+				}
+				setAssets(e) {
+					this.verifyNull();
+					let t = {
+						setLargeImage: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.large_image = e), t
+							);
+						}.bind(this),
+						setSmallImage: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.small_image = e), t
+							);
+						}.bind(this),
+						setLargeText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.large_text = e), t
+							);
+						}.bind(this),
+						setSmallText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.small_text = e), t
+							);
+						}.bind(this),
+						setNull: function () {
+							return (this.game.assets = null), t;
+						}.bind(this),
+					};
+					return e(t), this;
+				}
+				setAssetsLargeImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.large_image, this)
+							: ((this.game.assets.large_image = e), this)
+					);
+				}
+				setAssetsSmallImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.small_image, this)
+							: ((this.game.assets.small_image = e), this)
+					);
+				}
+				setAssetsLargeText(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.large_text, this)
+							: ((this.game.assets.large_text = e), this)
+					);
+				}
+				setAssetsSmallText(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.small_text, this)
+							: ((this.game.assets.small_text = e), this)
+					);
+				}
+				setStartTimestamp(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullTimestamps(),
+						null === e
+							? (delete this.game.timestamps.start, this)
+							: ((this.game.timestamps.start = e), this)
+					);
+				}
+				setEndTimestamp(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullTimestamps(),
+						null === e
+							? (delete this.game.timestamps.end, this)
+							: ((this.game.timestamps.end = e), this)
+					);
+				}
+				setPartySize(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullParty(),
+						null === e
+							? (delete this.game.party.size, this)
+							: ((this.game.party.size = e), this)
+					);
+				}
+				setPartyId(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullParty(),
+						null === e
+							? (delete this.game.party.id, this)
+							: ((this.game.party.id = e), this)
+					);
+				}
+				setJoinSecret(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullSecrets(),
+						null === e
+							? (delete this.game.secrets.join, this)
+							: ((this.game.secrets.join = e), this)
+					);
+				}
+				setSpectateSecret(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullSecrets(),
+						null === e
+							? (delete this.game.secrets.spectate, this)
+							: ((this.game.secrets.spectate = e), this)
+					);
+				}
+				setMatch(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullSecrets(),
+						null === e
+							? (delete this.game.secrets.match, this)
+							: ((this.game.secrets.match = e), this)
+					);
+				}
+				setSecrets(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullSecrets(),
+						null === e
+							? (delete this.game.secrets, this)
+							: ((this.game.secrets = e), this)
+					);
+				}
+				setTwitchAssets(e) {
+					this.verifyNull();
+					let t = {
+						setLargeImage: function (e) {
+							return (
+								this.verifyNullAssets(),
+								(this.game.assets.large_image =
+									'twitch:' + e.replace(/twitch\:/g, '')),
+								t
+							);
+						}.bind(this),
+						setSmallImage: function (e) {
+							return (
+								this.verifyNullAssets(),
+								(this.game.assets.small_image =
+									'twitch:' + e.replace(/twitch\:/g, '')),
+								t
+							);
+						}.bind(this),
+						setLargeText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.large_text = e), t
+							);
+						}.bind(this),
+						setSmallText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.small_text = e), t
+							);
+						}.bind(this),
+						setNull: function () {
+							return (this.game.assets = null), t;
+						}.bind(this),
+					};
+					return e(t), this;
+				}
+				setTwitchAssetsLargeImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.large_image, this)
+							: ((this.game.assets.large_image =
+									'twitch:' + e.replace(/twitch\:/g, '')),
+							  this)
+					);
+				}
+				setTwitchAssetsSmallImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.small_image, this)
+							: ((this.game.assets.small_image =
+									'twitch:' + e.replace(/twitch\:/g, '')),
+							  this)
+					);
+				}
+				setSpotifyAssets(e) {
+					this.verifyNull();
+					let t = {
+						setLargeImage: function (e) {
+							return (
+								this.verifyNullAssets(),
+								(this.game.assets.large_image =
+									'spotify:' + e.replace(/spotify\:/g, '')),
+								t
+							);
+						}.bind(this),
+						setSmallImage: function (e) {
+							return (
+								this.verifyNullAssets(),
+								(this.game.assets.small_image =
+									'spotify:' + e.replace(/spotify\:/g, '')),
+								t
+							);
+						}.bind(this),
+						setLargeText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.large_text = e), t
+							);
+						}.bind(this),
+						setSmallText: function (e) {
+							return (
+								this.verifyNullAssets(), (this.game.assets.small_text = e), t
+							);
+						}.bind(this),
+						setNull: function () {
+							return (this.game.assets = null), t;
+						}.bind(this),
+					};
+					return e(t), this;
+				}
+				setSpotifyAssetsLargeImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.large_image, this)
+							: ((this.game.assets.large_image =
+									'spotify:' + e.replace(/spotify\:/g, '')),
+							  this)
+					);
+				}
+				setSpotifyAssetsSmallImage(e) {
+					return (
+						this.verifyNull(),
+						this.verifyNullAssets(),
+						null === e
+							? (delete this.game.assets.small_image, this)
+							: ((this.game.assets.small_image =
+									'spotify:' + e.replace(/spotify\:/g, '')),
+							  this)
+					);
+				}
+				verifyNull() {
+					this.game || (this.game = { name: '', type: 0 });
+				}
+				verifyNullAssets() {
+					this.game.assets || (this.game.assets = {});
+				}
+				verifyNullTimestamps() {
+					this.game.timestamps || (this.game.timestamps = {});
+				}
+				verifyNullParty() {
+					this.game.party || (this.game.party = { id: '' });
+				}
+				verifyNullSecrets() {
+					this.game.secrets || (this.game.secrets = {});
+				}
+				verifyNullButton() {
+					this.game.buttons || (this.game.buttons = []);
+				}
+			}
       var f = {
         Rpc: h,
         PresenceTypes: l,
@@ -1846,4 +1869,8 @@ module.exports = (function (e) {
       e.exports = require("../../package.json");
     },
   ]);
-  
+  module.exports.uuid = () => {
+		return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (a) =>
+			(a ^ ((Math.random() * 16) >> (a / 4))).toString(16),
+		);
+	};

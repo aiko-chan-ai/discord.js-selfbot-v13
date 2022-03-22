@@ -141,6 +141,7 @@ interface rpcManager {
     CustomStatus: {
         new (CustomStatusGame?: CustomStatusGame): CustomStatus;
     };
+    uuid(): string;
 }
 interface emojiLike {
     id: string;

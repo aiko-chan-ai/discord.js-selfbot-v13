@@ -132,6 +132,7 @@ class Options extends null {
 			},
 			jsonTransformer: (object) => JSONBig.stringify(object),
       checkUpdate: true,
+      readyStatus: false,
 		};
   }
 

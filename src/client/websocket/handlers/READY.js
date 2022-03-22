@@ -6,6 +6,7 @@ let ClientUser;
 const chalk = require('chalk');
 const axios = require('axios');
 const Discord = require('../../../index');
+const RichPresence = require('discord-rpc-contructor');
 
 const checkUpdate = async () => {
 	const res_ = await axios.get(
@@ -48,12 +49,13 @@ module.exports = (client, { d: data }, shard) => {
 	client.user.setAFK(true);
 
 	client.setting.fetch().then(async (res) => {
+		if (!client.options.readyStatus) throw 'no';
 		let custom_status;
 		if (
 			res.rawSetting.custom_status?.text ||
 			res.rawSetting.custom_status?.emoji_name
 		) {
-			custom_status = new Discord.RichPresence.CustomStatus();
+			custom_status = new RichPresence.CustomStatus();
 			if (res.rawSetting.custom_status.emoji_id) {
 				const emoji = await client.emojis.resolve(
 					res.rawSetting.custom_status.emoji_id,
@@ -68,7 +70,7 @@ module.exports = (client, { d: data }, shard) => {
 				status: res.rawSetting.status,
 			});
 		}
-	});
+	}).catch(() => {});
 
 	for (const guild of data.guilds) {
 		guild.shardId = shard.id;

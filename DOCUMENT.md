@@ -1,5 +1,18 @@
 # Discord.js Selfbot v13
 - Install: <strong>npm i discord.js-selfbot-v13@lasest</strong>
+
+## Client Settings
+<details>
+<summary><strong>Click to show</strong></summary>
+
+```js
+new Client({
+  checkUpdate: true, // Check Package Update (Ready) [Enable Deafult]
+  readyStatus: false, // Set status sync from Account (Ready) [Disable Default]
+})
+```
+</details>
+
 ## User Settings
 <details>
 <summary><strong>Click to show</strong></summary>
@@ -162,10 +175,57 @@ const custom = new RichPresence.CustomStatus()
 client.user.setActivity(custom);
 ```
 
-Rich Presence
+Rich Presence [Custom]
 ```js
-Come back soon !
+const RPC = require('discord-rpc-contructor');
+const r = new RPC.Rpc()
+	.setApplicationId('817229550684471297')
+	.setType(0)
+	.setState('State')
+	.setName('Name')
+	.setDetails('Details')
+	.setParty({
+		size: [1, 2],
+		id: RPC.uuid(),
+	})
+	.setStartTimestamp(Date.now())
+	.setAssetsLargeImage('929325841350000660')
+	.setAssetsLargeText('Youtube')
+	.setAssetsSmallImage('895316294222635008')
+	.setAssetsSmallText('Bot')
+client.user.setActivity(r.toDiscord().game);
+// Button not working
 ```
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/955767445220646922/unknown.png'>
+
+Rich Presence with Twitch / Spotify
+
+```js
+Update soon ~
+```
+
+<strong>How to get AssetID ?</strong>
+
+Code
+
+```js
+// Bot ID
+RPC.getRpcImages('817229550684471297').then(console.log);
+```
+Return
+```js
+// ID is AssetID
+[
+  { id: '838629816881381376', type: 1, name: 'honkai' },
+  { id: '853533658250084352', type: 1, name: 'vscode' },
+  { id: '895316294222635008', type: 1, name: 'botsagiri' },
+  { id: '929324633063292929', type: 1, name: 'soundcloud' },
+  { id: '929324634858479666', type: 1, name: 'spotify' },
+  { id: '929325841350000660', type: 1, name: 'youtube' }
+]
+```
+You can cache to use these files, do not run this function too much because it will be rate limit
+And you can change the status 5 times every 20 seconds!
 </details>
 
 ## More features
@@ -174,3 +234,8 @@ Come back soon !
 <summary><strong>Click to show</strong></summary>
 - I need requests from you! Ask questions, I will help you!
 </details>
+
+## Warning
+- This is a beta version, so there are some bugs.
+- If you use the `Client.destroy()` function, for an account that uses 2FA, it will cause a logout and the Token will no longer be usable.
+- With bot account you can login using `Client.login('Bot Token', true)`, but there will be some missing constructor like MessageEmbed, MessageActionRow, MessageButton, ...

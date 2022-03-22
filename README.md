@@ -47,6 +47,7 @@ client.login('token');
 - Discord Apps Setting [Theme, Language, ...]
 - Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, ...]
 - Setting Position Guild and Folder
+- Custom Status and RPC (without button, because it's not working)
 - You can request more features for my module by placing an issue!
 
 ## Links [Discord.js]
