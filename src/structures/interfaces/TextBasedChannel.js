@@ -1,5 +1,5 @@
 'use strict';
-
+const FormData = require('form-data');
 const { Collection } = require('@discordjs/collection');
 const { DiscordSnowflake } = require('@sapphire/snowflake');
 const { InteractionType, Routes } = require('discord-api-types/v9');
@@ -9,47 +9,6 @@ const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
 const DiscordAPIError = require('../../rest/DiscordAPIError');
 
-const _send = (client, channelID, data, files) => {
-  return new Promise((resolve, reject) => {
-		require('axios')({
-			method: 'post',
-			url: `${client.options.http.api}/v${client.options.http.version}/channels/${channelID}/messages`,
-			headers: {
-				authorization: client.token,
-				Accept: '*/*',
-				'Accept-Language': 'en-US,en;q=0.9',
-				'Cache-Control': 'no-cache',
-				Pragma: 'no-cache',
-				Referer: 'https://discord.com/channels/@me',
-				'Sec-Ch-Ua': '" Not A;Brand";v="99" "',
-				'Sec-Ch-Ua-Mobile': '?0',
-				'Sec-Ch-Ua-Platform': '"iOS"',
-				'Sec-Fetch-Dest': 'empty',
-				'Sec-Fetch-Mode': 'cors',
-				'Sec-Fetch-Site': 'same-origin',
-				'X-Debug-Options': 'bugReporterEnabled',
-				'X-Discord-Locale': 'en-US',
-				Origin: 'https://discord.com',
-			},
-			data,
-			files,
-		})
-			.then((res) => resolve(res.data))
-			.catch((err) => {
-        err.request.options = {
-          data,
-          files,
-        };
-        return reject(
-					new DiscordAPIError(
-						err.response.data,
-						err.response.status,
-						err.request,
-					),
-				);
-      });
-	});
-}
 /**
  * Interface for classes that have text-channel-like features.
  * @interface
@@ -215,8 +174,8 @@ class TextBasedChannel {
 		}
 
 		const { body, files } = await messagePayload.resolveFiles();
-		// const d = await this.client.api.channels[this.id].messages.post({ body, files });
-		const d = await _send(this.client, this.id, body, files);
+		console.log(body)
+		const d = await this.client.api.channels[this.id].messages.post({ body, files });
 		return this.messages.cache.get(d.id) ?? this.messages._add(d);
 	}
 

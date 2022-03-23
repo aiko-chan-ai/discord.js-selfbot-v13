@@ -109,7 +109,7 @@ class Options extends null {
 					// 'Accept-Encoding': 'gzip, deflate, br',
 					'Accept-Language': 'en-US,en;q=0.9',
 					'Cache-Control': 'no-cache',
-          'Content-Type': 'application/json',
+          // 'Content-Type': 'application/json',
 					Pragma: 'no-cache',
 					Referer: 'https://discord.com/channels/@me',
 					'Sec-Ch-Ua': '" Not A;Brand";v="99" "',

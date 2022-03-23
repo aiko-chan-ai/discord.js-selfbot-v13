@@ -9,49 +9,6 @@ const MessagePayload = require('../structures/MessagePayload');
 const Util = require('../util/Util');
 const DiscordAPIError = require('../rest/DiscordAPIError');
 
-const _edit = (client, channelID, messageID, data, files) => {
-	return new Promise((resolve, reject) => {
-		require('axios')({
-			method: 'patch',
-			url: `${client.options.http.api}/v${client.options.http.version}/channels/${channelID}/messages/${messageID}`,
-			headers: {
-				authorization: client.token,
-				Accept: '*/*',
-				'Accept-Language': 'en-US,en;q=0.9',
-				'Cache-Control': 'no-cache',
-				Pragma: 'no-cache',
-				Referer: 'https://discord.com/channels/@me',
-				'Sec-Ch-Ua': '" Not A;Brand";v="99" "',
-				'Sec-Ch-Ua-Mobile': '?0',
-				'Sec-Ch-Ua-Platform': '"iOS"',
-				'Sec-Fetch-Dest': 'empty',
-				'Sec-Fetch-Mode': 'cors',
-				'Sec-Fetch-Site': 'same-origin',
-				'X-Debug-Options': 'bugReporterEnabled',
-				'X-Discord-Locale': 'en-US',
-				Origin: 'https://discord.com',
-			},
-			data,
-			files,
-		})
-			.then((res) => resolve(res.data))
-			.catch((err) => {
-				err.request.options = {
-					data,
-					files,
-				};
-				return reject(
-					new DiscordAPIError(
-						err.response.data,
-						err.response.status,
-						err.request,
-					),
-				);
-			});
-	});
-};
-
-
 /**
  * Manages API methods for Messages and holds their cache.
  * @extends {CachedManager}
@@ -174,8 +131,7 @@ class MessageManager extends CachedManager {
     )
       .resolveBody()
       .resolveFiles();
-    // const d = await this.client.api.channels(this.channel.id).messages(messageId).patch({ body, files });
-    const d = await _edit(this.client, this.channel.id, messageId, body, files);
+    const d = await this.client.api.channels(this.channel.id).messages(messageId).patch({ body, files });
     const existing = this.cache.get(messageId);
     if (existing) {
       const clone = existing._clone();

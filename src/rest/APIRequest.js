@@ -2,7 +2,6 @@
 
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
-const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { UserAgent } = require('../util/Constants');
 
@@ -47,23 +46,32 @@ class APIRequest {
 
     let body;
     if (this.options.files?.length) {
-      body = new FormData();
-      for (const [index, file] of this.options.files.entries()) {
-        if (file?.file) body.append(file.key ?? `files[${index}]`, file.file, file.name);
-      }
-      if (typeof this.options.data !== 'undefined') {
-        if (this.options.dontUsePayloadJSON) {
-          for (const [key, value] of Object.entries(this.options.data)) body.append(key, value);
-        } else {
-          body.append('payload_json', JSON.stringify(this.options.data));
-        }
-      }
-      headers = Object.assign(headers, body.getHeaders());
-      // eslint-disable-next-line eqeqeq
-    } else if (this.options.data != null) {
-      body = JSON.stringify(this.options.data);
-      headers['Content-Type'] = 'application/json';
-    }
+			body = new FormData();
+			for (const [index, file] of this.options.files.entries()) {
+				if (file?.file)
+					body.append(file.key ?? `files[${index}]`, file.file, file.name);
+			}
+			if (
+				typeof this.options.data !== 'undefined' ||
+				typeof this.options.body !== 'undefined'
+			) {
+				if (this.options.dontUsePayloadJSON) {
+					for (const [key, value] of Object.entries(this.options.data || this.options.body)) {
+						body.append(key, value);
+          }
+				} else {
+					body.append('payload_json', JSON.stringify(this.options.data || this.options.body));
+				}
+			}
+			headers = Object.assign(headers, body.getHeaders());
+			// eslint-disable-next-line eqeqeq
+		} else if (this.options.data != null) {
+			body = JSON.stringify(this.options.data);
+			headers['Content-Type'] = 'application/json';
+		} else if (this.options.body != null) {
+			body = JSON.stringify(this.options.body);
+			headers['Content-Type'] = 'application/json';
+		}
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
