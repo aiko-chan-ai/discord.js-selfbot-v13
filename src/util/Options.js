@@ -123,7 +123,7 @@ class Options extends null {
 					Origin: 'https://discord.com',
 				},
 				agent: {},
-				version: 9,
+				version: 10,
 				api: 'https://discord.com/api',
 				cdn: 'https://cdn.discordapp.com',
 				invite: 'https://discord.gg',
