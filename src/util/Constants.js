@@ -200,6 +200,12 @@ exports.Events = {
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
 };
 
+const AllowedImageFormats = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
+
+const AllowedImageSizes = [
+	16, 32, 56, 64, 96, 128, 256, 300, 512, 600, 1024, 2048, 4096,
+];
+
 function makeImageUrl(root, { format = 'webp', size } = {}) {
   if (!['undefined', 'number'].includes(typeof size)) throw new TypeError('INVALID_TYPE', 'size', 'number');
   if (format && !AllowedImageFormats.includes(format)) throw new Error('IMAGE_FORMAT', format);

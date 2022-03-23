@@ -101,7 +101,7 @@ class Options extends null {
           $browser: 'Chrome',
           $device: 'ASUS ROG Phone 5',
 				},
-				version: 9,
+				version: 10,
 			},
 			http: {
 				headers: {
