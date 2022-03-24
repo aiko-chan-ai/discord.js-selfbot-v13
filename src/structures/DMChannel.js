@@ -1,6 +1,5 @@
 'use strict';
 
-const { ChannelType } = require('discord-api-types/v9');
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const MessageManager = require('../managers/MessageManager');
@@ -15,7 +14,7 @@ class DMChannel extends Channel {
     super(client, data);
 
     // Override the channel type so partials have a known type
-    this.type = ChannelType.DM;
+    this.type = 'DM';
 
     /**
      * A manager of the messages belonging to this channel
@@ -48,7 +47,7 @@ class DMChannel extends Channel {
        * The timestamp when the last pinned message was pinned, if there was one
        * @type {?number}
        */
-      this.lastPinTimestamp = Date.parse(data.last_pin_timestamp);
+      this.lastPinTimestamp = new Date(data.last_pin_timestamp).getTime();
     } else {
       this.lastPinTimestamp ??= null;
     }

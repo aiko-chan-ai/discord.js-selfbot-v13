@@ -1,7 +1,7 @@
 'use strict';
 
 const Action = require('./Action');
-const Events = require('../../util/Events');
+const { Events } = require('../../util/Constants');
 
 class WebhooksUpdate extends Action {
   handle(data) {
@@ -12,7 +12,7 @@ class WebhooksUpdate extends Action {
      * @event Client#webhookUpdate
      * @param {TextChannel|NewsChannel} channel The channel that had a webhook update
      */
-    if (channel) client.emit(Events.WebhooksUpdate, channel);
+    if (channel) client.emit(Events.WEBHOOKS_UPDATE, channel);
   }
 }
 

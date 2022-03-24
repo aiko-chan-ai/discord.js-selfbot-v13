@@ -1,7 +1,7 @@
 'use strict';
 
 const Base = require('./Base');
-const ThreadMemberFlagsBitField = require('../util/ThreadMemberFlagsBitField');
+const ThreadMemberFlags = require('../util/ThreadMemberFlags');
 
 /**
  * Represents a Member for a Thread.
@@ -33,14 +33,14 @@ class ThreadMember extends Base {
   }
 
   _patch(data) {
-    if ('join_timestamp' in data) this.joinedTimestamp = Date.parse(data.join_timestamp);
+    if ('join_timestamp' in data) this.joinedTimestamp = new Date(data.join_timestamp).getTime();
 
     if ('flags' in data) {
       /**
        * The flags for this thread member
-       * @type {ThreadMemberFlagsBitField}
+       * @type {ThreadMemberFlags}
        */
-      this.flags = new ThreadMemberFlagsBitField(data.flags).freeze();
+      this.flags = new ThreadMemberFlags(data.flags).freeze();
     }
   }
 
@@ -59,7 +59,7 @@ class ThreadMember extends Base {
    * @readonly
    */
   get joinedAt() {
-    return this.joinedTimestamp && new Date(this.joinedTimestamp);
+    return this.joinedTimestamp ? new Date(this.joinedTimestamp) : null;
   }
 
   /**

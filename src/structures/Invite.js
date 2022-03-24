@@ -1,11 +1,14 @@
 'use strict';
 
-const { RouteBases, Routes, PermissionFlagsBits } = require('discord-api-types/v9');
 const Base = require('./Base');
 const { GuildScheduledEvent } = require('./GuildScheduledEvent');
 const IntegrationApplication = require('./IntegrationApplication');
 const InviteStageInstance = require('./InviteStageInstance');
 const { Error } = require('../errors');
+const { Endpoints } = require('../util/Constants');
+const Permissions = require('../util/Permissions');
+
+// TODO: Convert `inviter` and `channel` in this class to a getter.
 
 /**
  * Represents an invitation to a guild channel.
@@ -112,13 +115,20 @@ class Invite extends Base {
        * @type {?Snowflake}
        */
       this.inviterId = data.inviter_id;
+      this.inviter = this.client.users.resolve(data.inviter_id);
     } else {
       this.inviterId ??= null;
     }
 
     if ('inviter' in data) {
-      this.client.users._add(data.inviter);
+      /**
+       * The user who created this invite
+       * @type {?User}
+       */
+      this.inviter ??= this.client.users._add(data.inviter);
       this.inviterId = data.inviter.id;
+    } else {
+      this.inviter ??= null;
     }
 
     if ('target_user' in data) {
@@ -141,10 +151,18 @@ class Invite extends Base {
       this.targetApplication ??= null;
     }
 
+    /**
+     * The type of the invite target:
+     * * 1: STREAM
+     * * 2: EMBEDDED_APPLICATION
+     * @typedef {number} TargetType
+     * @see {@link https://discord.com/developers/docs/resources/invite#invite-object-invite-target-types}
+     */
+
     if ('target_type' in data) {
       /**
        * The target type
-       * @type {?InviteTargetType}
+       * @type {?TargetType}
        */
       this.targetType = data.target_type;
     } else {
@@ -153,21 +171,19 @@ class Invite extends Base {
 
     if ('channel_id' in data) {
       /**
-       * The id of the channel this invite is for
-       * @type {?Snowflake}
+       * The channel's id this invite is for
+       * @type {Snowflake}
        */
       this.channelId = data.channel_id;
+      this.channel = this.client.channels.cache.get(data.channel_id);
     }
 
     if ('channel' in data) {
       /**
        * The channel this invite is for
-       * @type {?Channel}
+       * @type {Channel}
        */
-      this.channel =
-        this.client.channels._add(data.channel, this.guild, { cache: false }) ??
-        this.client.channels.resolve(this.channelId);
-
+      this.channel ??= this.client.channels._add(data.channel, this.guild, { cache: false });
       this.channelId ??= data.channel.id;
     }
 
@@ -176,19 +192,18 @@ class Invite extends Base {
        * The timestamp this invite was created at
        * @type {?number}
        */
-      this.createdTimestamp = Date.parse(data.created_at);
+      this.createdTimestamp = new Date(data.created_at).getTime();
     } else {
       this.createdTimestamp ??= null;
     }
 
-    if ('expires_at' in data) this._expiresTimestamp = Date.parse(data.expires_at);
+    if ('expires_at' in data) this._expiresTimestamp = new Date(data.expires_at).getTime();
     else this._expiresTimestamp ??= null;
 
     if ('stage_instance' in data) {
       /**
        * The stage instance data if there is a public {@link StageInstance} in the stage channel this invite is for
        * @type {?InviteStageInstance}
-       * @deprecated
        */
       this.stageInstance = new InviteStageInstance(this.client, data.stage_instance, this.channel.id, this.guild.id);
     } else {
@@ -212,7 +227,7 @@ class Invite extends Base {
    * @readonly
    */
   get createdAt() {
-    return this.createdTimestamp && new Date(this.createdTimestamp);
+    return this.createdTimestamp ? new Date(this.createdTimestamp) : null;
   }
 
   /**
@@ -224,9 +239,9 @@ class Invite extends Base {
     const guild = this.guild;
     if (!guild || !this.client.guilds.cache.has(guild.id)) return false;
     if (!guild.me) throw new Error('GUILD_UNCACHED_ME');
-    return Boolean(
-      this.channel?.permissionsFor(this.client.user).has(PermissionFlagsBits.ManageChannels, false) ||
-        guild.me.permissions.has(PermissionFlagsBits.ManageGuild),
+    return (
+      this.channel.permissionsFor(this.client.user).has(Permissions.FLAGS.MANAGE_CHANNELS, false) ||
+      guild.me.permissions.has(Permissions.FLAGS.MANAGE_GUILD)
     );
   }
 
@@ -248,16 +263,8 @@ class Invite extends Base {
    * @readonly
    */
   get expiresAt() {
-    return this.expiresTimestamp && new Date(this.expiresTimestamp);
-  }
-
-  /**
-   * The user who created this invite
-   * @type {?User}
-   * @readonly
-   */
-  get inviter() {
-    return this.inviterId && this.client.users.resolve(this.inviterId);
+    const { expiresTimestamp } = this;
+    return expiresTimestamp ? new Date(expiresTimestamp) : null;
   }
 
   /**
@@ -266,7 +273,7 @@ class Invite extends Base {
    * @readonly
    */
   get url() {
-    return `${RouteBases.invite}/${this.code}`;
+    return Endpoints.invite(this.client.options.http.invite, this.code);
   }
 
   /**

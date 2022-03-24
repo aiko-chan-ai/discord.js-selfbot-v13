@@ -2,7 +2,7 @@
 
 const Action = require('./Action');
 const Invite = require('../../structures/Invite');
-const Events = require('../../util/Events');
+const { Events } = require('../../util/Constants');
 
 class InviteDeleteAction extends Action {
   handle(data) {
@@ -22,7 +22,7 @@ class InviteDeleteAction extends Action {
      * @event Client#inviteDelete
      * @param {Invite} invite The invite that was deleted
      */
-    client.emit(Events.InviteDelete, invite);
+    client.emit(Events.INVITE_DELETE, invite);
     return { invite };
   }
 }

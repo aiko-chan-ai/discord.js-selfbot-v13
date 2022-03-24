@@ -1,10 +1,9 @@
 'use strict';
 
-const { setTimeout, clearTimeout } = require('node:timers');
-const { RouteBases, Routes } = require('discord-api-types/v9');
+const { setTimeout } = require('node:timers');
 const Base = require('./Base');
+const { Events } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
-const Events = require('../util/Events');
 
 /**
  * Represents the template for a guild.
@@ -67,18 +66,18 @@ class GuildTemplate extends Base {
 
     if ('created_at' in data) {
       /**
-       * The timestamp of when this template was created at
-       * @type {number}
+       * The time when this template was created at
+       * @type {Date}
        */
-      this.createdTimestamp = Date.parse(data.created_at);
+      this.createdAt = new Date(data.created_at);
     }
 
     if ('updated_at' in data) {
       /**
-       * The timestamp of when this template was last synced to the guild
-       * @type {number}
+       * The time when this template was last synced to the guild
+       * @type {Date}
        */
-      this.updatedTimestamp = Date.parse(data.updated_at);
+      this.updatedAt = new Date(data.updated_at);
     }
 
     if ('source_guild_id' in data) {
@@ -115,8 +114,8 @@ class GuildTemplate extends Base {
    */
   async createGuild(name, icon) {
     const { client } = this;
-    const data = await client.rest.post(Routes.template(this.code), {
-      body: {
+    const data = await client.api.guilds.templates(this.code).post({
+      data: {
         name,
         icon: await DataResolver.resolveImage(icon),
       },
@@ -126,7 +125,7 @@ class GuildTemplate extends Base {
 
     return new Promise(resolve => {
       const resolveGuild = guild => {
-        client.off(Events.GuildCreate, handleGuild);
+        client.off(Events.GUILD_CREATE, handleGuild);
         client.decrementMaxListeners();
         resolve(guild);
       };
@@ -139,7 +138,7 @@ class GuildTemplate extends Base {
       };
 
       client.incrementMaxListeners();
-      client.on(Events.GuildCreate, handleGuild);
+      client.on(Events.GUILD_CREATE, handleGuild);
 
       const timeout = setTimeout(() => resolveGuild(client.guilds._add(data)), 10_000).unref();
     });
@@ -158,7 +157,7 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async edit({ name, description } = {}) {
-    const data = await this.client.api.guilds(this.guildId).templates(this.code).patch({ body: { name, description } });
+    const data = await this.client.api.guilds(this.guildId).templates(this.code).patch({ data: { name, description } });
     return this._patch(data);
   }
 
@@ -181,21 +180,21 @@ class GuildTemplate extends Base {
   }
 
   /**
-   * The time when this template was created at
-   * @type {Date}
+   * The timestamp of when this template was created at
+   * @type {number}
    * @readonly
    */
-  get createdAt() {
-    return new Date(this.createdTimestamp);
+  get createdTimestamp() {
+    return this.createdAt.getTime();
   }
 
   /**
-   * The time when this template was last synced to the guild
-   * @type {Date}
+   * The timestamp of when this template was last synced to the guild
+   * @type {number}
    * @readonly
    */
-  get updatedAt() {
-    return new Date(this.updatedTimestamp);
+  get updatedTimestamp() {
+    return this.updatedAt.getTime();
   }
 
   /**
@@ -213,7 +212,7 @@ class GuildTemplate extends Base {
    * @readonly
    */
   get url() {
-    return `${RouteBases.template}/${this.code}`;
+    return `${this.client.options.http.template}/${this.code}`;
   }
 
   /**

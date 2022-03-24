@@ -1,6 +1,5 @@
 'use strict';
 
-const { Routes } = require('discord-api-types/v9');
 const User = require('./User');
 const DataResolver = require('../util/DataResolver');
 
@@ -159,7 +158,7 @@ class ClientUser extends User {
    * @returns {ClientPresence}
    * @example
    * // Set the client user's activity
-   * client.user.setActivity('discord.js', { type: ActivityType.Watching });
+   * client.user.setActivity('discord.js', { type: 'WATCHING' });
    */
   setActivity(name, options = {}) {
     if (!name) return this.setPresence({ activities: [], shardId: options.shardId });

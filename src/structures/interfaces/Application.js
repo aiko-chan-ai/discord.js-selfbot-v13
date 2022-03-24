@@ -1,7 +1,10 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { ClientApplicationAssetTypes, Endpoints } = require('../../util/Constants');
+const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const Base = require('../Base');
+
+const AssetTypes = Object.keys(ClientApplicationAssetTypes);
 
 /**
  * Represents an OAuth2 Application.
@@ -10,12 +13,13 @@ const Base = require('../Base');
 class Application extends Base {
   constructor(client, data) {
     super(client);
-    this._patch(data);
+    
+    if (data) { 
+      this._patch(data);
+    }
   }
 
   _patch(data) {
-    if(!data) return;
-
     /**
      * The application's id
      * @type {Snowflake}
@@ -59,7 +63,7 @@ class Application extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return DiscordSnowflake.timestampFrom(this.id);
+    return SnowflakeUtil.timestampFrom(this.id);
   }
 
   /**
@@ -73,20 +77,43 @@ class Application extends Base {
 
   /**
    * A link to the application's icon.
-   * @param {ImageURLOptions} [options={}] Options for the image URL
+   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
    */
-  iconURL(options = {}) {
-    return this.icon && this.client.rest.cdn.appIcon(this.id, this.icon, options);
+  iconURL({ format, size } = {}) {
+    if (!this.icon) return null;
+    return this.client.rest.cdn.AppIcon(this.id, this.icon, { format, size });
   }
 
   /**
    * A link to this application's cover image.
-   * @param {ImageURLOptions} [options={}] Options for the image URL
+   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
    */
-  coverURL(options = {}) {
-    return this.cover && this.client.rest.cdn.appIcon(this.id, this.cover, options);
+  coverURL({ format, size } = {}) {
+    if (!this.cover) return null;
+    return Endpoints.CDN(this.client.options.http.cdn).AppIcon(this.id, this.cover, { format, size });
+  }
+
+  /**
+   * Asset data.
+   * @typedef {Object} ApplicationAsset
+   * @property {Snowflake} id The asset's id
+   * @property {string} name The asset's name
+   * @property {string} type The asset's type
+   */
+
+  /**
+   * Gets the application's rich presence assets.
+   * @returns {Promise<Array<ApplicationAsset>>}
+   */
+  async fetchAssets() {
+    const assets = await this.client.api.oauth2.applications(this.id).assets.get();
+    return assets.map(a => ({
+      id: a.id,
+      name: a.name,
+      type: AssetTypes[a.type - 1],
+    }));
   }
 
   /**

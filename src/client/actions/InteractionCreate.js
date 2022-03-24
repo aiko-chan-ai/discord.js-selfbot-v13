@@ -1,14 +1,16 @@
 'use strict';
 
-const { InteractionType, ComponentType, ApplicationCommandType } = require('discord-api-types/v9');
+const process = require('node:process');
 const Action = require('./Action');
 const AutocompleteInteraction = require('../../structures/AutocompleteInteraction');
 const ButtonInteraction = require('../../structures/ButtonInteraction');
-const ChatInputCommandInteraction = require('../../structures/ChatInputCommandInteraction');
-const MessageContextMenuCommandInteraction = require('../../structures/MessageContextMenuCommandInteraction');
+const CommandInteraction = require('../../structures/CommandInteraction');
+const MessageContextMenuInteraction = require('../../structures/MessageContextMenuInteraction');
 const SelectMenuInteraction = require('../../structures/SelectMenuInteraction');
-const UserContextMenuCommandInteraction = require('../../structures/UserContextMenuCommandInteraction');
-const Events = require('../../util/Events');
+const UserContextMenuInteraction = require('../../structures/UserContextMenuInteraction');
+const { Events, InteractionTypes, MessageComponentTypes, ApplicationCommandTypes } = require('../../util/Constants');
+
+let deprecationEmitted = false;
 
 class InteractionCreateAction extends Action {
   handle(data) {
@@ -17,59 +19,70 @@ class InteractionCreateAction extends Action {
     // Resolve and cache partial channels for Interaction#channel getter
     this.getChannel(data);
 
-    let InteractionClass;
+    let InteractionType;
     switch (data.type) {
-      case InteractionType.ApplicationCommand:
+      case InteractionTypes.APPLICATION_COMMAND:
         switch (data.data.type) {
-          case ApplicationCommandType.ChatInput:
-            InteractionClass = ChatInputCommandInteraction;
+          case ApplicationCommandTypes.CHAT_INPUT:
+            InteractionType = CommandInteraction;
             break;
-          case ApplicationCommandType.User:
-            InteractionClass = UserContextMenuCommandInteraction;
+          case ApplicationCommandTypes.USER:
+            InteractionType = UserContextMenuInteraction;
             break;
-          case ApplicationCommandType.Message:
-            InteractionClass = MessageContextMenuCommandInteraction;
+          case ApplicationCommandTypes.MESSAGE:
+            InteractionType = MessageContextMenuInteraction;
             break;
           default:
             client.emit(
-              Events.Debug,
+              Events.DEBUG,
               `[INTERACTION] Received application command interaction with unknown type: ${data.data.type}`,
             );
             return;
         }
         break;
-      case InteractionType.MessageComponent:
+      case InteractionTypes.MESSAGE_COMPONENT:
         switch (data.data.component_type) {
-          case ComponentType.Button:
-            InteractionClass = ButtonInteraction;
+          case MessageComponentTypes.BUTTON:
+            InteractionType = ButtonInteraction;
             break;
-          case ComponentType.SelectMenu:
-            InteractionClass = SelectMenuInteraction;
+          case MessageComponentTypes.SELECT_MENU:
+            InteractionType = SelectMenuInteraction;
             break;
           default:
             client.emit(
-              Events.Debug,
+              Events.DEBUG,
               `[INTERACTION] Received component interaction with unknown type: ${data.data.component_type}`,
             );
             return;
         }
         break;
-      case InteractionType.ApplicationCommandAutocomplete:
-        InteractionClass = AutocompleteInteraction;
+      case InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE:
+        InteractionType = AutocompleteInteraction;
         break;
       default:
-        client.emit(Events.Debug, `[INTERACTION] Received interaction with unknown type: ${data.type}`);
+        client.emit(Events.DEBUG, `[INTERACTION] Received interaction with unknown type: ${data.type}`);
         return;
     }
 
-    const interaction = new InteractionClass(client, data);
+    const interaction = new InteractionType(client, data);
 
     /**
      * Emitted when an interaction is created.
      * @event Client#interactionCreate
      * @param {Interaction} interaction The interaction which was created
      */
-    client.emit(Events.InteractionCreate, interaction);
+    client.emit(Events.INTERACTION_CREATE, interaction);
+
+    /**
+     * Emitted when an interaction is created.
+     * @event Client#interaction
+     * @param {Interaction} interaction The interaction which was created
+     * @deprecated Use {@link Client#event:interactionCreate} instead
+     */
+    if (client.emit('interaction', interaction) && !deprecationEmitted) {
+      deprecationEmitted = true;
+      process.emitWarning('The interaction event is deprecated. Use interactionCreate instead', 'DeprecationWarning');
+    }
   }
 }
 

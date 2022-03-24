@@ -1,10 +1,10 @@
 'use strict';
 
-const { OverwriteType } = require('discord-api-types/v9');
 const Base = require('./Base');
 const { Role } = require('./Role');
 const { TypeError } = require('../errors');
-const PermissionsBitField = require('../util/PermissionsBitField');
+const { OverwriteTypes } = require('../util/Constants');
+const Permissions = require('../util/Permissions');
 
 /**
  * Represents a permission overwrite for a role or member in a guild channel.
@@ -37,23 +37,23 @@ class PermissionOverwrites extends Base {
        * The type of this overwrite
        * @type {OverwriteType}
        */
-      this.type = data.type;
+      this.type = typeof data.type === 'number' ? OverwriteTypes[data.type] : data.type;
     }
 
     if ('deny' in data) {
       /**
        * The permissions that are denied for the user or role.
-       * @type {Readonly<PermissionsBitField>}
+       * @type {Readonly<Permissions>}
        */
-      this.deny = new PermissionsBitField(BigInt(data.deny)).freeze();
+      this.deny = new Permissions(BigInt(data.deny)).freeze();
     }
 
     if ('allow' in data) {
       /**
        * The permissions that are allowed for the user or role.
-       * @type {Readonly<PermissionsBitField>}
+       * @type {Readonly<Permissions>}
        */
-      this.allow = new PermissionsBitField(BigInt(data.allow)).freeze();
+      this.allow = new Permissions(BigInt(data.allow)).freeze();
     }
   }
 
@@ -71,7 +71,7 @@ class PermissionOverwrites extends Base {
    *   .catch(console.error);
    */
   async edit(options, reason) {
-    await this.channel.permissionOverwrites.upsert(this.id, options, { type: this.type, reason }, this);
+    await this.channel.permissionOverwrites.upsert(this.id, options, { type: OverwriteTypes[this.type], reason }, this);
     return this;
   }
 
@@ -88,7 +88,7 @@ class PermissionOverwrites extends Base {
   toJSON() {
     return {
       id: this.id,
-      type: this.type,
+      type: OverwriteTypes[this.type],
       allow: this.allow,
       deny: this.deny,
     };
@@ -98,9 +98,9 @@ class PermissionOverwrites extends Base {
    * An object mapping permission flags to `true` (enabled), `null` (unset) or `false` (disabled).
    * ```js
    * {
-   *  'SendMessages': true,
-   *  'EmbedLinks': null,
-   *  'AttachFiles': false,
+   *  'SEND_MESSAGES': true,
+   *  'EMBED_LINKS': null,
+   *  'ATTACH_FILES': false,
    * }
    * ```
    * @typedef {Object} PermissionOverwriteOptions
@@ -108,8 +108,8 @@ class PermissionOverwrites extends Base {
 
   /**
    * @typedef {Object} ResolvedOverwriteOptions
-   * @property {PermissionsBitField} allow The allowed permissions
-   * @property {PermissionsBitField} deny The denied permissions
+   * @property {Permissions} allow The allowed permissions
+   * @property {Permissions} deny The denied permissions
    */
 
   /**
@@ -119,8 +119,8 @@ class PermissionOverwrites extends Base {
    * @returns {ResolvedOverwriteOptions}
    */
   static resolveOverwriteOptions(options, { allow, deny } = {}) {
-    allow = new PermissionsBitField(allow);
-    deny = new PermissionsBitField(deny);
+    allow = new Permissions(allow);
+    deny = new Permissions(deny);
 
     for (const [perm, value] of Object.entries(options)) {
       if (value === true) {
@@ -171,24 +171,24 @@ class PermissionOverwrites extends Base {
    */
   static resolve(overwrite, guild) {
     if (overwrite instanceof this) return overwrite.toJSON();
-    if (typeof overwrite.id === 'string' && overwrite.type in OverwriteType) {
+    if (typeof overwrite.id === 'string' && overwrite.type in OverwriteTypes) {
       return {
         id: overwrite.id,
-        type: overwrite.type,
-        allow: PermissionsBitField.resolve(overwrite.allow ?? PermissionsBitField.defaultBit).toString(),
-        deny: PermissionsBitField.resolve(overwrite.deny ?? PermissionsBitField.defaultBit).toString(),
+        type: OverwriteTypes[overwrite.type],
+        allow: Permissions.resolve(overwrite.allow ?? Permissions.defaultBit).toString(),
+        deny: Permissions.resolve(overwrite.deny ?? Permissions.defaultBit).toString(),
       };
     }
 
     const userOrRole = guild.roles.resolve(overwrite.id) ?? guild.client.users.resolve(overwrite.id);
     if (!userOrRole) throw new TypeError('INVALID_TYPE', 'parameter', 'User nor a Role');
-    const type = userOrRole instanceof Role ? OverwriteType.Role : OverwriteType.Member;
+    const type = userOrRole instanceof Role ? OverwriteTypes.role : OverwriteTypes.member;
 
     return {
       id: userOrRole.id,
       type,
-      allow: PermissionsBitField.resolve(overwrite.allow ?? PermissionsBitField.defaultBit).toString(),
-      deny: PermissionsBitField.resolve(overwrite.deny ?? PermissionsBitField.defaultBit).toString(),
+      allow: Permissions.resolve(overwrite.allow ?? Permissions.defaultBit).toString(),
+      deny: Permissions.resolve(overwrite.deny ?? Permissions.defaultBit).toString(),
     };
   }
 }

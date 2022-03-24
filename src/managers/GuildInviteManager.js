@@ -1,7 +1,6 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
 const Invite = require('../structures/Invite');
@@ -178,13 +177,13 @@ class GuildInviteManager extends CachedManager {
    */
   async create(
     channel,
-    { temporary, maxAge, maxUses, unique, targetUser, targetApplication, targetType, reason } = {},
+    { temporary = false, maxAge = 86400, maxUses = 0, unique, targetUser, targetApplication, targetType, reason } = {},
   ) {
     const id = this.guild.channels.resolveId(channel);
     if (!id) throw new Error('GUILD_CHANNEL_RESOLVE');
 
     const invite = await this.client.api.channels(id).invites.post({
-      body: {
+      data: {
         temporary,
         max_age: maxAge,
         max_uses: maxUses,

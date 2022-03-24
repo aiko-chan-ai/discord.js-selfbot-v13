@@ -1,7 +1,6 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const ThreadMember = require('../structures/ThreadMember');
@@ -104,22 +103,19 @@ class ThreadMemberManager extends CachedManager {
   }
 
   async _fetchMany(cache) {
-    const raw = await this.client.api.channels(this.thread.id, 'thread-members');
+    const raw = await this.client.api.channels(this.thread.id, 'thread-members').get();
     return raw.reduce((col, member) => col.set(member.user_id, this._add(member, cache)), new Collection());
   }
 
   /**
-   * @typedef {BaseFetchOptions} ThreadMemberFetchOptions
-   * @property {UserResolvable} [member] The specific user to fetch from the thread
-   */
-
-  /**
    * Fetches member(s) for the thread from Discord, requires access to the `GUILD_MEMBERS` gateway intent.
-   * @param {ThreadMemberFetchOptions|boolean} [options] Additional options for this fetch, when a `boolean` is provided
-   * all members are fetched with `options.cache` set to the boolean value
+   * @param {UserResolvable|boolean} [member] The member to fetch. If `undefined`, all members
+   * in the thread are fetched, and will be cached based on `options.cache`. If boolean, this serves
+   * the purpose of `options.cache`.
+   * @param {BaseFetchOptions} [options] Additional options for this fetch
    * @returns {Promise<ThreadMember|Collection<Snowflake, ThreadMember>>}
    */
-  fetch({ member, cache = true, force = false } = {}) {
+  fetch(member, { cache = true, force = false } = {}) {
     const id = this.resolveId(member);
     return id ? this._fetchOne(id, cache, force) : this._fetchMany(member ?? cache);
   }

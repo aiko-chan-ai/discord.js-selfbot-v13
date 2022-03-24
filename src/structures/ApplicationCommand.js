@@ -1,9 +1,9 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
-const { ApplicationCommandOptionType } = require('discord-api-types/v9');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
+const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * Represents an application command.
@@ -48,7 +48,7 @@ class ApplicationCommand extends Base {
      * The type of this application command
      * @type {ApplicationCommandType}
      */
-    this.type = data.type;
+    this.type = ApplicationCommandTypes[data.type];
 
     this._patch(data);
   }
@@ -103,7 +103,7 @@ class ApplicationCommand extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return DiscordSnowflake.timestampFrom(this.id);
+    return SnowflakeUtil.timestampFrom(this.id);
   }
 
   /**
@@ -127,13 +127,11 @@ class ApplicationCommand extends Base {
   /**
    * Data for creating or editing an application command.
    * @typedef {Object} ApplicationCommandData
-   * @property {string} name The name of the command, must be in all lowercase if type is
-   * {@link ApplicationCommandType.ChatInput}
-   * @property {string} description The description of the command, if type is {@link ApplicationCommandType.ChatInput}
-   * @property {ApplicationCommandType} [type=ApplicationCommandType.ChatInput] The type of the command
+   * @property {string} name The name of the command
+   * @property {string} description The description of the command
+   * @property {ApplicationCommandType} [type] The type of the command
    * @property {ApplicationCommandOptionData[]} [options] Options for the command
-   * @property {boolean} [defaultPermission=true] Whether the command is enabled by default when the app is added to a
-   * guild
+   * @property {boolean} [defaultPermission] Whether the command is enabled by default when the app is added to a guild
    */
 
   /**
@@ -143,21 +141,17 @@ class ApplicationCommand extends Base {
    * <warn>Note that providing a value for the `camelCase` counterpart for any `snake_case` property
    * will discard the provided `snake_case` property.</warn>
    * @typedef {Object} ApplicationCommandOptionData
-   * @property {ApplicationCommandOptionType} type The type of the option
+   * @property {ApplicationCommandOptionType|number} type The type of the option
    * @property {string} name The name of the option
    * @property {string} description The description of the option
-   * @property {boolean} [autocomplete] Whether the autocomplete interaction is enabled for a
-   * {@link ApplicationCommandOptionType.String}, {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
+   * @property {boolean} [autocomplete] Whether the option is an autocomplete option
    * @property {boolean} [required] Whether the option is required
    * @property {ApplicationCommandOptionChoice[]} [choices] The choices of the option for the user to pick from
    * @property {ApplicationCommandOptionData[]} [options] Additional options if this option is a subcommand (group)
-   * @property {ChannelType[]} [channelTypes] When the option type is channel,
+   * @property {ChannelType[]|number[]} [channelTypes] When the option type is channel,
    * the allowed types of channels that can be selected
-   * @property {number} [minValue] The minimum value for an {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
-   * @property {number} [maxValue] The maximum value for an {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [minValue] The minimum value for an `INTEGER` or `NUMBER` option
+   * @property {number} [maxValue] The maximum value for an `INTEGER` or `NUMBER` option
    */
 
   /**
@@ -239,12 +233,13 @@ class ApplicationCommand extends Base {
     if (command.id && this.id !== command.id) return false;
 
     // Check top level parameters
+    const commandType = typeof command.type === 'string' ? command.type : ApplicationCommandTypes[command.type];
     if (
       command.name !== this.name ||
       ('description' in command && command.description !== this.description) ||
       ('version' in command && command.version !== this.version) ||
       ('autocomplete' in command && command.autocomplete !== this.autocomplete) ||
-      (command.type && command.type !== this.type) ||
+      (commandType && commandType !== this.type) ||
       // Future proof for options being nullable
       // TODO: remove ?? 0 on each when nullable
       (command.options?.length ?? 0) !== (this.options?.length ?? 0) ||
@@ -294,15 +289,14 @@ class ApplicationCommand extends Base {
    * @private
    */
   static _optionEquals(existing, option, enforceOptionOrder = false) {
+    const optionType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
     if (
       option.name !== existing.name ||
-      option.type !== existing.type ||
+      optionType !== existing.type ||
       option.description !== existing.description ||
       option.autocomplete !== existing.autocomplete ||
-      (option.required ??
-        ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)
-          ? undefined
-          : false)) !== existing.required ||
+      (option.required ?? (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(optionType) ? undefined : false)) !==
+        existing.required ||
       option.choices?.length !== existing.choices?.length ||
       option.options?.length !== existing.options?.length ||
       (option.channelTypes ?? option.channel_types)?.length !== existing.channelTypes?.length ||
@@ -331,7 +325,9 @@ class ApplicationCommand extends Base {
     }
 
     if (existing.channelTypes) {
-      const newTypes = option.channelTypes ?? option.channel_types;
+      const newTypes = (option.channelTypes ?? option.channel_types).map(type =>
+        typeof type === 'number' ? ChannelTypes[type] : type,
+      );
       for (const type of existing.channelTypes) {
         if (!newTypes.includes(type)) return false;
       }
@@ -350,17 +346,13 @@ class ApplicationCommand extends Base {
    * @property {string} name The name of the option
    * @property {string} description The description of the option
    * @property {boolean} [required] Whether the option is required
-   * @property {boolean} [autocomplete] Whether the autocomplete interaction is enabled for a
-   * {@link ApplicationCommandOptionType.String}, {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
+   * @property {boolean} [autocomplete] Whether the option is an autocomplete option
    * @property {ApplicationCommandOptionChoice[]} [choices] The choices of the option for the user to pick from
    * @property {ApplicationCommandOption[]} [options] Additional options if this option is a subcommand (group)
    * @property {ChannelType[]} [channelTypes] When the option type is channel,
    * the allowed types of channels that can be selected
-   * @property {number} [minValue] The minimum value for an {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
-   * @property {number} [maxValue] The maximum value for an {@link ApplicationCommandOptionType.Integer} or
-   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [minValue] The minimum value for an `INTEGER` or `NUMBER` option
+   * @property {number} [maxValue] The maximum value for an `INTEGER` or `NUMBER` option
    */
 
   /**
@@ -378,23 +370,24 @@ class ApplicationCommand extends Base {
    * @private
    */
   static transformOption(option, received) {
+    const stringType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
     const channelTypesKey = received ? 'channelTypes' : 'channel_types';
     const minValueKey = received ? 'minValue' : 'min_value';
     const maxValueKey = received ? 'maxValue' : 'max_value';
     return {
-      type: option.type,
+      type: typeof option.type === 'number' && !received ? option.type : ApplicationCommandOptionTypes[option.type],
       name: option.name,
       description: option.description,
       required:
-        option.required ??
-        (option.type === ApplicationCommandOptionType.Subcommand ||
-        option.type === ApplicationCommandOptionType.SubcommandGroup
-          ? undefined
-          : false),
+        option.required ?? (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP' ? undefined : false),
       autocomplete: option.autocomplete,
       choices: option.choices,
       options: option.options?.map(o => this.transformOption(o, received)),
-      [channelTypesKey]: option.channelTypes ?? option.channel_types,
+      [channelTypesKey]: received
+        ? option.channel_types?.map(type => ChannelTypes[type])
+        : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
+          // When transforming to API data, accept API data
+          option.channel_types,
       [minValueKey]: option.minValue ?? option.min_value,
       [maxValueKey]: option.maxValue ?? option.max_value,
     };

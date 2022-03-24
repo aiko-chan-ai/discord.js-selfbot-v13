@@ -29,9 +29,11 @@ class RESTManager {
   }
 
   getAuth() {
-    const token = this.client.token ?? this.client.accessToken;
-    if (token && !this.client.bot) return `${token}`;
-    else if(token && this.client.bot) return `Bot ${token}`;
+    if (this.client.token && this.client.user && this.client.user.bot) {
+      return `Bot ${this.client.token}`;
+    } else if (this.client.token) {
+      return this.client.token;
+    }
     throw new Error('TOKEN_MISSING');
   }
 

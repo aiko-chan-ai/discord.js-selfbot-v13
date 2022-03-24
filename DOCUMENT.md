@@ -164,13 +164,13 @@ Custom Status
 ```js
 const RichPresence = require('discord-rpc-contructor'); // My module :))
 const custom = new RichPresence.CustomStatus()
-	.setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
+	  .setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
     .setDiscordEmoji({ // Set Custom Emoji (Nitro) [Using one]
         name: 'nom',
         id: '737373737373737373',
         animated: false,
     })
-	.setState('Testing') // Name of presence
+	  .setState('Testing') // Name of presence
     .toDiscord();
 client.user.setActivity(custom);
 ```
@@ -238,4 +238,4 @@ And you can change the status 5 times every 20 seconds!
 ## Warning
 - This is a beta version, so there are some bugs.
 - If you use the `Client.destroy()` function, for an account that uses 2FA, it will cause a logout and the Token will no longer be usable.
-- With bot account you can login using `Client.login('Bot Token', true)`, but there will be some missing constructor like MessageEmbed, MessageActionRow, MessageButton, ...
+- Downgrade to Discord.js v13 (Old version is Discord.js v14@dev)

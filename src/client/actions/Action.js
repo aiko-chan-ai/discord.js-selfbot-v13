@@ -1,6 +1,6 @@
 'use strict';
 
-const Partials = require('../../util/Partials');
+const { PartialTypes } = require('../../util/Constants');
 
 /*
 
@@ -43,7 +43,7 @@ class GenericAction {
         },
         this.client.channels,
         id,
-        Partials.Channel,
+        PartialTypes.CHANNEL,
       )
     );
   }
@@ -60,7 +60,7 @@ class GenericAction {
         },
         channel.messages,
         id,
-        Partials.Message,
+        PartialTypes.MESSAGE,
         cache,
       )
     );
@@ -76,17 +76,17 @@ class GenericAction {
       },
       message.reactions,
       id,
-      Partials.Reaction,
+      PartialTypes.REACTION,
     );
   }
 
   getMember(data, guild) {
-    return this.getPayload(data, guild.members, data.user.id, Partials.GuildMember);
+    return this.getPayload(data, guild.members, data.user.id, PartialTypes.GUILD_MEMBER);
   }
 
   getUser(data) {
     const id = data.user_id;
-    return data.user ?? this.getPayload({ id }, this.client.users, id, Partials.User);
+    return data.user ?? this.getPayload({ id }, this.client.users, id, PartialTypes.USER);
   }
 
   getUserFromMember(data) {
@@ -107,7 +107,7 @@ class GenericAction {
       { id, guild_id: data.guild_id ?? guild.id },
       guild.scheduledEvents,
       id,
-      Partials.GuildScheduledEvent,
+      PartialTypes.GUILD_SCHEDULED_EVENT,
     );
   }
 }

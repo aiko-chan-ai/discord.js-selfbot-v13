@@ -1,11 +1,9 @@
 'use strict';
 
 const process = require('node:process');
-const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { Channel } = require('../structures/Channel');
-const { ThreadChannelTypes } = require('../util/Constants');
-const Events = require('../util/Events');
+const { Events, ThreadChannelTypes } = require('../util/Constants');
 
 let cacheWarningEmitted = false;
 
@@ -18,8 +16,8 @@ class ChannelManager extends CachedManager {
     super(client, Channel, iterable);
     const defaultCaching =
       this._cache.constructor.name === 'Collection' ||
-      this._cache.maxSize === undefined ||
-      this._cache.maxSize === Infinity;
+      ((this._cache.maxSize === undefined || this._cache.maxSize === Infinity) &&
+        (this._cache.sweepFilter === undefined || this._cache.sweepFilter.isDefault));
     if (!cacheWarningEmitted && !defaultCaching) {
       cacheWarningEmitted = true;
       process.emitWarning(
@@ -49,7 +47,7 @@ class ChannelManager extends CachedManager {
     const channel = Channel.create(this.client, data, guild, { allowUnknownGuild, fromInteraction });
 
     if (!channel) {
-      this.client.emit(Events.Debug, `Failed to find guild, or unknown type for channel ${data.id} ${data.type}`);
+      this.client.emit(Events.DEBUG, `Failed to find guild, or unknown type for channel ${data.id} ${data.type}`);
       return null;
     }
 

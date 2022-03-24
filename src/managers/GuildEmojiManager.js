@@ -1,9 +1,8 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes, PermissionFlagsBits } = require('discord-api-types/v9');
 const BaseGuildEmojiManager = require('./BaseGuildEmojiManager');
-const { Error, TypeError } = require('../errors');
+const { TypeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
 
 /**
@@ -53,20 +52,20 @@ class GuildEmojiManager extends BaseGuildEmojiManager {
     attachment = await DataResolver.resolveImage(attachment);
     if (!attachment) throw new TypeError('REQ_RESOURCE_TYPE');
 
-    const body = { image: attachment, name };
+    const data = { image: attachment, name };
     if (roles) {
       if (!Array.isArray(roles) && !(roles instanceof Collection)) {
         throw new TypeError('INVALID_TYPE', 'options.roles', 'Array or Collection of Roles or Snowflakes', true);
       }
-      body.roles = [];
+      data.roles = [];
       for (const role of roles.values()) {
         const resolvedRole = this.guild.roles.resolveId(role);
         if (!resolvedRole) throw new TypeError('INVALID_ELEMENT', 'Array or Collection', 'options.roles', role);
-        body.roles.push(resolvedRole);
+        data.roles.push(resolvedRole);
       }
     }
 
-    const emoji = await this.client.api.guilds(this.guild.id).emojis.post({ body, reason });
+    const emoji = await this.client.api.guilds(this.guild.id).emojis.post({ data, reason });
     return this.client.actions.GuildEmojiCreate.handle(this.guild, emoji).emoji;
   }
 
@@ -100,68 +99,6 @@ class GuildEmojiManager extends BaseGuildEmojiManager {
     const emojis = new Collection();
     for (const emoji of data) emojis.set(emoji.id, this._add(emoji, cache));
     return emojis;
-  }
-
-  /**
-   * Deletes an emoji.
-   * @param {EmojiResolvable} emoji The Emoji resolvable to delete
-   * @param {string} [reason] Reason for deleting the emoji
-   * @returns {Promise<void>}
-   */
-  async delete(emoji, reason) {
-    const id = this.resolveId(emoji);
-    if (!id) throw new TypeError('INVALID_TYPE', 'emoji', 'EmojiResolvable', true);
-    await this.client.api.guilds(this.guild.id).emojis(id).delete({ reason });
-  }
-
-  /**
-   * Edits an emoji.
-   * @param {EmojiResolvable} emoji The Emoji resolvable to edit
-   * @param {GuildEmojiEditData} data The new data for the emoji
-   * @param {string} [reason] Reason for editing this emoji
-   * @returns {Promise<GuildEmoji>}
-   */
-  async edit(emoji, data, reason) {
-    const id = this.resolveId(emoji);
-    if (!id) throw new TypeError('INVALID_TYPE', 'emoji', 'EmojiResolvable', true);
-    const roles = data.roles?.map(r => this.guild.roles.resolveId(r));
-    const newData = await this.client.api.guilds(this.guild.id).emojis(id).patch({
-      body: {
-        name: data.name,
-        roles,
-      },
-      reason,
-    })
-    const existing = this.cache.get(id);
-    if (existing) {
-      const clone = existing._clone();
-      clone._patch(newData);
-      return clone;
-    }
-    return this._add(newData);
-  }
-
-  /**
-   * Fetches the author for this emoji
-   * @param {EmojiResolvable} emoji The emoji to fetch the author of
-   * @returns {Promise<User>}
-   */
-  async fetchAuthor(emoji) {
-    emoji = this.resolve(emoji);
-    if (!emoji) throw new TypeError('INVALID_TYPE', 'emoji', 'EmojiResolvable', true);
-    if (emoji.managed) {
-      throw new Error('EMOJI_MANAGED');
-    }
-
-    const { me } = this.guild;
-    if (!me) throw new Error('GUILD_UNCACHED_ME');
-    if (!me.permissions.has(PermissionFlagsBits.ManageEmojisAndStickers)) {
-      throw new Error('MISSING_MANAGE_EMOJIS_AND_STICKERS_PERMISSION', this.guild);
-    }
-
-    const data = await this.client.api.guilds(this.guild.id).emojis(emoji.id).get();
-    emoji._patch(data);
-    return emoji.author;
   }
 }
 

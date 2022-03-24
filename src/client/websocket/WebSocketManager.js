@@ -4,32 +4,28 @@ const EventEmitter = require('node:events');
 const { setImmediate } = require('node:timers');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { Collection } = require('@discordjs/collection');
-const { GatewayCloseCodes, GatewayDispatchEvents, Routes } = require('discord-api-types/v9');
+const { RPCErrorCodes } = require('discord-api-types/v9');
 const WebSocketShard = require('./WebSocketShard');
 const PacketHandlers = require('./handlers');
 const { Error } = require('../../errors');
-const Events = require('../../util/Events');
-const ShardEvents = require('../../util/ShardEvents');
-const Status = require('../../util/Status');
+const { Events, ShardEvents, Status, WSCodes, WSEvents } = require('../../util/Constants');
 
 const BeforeReadyWhitelist = [
-  GatewayDispatchEvents.Ready,
-  GatewayDispatchEvents.Resumed,
-  GatewayDispatchEvents.GuildCreate,
-  GatewayDispatchEvents.GuildDelete,
-  GatewayDispatchEvents.GuildMembersChunk,
-  GatewayDispatchEvents.GuildMemberAdd,
-  GatewayDispatchEvents.GuildMemberRemove,
+  WSEvents.READY,
+  WSEvents.RESUMED,
+  WSEvents.GUILD_CREATE,
+  WSEvents.GUILD_DELETE,
+  WSEvents.GUILD_MEMBERS_CHUNK,
+  WSEvents.GUILD_MEMBER_ADD,
+  WSEvents.GUILD_MEMBER_REMOVE,
 ];
 
-const UNRECOVERABLE_CLOSE_CODES = [
-  GatewayCloseCodes.AuthenticationFailed,
-  GatewayCloseCodes.InvalidShard,
-  GatewayCloseCodes.ShardingRequired,
-  GatewayCloseCodes.InvalidIntents,
-  GatewayCloseCodes.DisallowedIntents,
+const UNRECOVERABLE_CLOSE_CODES = Object.keys(WSCodes).slice(1).map(Number);
+const UNRESUMABLE_CLOSE_CODES = [
+  RPCErrorCodes.UnknownError,
+  RPCErrorCodes.InvalidPermissions,
+  RPCErrorCodes.InvalidClientId,
 ];
-const UNRESUMABLE_CLOSE_CODES = [1000, GatewayCloseCodes.AlreadyAuthenticated, GatewayCloseCodes.InvalidSeq];
 
 /**
  * The WebSocket manager for this client.
@@ -88,7 +84,7 @@ class WebSocketManager extends EventEmitter {
      * The current status of this WebSocketManager
      * @type {Status}
      */
-    this.status = Status.Idle;
+    this.status = Status.IDLE;
 
     /**
      * If this manager was destroyed. It will prevent shards from reconnecting
@@ -122,7 +118,7 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   debug(message, shard) {
-    this.client.emit(Events.Debug, `[WS => ${shard ? `Shard ${shard.id}` : 'Manager'}] ${message}`);
+    this.client.emit(Events.DEBUG, `[WS => ${shard ? `Shard ${shard.id}` : 'Manager'}] ${message}`);
   }
 
   /**
@@ -130,7 +126,7 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   async connect() {
-    const invalidToken = new Error(GatewayCloseCodes[GatewayCloseCodes.AuthenticationFailed]);
+    const invalidToken = new Error(WSCodes[4004]);
     const {
       url: gatewayURL,
       shards: recommendedShards,
@@ -180,20 +176,20 @@ class WebSocketManager extends EventEmitter {
     this.shardQueue.delete(shard);
 
     if (!shard.eventsAttached) {
-      shard.on(ShardEvents.AllReady, unavailableGuilds => {
+      shard.on(ShardEvents.ALL_READY, unavailableGuilds => {
         /**
          * Emitted when a shard turns ready.
          * @event Client#shardReady
          * @param {number} id The shard id that turned ready
          * @param {?Set<Snowflake>} unavailableGuilds Set of unavailable guild ids, if any
          */
-        this.client.emit(Events.ShardReady, shard.id, unavailableGuilds);
+        this.client.emit(Events.SHARD_READY, shard.id, unavailableGuilds);
 
         if (!this.shardQueue.size) this.reconnecting = false;
         this.checkShardsReady();
       });
 
-      shard.on(ShardEvents.Close, event => {
+      shard.on(ShardEvents.CLOSE, event => {
         if (event.code === 1_000 ? this.destroyed : UNRECOVERABLE_CLOSE_CODES.includes(event.code)) {
           /**
            * Emitted when a shard's WebSocket disconnects and will no longer reconnect.
@@ -201,8 +197,8 @@ class WebSocketManager extends EventEmitter {
            * @param {CloseEvent} event The WebSocket close event
            * @param {number} id The shard id that disconnected
            */
-          this.client.emit(Events.ShardDisconnect, event, shard.id);
-          this.debug(GatewayCloseCodes[event.code], shard);
+          this.client.emit(Events.SHARD_DISCONNECT, event, shard.id);
+          this.debug(WSCodes[event.code], shard);
           return;
         }
 
@@ -216,7 +212,7 @@ class WebSocketManager extends EventEmitter {
          * @event Client#shardReconnecting
          * @param {number} id The shard id that is attempting to reconnect
          */
-        this.client.emit(Events.ShardReconnecting, shard.id);
+        this.client.emit(Events.SHARD_RECONNECTING, shard.id);
 
         this.shardQueue.add(shard);
 
@@ -229,14 +225,14 @@ class WebSocketManager extends EventEmitter {
         }
       });
 
-      shard.on(ShardEvents.InvalidSession, () => {
-        this.client.emit(Events.ShardReconnecting, shard.id);
+      shard.on(ShardEvents.INVALID_SESSION, () => {
+        this.client.emit(Events.SHARD_RECONNECTING, shard.id);
       });
 
-      shard.on(ShardEvents.Destroyed, () => {
+      shard.on(ShardEvents.DESTROYED, () => {
         this.debug('Shard was destroyed but no WebSocket connection was present! Reconnecting...', shard);
 
-        this.client.emit(Events.ShardReconnecting, shard.id);
+        this.client.emit(Events.SHARD_RECONNECTING, shard.id);
 
         this.shardQueue.add(shard);
         this.reconnect();
@@ -251,7 +247,7 @@ class WebSocketManager extends EventEmitter {
       await shard.connect();
     } catch (error) {
       if (error?.code && UNRECOVERABLE_CLOSE_CODES.includes(error.code)) {
-        throw new Error(GatewayCloseCodes[error.code]);
+        throw new Error(WSCodes[error.code]);
         // Undefined if session is invalid, error event for regular closes
       } else if (!error || error.code) {
         this.debug('Failed to connect to the gateway, requeueing...', shard);
@@ -276,7 +272,7 @@ class WebSocketManager extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async reconnect() {
-    if (this.reconnecting || this.status !== Status.Ready) return false;
+    if (this.reconnecting || this.status !== Status.READY) return false;
     this.reconnecting = true;
     try {
       await this.createShards();
@@ -289,14 +285,14 @@ class WebSocketManager extends EventEmitter {
         return this.reconnect();
       }
       // If we get an error at this point, it means we cannot reconnect anymore
-      if (this.client.listenerCount(Events.Invalidated)) {
+      if (this.client.listenerCount(Events.INVALIDATED)) {
         /**
          * Emitted when the client's session becomes invalidated.
          * You are expected to handle closing the process gracefully and preventing a boot loop
          * if you are listening to this event.
          * @event Client#invalidated
          */
-        this.client.emit(Events.Invalidated);
+        this.client.emit(Events.INVALIDATED);
         // Destroy just the shards. This means you have to handle the cleanup yourself
         this.destroy();
       } else {
@@ -337,7 +333,7 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   handlePacket(packet, shard) {
-    if (packet && this.status !== Status.Ready) {
+    if (packet && this.status !== Status.READY) {
       if (!BeforeReadyWhitelist.includes(packet.t)) {
         this.packetQueue.push({ packet, shard });
         return false;
@@ -363,8 +359,8 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   checkShardsReady() {
-    if (this.status === Status.Ready) return;
-    if (this.shards.size !== this.totalShards || this.shards.some(s => s.status !== Status.Ready)) {
+    if (this.status === Status.READY) return;
+    if (this.shards.size !== this.totalShards || this.shards.some(s => s.status !== Status.READY)) {
       return;
     }
 
@@ -376,16 +372,16 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   triggerClientReady() {
-    this.status = Status.Ready;
+    this.status = Status.READY;
 
-    this.client.readyTimestamp = Date.now();
+    this.client.readyAt = new Date();
 
     /**
      * Emitted when the client becomes ready to start working.
      * @event Client#ready
      * @param {Client} client The client
      */
-    this.client.emit(Events.ClientReady, this.client);
+    this.client.emit(Events.CLIENT_READY, this.client);
 
     this.handlePacket();
   }

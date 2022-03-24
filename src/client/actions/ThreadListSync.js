@@ -2,7 +2,7 @@
 
 const { Collection } = require('@discordjs/collection');
 const Action = require('./Action');
-const Events = require('../../util/Events');
+const { Events } = require('../../util/Constants');
 
 class ThreadListSyncAction extends Action {
   handle(data) {
@@ -40,7 +40,7 @@ class ThreadListSyncAction extends Action {
      * @event Client#threadListSync
      * @param {Collection<Snowflake, ThreadChannel>} threads The threads that were synced
      */
-    client.emit(Events.ThreadListSync, syncedThreads);
+    client.emit(Events.THREAD_LIST_SYNC, syncedThreads);
 
     return {
       syncedThreads,

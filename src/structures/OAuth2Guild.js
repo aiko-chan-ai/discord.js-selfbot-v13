@@ -1,7 +1,7 @@
 'use strict';
 
 const BaseGuild = require('./BaseGuild');
-const PermissionsBitField = require('../util/PermissionsBitField');
+const Permissions = require('../util/Permissions');
 
 /**
  * A partial guild received when using {@link GuildManager#fetch} to fetch multiple guilds.
@@ -19,9 +19,9 @@ class OAuth2Guild extends BaseGuild {
 
     /**
      * The permissions that the client user has in this guild
-     * @type {Readonly<PermissionsBitField>}
+     * @type {Readonly<Permissions>}
      */
-    this.permissions = new PermissionsBitField(BigInt(data.permissions)).freeze();
+    this.permissions = new Permissions(BigInt(data.permissions)).freeze();
   }
 }
 

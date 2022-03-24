@@ -1,9 +1,9 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { RESTJSONErrorCodes, Routes } = require('discord-api-types/v9');
 const BaseManager = require('./BaseManager');
 const { Error, TypeError } = require('../errors');
+const { ApplicationCommandPermissionTypes, APIErrors } = require('../util/Constants');
 
 /**
  * Manages API methods for permissions of Application Commands.
@@ -43,7 +43,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * The APIRouter path to the commands
    * @param {Snowflake} guildId The guild's id to use in the path,
    * @param {Snowflake} [commandId] The application command's id
-   * @returns {string}
+   * @returns {Object}
    * @private
    */
   permissionsPath(guildId, commandId) {
@@ -137,7 +137,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *  permissions: [
    *    {
    *      id: '876543210987654321',
-   *      type: ApplicationCommandOptionType.User,
+   *      type: 'USER',
    *      permission: false,
    *    },
    * ]})
@@ -150,7 +150,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *     id: '123456789012345678',
    *     permissions: [{
    *       id: '876543210987654321',
-   *       type: ApplicationCommandOptionType.User,
+   *       type: 'USER',
    *       permission: false,
    *     }],
    *   },
@@ -212,7 +212,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * guild.commands.permissions.add({ command: '123456789012345678', permissions: [
    *   {
    *     id: '876543211234567890',
-   *     type: ApplicationCommandPermissionType.Role,
+   *     type: 'ROLE',
    *     permission: false
    *   },
    * ]})
@@ -230,7 +230,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
+      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
     }
 
     const newPermissions = permissions.slice();
@@ -319,7 +319,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
+      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
     }
 
     const permissions = existing.filter(perm => !resolvedIds.includes(perm.id));
@@ -366,7 +366,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
+      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
     }
 
     return existing.some(perm => perm.id === resolvedId);
@@ -387,6 +387,24 @@ class ApplicationCommandPermissionsManager extends BaseManager {
       }
     }
     return { guildId, commandId };
+  }
+
+  /**
+   * Transforms an {@link ApplicationCommandPermissionData} object into something that can be used with the API.
+   * @param {ApplicationCommandPermissionData} permissions The permissions to transform
+   * @param {boolean} [received] Whether these permissions have been received from Discord
+   * @returns {APIApplicationCommandPermissions}
+   * @private
+   */
+  static transformPermissions(permissions, received) {
+    return {
+      id: permissions.id,
+      permission: permissions.permission,
+      type:
+        typeof permissions.type === 'number' && !received
+          ? permissions.type
+          : ApplicationCommandPermissionTypes[permissions.type],
+    };
   }
 }
 

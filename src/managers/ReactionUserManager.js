@@ -1,7 +1,6 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
 const User = require('../structures/User');
@@ -41,11 +40,9 @@ class ReactionUserManager extends CachedManager {
    */
   async fetch({ limit = 100, after } = {}) {
     const message = this.reaction.message;
-    const query = new URLSearchParams({ limit });
-    if (after) {
-      query.set('after', after);
-    }
-    const data = await this.client.api.channels(message.channelId).messages(message.id).reactions(this.reaction.emoji.identifier).get({ query });
+    const data = await this.client.api.channels[message.channelId].messages[message.id].reactions[
+      this.reaction.emoji.identifier
+    ].get({ query: { limit, after } });
     const users = new Collection();
     for (const rawUser of data) {
       const user = this.client.users._add(rawUser);
@@ -64,10 +61,9 @@ class ReactionUserManager extends CachedManager {
     const userId = this.client.users.resolveId(user);
     if (!userId) throw new Error('REACTION_RESOLVE_USER');
     const message = this.reaction.message;
-    await this.client.api.channels[message.channelId]
-      .messages[message.id]
-      .reactions[this.reaction.emoji.identifier][userId === this.client.user.id ? '@me' : userId]
-      .delete();
+    await this.client.api.channels[message.channelId].messages[message.id].reactions[this.reaction.emoji.identifier][
+      userId === this.client.user.id ? '@me' : userId
+    ].delete();
     return this.reaction;
   }
 }

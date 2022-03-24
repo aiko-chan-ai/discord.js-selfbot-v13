@@ -1,8 +1,8 @@
 'use strict';
 
-const { GatewayOpcodes } = require('discord-api-types/v9');
 const { Presence } = require('./Presence');
 const { TypeError } = require('../errors');
+const { ActivityTypes, Opcodes } = require('../util/Constants');
 
 /**
  * Represents the client's presence.
@@ -10,7 +10,7 @@ const { TypeError } = require('../errors');
  */
 class ClientPresence extends Presence {
   constructor(client, data = {}) {
-    super(client, Object.assign(data, { status: data.status || client.setting.status || 'online', user: { id: null } }));
+    super(client, Object.assign(data, { status: data.status ?? 'online', user: { id: null } }));
   }
 
   /**
@@ -22,13 +22,13 @@ class ClientPresence extends Presence {
     const packet = this._parse(presence);
     this._patch(packet);
     if (typeof presence.shardId === 'undefined') {
-      this.client.ws.broadcast({ op: GatewayOpcodes.PresenceUpdate, d: packet });
+      this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
     } else if (Array.isArray(presence.shardId)) {
       for (const shardId of presence.shardId) {
-        this.client.ws.shards.get(shardId).send({ op: GatewayOpcodes.PresenceUpdate, d: packet });
+        this.client.ws.shards.get(shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
       }
     } else {
-      this.client.ws.shards.get(presence.shardId).send({ op: GatewayOpcodes.PresenceUpdate, d: packet });
+      this.client.ws.shards.get(presence.shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
     }
     return this;
   }

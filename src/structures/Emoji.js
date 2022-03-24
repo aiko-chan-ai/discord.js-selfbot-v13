@@ -1,7 +1,16 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
+const process = require('node:process');
 const Base = require('./Base');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
+
+/**
+ * @type {WeakSet<Emoji>}
+ * @private
+ * @internal
+ */
+const deletedEmojis = new WeakSet();
+let deprecationEmittedForDeleted = false;
 
 /**
  * Represents raw emoji data from the API
@@ -38,6 +47,36 @@ class Emoji extends Base {
   }
 
   /**
+   * Whether or not the structure has been deleted
+   * @type {boolean}
+   * @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091
+   */
+  get deleted() {
+    if (!deprecationEmittedForDeleted) {
+      deprecationEmittedForDeleted = true;
+      process.emitWarning(
+        'Emoji#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
+        'DeprecationWarning',
+      );
+    }
+
+    return deletedEmojis.has(this);
+  }
+
+  set deleted(value) {
+    if (!deprecationEmittedForDeleted) {
+      deprecationEmittedForDeleted = true;
+      process.emitWarning(
+        'Emoji#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
+        'DeprecationWarning',
+      );
+    }
+
+    if (value) deletedEmojis.add(this);
+    else deletedEmojis.delete(this);
+  }
+
+  /**
    * The identifier of this emoji, used for message reactions
    * @type {string}
    * @readonly
@@ -53,7 +92,7 @@ class Emoji extends Base {
    * @readonly
    */
   get url() {
-    return this.id && this.client.rest.cdn.emoji(this.id, this.animated ? 'gif' : 'png');
+    return this.id && this.client.rest.cdn.Emoji(this.id, this.animated ? 'gif' : 'png');
   }
 
   /**
@@ -62,7 +101,7 @@ class Emoji extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return this.id && DiscordSnowflake.timestampFrom(this.id);
+    return this.id && SnowflakeUtil.timestampFrom(this.id);
   }
 
   /**
@@ -101,6 +140,7 @@ class Emoji extends Base {
 }
 
 exports.Emoji = Emoji;
+exports.deletedEmojis = deletedEmojis;
 
 /**
  * @external APIEmoji

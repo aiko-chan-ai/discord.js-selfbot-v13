@@ -1,9 +1,9 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
-const { InteractionType, ApplicationCommandType, ComponentType } = require('discord-api-types/v9');
 const Base = require('./Base');
-const PermissionsBitField = require('../util/PermissionsBitField');
+const { InteractionTypes, MessageComponentTypes, ApplicationCommandTypes } = require('../util/Constants');
+const Permissions = require('../util/Permissions');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * Represents an interaction.
@@ -17,7 +17,7 @@ class Interaction extends Base {
      * The interaction's type
      * @type {InteractionType}
      */
-    this.type = data.type;
+    this.type = InteractionTypes[data.type];
 
     /**
      * The interaction's id
@@ -71,16 +71,14 @@ class Interaction extends Base {
 
     /**
      * The permissions of the member, if one exists, in the channel this interaction was executed in
-     * @type {?Readonly<PermissionsBitField>}
+     * @type {?Readonly<Permissions>}
      */
-    this.memberPermissions = data.member?.permissions
-      ? new PermissionsBitField(data.member.permissions).freeze()
-      : null;
+    this.memberPermissions = data.member?.permissions ? new Permissions(data.member.permissions).freeze() : null;
 
     /**
      * The locale of the user who invoked this interaction
      * @type {string}
-     * @see {@link https://discord.com/developers/docs/reference#locales}
+     * @see {@link https://discord.com/developers/docs/dispatch/field-values#predefined-field-values-accepted-locales}
      */
     this.locale = data.locale;
 
@@ -97,7 +95,7 @@ class Interaction extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return DiscordSnowflake.timestampFrom(this.id);
+    return SnowflakeUtil.timestampFrom(this.id);
   }
 
   /**
@@ -152,43 +150,43 @@ class Interaction extends Base {
   }
 
   /**
+   * Indicates whether this interaction is a {@link BaseCommandInteraction}.
+   * @returns {boolean}
+   */
+  isApplicationCommand() {
+    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND;
+  }
+
+  /**
    * Indicates whether this interaction is a {@link CommandInteraction}.
    * @returns {boolean}
    */
   isCommand() {
-    return this.type === InteractionType.ApplicationCommand;
+    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND && typeof this.targetId === 'undefined';
   }
 
   /**
-   * Indicates whether this interaction is a {@link ChatInputCommandInteraction}.
+   * Indicates whether this interaction is a {@link ContextMenuInteraction}
    * @returns {boolean}
    */
-  isChatInputCommand() {
-    return this.isCommand() && this.commandType === ApplicationCommandType.ChatInput;
+  isContextMenu() {
+    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND && typeof this.targetId !== 'undefined';
   }
 
   /**
-   * Indicates whether this interaction is a {@link ContextMenuCommandInteraction}
+   * Indicates whether this interaction is a {@link UserContextMenuInteraction}
    * @returns {boolean}
    */
-  isContextMenuCommand() {
-    return this.isCommand() && [ApplicationCommandType.User, ApplicationCommandType.Message].includes(this.commandType);
+  isUserContextMenu() {
+    return this.isContextMenu() && ApplicationCommandTypes[this.targetType] === ApplicationCommandTypes.USER;
   }
 
   /**
-   * Indicates whether this interaction is a {@link UserContextMenuCommandInteraction}
+   * Indicates whether this interaction is a {@link MessageContextMenuInteraction}
    * @returns {boolean}
    */
-  isUserContextMenuCommand() {
-    return this.isContextMenuCommand() && this.commandType === ApplicationCommandType.User;
-  }
-
-  /**
-   * Indicates whether this interaction is a {@link MessageContextMenuCommandInteraction}
-   * @returns {boolean}
-   */
-  isMessageContextMenuCommand() {
-    return this.isContextMenuCommand() && this.commandType === ApplicationCommandType.Message;
+  isMessageContextMenu() {
+    return this.isContextMenu() && ApplicationCommandTypes[this.targetType] === ApplicationCommandTypes.MESSAGE;
   }
 
   /**
@@ -196,7 +194,7 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isAutocomplete() {
-    return this.type === InteractionType.ApplicationCommandAutocomplete;
+    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE;
   }
 
   /**
@@ -204,7 +202,7 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isMessageComponent() {
-    return this.type === InteractionType.MessageComponent;
+    return InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT;
   }
 
   /**
@@ -212,7 +210,10 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isButton() {
-    return this.isMessageComponent() && this.componentType === ComponentType.Button;
+    return (
+      InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      MessageComponentTypes[this.componentType] === MessageComponentTypes.BUTTON
+    );
   }
 
   /**
@@ -220,15 +221,10 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isSelectMenu() {
-    return this.isMessageComponent() && this.componentType === ComponentType.SelectMenu;
-  }
-
-  /**
-   * Indicates whether this interaction can be replied to.
-   * @returns {boolean}
-   */
-  isRepliable() {
-    return ![InteractionType.Ping, InteractionType.ApplicationCommandAutocomplete].includes(this.type);
+    return (
+      InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      MessageComponentTypes[this.componentType] === MessageComponentTypes.SELECT_MENU
+    );
   }
 }
 

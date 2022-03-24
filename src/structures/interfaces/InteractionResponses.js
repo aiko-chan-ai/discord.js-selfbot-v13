@@ -1,7 +1,8 @@
 'use strict';
 
-const { InteractionResponseType, MessageFlags, Routes } = require('discord-api-types/v9');
 const { Error } = require('../../errors');
+const { InteractionResponseTypes } = require('../../util/Constants');
+const MessageFlags = require('../../util/MessageFlags');
 const MessagePayload = require('../MessagePayload');
 
 /**
@@ -27,8 +28,6 @@ class InteractionResponses {
    * @typedef {BaseMessageOptions} InteractionReplyOptions
    * @property {boolean} [ephemeral] Whether the reply should be ephemeral
    * @property {boolean} [fetchReply] Whether to fetch the reply
-   * @property {MessageFlags} [flags] Which flags to set for the message.
-   * Only `MessageFlags.SuppressEmbeds` and `MessageFlags.Ephemeral` can be set.
    */
 
   /**
@@ -56,14 +55,14 @@ class InteractionResponses {
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     this.ephemeral = options.ephemeral ?? false;
     await this.client.api.interactions(this.id, this.token).callback.post({
-      body: {
-        type: InteractionResponseType.DeferredChannelMessageWithSource,
+      data: {
+        type: InteractionResponseTypes.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          flags: options.ephemeral ? MessageFlags.Ephemeral : undefined,
+          flags: options.ephemeral ? MessageFlags.FLAGS.EPHEMERAL : undefined,
         },
       },
       auth: false,
-    })
+    });
     this.deferred = true;
 
     return options.fetchReply ? this.fetchReply() : undefined;
@@ -81,7 +80,7 @@ class InteractionResponses {
    *   .catch(console.error);
    * @example
    * // Create an ephemeral reply with an embed
-   * const embed = new Embed().setDescription('Pong!');
+   * const embed = new MessageEmbed().setDescription('Pong!');
    *
    * interaction.reply({ embeds: [embed], ephemeral: true })
    *   .then(() => console.log('Reply sent.'))
@@ -95,11 +94,11 @@ class InteractionResponses {
     if (options instanceof MessagePayload) messagePayload = options;
     else messagePayload = MessagePayload.create(this, options);
 
-    const { body: data, files } = await messagePayload.resolveBody().resolveFiles();
+    const { data, files } = await messagePayload.resolveData().resolveFiles();
 
     await this.client.api.interactions(this.id, this.token).callback.post({
-      body: {
-        type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        type: InteractionResponseTypes.CHANNEL_MESSAGE_WITH_SOURCE,
         data,
       },
       files,
@@ -180,8 +179,8 @@ class InteractionResponses {
   async deferUpdate(options = {}) {
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     await this.client.api.interactions(this.id, this.token).callback.post({
-      body: {
-        type: InteractionResponseType.DeferredMessageUpdate,
+      data: {
+        type: InteractionResponseTypes.DEFERRED_MESSAGE_UPDATE,
       },
       auth: false,
     });
@@ -210,11 +209,11 @@ class InteractionResponses {
     if (options instanceof MessagePayload) messagePayload = options;
     else messagePayload = MessagePayload.create(this, options);
 
-    const { body: data, files } = await messagePayload.resolveBody().resolveFiles();
+    const { data, files } = await messagePayload.resolveData().resolveFiles();
 
     await this.client.api.interactions(this.id, this.token).callback.post({
-      body: {
-        type: InteractionResponseType.UpdateMessage,
+      data: {
+        type: InteractionResponseTypes.UPDATE_MESSAGE,
         data,
       },
       files,

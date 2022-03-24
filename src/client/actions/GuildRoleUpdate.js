@@ -1,7 +1,7 @@
 'use strict';
 
 const Action = require('./Action');
-const Events = require('../../util/Events');
+const { Events } = require('../../util/Constants');
 
 class GuildRoleUpdateAction extends Action {
   handle(data) {
@@ -20,7 +20,7 @@ class GuildRoleUpdateAction extends Action {
          * @param {Role} oldRole The role before the update
          * @param {Role} newRole The role after the update
          */
-        client.emit(Events.GuildRoleUpdate, old, role);
+        client.emit(Events.GUILD_ROLE_UPDATE, old, role);
       }
 
       return {

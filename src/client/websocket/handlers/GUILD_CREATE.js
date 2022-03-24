@@ -1,7 +1,6 @@
 'use strict';
 
-const Events = require('../../../util/Events');
-const Status = require('../../../util/Status');
+const { Events, Status } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }, shard) => {
   let guild = client.guilds.cache.get(data.id);
@@ -14,13 +13,13 @@ module.exports = (client, { d: data }, shard) => {
     // A new guild
     data.shardId = shard.id;
     guild = client.guilds._add(data);
-    if (client.ws.status === Status.Ready) {
+    if (client.ws.status === Status.READY) {
       /**
        * Emitted whenever the client joins a guild.
        * @event Client#guildCreate
        * @param {Guild} guild The created guild
        */
-      client.emit(Events.GuildCreate, guild);
+      client.emit(Events.GUILD_CREATE, guild);
     }
   }
 };

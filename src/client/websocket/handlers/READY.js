@@ -36,7 +36,13 @@ Old Version: ${chalk.redBright(
 
 module.exports = (client, { d: data }, shard) => {
 	// console.log(data);
-	if (client.options.checkUpdate) checkUpdate();
+	if (client.options.checkUpdate) {
+		try {
+			checkUpdate()
+		} catch (e) {
+			console.log(e)
+		}
+	};
 	client.session_id = data.session_id;
 	if (client.user) {
 		client.user._patch(data.user);
@@ -46,7 +52,7 @@ module.exports = (client, { d: data }, shard) => {
 		client.users.cache.set(client.user.id, client.user);
 	}
 
-	client.user.setAFK(true);
+	client.user.setAFK(false);
 
 	client.setting.fetch().then(async (res) => {
 		if (!client.options.readyStatus) throw 'no';

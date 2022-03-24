@@ -20,6 +20,12 @@ class VoiceRegion {
     this.name = data.name;
 
     /**
+     * Whether the region is VIP-only
+     * @type {boolean}
+     */
+    this.vip = data.vip;
+
+    /**
      * Whether the region is deprecated
      * @type {boolean}
      */

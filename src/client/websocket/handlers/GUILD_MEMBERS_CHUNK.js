@@ -1,7 +1,7 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const Events = require('../../../util/Events');
+const { Events } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
   const guild = client.guilds.cache.get(data.guild_id);
@@ -28,7 +28,7 @@ module.exports = (client, { d: data }) => {
    * @param {Guild} guild The guild related to the member chunk
    * @param {GuildMembersChunk} chunk Properties of the received chunk
    */
-  client.emit(Events.GuildMembersChunk, members, guild, {
+  client.emit(Events.GUILD_MEMBERS_CHUNK, members, guild, {
     count: data.chunk_count,
     index: data.chunk_index,
     nonce: data.nonce,

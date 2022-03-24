@@ -1,6 +1,5 @@
 'use strict';
 
-const { Routes } = require('discord-api-types/v9');
 const GuildEmoji = require('./GuildEmoji');
 const ReactionEmoji = require('./ReactionEmoji');
 const ReactionUserManager = require('../managers/ReactionUserManager');
@@ -57,7 +56,11 @@ class MessageReaction {
    * @returns {Promise<MessageReaction>}
    */
   async remove() {
-    await this.client.api.channels(this.message.channelId).messages(this.message.id).reactions(this._emoji.identifier).delete()
+    await this.client.api
+      .channels(this.message.channelId)
+      .messages(this.message.id)
+      .reactions(this._emoji.identifier)
+      .delete();
     return this;
   }
 
@@ -111,7 +114,7 @@ class MessageReaction {
     if (this.partial) return;
     this.users.cache.set(user.id, user);
     if (!this.me || user.id !== this.message.client.user.id || this.count === 0) this.count++;
-    this.me ||= user.id === this.message.client.user.id;
+    this.me ??= user.id === this.message.client.user.id;
   }
 
   _remove(user) {

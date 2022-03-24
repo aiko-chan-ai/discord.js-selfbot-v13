@@ -1,12 +1,12 @@
 'use strict';
 
 const Action = require('./Action');
-const Events = require('../../util/Events');
+const { Events } = require('../../util/Constants');
 
 class MessageReactionRemoveEmoji extends Action {
   handle(data) {
     const channel = this.getChannel(data);
-    if (!channel?.isTextBased()) return false;
+    if (!channel || !channel.isText()) return false;
 
     const message = this.getMessage(data, channel);
     if (!message) return false;
@@ -20,7 +20,7 @@ class MessageReactionRemoveEmoji extends Action {
      * @event Client#messageReactionRemoveEmoji
      * @param {MessageReaction} reaction The reaction that was removed
      */
-    this.client.emit(Events.MessageReactionRemoveEmoji, reaction);
+    this.client.emit(Events.MESSAGE_REACTION_REMOVE_EMOJI, reaction);
     return { reaction };
   }
 }

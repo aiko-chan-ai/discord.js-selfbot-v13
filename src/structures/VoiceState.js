@@ -1,6 +1,5 @@
 'use strict';
 
-const { ChannelType, Routes } = require('discord-api-types/v9');
 const Base = require('./Base');
 const { Error, TypeError } = require('../errors');
 
@@ -89,7 +88,7 @@ class VoiceState extends Base {
     if ('self_video' in data) {
       /**
        * Whether this member is streaming using "Screen Share"
-       * @type {?boolean}
+       * @type {boolean}
        */
       this.streaming = data.self_stream ?? false;
     } else {
@@ -109,11 +108,9 @@ class VoiceState extends Base {
     if ('suppress' in data) {
       /**
        * Whether this member is suppressed from speaking. This property is specific to stage channels only.
-       * @type {?boolean}
+       * @type {boolean}
        */
       this.suppress = data.suppress;
-    } else {
-      this.suppress ??= null;
     }
 
     if ('request_to_speak_timestamp' in data) {
@@ -121,7 +118,7 @@ class VoiceState extends Base {
        * The time at which the member requested to speak. This property is specific to stage channels only.
        * @type {?number}
        */
-      this.requestToSpeakTimestamp = Date.parse(data.request_to_speak_timestamp);
+      this.requestToSpeakTimestamp = new Date(data.request_to_speak_timestamp).getTime();
     } else {
       this.requestToSpeakTimestamp ??= null;
     }
@@ -218,16 +215,16 @@ class VoiceState extends Base {
    * @returns {Promise<void>}
    */
   async setRequestToSpeak(request = true) {
-    if (this.channel?.type !== ChannelType.GuildStageVoice) throw new Error('VOICE_NOT_STAGE_CHANNEL');
+    if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
 
     if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
 
     await this.client.api.guilds(this.guild.id, 'voice-states', '@me').patch({
-      body: {
+      data: {
         channel_id: this.channelId,
         request_to_speak_timestamp: request ? new Date().toISOString() : null,
-      }
-    })
+      },
+    });
   }
 
   /**
@@ -250,15 +247,15 @@ class VoiceState extends Base {
   async setSuppressed(suppressed = true) {
     if (typeof suppressed !== 'boolean') throw new TypeError('VOICE_STATE_INVALID_TYPE', 'suppressed');
 
-    if (this.channel?.type !== ChannelType.GuildStageVoice) throw new Error('VOICE_NOT_STAGE_CHANNEL');
+    if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
 
     const target = this.client.user.id === this.id ? '@me' : this.id;
 
     await this.client.api.guilds(this.guild.id, 'voice-states', target).patch({
-      body: {
+      data: {
         channel_id: this.channelId,
         suppress: suppressed,
-      }
+      },
     });
   }
 

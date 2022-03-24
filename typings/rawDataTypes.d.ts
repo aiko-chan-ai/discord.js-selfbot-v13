@@ -75,7 +75,7 @@ import {
   RESTPostAPIInteractionFollowupJSONBody,
   RESTPostAPIWebhookWithTokenJSONBody,
   Snowflake,
-  APIGuildScheduledEvent
+  APIGuildScheduledEvent,
 } from 'discord-api-types/v9';
 import { GuildChannel, Guild, PermissionOverwrites } from '.';
 

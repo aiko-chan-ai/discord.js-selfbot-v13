@@ -6,7 +6,6 @@ const Base = require('./Base');
 /**
  * Represents the data about a public {@link StageInstance} in an {@link Invite}.
  * @extends {Base}
- * @deprecated
  */
 class InviteStageInstance extends Base {
   constructor(client, data, channelId, guildId) {

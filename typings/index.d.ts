@@ -144,6 +144,7 @@ import {
 } from './rawDataTypes';
 
 //#region Classes
+
 export class Activity {
   private constructor(presence: Presence, data?: RawActivityData);
   public applicationId: Snowflake | null;
@@ -537,13 +538,15 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private actions: unknown;
   private presence: ClientPresence;
   private _eval(script: string): unknown;
+  private _validateOptions(options: ClientOptions): void;
 
   public application: If<Ready, ClientApplication>;
-  public bot: Boolean;
-  public channels: ChannelManager;
   // Added
   public setting: ClientUserSettingManager;
+  public friends: FriendsManager;
+  public blocked: BlockedManager;
   // End
+  public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;
   public options: ClientOptions;
@@ -552,12 +555,9 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sweepers: Sweepers;
   public shard: ShardClientUtil | null;
   public token: If<Ready, string, string | null>;
-  public session_id: String;
   public uptime: If<Ready, number>;
   public user: If<Ready, ClientUser>;
   public users: UserManager;
-  public friends: FriendsManager;
-  public blocked: BlockedManager;
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
   public destroy(): void;
@@ -569,7 +569,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public login(token?: string, bot?: Boolean): Promise<string>;
+  public generateInvite(options?: InviteGenerationOptions): string;
+  public login(token?: string): Promise<string>;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
@@ -1127,6 +1128,10 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public deleteDM(): Promise<DMChannel>;
   public displayAvatarURL(options?: ImageURLOptions): string;
   public edit(data: GuildMemberEditData, reason?: string): Promise<GuildMember>;
+  public isCommunicationDisabled(): this is GuildMember & {
+    communicationDisabledUntilTimestamp: number;
+    readonly communicationDisabledUntil: Date;
+  };
   public kick(reason?: string): Promise<GuildMember>;
   public permissionsIn(channel: GuildChannelResolvable): Readonly<Permissions>;
   public setNickname(nickname: string | null, reason?: string): Promise<GuildMember>;
@@ -1330,6 +1335,8 @@ export class Interaction<Cached extends CacheType = CacheType> extends Base {
   public user: User;
   public version: number;
   public memberPermissions: CacheTypeReducer<Cached, Readonly<Permissions>>;
+  public locale: string;
+  public guildLocale: CacheTypeReducer<Cached, string, string, string>;
   public inGuild(): this is Interaction<'present'>;
   public inCachedGuild(): this is Interaction<'cached'>;
   public inRawGuild(): this is Interaction<'raw'>;
@@ -1694,11 +1701,13 @@ export class MessageEmbed {
   public addField(name: string, value: string, inline?: boolean): this;
   public addFields(...fields: EmbedFieldData[] | EmbedFieldData[][]): this;
   public setFields(...fields: EmbedFieldData[] | EmbedFieldData[][]): this;
-  public setAuthor(options: string | EmbedAuthorData | null): this;
-  /** @deprecated Supply a lone object of interface {@link EmbedAuthorData} instead of more parameters. */
+  public setAuthor(options: EmbedAuthorData | null): this;
+  /** @deprecated Supply a lone object of interface {@link EmbedAuthorData} instead. */
   public setAuthor(name: string, iconURL?: string, url?: string): this;
   public setColor(color: ColorResolvable): this;
   public setDescription(description: string): this;
+  public setFooter(options: EmbedFooterData | null): this;
+  /** @deprecated Supply a lone object of interface {@link EmbedFooterData} instead. */
   public setFooter(text: string, iconURL?: string): this;
   public setImage(url: string): this;
   public setThumbnail(url: string): this;
@@ -1856,7 +1865,7 @@ export class Permissions extends BitField<PermissionString, bigint> {
   public has(permission: PermissionResolvable, checkAdmin?: boolean): boolean;
   public missing(bits: BitFieldResolvable<PermissionString, bigint>, checkAdmin?: boolean): PermissionString[];
   public serialize(checkAdmin?: boolean): Record<PermissionString, boolean>;
-  public toArray(checkAdmin?: boolean): PermissionString[];
+  public toArray(): PermissionString[];
 
   public static ALL: bigint;
   public static DEFAULT: bigint;
@@ -2389,12 +2398,6 @@ export class User extends PartialTextBasedChannel(Base) {
   public system: boolean;
   public readonly tag: string;
   public username: string;
-  public readonly friended: Boolean;
-  public readonly blocked: Boolean;
-  public readonly connectedAccounts: Readonly<Array>;
-  public readonly premiumSince: number | null;
-  public readonly premiumGuildSince: number | null;
-  public readonly mutualGuilds: Collection<Snowflake, { id: GuildId, nick: nickName_in_guild}>;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -2433,6 +2436,7 @@ export class Util extends null {
   public static cleanContent(str: string, channel: TextBasedChannel): string;
   /** @deprecated Use {@link MessageOptions.allowedMentions} to control mentions in a message instead. */
   public static removeMentions(str: string): string;
+  private static _removeMentions(str: string): string;
   public static cloneObject(obj: unknown): unknown;
   public static discordSort<K, V extends { rawPosition: number; id: Snowflake }>(
     collection: Collection<K, V>,
@@ -4049,6 +4053,7 @@ export interface ClientOptions {
   userAgentSuffix?: string[];
   presence?: PresenceData;
   intents: BitFieldResolvable<IntentsString, number>;
+  waitGuildTimeout?: number;
   sweepers?: SweeperOptions;
   ws?: WebSocketOptions;
   http?: HTTPOptions;
@@ -4354,6 +4359,11 @@ export interface EmbedFieldData {
   name: string;
   value: string;
   inline?: boolean;
+}
+
+export interface EmbedFooterData {
+  text: string;
+  iconURL?: string;
 }
 
 export type EmojiIdentifierResolvable = string | EmojiResolvable;
@@ -5407,7 +5417,6 @@ export type PresenceStatus = PresenceStatusData | 'offline';
 
 export type PrivacyLevel = keyof typeof PrivacyLevels;
 
-export type LocaleStrings = "DANISH" | "GERMAN" | "ENGLISH_UK" | "ENGLISH_US" | "SPANISH" | "FRENCH" | "CROATIAN" | "ITALIAN" | "LITHUANIAN" | "HUNGARIAN" | "DUTCH" | "NORWEGIAN" | "POLISH" | "BRAZILIAN_PORTUGUESE" | "ROMANIA_ROMANIAN" | "FINNISH" | "SWEDISH" | "VIETNAMESE" | "TURKISH" | "CZECH" | "GREEK" | "BULGARIAN" | "RUSSIAN" | "UKRAINIAN" | "HINDI" | "THAI" | "CHINA_CHINESE" | "JAPANESE" | "TAIWAN_CHINESE" | "KOREAN"
 export interface RateLimitData {
   timeout: number;
   limit: number;

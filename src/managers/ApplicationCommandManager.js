@@ -1,11 +1,11 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes } = require('discord-api-types/v9');
 const ApplicationCommandPermissionsManager = require('./ApplicationCommandPermissionsManager');
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const ApplicationCommand = require('../structures/ApplicationCommand');
+const { ApplicationCommandTypes } = require('../util/Constants');
 
 /**
  * Manages API methods for application commands and stores their cache.
@@ -37,12 +37,12 @@ class ApplicationCommandManager extends CachedManager {
    * @param {Snowflake} [options.id] The application command's id
    * @param {Snowflake} [options.guildId] The guild's id to use in the path,
    * ignored when using a {@link GuildApplicationCommandManager}
-   * @returns {string}
+   * @returns {Object}
    * @private
    */
   commandPath({ id, guildId } = {}) {
     let path = this.client.api.applications(this.client.application.id);
-    if(this.guild ?? guildId) path = path.guilds(this.guild?.id ?? guildId);
+    if (this.guild ?? guildId) path = path.guilds(this.guild?.id ?? guildId);
     return id ? path.commands(id) : path.commands;
   }
 
@@ -169,7 +169,7 @@ class ApplicationCommandManager extends CachedManager {
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
     const patched = await this.commandPath({ id, guildId }).patch({
-      body: this.constructor.transformCommand(data),
+      data: this.constructor.transformCommand(data),
     });
     return this._add(patched, true, guildId);
   }
@@ -207,7 +207,7 @@ class ApplicationCommandManager extends CachedManager {
     return {
       name: command.name,
       description: command.description,
-      type: command.type,
+      type: typeof command.type === 'number' ? command.type : ApplicationCommandTypes[command.type],
       options: command.options?.map(o => ApplicationCommand.transformOption(o)),
       default_permission: command.defaultPermission ?? command.default_permission,
     };

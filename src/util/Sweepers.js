@@ -1,8 +1,7 @@
 'use strict';
 
-const { setInterval, clearInterval } = require('node:timers');
-const { ThreadChannelTypes, SweeperKeys } = require('./Constants');
-const Events = require('./Events');
+const { setInterval } = require('node:timers');
+const { Events, ThreadChannelTypes, SweeperKeys } = require('./Constants');
 const { TypeError } = require('../errors/DJSError.js');
 
 /**
@@ -72,7 +71,7 @@ class Sweepers {
     const globalCommands = this.client.application?.commands.cache.sweep(filter) ?? 0;
 
     this.client.emit(
-      Events.CacheSweep,
+      Events.CACHE_SWEEP,
       `Swept ${globalCommands} global application commands and ${guildCommands} guild commands in ${guilds} guilds.`,
     );
     return guildCommands + globalCommands;
@@ -137,12 +136,12 @@ class Sweepers {
     let messages = 0;
 
     for (const channel of this.client.channels.cache.values()) {
-      if (!channel.isTextBased()) continue;
+      if (!channel.isText()) continue;
 
       channels++;
       messages += channel.messages.cache.sweep(filter);
     }
-    this.client.emit(Events.CacheSweep, `Swept ${messages} messages in ${channels} text-based channels.`);
+    this.client.emit(Events.CACHE_SWEEP, `Swept ${messages} messages in ${channels} text-based channels.`);
     return messages;
   }
 
@@ -169,7 +168,7 @@ class Sweepers {
     let reactions = 0;
 
     for (const channel of this.client.channels.cache.values()) {
-      if (!channel.isTextBased()) continue;
+      if (!channel.isText()) continue;
       channels++;
 
       for (const message of channel.messages.cache.values()) {
@@ -178,7 +177,7 @@ class Sweepers {
       }
     }
     this.client.emit(
-      Events.CacheSweep,
+      Events.CACHE_SWEEP,
       `Swept ${reactions} reactions on ${messages} messages in ${channels} text-based channels.`,
     );
     return reactions;
@@ -191,15 +190,6 @@ class Sweepers {
    */
   sweepStageInstances(filter) {
     return this._sweepGuildDirectProp('stageInstances', filter, { outputName: 'stage instances' }).items;
-  }
-
-  /**
-   * Sweeps all guild stickers and removes the ones which are indicated by the filter.
-   * @param {Function} filter The function used to determine which stickers will be removed from the caches.
-   * @returns {number} Amount of stickers that were removed from the caches
-   */
-  sweepStickers(filter) {
-    return this._sweepGuildDirectProp('stickers', filter).items;
   }
 
   /**
@@ -220,7 +210,7 @@ class Sweepers {
       threads++;
       members += channel.members.cache.sweep(filter);
     }
-    this.client.emit(Events.CacheSweep, `Swept ${members} thread members in ${threads} threads.`);
+    this.client.emit(Events.CACHE_SWEEP, `Swept ${members} thread members in ${threads} threads.`);
     return members;
   }
 
@@ -251,7 +241,7 @@ class Sweepers {
         this.client.channels._remove(key);
       }
     }
-    this.client.emit(Events.CacheSweep, `Swept ${threads} threads.`);
+    this.client.emit(Events.CACHE_SWEEP, `Swept ${threads} threads.`);
     return threads;
   }
 
@@ -267,7 +257,7 @@ class Sweepers {
 
     const users = this.client.users.cache.sweep(filter);
 
-    this.client.emit(Events.CacheSweep, `Swept ${users} users.`);
+    this.client.emit(Events.CACHE_SWEEP, `Swept ${users} users.`);
 
     return users;
   }
@@ -405,7 +395,7 @@ class Sweepers {
     }
 
     if (emit) {
-      this.client.emit(Events.CacheSweep, `Swept ${items} ${outputName ?? key} in ${guilds} guilds.`);
+      this.client.emit(Events.CACHE_SWEEP, `Swept ${items} ${outputName ?? key} in ${guilds} guilds.`);
     }
 
     return { guilds, items };

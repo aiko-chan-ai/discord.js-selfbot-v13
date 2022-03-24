@@ -3,8 +3,8 @@
 const Team = require('./Team');
 const { Error } = require('../errors/DJSError');
 const Application = require('./interfaces/Application');
-const ApplicationFlagsBitField = require('../util/ApplicationFlagsBitField');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
+const ApplicationFlags = require('../util/ApplicationFlags');
 
 /**
  * Represents a Client OAuth2 Application.
@@ -24,14 +24,12 @@ class ClientApplication extends Application {
   _patch(data) {
     super._patch(data);
 
-    if(!data) return;
-
     if ('flags' in data) {
       /**
        * The flags this application has
-       * @type {ApplicationFlagsBitField}
+       * @type {ApplicationFlags}
        */
-      this.flags = new ApplicationFlagsBitField(data.flags).freeze();
+      this.flags = new ApplicationFlags(data.flags).freeze();
     }
 
     if ('cover_image' in data) {

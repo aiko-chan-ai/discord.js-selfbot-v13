@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseGuild = require('./BaseGuild');
+const { VerificationLevels, NSFWLevels } = require('../util/Constants');
 
 /**
  * Bundles common attributes and methods between {@link Guild} and {@link InviteGuild}
@@ -43,9 +44,9 @@ class AnonymousGuild extends BaseGuild {
     if ('verification_level' in data) {
       /**
        * The verification level of the guild
-       * @type {GuildVerificationLevel}
+       * @type {VerificationLevel}
        */
-      this.verificationLevel = data.verification_level;
+      this.verificationLevel = VerificationLevels[data.verification_level];
     }
 
     if ('vanity_url_code' in data) {
@@ -59,36 +60,28 @@ class AnonymousGuild extends BaseGuild {
     if ('nsfw_level' in data) {
       /**
        * The NSFW level of this guild
-       * @type {GuildNSFWLevel}
+       * @type {NSFWLevel}
        */
-      this.nsfwLevel = data.nsfw_level;
-    }
-
-    if ('premium_subscription_count' in data) {
-      /**
-       * The total number of boosts for this server
-       * @type {?number}
-       */
-      this.premiumSubscriptionCount = data.premium_subscription_count;
+      this.nsfwLevel = NSFWLevels[data.nsfw_level];
     }
   }
 
   /**
    * The URL to this guild's banner.
-   * @param {ImageURLOptions} [options={}] Options for the image URL
+   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
    */
-  bannerURL(options = {}) {
-    return this.banner && this.client.rest.cdn.banner(this.id, this.banner, options);
+  bannerURL({ format, size } = {}) {
+    return this.banner && this.client.rest.cdn.Banner(this.id, this.banner, format, size);
   }
 
   /**
    * The URL to this guild's invite splash image.
-   * @param {ImageURLOptions} [options={}] Options for the image URL
+   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
    */
-  splashURL(options = {}) {
-    return this.splash && this.client.rest.cdn.splash(this.id, this.splash, options);
+  splashURL({ format, size } = {}) {
+    return this.splash && this.client.rest.cdn.Splash(this.id, this.splash, format, size);
   }
 }
 

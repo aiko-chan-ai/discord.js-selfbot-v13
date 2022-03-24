@@ -1,8 +1,17 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
-const { Routes, StickerFormatType } = require('discord-api-types/v9');
+const process = require('node:process');
 const Base = require('./Base');
+const { StickerFormatTypes, StickerTypes } = require('../util/Constants');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
+
+/**
+ * @type {WeakSet<StageInstance>}
+ * @private
+ * @internal
+ */
+const deletedStickers = new WeakSet();
+let deprecationEmittedForDeleted = false;
 
 /**
  * Represents a Sticker.
@@ -37,7 +46,7 @@ class Sticker extends Base {
        * The type of the sticker
        * @type {?StickerType}
        */
-      this.type = sticker.type;
+      this.type = StickerTypes[sticker.type];
     } else {
       this.type ??= null;
     }
@@ -47,7 +56,7 @@ class Sticker extends Base {
        * The format of the sticker
        * @type {StickerFormatType}
        */
-      this.format = sticker.format_type;
+      this.format = StickerFormatTypes[sticker.format_type];
     }
 
     if ('name' in sticker) {
@@ -125,7 +134,7 @@ class Sticker extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return DiscordSnowflake.timestampFrom(this.id);
+    return SnowflakeUtil.timestampFrom(this.id);
   }
 
   /**
@@ -135,6 +144,36 @@ class Sticker extends Base {
    */
   get createdAt() {
     return new Date(this.createdTimestamp);
+  }
+
+  /**
+   * Whether or not the sticker has been deleted
+   * @type {boolean}
+   * @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091
+   */
+  get deleted() {
+    if (!deprecationEmittedForDeleted) {
+      deprecationEmittedForDeleted = true;
+      process.emitWarning(
+        'Sticker#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
+        'DeprecationWarning',
+      );
+    }
+
+    return deletedStickers.has(this);
+  }
+
+  set deleted(value) {
+    if (!deprecationEmittedForDeleted) {
+      deprecationEmittedForDeleted = true;
+      process.emitWarning(
+        'Sticker#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
+        'DeprecationWarning',
+      );
+    }
+
+    if (value) deletedStickers.add(this);
+    else deletedStickers.delete(this);
   }
 
   /**
@@ -157,13 +196,11 @@ class Sticker extends Base {
 
   /**
    * A link to the sticker
-   * <info>If the sticker's format is {@link StickerFormatType.Lottie}, it returns
-   * the URL of the Lottie JSON file.</info>
+   * <info>If the sticker's format is LOTTIE, it returns the URL of the Lottie JSON file.</info>
    * @type {string}
-   * @readonly
    */
   get url() {
-    return this.client.rest.cdn.sticker(this.id, this.format === StickerFormatType.Lottie ? 'json' : 'png');
+    return this.client.rest.cdn.Sticker(this.id, this.format);
   }
 
   /**
@@ -191,7 +228,10 @@ class Sticker extends Base {
   async fetchUser() {
     if (this.partial) await this.fetch();
     if (!this.guildId) throw new Error('NOT_GUILD_STICKER');
-    return this.guild.stickers.fetchUser(this);
+
+    const data = await this.client.api.guilds(this.guildId).stickers(this.id).get();
+    this._patch(data);
+    return this.user;
   }
 
   /**
@@ -264,6 +304,7 @@ class Sticker extends Base {
 }
 
 exports.Sticker = Sticker;
+exports.deletedStickers = deletedStickers;
 
 /**
  * @external APISticker

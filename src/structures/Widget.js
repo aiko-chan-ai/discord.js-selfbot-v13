@@ -1,7 +1,6 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Routes } = require('discord-api-types/v9');
 const Base = require('./Base');
 const WidgetMember = require('./WidgetMember');
 

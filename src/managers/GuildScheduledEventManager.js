@@ -1,11 +1,10 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { GuildScheduledEventEntityType, Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { TypeError, Error } = require('../errors');
 const { GuildScheduledEvent } = require('../structures/GuildScheduledEvent');
-const DataResolver = require('../util/DataResolver');
+const { PrivacyLevels, GuildScheduledEventEntityTypes, GuildScheduledEventStatuses } = require('../util/Constants');
 
 /**
  * Manages API methods for GuildScheduledEvents and stores their cache.
@@ -41,17 +40,15 @@ class GuildScheduledEventManager extends CachedManager {
    * @property {string} name The name of the guild scheduled event
    * @property {DateResolvable} scheduledStartTime The time to schedule the event at
    * @property {DateResolvable} [scheduledEndTime] The time to end the event at
-   * <warn>This is required if `entityType` is {@link GuildScheduledEventEntityType.External}</warn>
+   * <warn>This is required if `entityType` is 'EXTERNAL'</warn>
    * @property {PrivacyLevel|number} privacyLevel The privacy level of the guild scheduled event
    * @property {GuildScheduledEventEntityType|number} entityType The scheduled entity type of the event
    * @property {string} [description] The description of the guild scheduled event
    * @property {GuildVoiceChannelResolvable} [channel] The channel of the guild scheduled event
-   * <warn>This is required if `entityType` is {@link GuildScheduledEventEntityType.StageInstance} or
-   * {@link GuildScheduledEventEntityType.Voice}</warn>
+   * <warn>This is required if `entityType` is 'STAGE_INSTANCE' or `VOICE`</warn>
    * @property {GuildScheduledEventEntityMetadataOptions} [entityMetadata] The entity metadata of the
    * guild scheduled event
-   * <warn>This is required if `entityType` is {@link GuildScheduledEventEntityType.External}</warn>
-   * @property {?(BufferResolvable|Base64Resolvable)} [image] The cover image of the guild scheduled event
+   * <warn>This is required if `entityType` is 'EXTERNAL'</warn>
    * @property {string} [reason] The reason for creating the guild scheduled event
    */
 
@@ -59,7 +56,7 @@ class GuildScheduledEventManager extends CachedManager {
    * Options used to set entity metadata of a guild scheduled event.
    * @typedef {Object} GuildScheduledEventEntityMetadataOptions
    * @property {string} [location] The location of the guild scheduled event
-   * <warn>This is required if `entityType` is {@link GuildScheduledEventEntityType.External}</warn>
+   * <warn>This is required if `entityType` is 'EXTERNAL'</warn>
    */
 
   /**
@@ -79,11 +76,13 @@ class GuildScheduledEventManager extends CachedManager {
       scheduledEndTime,
       entityMetadata,
       reason,
-      image,
     } = options;
 
+    if (typeof privacyLevel === 'string') privacyLevel = PrivacyLevels[privacyLevel];
+    if (typeof entityType === 'string') entityType = GuildScheduledEventEntityTypes[entityType];
+
     let entity_metadata, channel_id;
-    if (entityType === GuildScheduledEventEntityType.External) {
+    if (entityType === GuildScheduledEventEntityTypes.EXTERNAL) {
       channel_id = typeof channel === 'undefined' ? channel : null;
       entity_metadata = { location: entityMetadata?.location };
     } else {
@@ -93,7 +92,7 @@ class GuildScheduledEventManager extends CachedManager {
     }
 
     const data = await this.client.api.guilds(this.guild.id, 'scheduled-events').post({
-      body: {
+      data: {
         channel_id,
         name,
         privacy_level: privacyLevel,
@@ -102,10 +101,9 @@ class GuildScheduledEventManager extends CachedManager {
         description,
         entity_type: entityType,
         entity_metadata,
-        image: image && (await DataResolver.resolveImage(image)),
       },
       reason,
-    })
+    });
 
     return this._add(data);
   }
@@ -140,15 +138,15 @@ class GuildScheduledEventManager extends CachedManager {
         if (existing) return existing;
       }
 
-      const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', id).get({
-        query: new URLSearchParams({ with_user_count: options.withUserCount ?? true }),
-      })
+      const data = await this.client.api
+        .guilds(this.guild.id, 'scheduled-events', id)
+        .get({ query: { with_user_count: options.withUserCount ?? true } });
       return this._add(data, options.cache);
     }
 
-    const data = await this.client.api.guilds(this.guild.id, 'scheduled-events').get({
-      query: new URLSearchParams({ with_user_count: options.withUserCount ?? true }),
-    })
+    const data = await this.client.api
+      .guilds(this.guild.id, 'scheduled-events')
+      .get({ query: { with_user_count: options.withUserCount ?? true } });
 
     return data.reduce(
       (coll, rawGuildScheduledEventData) =>
@@ -173,9 +171,7 @@ class GuildScheduledEventManager extends CachedManager {
    * @property {GuildScheduledEventStatus|number} [status] The status of the guild scheduled event
    * @property {GuildScheduledEventEntityMetadataOptions} [entityMetadata] The entity metadata of the
    * guild scheduled event
-   * <warn>This can be modified only if `entityType` of the `GuildScheduledEvent` to be edited is
-   * {@link GuildScheduledEventEntityType.External}</warn>
-   * @property {?(BufferResolvable|Base64Resolvable)} [image] The cover image of the guild scheduled event
+   * <warn>This can be modified only if `entityType` of the `GuildScheduledEvent` to be edited is 'EXTERNAL'</warn>
    * @property {string} [reason] The reason for editing the guild scheduled event
    */
 
@@ -201,8 +197,11 @@ class GuildScheduledEventManager extends CachedManager {
       scheduledEndTime,
       entityMetadata,
       reason,
-      image,
     } = options;
+
+    if (typeof privacyLevel === 'string') privacyLevel = PrivacyLevels[privacyLevel];
+    if (typeof entityType === 'string') entityType = GuildScheduledEventEntityTypes[entityType];
+    if (typeof status === 'string') status = GuildScheduledEventStatuses[status];
 
     let entity_metadata;
     if (entityMetadata) {
@@ -212,7 +211,7 @@ class GuildScheduledEventManager extends CachedManager {
     }
 
     const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).patch({
-      body: {
+      data: {
         channel_id: typeof channel === 'undefined' ? channel : this.guild.channels.resolveId(channel),
         name,
         privacy_level: privacyLevel,
@@ -221,11 +220,10 @@ class GuildScheduledEventManager extends CachedManager {
         description,
         entity_type: entityType,
         status,
-        image: image && (await DataResolver.resolveImage(image)),
         entity_metadata,
       },
       reason,
-    })
+    });
 
     return this._add(data);
   }
@@ -272,26 +270,8 @@ class GuildScheduledEventManager extends CachedManager {
 
     let { limit, withMember, before, after } = options;
 
-    const query = new URLSearchParams();
-
-    if (limit) {
-      query.set('limit', limit);
-    }
-
-    if (typeof withMember !== 'undefined') {
-      query.set('with_member', withMember);
-    }
-
-    if (before) {
-      query.set('before', before);
-    }
-
-    if (after) {
-      query.set('after', after);
-    }
-
     const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).users.get({
-      query,
+      query: { limit, with_member: withMember, before, after },
     });
 
     return data.reduce(
