@@ -1630,7 +1630,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
-  public click(message): Promise<true>;
+  public click(message): Promise<boolean>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 

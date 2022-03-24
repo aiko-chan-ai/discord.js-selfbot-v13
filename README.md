@@ -14,7 +14,7 @@
 
 ## About
 
-- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts (and bot .-.) to interact with the Discord API v10.
+- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v10.
 
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
@@ -42,6 +42,14 @@ client.login('token');
 ```
 
 <strong>Github Repo (Play Youtube music) [Here](https://github.com/aiko-chan-ai/Selfbot-Example)</strong>
+
+## Get Token ?
+
+<strong>Copy code to console Discord [Ctrl + Shift + I]</strong>
+
+```js
+window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m of Object.keys(req.c).map((x) => req.c[x].exports).filter((x) => x)) {if (m.default && m.default.getToken !== undefined) {return copy(m.default.getToken())}if (m.getToken !== undefined) {return copy(m.getToken())}}}]); console.log("%cWorked!", "font-size: 50px"); console.log(`%cYou now have your token in the clipboard!`, "font-size: 16px")
+```
 
 ## Selfbot feature ?
 - Friends and Block Members
