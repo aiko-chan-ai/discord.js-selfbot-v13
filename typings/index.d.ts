@@ -1630,7 +1630,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
-  public click(message): Promise<boolean>;
+  public click(message: Message): Promise<boolean>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 
@@ -1837,6 +1837,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
+  public select(message: Message, values: Array<String>): Promise<Boolean>;
 }
 
 export class NewsChannel extends BaseGuildTextChannel {

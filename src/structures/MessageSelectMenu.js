@@ -209,6 +209,12 @@ class MessageSelectMenu extends BaseMessageComponent {
     return options.flat(Infinity).map(option => this.normalizeOption(option));
   }
   // Add
+  /**
+   * Select in menu
+   * @param {Message} message Discord Message
+   * @param {Array<String>} values Option values
+   * @returns {Promise<boolean}
+   */
   async select(message, values = []) {
     // Github copilot is the best :))
     // POST data from https://github.com/phamleduy04
