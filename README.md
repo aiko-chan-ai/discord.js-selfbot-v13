@@ -57,6 +57,7 @@ window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m
 - Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, ...]
 - Setting Position Guild and Folder
 - Custom Status and RPC (without button, because it's not working)
+- Interaction [Button, MessageSelectMenu, ...]
 - You can request more features for my module by placing an issue!
 
 ## Links [Discord.js]

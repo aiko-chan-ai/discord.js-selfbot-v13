@@ -3,6 +3,7 @@
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { MessageComponentTypes } = require('../util/Constants');
 const Util = require('../util/Util');
+const { Message } = require('./Message');
 
 /**
  * Represents a select menu message component
@@ -206,6 +207,43 @@ class MessageSelectMenu extends BaseMessageComponent {
    */
   static normalizeOptions(...options) {
     return options.flat(Infinity).map(option => this.normalizeOption(option));
+  }
+  // Add
+  async select(message, values = []) {
+    // Github copilot is the best :))
+    // POST data from https://github.com/phamleduy04
+    if (!message instanceof Message) throw new Error("[UNKNOWN_MESSAGE] Please pass a valid Message");
+    if (!Array.isArray(values)) throw new TypeError("[INVALID_VALUES] Please pass an array of values");
+    if (!this.customId || this.disabled || values.length == 0) return false; // Disabled or null customID or [] array
+    // Check value is invalid [Max options is 20] => For loop
+    if (values.length < this.minValues) throw new RangeError("[SELECT_MENU_MIN_VALUES] The minimum number of values is " + this.minValues);
+    if (values.length > this.maxValues) throw new RangeError("[SELECT_MENU_MAX_VALUES] The maximum number of values is " + this.maxValues);
+    const validValue = this.options.map(obj => obj.value);
+    const check_ = await values.find(element => {
+      if (typeof element !== 'string') return true;
+      if (!validValue.includes(element)) return true;
+      return false;
+    })
+    if (check_) throw new RangeError("[SELECT_MENU_INVALID_VALUE] The value " + check_ + " is invalid. Please use a valid value " + validValue.join(', '));
+    await message.client.api.interactions.post(
+      {
+        data: {
+          type: 3, // ?
+          guild_id: message.guild?.id ?? null, // In DMs
+          channel_id: message.channel.id,
+          message_id: message.id,
+          application_id: message.author.id,
+          session_id: message.client.session_id,
+          data: {
+            component_type: 3, // Select Menu
+            custom_id: this.customId,
+            type: 3, // Select Menu
+            values,
+          },
+        }
+      }
+    )
+    return true;
   }
 }
 

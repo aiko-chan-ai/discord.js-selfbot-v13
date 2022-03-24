@@ -236,6 +236,14 @@ And you can change the status 5 times every 20 seconds!
 await Button.click(Message);
 ```
 </details>
+<details>
+<summary>Message Select Menu (v1)</summary>
+
+```js
+await MessageSelectMenu.select(Message, value);
+// value: ['value1', 'value2' , ...]
+```
+</details>
 
 ## More features
 
