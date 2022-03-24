@@ -30,6 +30,22 @@ class ClientUser extends User {
     }
 
     if ('token' in data) this.client.token = data.token;
+
+    // Add (Selfbot)
+    if ('premium' in data) this.nitro = data.premium;
+    /**
+     * Nitro Status
+     * `0`: None
+     * `1`: Classic
+     * `2`: Boost
+     * @external
+     * https://discord.com/developers/docs/resources/user#user-object-premium-types
+     * @type {Number}
+     */
+    if ('purchased_flags' in data) this.nitroType = data.purchased_flags;
+    if ('phone' in data) this.phoneNumber = data.phone;
+    if ('nsfw_allowed' in data) this.nsfwAllowed = data.nsfw_allowed;
+    if ('email' in data) this.emailAddress = data.email;
   }
 
   /**

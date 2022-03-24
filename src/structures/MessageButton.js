@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseMessageComponent = require('./BaseMessageComponent');
+const { Message } = require('./Message');
 const { RangeError } = require('../errors');
 const { MessageButtonStyles, MessageComponentTypes } = require('../util/Constants');
 const Util = require('../util/Util');
@@ -159,6 +160,32 @@ class MessageButton extends BaseMessageComponent {
    */
   static resolveStyle(style) {
     return typeof style === 'string' ? style : MessageButtonStyles[style];
+  }
+  // Patch Click
+  /**
+   * Click the button
+   * @param {Message} message Discord Message
+   * @returns true if the button is clicked
+   */
+  async click(message) {
+    if (!message instanceof Message) throw new Error("[UNKNOWN_MESSAGE] Please pass a valid Message");
+    await message.client.api.interactions.post(
+      {
+        data: {
+          type: 3, // ?
+          guild_id: message.guild?.id ?? null, // In DMs
+          channel_id: message.channel.id,
+          message_id: message.id,
+          application_id: message.author.id,
+          session_id: message.client.session_id,
+          data: {
+            component_type: 2, // Button
+            custom_id: this.customId
+          },
+        }
+      }
+    )
+    return true;
   }
 }
 

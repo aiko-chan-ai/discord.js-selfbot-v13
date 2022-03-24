@@ -228,6 +228,15 @@ You can cache to use these files, do not run this function too much because it w
 And you can change the status 5 times every 20 seconds!
 </details>
 
+## Interaction
+<details>
+<summary>Button Click (v1)</summary>
+
+```js
+await Button.click(Message);
+```
+</details>
+
 ## More features
 
 <details>

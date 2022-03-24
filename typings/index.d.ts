@@ -633,8 +633,23 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string): Promise<this>;
+  // Selfbot
+  public readonly nitro: boolean;
+    /**
+     * Nitro Status
+     * `0`: None
+     * `1`: Classic
+     * `2`: Boost
+     * @external
+     * https://discord.com/developers/docs/resources/user#user-object-premium-types
+     * @type {Number}
+     */
+  public readonly nitroType: NitroType;
+  public readonly phoneNumber: String;
+  public readonly nsfwAllowed: boolean;
+  public readonly emailAddress: String;
 }
-
+type NitroType = 0 | 1 | 2;
 export class Options extends null {
   private constructor();
   public static defaultMakeCacheSettings: CacheWithLimitsOptions;
@@ -1615,6 +1630,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
+  public click(message): Promise<true>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 
