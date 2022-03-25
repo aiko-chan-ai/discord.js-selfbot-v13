@@ -67,6 +67,7 @@ class APIRequest {
       body = JSON.stringify(this.options.data);
       headers['Content-Type'] = 'application/json';
     } else if (this.options.body != null) {
+      body = new FormData();
       body.append('payload_json', JSON.stringify(this.options.body));
       headers = Object.assign(headers, body.getHeaders());
     }
