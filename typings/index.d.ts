@@ -636,7 +636,7 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string): Promise<this>;
-  public setHypeSquad(id: number): Promise<void>;
+  public setHypeSquad(type: HypeSquadOptions<Number|String>): Promise<void>;
   // Selfbot
   public readonly nitro: boolean;
     /**

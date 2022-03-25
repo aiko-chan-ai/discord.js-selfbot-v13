@@ -103,6 +103,12 @@ export const enum GuildScheduledEventStatuses {
   CANCELED = 4,
 }
 
+export const enum HypeSquadOptions {
+  HOUSE_BRAVERY = 1,
+  HOUSE_BRILLIANCE = 2,
+  HOUSE_BALANCE = 3,
+}
+
 export const enum InteractionResponseTypes {
   PONG = 1,
   CHANNEL_MESSAGE_WITH_SOURCE = 4,

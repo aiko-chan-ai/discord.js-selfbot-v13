@@ -2,6 +2,7 @@
 
 const User = require('./User');
 const DataResolver = require('../util/DataResolver');
+const { HypeSquadOptions } = require('../util/Constants');
 
 /**
  * Represents the logged in client's Discord user.
@@ -108,14 +109,19 @@ class ClientUser extends User {
   }
   /**
    * Set HyperSquad House
-   * @param {number} id 
+   * @param {HypeSquadOptions<Number|String>} type
+   * `HOUSE_BRAVERY`: 1
+   * `HOUSE_BRILLIANCE`: 2
+   * `HOUSE_BALANCE`: 3
    * @returns {Promise<void>}
    * @example
-   * // Set HyperSquad House
-   * client.user.setHyperSquadHouse(1);
+   * // Set HyperSquad HOUSE_BRAVERY
+   * client.user.setHypeSquad(1); || client.user.setHypeSquad('HOUSE_BRAVERY');
    */
-  setHypeSquad(id) {
-    this.client.api.hypesquad.online.post({ data: {house_id: id} });
+  async setHypeSquad(type) {
+    const id = typeof type === 'string' ? HypeSquadOptions[type] : type;
+    if(!id) throw new Error('Invalid HypeSquad type.');
+    return await this.client.api.hypesquad.online.post({ data: {house_id: id} });
   }
 
   /**
