@@ -66,6 +66,9 @@ class APIRequest {
     } else if (this.options.data != null) {
       body = JSON.stringify(this.options.data);
       headers['Content-Type'] = 'application/json';
+    } else if (this.options.body != null) {
+      body.append('payload_json', JSON.stringify(this.options.body));
+      headers = Object.assign(headers, body.getHeaders());
     }
 
     const controller = new AbortController();

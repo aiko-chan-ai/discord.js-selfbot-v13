@@ -1,5 +1,5 @@
 # Discord.js Selfbot v13
-- Install: <strong>npm i discord.js-selfbot-v13@lasest</strong>
+- Install: <strong>```npm i discord.js-selfbot-v13@latest```</strong>
 
 ## Client Settings
 <details>
@@ -7,8 +7,8 @@
 
 ```js
 new Client({
-  checkUpdate: true, // Check Package Update (Ready) [Enable Deafult]
-  readyStatus: false, // Set status sync from Account (Ready) [Disable Default]
+  checkUpdate: true, // Check Package Update (Bot Ready) [Enable Deafult]
+  readyStatus: false, // Set Custom Status sync from Account (Bot Ready) [Disable Default]
 })
 ```
 </details>
@@ -151,7 +151,7 @@ guild.setPosition(position, type, folderID);
 ```
 Response
 ```js
-Guild
+Guild {}
 ```
 </details>
 
@@ -165,7 +165,7 @@ Custom Status
 const RichPresence = require('discord-rpc-contructor'); // My module :))
 const custom = new RichPresence.CustomStatus()
 	  .setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
-    .setDiscordEmoji({ // Set Custom Emoji (Nitro) [Using one]
+    .setDiscordEmoji({ // Set Custom Emoji (Nitro Classic / Boost) [Using one]
         name: 'nom',
         id: '737373737373737373',
         animated: false,
