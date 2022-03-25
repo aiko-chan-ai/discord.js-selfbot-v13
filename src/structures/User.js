@@ -6,6 +6,7 @@ const { Error } = require('../errors');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
 const { default: Collection } = require('@discordjs/collection');
+const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 
 /**
  * Represents a user on Discord.
@@ -37,7 +38,7 @@ class User extends Base {
 		this.premiumSince = null;
 		this.premiumGuildSince = null;
 		this.mutualGuilds = new Collection();
-
+    this.applications = null;
     this._patch(data);
   }
 
@@ -58,6 +59,9 @@ class User extends Base {
        * @type {?boolean}
        */
       this.bot = Boolean(data.bot);
+      if (this.bot == true) {
+        this.applications = new ApplicationCommandManager(this.client, undefined, this);
+      }
     } else if (!this.partial && typeof this.bot !== 'boolean') {
       this.bot = false;
     }

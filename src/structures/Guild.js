@@ -58,12 +58,6 @@ class Guild extends AnonymousGuild {
     super(client, data, false);
 
     /**
-     * A manager of the application commands belonging to this guild
-     * @type {GuildApplicationCommandManager}
-     */
-    this.commands = new GuildApplicationCommandManager(this);
-
-    /**
      * A manager of the members belonging to this guild
      * @type {GuildMemberManager}
      */

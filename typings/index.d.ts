@@ -251,6 +251,9 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private static transformOption(option: ApplicationCommandOptionData, received?: boolean): unknown;
   private static transformCommand(command: ApplicationCommandData): RESTPostAPIApplicationCommandsJSONBody;
   private static isAPICommandData(command: object): command is RESTPostAPIApplicationCommandsJSONBody;
+  // Add
+  public static sendSlashCommand(message: Message, options?: Array<string>): Promise<Boolean>;
+  public static sendContextMenu(message: Message): Promise<Boolean>;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -901,7 +904,7 @@ export class Guild extends AnonymousGuild {
   public available: boolean;
   public bans: GuildBanManager;
   public channels: GuildChannelManager;
-  public commands: GuildApplicationCommandManager;
+  // public commands: GuildApplicationCommandManager;
   public defaultMessageNotifications: DefaultMessageNotificationLevel | number;
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
   public deleted: boolean;
@@ -2902,7 +2905,7 @@ export class ApplicationCommandManager<
   PermissionsOptionsExtras = { guild: GuildResolvable },
   PermissionsGuildType = null,
 > extends CachedManager<Snowflake, ApplicationCommandScope, ApplicationCommandResolvable> {
-  protected constructor(client: Client, iterable?: Iterable<unknown>);
+  protected constructor(client: Client, iterable?: Iterable<unknown>, user: User);
   public permissions: ApplicationCommandPermissionsManager<
     { command?: ApplicationCommandResolvable } & PermissionsOptionsExtras,
     { command: ApplicationCommandResolvable } & PermissionsOptionsExtras,
@@ -2949,7 +2952,7 @@ export class ApplicationCommandPermissionsManager<
   GuildType,
   CommandIdType,
 > extends BaseManager {
-  private constructor(manager: ApplicationCommandManager | GuildApplicationCommandManager | ApplicationCommand);
+  private constructor(manager: ApplicationCommandManager | GuildApplicationCommandManager | ApplicationCommand, user: User);
   private manager: ApplicationCommandManager | GuildApplicationCommandManager | ApplicationCommand;
 
   public client: Client;

@@ -12,14 +12,15 @@ const { ApplicationCommandTypes } = require('../util/Constants');
  * @extends {CachedManager}
  */
 class ApplicationCommandManager extends CachedManager {
-  constructor(client, iterable) {
+  constructor(client, iterable, user) {
     super(client, ApplicationCommand, iterable);
 
     /**
      * The manager for permissions of arbitrary commands on arbitrary guilds
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this);
+    this.permissions = new ApplicationCommandPermissionsManager(this, user);
+    this.user = user;
   }
 
   /**
@@ -41,7 +42,7 @@ class ApplicationCommandManager extends CachedManager {
    * @private
    */
   commandPath({ id, guildId } = {}) {
-    let path = this.client.api.applications(this.client.application.id);
+    let path = this.client.api.applications(this.user.id);
     if (this.guild ?? guildId) path = path.guilds(this.guild?.id ?? guildId);
     return id ? path.commands(id) : path.commands;
   }
@@ -114,6 +115,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async create(command, guildId) {
+    if(!this.client.user.bot) throw new Error("INVALID_USER_METHOD");
     const data = await this.commandPath({ guildId }).post({
       data: this.constructor.transformCommand(command),
     });
@@ -143,6 +145,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async set(commands, guildId) {
+    if(!this.client.user.bot) throw new Error("INVALID_USER_METHOD");
     const data = await this.commandPath({ guildId }).put({
       data: commands.map(c => this.constructor.transformCommand(c)),
     });
@@ -165,6 +168,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async edit(command, data, guildId) {
+    if(!this.client.user.bot) throw new Error("INVALID_USER_METHOD");
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
@@ -187,6 +191,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async delete(command, guildId) {
+    if(!this.client.user.bot) throw new Error("INVALID_USER_METHOD");
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 

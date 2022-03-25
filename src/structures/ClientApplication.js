@@ -18,7 +18,7 @@ class ClientApplication extends Application {
      * The application command manager for this application
      * @type {ApplicationCommandManager}
      */
-    this.commands = new ApplicationCommandManager(this.client);
+    this.commands = null // Selfbot
   }
 
   _patch(data) {
@@ -97,7 +97,7 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    if(!this.client.bot) throw new Error("INVALID_USER_METHOD");
+    if(!this.client.user.bot) throw new Error("INVALID_USER_METHOD");
     const app = await this.client.api.oauth2.applications('@me').get();
     this._patch(app);
     return this;

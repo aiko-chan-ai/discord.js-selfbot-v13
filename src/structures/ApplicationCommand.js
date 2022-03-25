@@ -4,6 +4,7 @@ const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
+const { Message } = require('..');
 
 /**
  * Represents an application command.
@@ -42,13 +43,15 @@ class ApplicationCommand extends Base {
      * The manager for permissions of this command on its guild or arbitrary guilds when the command is global
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this);
+    this.permissions = new ApplicationCommandPermissionsManager(this, user);
 
     /**
      * The type of this application command
      * @type {ApplicationCommandType}
      */
     this.type = ApplicationCommandTypes[data.type];
+
+    this.user = client.users.cache.get(this.applicationId);
 
     this._patch(data);
   }
@@ -391,6 +394,87 @@ class ApplicationCommand extends Base {
       [minValueKey]: option.minValue ?? option.min_value,
       [maxValueKey]: option.maxValue ?? option.max_value,
     };
+  }
+  /**
+   * Send Slash command to channel
+   * @param {Message} message Discord Message
+   * @param {Array<string>} options The options to Slash Command
+   * @returns {Promise<Boolean>}
+   * @example
+   * const botID = '12345678987654321'
+   * const user = await client.users.fetch(botID);
+   * const application = await user.applications.fetch();
+   * const command = application.commands.first();
+   * await command.sendSlashCommand(messsage, ['option1', 'option2']);
+   */
+  async sendSlashCommand(message, options = []) {
+    // Check Options
+    if (!message instanceof Message) throw new TypeError('The message must be a Discord.Message');
+    if (!Array.isArray(options)) throw new TypeError('The options must be an array of strings');
+    if (this.type !== 'CHAT_INPUT') return false;
+    const optionFormat = [];
+    let i = 0;
+    for (i; i < options.length ; i++) {
+      const value = options[i];
+      if (typeof value !== 'string') {
+        throw new TypeError(`Expected option to be a String, got ${typeof value}`);
+      }
+      if (!this.options[i]) continue;
+      const data = {
+        type: ApplicationCommandOptionTypes[this.options[i].type],
+        name: this.options[i].name,
+        value: value,
+      }
+      optionFormat.push(data);
+    }
+    if (this.options[i]?.required) throw new Error('Value required missing');
+    await this.client.api.interactions.post({ body: {
+				type: 2, // ???
+				application_id: this.applicationId,
+				guild_id: message.guildId,
+				channel_id: message.channelId,
+				session_id: this.client.session_id,
+				data: {
+          // ApplicationCommandData
+					version: this.version,
+					id: this.id,
+					name: this.name,
+					type: ApplicationCommandTypes[this.type],
+					options: optionFormat,
+				},
+			}})
+    return true;
+  }
+  /**
+   * Message Context Menu
+   * @param {Message} message Discord Message
+   * @returns {Promise<Boolean>}
+   * @example
+   * const botID = '12345678987654321'
+   * const user = await client.users.fetch(botID);
+   * const application = await user.applications.fetch();
+   * const command = application.commands.first();
+   * await command.sendContextMenu(messsage);
+   */
+  async sendContextMenu(message) {
+    if (!message instanceof Message) throw new TypeError('The message must be a Discord.Message');
+    if (this.type == 'CHAT_INPUT') return false;
+    await this.client.api.interactions.post({ body: {
+				type: 2, // ???
+				application_id: this.applicationId,
+				guild_id: message.guildId,
+				channel_id: message.channelId,
+				session_id: this.client.session_id,
+				data: {
+          // ApplicationCommandData
+					version: this.version,
+					id: this.id,
+					name: this.name,
+					type: ApplicationCommandTypes[this.type],
+          target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
+				},
+			}})
+    return true;
   }
 }
 
