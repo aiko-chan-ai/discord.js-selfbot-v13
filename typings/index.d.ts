@@ -2401,7 +2401,7 @@ export class Typing extends Base {
 export class User extends PartialTextBasedChannel(Base) {
   protected constructor(client: Client, data: RawUserData);
   private _equals(user: APIUser): boolean;
-
+  public applications: ApplicationCommandManager;
   public accentColor: number | null | undefined;
   public avatar: string | null;
   public banner: string | null | undefined;

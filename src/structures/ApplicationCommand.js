@@ -4,7 +4,7 @@ const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-const { Message } = require('..');
+const { Message } = require('discord.js');
 
 /**
  * Represents an application command.
@@ -43,7 +43,7 @@ class ApplicationCommand extends Base {
      * The manager for permissions of this command on its guild or arbitrary guilds when the command is global
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this, user);
+    this.permissions = new ApplicationCommandPermissionsManager(this, this.applicationId);
 
     /**
      * The type of this application command

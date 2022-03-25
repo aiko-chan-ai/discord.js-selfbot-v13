@@ -244,6 +244,30 @@ await MessageSelectMenu.select(Message, value);
 // value: ['value1', 'value2' , ...]
 ```
 </details>
+<details>
+<summary>Slash Command (v1)</summary>
+
+```js
+const botID = '12345678987654321'
+const user = await client.users.fetch(botID);
+const application = await user.applications.fetch();
+const command = application.cache.first();
+await command.sendSlashCommand(messsage, ['option1', 'option2']);
+// Eg: Slash /add role:123456789 user:987654321
+// value: ['123456789', '987654321']
+```
+</details>
+<details>
+<summary>Message Context Command (v1)</summary>
+
+```js
+const botID = '12345678987654321'
+const user = await client.users.fetch(botID);
+const application = await user.applications.fetch();
+const command = application.cache.first();
+await command.sendContextMenu(messsage);
+```
+</details>
 
 ## More features
 

@@ -49,7 +49,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * @private
    */
   permissionsPath(guildId, commandId) {
-    return this.client.api.applications(this.user.id).guilds(guildId).commands(commandId).permissions;
+    return this.client.api.applications(typeof this.user == 'string' ? this.user : this.user.id).guilds(guildId).commands(commandId).permissions;
   }
 
   /**
