@@ -106,6 +106,17 @@ class ClientUser extends User {
   setAvatar(avatar) {
     return this.edit({ avatar });
   }
+  /**
+   * Set HyperSquad House
+   * @param {number} id 
+   * @returns {Promise<void>}
+   * @example
+   * // Set HyperSquad House
+   * client.user.setHyperSquadHouse(1);
+   */
+  setHypeSquad(id) {
+    this.client.api.hypesquad.online.post({ data: {house_id: id} });
+  }
 
   /**
    * Options for setting activities
