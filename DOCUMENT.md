@@ -269,6 +269,15 @@ await command.sendContextMenu(messsage);
 ```
 </details>
 
+## User HypeSquad
+<details>
+<summary>Click to show</summary>
+
+```js
+await client.user.setHypeSquad('HOUSE_BRAVERY');
+```
+</details>
+
 ## More features
 
 <details>
