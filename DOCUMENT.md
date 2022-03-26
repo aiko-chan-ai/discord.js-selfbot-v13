@@ -233,14 +233,14 @@ And you can change the status 5 times every 20 seconds!
 <summary>Button Click (v1)</summary>
 
 ```js
-await Button.click(Message);
+await Button.click(Message); // Message has button
 ```
 </details>
 <details>
 <summary>Message Select Menu (v1)</summary>
 
 ```js
-await MessageSelectMenu.select(Message, value);
+await MessageSelectMenu.select(Message, value); // Message has menu
 // value: ['value1', 'value2' , ...]
 ```
 </details>
@@ -252,7 +252,13 @@ const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
 const command = application.cache.first();
-await command.sendSlashCommand(messsage, ['option1', 'option2']);
+// Message: Discord.Message, using Message contructor create
+/*
+guildID: Guild.id || null,
+channelID: Channel.id,
+messageID: Message.id,
+*/
+await command.sendSlashCommand(Message, ['option1', 'option2']);
 // Eg: Slash /add role:123456789 user:987654321
 // value: ['123456789', '987654321']
 ```
@@ -265,7 +271,14 @@ const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
 const command = application.cache.first();
-await command.sendContextMenu(messsage);
+// Message: Discord.Message, using Message contructor create
+/*
+guildID: Guild.id || null,
+channelID: Channel.id,
+messageID: Message.id,
+author:  Message.author,
+*/
+await command.sendContextMenu(Message);
 ```
 </details>
 
@@ -275,6 +288,19 @@ await command.sendContextMenu(messsage);
 
 ```js
 await client.user.setHypeSquad('HOUSE_BRAVERY');
+await client.user.setHypeSquad('HOUSE_BRILLIANCE');
+await client.user.setHypeSquad('HOUSE_BALANCE');
+```
+</details>
+
+## Join Guild using Invite
+<details>
+<summary>Click to show</summary>
+
+```js
+await client.fetchInvite('code').then(async invite => {
+  await invite.acceptInvite();
+});
 ```
 </details>
 
@@ -288,4 +314,3 @@ await client.user.setHypeSquad('HOUSE_BRAVERY');
 ## Warning
 - This is a beta version, so there are some bugs.
 - If you use the `Client.destroy()` function, for an account that uses 2FA, it will cause a logout and the Token will no longer be usable.
-- Downgrade to Discord.js v13 (Old version is Discord.js v14@dev)

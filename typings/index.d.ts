@@ -1430,6 +1430,7 @@ export class Invite extends Base {
   public delete(reason?: string): Promise<Invite>;
   public toJSON(): unknown;
   public toString(): string;
+  public acceptInvite(): Promise<Invite>;
   public static INVITES_PATTERN: RegExp;
   public stageInstance: InviteStageInstance | null;
   public guildScheduledEvent: GuildScheduledEvent | null;

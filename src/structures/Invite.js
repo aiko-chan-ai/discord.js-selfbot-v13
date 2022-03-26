@@ -313,6 +313,19 @@ class Invite extends Base {
   valueOf() {
     return this.code;
   }
+
+  /**
+   * Join this Guild using this invite.
+   * @returns {Promise<Invite>}
+   * @example
+   * await client.fetchInvite('code').then(async invite => {
+   *   await invite.acceptInvite();
+   * });
+   */
+  async acceptInvite() {
+    return await this.client.api.invite(this.code).post({ versioned: false });
+  }
+
 }
 
 /**
