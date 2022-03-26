@@ -161,6 +161,7 @@ const Messages = {
   FOLDER_POSITION_INVALID: 'The server index in the directory is invalid',
   APPLICATION_ID_INVALID: 'The application isn\'t BOT',
   INVALID_NITRO: 'Invalid Nitro Code',
+  MESSAGE_ID_NOT_FOUND: 'Message ID not found',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
