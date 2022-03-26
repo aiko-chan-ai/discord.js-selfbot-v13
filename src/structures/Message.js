@@ -211,14 +211,16 @@ class Message extends Base {
        * All valid mentions that the message contains
        * @type {MessageMentions}
        */
-      this.mentions = new Mentions(
-        this,
-        data.mentions,
-        data.mention_roles,
-        data.mention_everyone,
-        data.mention_channels,
-        data.referenced_message?.author,
-      );
+      if (!data.mentions)
+				this.mentions = new Mentions(
+					this,
+					data.mentions,
+					data.mention_roles,
+					data.mention_everyone,
+					data.mention_channels,
+					data.referenced_message?.author,
+				);
+      else data.mentions instanceof Mentions ? this.mentions = data.mentions : this.mentions = null;
     } else {
       this.mentions = new Mentions(
         this,
