@@ -321,6 +321,20 @@ class Client extends BaseClient {
   }
 
   /**
+   * Get Nitro
+   * @param {String<NitroCode>} nitro Nitro Code
+   * discordapp.com/gifts/code | discord.gift/code
+   * @returns {Promise}
+   */
+  async reddemNitro(nitro) {
+    if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
+    const regexNitro = /discord(?:(?:app)?\.com\/gifts|\.gift)\/([\w-]{2,255})/gi;
+    const code = DataResolver.resolveCode(nitro, regexNitro);
+    // https://discord.com/api/v9/entitlements/gift-codes/{code}/redeem
+    return await this.api.entitlements['gift-codes'](code).redeem.post({ data: {} });
+  }
+
+  /**
    * Obtains a template from Discord.
    * @param {GuildTemplateResolvable} template Template code or URL
    * @returns {Promise<GuildTemplate>}

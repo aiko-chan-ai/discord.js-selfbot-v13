@@ -306,6 +306,15 @@ await client.fetchInvite('code').then(async invite => {
 <img src= 'https://cdn.discordapp.com/attachments/820557032016969751/957247688666132520/unknown.png'>
 </details>
 
+## Reddem Nitro ?
+<details>
+<summary>Click to show</summary>
+
+```js
+await client.reddemNitro('code')
+```
+</details>
+
 ## More features
 
 <details>

@@ -27,7 +27,10 @@
     "djs",
     "api",
     "bot",
-    "node"
+    "node",
+    "discord",
+    "client",
+    "discordapp"
   ],
   "author": "aiko-chan-ai",
   "license": "ISC",
@@ -56,7 +59,7 @@
     "ws": "^8.5.0"
   },
   "engines": {
-    "node": ">=16.9.0",
+    "node": ">=16.6.0",
     "npm": ">=7.0.0"
   },
   "devDependencies": {

@@ -572,6 +572,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
+  public reddemNitro(code: String<NitroCode>): Promise;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public isReady(): this is Client<true>;
