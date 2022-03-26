@@ -16,18 +16,26 @@
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v10.
 
+
+<div align="center">
+  <p>
+    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/v/discord.js-selfbot-v13.svg?maxAge=3600" alt="npm version" /></a>
+    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/dt/discord.js-selfbot-v13.svg?maxAge=3600" alt="npm downloads" /></a>
+  </p>
+</div>
+
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
 
 ## Installation
 
-**Node.js 16.9.0 or newer is required**
+**Node.js 16.6.0 or newer is required**
 
 ```sh-session
-npm install discord.js-selfbot-v13
+npm install discord.js-selfbot-v13@latest
 ```
 ## Patched
-Click [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md) to see the patched functions
+Click <strong>[here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong> to see the patched functions
 ## Example
 
 ```js
@@ -35,7 +43,7 @@ const { Client } = require('discord.js-selfbot-v13');
 const client = new Client(); // Intents and Partials are already set so you don't have to define them
 
 client.on('ready', async () => {
-  console.log(`${client.user.username}  >>  [${client.guilds.cache.size}] guilds || [${client.friends.cache.size}] friends`);
+  console.log(`${client.user.username} is ready!`);
 })
 
 client.login('token');
@@ -53,11 +61,11 @@ window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m
 
 ## Selfbot feature ?
 - Friends and Block Members
-- Discord Apps Setting [Theme, Language, ...]
-- Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, ...]
+- Discord Apps Setting [Theme, Language, HypeSquad, etc.]
+- Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, etc.]
 - Setting Position Guild and Folder
 - Custom Status and RPC (without button, because it's not working)
-- Interaction [Button, MessageSelectMenu, ...]
+- Interaction [Button, MessageSelectMenu, Slash, ContextMenu]
 - You can request more features for my module by placing an issue!
 
 ## Links [Discord.js]
@@ -72,7 +80,7 @@ window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m
 - [npm](https://www.npmjs.com/package/discord.js)
 - [Related libraries](https://discord.com/developers/docs/topics/community-resources#libraries)
 
-## Contributing
+## Contributing [Discord.js]
 
 - Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
 [documentation](https://discord.js.org/#/docs).  

@@ -316,14 +316,25 @@ class Invite extends Base {
 
   /**
    * Join this Guild using this invite.
-   * @returns {Promise<Invite>}
+   * @param {Boolean} autoVerify Whether to automatically verify member
+   * @returns {Promise<void>}
    * @example
    * await client.fetchInvite('code').then(async invite => {
    *   await invite.acceptInvite();
    * });
    */
-  async acceptInvite() {
-    return await this.client.api.invite(this.code).post({ versioned: false });
+  async acceptInvite(autoVerify = true) {
+    await this.client.api.invites(this.code).post({});
+    if (autoVerify) {
+      const getForm = await this.client.api
+        .guilds(this.guild.id)['member-verification']
+        .get({ query: { with_guild: false, invite_code: this.code } });
+      const form = Object.assign(getForm.form_fields[0], { response: true });
+      // Respond to the form
+      // https://discord.com/api/v9/guilds/:id/requests/@me
+      await this.client.api.guilds(this.guild.id).requests['@me'].put({ data: { form_fields: [form] } });
+    }
+    return void 0;
   }
 
 }

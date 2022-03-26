@@ -299,9 +299,11 @@ await client.user.setHypeSquad('HOUSE_BALANCE');
 
 ```js
 await client.fetchInvite('code').then(async invite => {
-  await invite.acceptInvite();
+  await invite.acceptInvite(true); 
 });
 ```
+`invite.acceptInvite(true);` => Auto skip verify screen
+<img src= 'https://cdn.discordapp.com/attachments/820557032016969751/957247688666132520/unknown.png'>
 </details>
 
 ## More features
