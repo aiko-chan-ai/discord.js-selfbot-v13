@@ -230,18 +230,22 @@ And you can change the status 5 times every 20 seconds!
 
 ## Interaction
 <details>
-<summary>Button Click (v1)</summary>
+<summary>Button Click</summary>
 
 ```js
-await Button.click(Message); // Message has button
+await Button.click(Message); // Message has button (v1)
+//
+await message.clickButton(buttonID); // Message has button (v2)
 ```
 </details>
 <details>
-<summary>Message Select Menu (v1)</summary>
+<summary>Message Select Menu</summary>
 
 ```js
-await MessageSelectMenu.select(Message, value); // Message has menu
+await MessageSelectMenu.select(Message, options); // Message has menu (v1)
 // value: ['value1', 'value2' , ...]
+await message.selectMenu(menuID, options) // If message has >= 2 menu
+await message.selectMenu(options) // If message has 1 menu
 ```
 </details>
 <details>
@@ -261,6 +265,7 @@ messageID: Message.id,
 await command.sendSlashCommand(Message, ['option1', 'option2']);
 // Eg: Slash /add role:123456789 user:987654321
 // value: ['123456789', '987654321']
+// Channel.sendSlashCommand(botID, commandName, options): Comming soon !
 ```
 </details>
 <details>
@@ -279,6 +284,7 @@ messageID: Message.id,
 author:  Message.author,
 */
 await command.sendContextMenu(Message);
+// Channel.sendContextMenu(botID, commandName): Comming soon !
 ```
 </details>
 

@@ -1578,6 +1578,9 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public toString(): string;
   public unpin(): Promise<Message>;
   public inGuild(): this is Message<true> & this;
+  // Added
+  public clickButton(buttonID: String<MessageButton.customId>): Promise<pending>
+  public selectMenu(menuID: String<MessageSelectMenu.customId> | Array<options>, options: Array<String>): Promise<pending>
 }
 
 export class MessageActionRow extends BaseMessageComponent {
