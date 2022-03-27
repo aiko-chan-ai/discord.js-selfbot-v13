@@ -328,7 +328,9 @@ class Invite extends Base {
     if (autoVerify) {
       const getForm = await this.client.api
         .guilds(this.guild.id)['member-verification']
-        .get({ query: { with_guild: false, invite_code: this.code } });
+        .get({ query: { with_guild: false, invite_code: this.code } })
+        .catch(() => {});
+      if (!getForm) return void 0;
       const form = Object.assign(getForm.form_fields[0], { response: true });
       // Respond to the form
       // https://discord.com/api/v9/guilds/:id/requests/@me
