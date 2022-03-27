@@ -309,6 +309,7 @@ await client.fetchInvite('code').then(async invite => {
 });
 ```
 `invite.acceptInvite(true);` => Auto skip verify screen
+
 <img src= 'https://cdn.discordapp.com/attachments/820557032016969751/957247688666132520/unknown.png'>
 </details>
 

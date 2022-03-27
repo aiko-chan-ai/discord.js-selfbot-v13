@@ -34,8 +34,6 @@
 ```sh-session
 npm install discord.js-selfbot-v13@latest
 ```
-## Patched
-Click <strong>[here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong> to see the patched functions
 ## Example
 
 ```js
@@ -69,7 +67,7 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 - Custom Status and RPC (without button, because it's not working)
 - Interaction [Button, MessageSelectMenu, Slash, ContextMenu]
 - You can request more features for my module by placing an issue!
-
+- Click <strong>[here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong> to see the patched functions
 ## Links [Discord.js]
 
 - [Website](https://discord.js.org/) ([source](https://github.com/discordjs/website))
