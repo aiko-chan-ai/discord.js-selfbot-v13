@@ -250,7 +250,7 @@ await message.selectMenu(options) // If message has 1 menu
 ```
 </details>
 <details>
-<summary>Slash Command (v1)</summary>
+<summary>Slash Command</summary>
 
 ```js
 // v1
