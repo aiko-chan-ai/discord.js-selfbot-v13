@@ -164,13 +164,13 @@ Custom Status
 ```js
 const RichPresence = require('discord-rpc-contructor'); // My module :))
 const custom = new RichPresence.CustomStatus()
-	  .setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
+    .setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
     .setDiscordEmoji({ // Set Custom Emoji (Nitro Classic / Boost) [Using one]
         name: 'nom',
         id: '737373737373737373',
         animated: false,
     })
-	  .setState('Testing') // Name of presence
+    .setState('Testing') // Name of presence
     .toDiscord();
 client.user.setActivity(custom);
 ```
