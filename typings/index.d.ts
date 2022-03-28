@@ -532,6 +532,8 @@ export abstract class Channel extends Base {
   public isVoice(): this is BaseGuildVoiceChannel;
   public isThread(): this is ThreadChannel;
   public toString(): ChannelMention;
+  //
+  public sendSlash(botID: DiscordBotID, commandName: String<ApplicationCommand.name>, args?: Array<Options>): Promise;
 }
 
 export type If<T extends boolean, A, B = null> = T extends true ? A : T extends false ? B : A | B;
@@ -1581,6 +1583,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   // Added
   public clickButton(buttonID: String<MessageButton.customId>): Promise<pending>
   public selectMenu(menuID: String<MessageSelectMenu.customId> | Array<options>, options: Array<String>): Promise<pending>
+  public contextMenu(botID: DiscordBotID, commandName: String<ApplicationCommand.name>): Promise;
 }
 
 export class MessageActionRow extends BaseMessageComponent {

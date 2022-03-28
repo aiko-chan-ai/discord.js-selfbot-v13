@@ -12,6 +12,8 @@ let ThreadChannel;
 let VoiceChannel;
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
+const { Message } = require('discord.js');
+const { ApplicationCommand } = require('discord.js-selfbot-v13');
 
 /**
  * @type {WeakSet<Channel>}
@@ -227,6 +229,40 @@ class Channel extends Base {
 
   toJSON(...props) {
     return super.toJSON({ createdTimestamp: true }, ...props);
+  }
+
+  // Send Slash
+  /**
+   * Send Slash to this channel
+   * @param {DiscordBot} botID Bot ID
+   * @param {String<ApplicationCommand.name>} commandName Command name
+   * @param {Array<ApplicationCommand.options>} args Command arguments
+   * @returns {Promise<pending>}
+   */
+  async sendSlash(botID, commandName, args = []) {
+    if (!this.isText()) throw new Error('This channel is not text-based.');
+    if(!botID) throw new Error('Bot ID is required');
+    const user = await this.client.users.fetch(botID).catch(() => {});
+    if (!user || !user.bot || !user.applications) throw new Error('BotID is not a bot or does not have an application slash command');
+    if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
+    const listApplication = user.applications.cache.size == 0 ? await user.applications.fetch() : user.applications.cache;
+    let slashCommand;
+    await Promise.all(listApplication.map(async application => {
+      if (commandName == application.name && application.type == 'CHAT_INPUT') slashCommand = application;
+    }));
+    if (!slashCommand) throw new Error(
+			`Command ${commandName} is not found\nList command avalible: ${listApplication.filter(a => a.type == 'CHAT_INPUT').map(a => a.name).join(', ')}`,
+		);
+    return slashCommand.sendSlashCommand(
+			new Message(this.client, {
+				channel_id: this.id,
+        guild_id: this.guild?.id || null,
+        author: this.client.user,
+        content: '',
+        id: this.client.user.id
+			}),
+      args
+		);
   }
 }
 

@@ -456,8 +456,8 @@ class ApplicationCommand extends Base {
    * const command = application.commands.first();
    * await command.sendContextMenu(messsage);
    */
-  async sendContextMenu(message) {
-    if (!message instanceof Message) throw new TypeError('The message must be a Discord.Message');
+  async sendContextMenu(message, sendFromMessage = false) {
+    if (!message instanceof Message && !sendFromMessage) throw new TypeError('The message must be a Discord.Message');
     if (this.type == 'CHAT_INPUT') return false;
     await this.client.api.interactions.post({ body: {
 				type: 2, // ???

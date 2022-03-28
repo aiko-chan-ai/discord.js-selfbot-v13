@@ -19,6 +19,8 @@ const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
+const { findBestMatch } = require('string-similarity'); // not check similarity
+const { ApplicationCommand } = require('discord.js-selfbot-v13');
 
 /**
  * @type {WeakSet<Message>}
@@ -1085,6 +1087,42 @@ class Message extends Base {
 			else throw new TypeError('MENU_ID_NOT_FOUND');
 		}
 		menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
+	}
+	//
+	/**
+	 * Send context Menu v2
+	 * @param {DiscordBotID} botID Bot id
+	 * @param {String<ApplicationCommand.name>} commandName Command name in Context Menu
+	 * @returns {Promise<pending>}
+	 */
+	async contextMenu(botID, commandName) {
+		if (!botID) throw new Error('Bot ID is required');
+		const user = await this.client.users.fetch(botID).catch(() => {});
+		if (!user || !user.bot || !user.applications)
+			throw new Error(
+				'BotID is not a bot or does not have an application slash command',
+			);
+		if (!commandName || typeof commandName !== 'string')
+			throw new Error('Command name is required');
+		const listApplication =
+			user.applications.cache.size == 0
+				? await user.applications.fetch()
+				: user.applications.cache;
+		let contextCMD;
+		await Promise.all(
+			listApplication.map(async (application) => {
+				if (commandName == application.name && application.type !== 'CHAT_INPUT')
+					contextCMD = application;
+			}),
+		);
+		if (!contextCMD)
+			throw new Error(
+				`Command ${commandName} is not found\nList command avalible: ${listApplication
+					.filter((a) => a.type !== 'CHAT_INPUT')
+					.map((a) => a.name)
+					.join(', ')}`,
+			);
+		return contextCMD.sendContextMenu(this, true);
 	}
 }
 

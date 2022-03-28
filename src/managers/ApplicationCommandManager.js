@@ -84,6 +84,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetch(id, { guildId, cache = true, force = false } = {}) {
+    await this.user.createDM().catch(() => {});
     if (typeof id === 'object') {
       ({ guildId, cache = true } = id);
     } else if (id) {

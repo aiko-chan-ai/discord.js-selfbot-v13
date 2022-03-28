@@ -209,6 +209,7 @@ Update soon ~
 Code
 
 ```js
+const RPC = require('discord-rpc-contructor');
 // Bot ID
 RPC.getRpcImages('817229550684471297').then(console.log);
 ```
@@ -252,6 +253,7 @@ await message.selectMenu(options) // If message has 1 menu
 <summary>Slash Command (v1)</summary>
 
 ```js
+// v1
 const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
@@ -265,13 +267,15 @@ messageID: Message.id,
 await command.sendSlashCommand(Message, ['option1', 'option2']);
 // Eg: Slash /add role:123456789 user:987654321
 // value: ['123456789', '987654321']
-// Channel.sendSlashCommand(botID, commandName, options): Comming soon !
+// v2
+await Channel.sendSlash(botID, commandName, ['option1', 'option2']);
 ```
 </details>
 <details>
-<summary>Message Context Command (v1)</summary>
+<summary>Message Context Command</summary>
 
 ```js
+// v1
 const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
@@ -284,8 +288,19 @@ messageID: Message.id,
 author:  Message.author,
 */
 await command.sendContextMenu(Message);
-// Channel.sendContextMenu(botID, commandName): Comming soon !
+// v2
+await message.contextMenu(botID, commandName);
 ```
+</details>
+<details>
+<summary>Issue ?</summary>
+
+- It has some minor bugs.
+- ErrorCode: 20012 => You are not authorized to perform this action on this application
+- I tried to fix it by creating 1 DMs with bot
+- In this way, all Slash commands can be obtained
+- I will try to find another way to not need to create DMs with Bot anymore
+- Credit: [Here](https://www.reddit.com/r/Discord_selfbots/comments/tczprx/discum_help_creating_a_selfbot_that_can_do_ping/)
 </details>
 
 ## User HypeSquad
