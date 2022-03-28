@@ -7,7 +7,7 @@
 
 ```js
 new Client({
-  checkUpdate: true, // Check Package Update (Bot Ready) [Enable Deafult]
+  checkUpdate: true, // Check Package Update (Bot Ready) [Enable Default]
   readyStatus: false, // Set Custom Status sync from Account (Bot Ready) [Disable Default]
 })
 ```
