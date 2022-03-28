@@ -257,7 +257,7 @@ await message.selectMenu(options) // If message has 1 menu
 const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
-const command = application.cache.first();
+const command = application.first();
 // Message: Discord.Message, using Message contructor create
 /*
 guildID: Guild.id || null,
@@ -279,7 +279,7 @@ await Channel.sendSlash(botID, commandName, ['option1', 'option2']);
 const botID = '12345678987654321'
 const user = await client.users.fetch(botID);
 const application = await user.applications.fetch();
-const command = application.cache.first();
+const command = application.first();
 // Message: Discord.Message, using Message contructor create
 /*
 guildID: Guild.id || null,
