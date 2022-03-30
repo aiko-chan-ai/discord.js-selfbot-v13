@@ -92,7 +92,9 @@ class UserManager extends CachedManager {
 
     const data = await this.client.api.users(id).get();
     const userObject = this._add(data, cache);
-    if(!userObject.bot) await userObject.getProfile().catch(() => {});
+    await userObject.getProfile().catch(() => {});
+    const noteObject = await this.client.api.users['@me'].notes(id).get().catch(() => null);
+    userObject.note = noteObject?.note ?? null;
     return userObject;
   }
 

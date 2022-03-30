@@ -39,6 +39,7 @@ class User extends Base {
 		this.premiumGuildSince = null;
 		this.mutualGuilds = new Collection();
     this.applications = null;
+    this.note = null;
     this._patch(data);
   }
 
@@ -420,6 +421,13 @@ class User extends Base {
     json.displayAvatarURL = this.displayAvatarURL();
     json.bannerURL = this.banner ? this.bannerURL() : this.banner;
     return json;
+  }
+
+  async setNote(note = null) {
+    await this.client.api.users['@me']
+			.notes(id)
+			.put({ data: { note } });
+    return this.note = note;
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel
