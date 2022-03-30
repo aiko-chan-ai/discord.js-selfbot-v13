@@ -11,8 +11,8 @@ const {
 } = require('../util/Constants');
 
 function parseResponse(res) {
-  if (res.headers.get('content-type').startsWith('application/json')) return res.json();
-  return res.buffer();
+	if (res.headers.get('content-type').startsWith('application/json')) return res.json();
+	return res.arrayBuffer(); // Cre: TheDevYellowy
 }
 
 function getAPIOffset(serverDate) {

@@ -225,19 +225,14 @@ class Message extends Base {
 			 * All valid mentions that the message contains
 			 * @type {MessageMentions}
 			 */
-			if (!data.mentions)
-				this.mentions = new Mentions(
-					this,
-					data.mentions,
-					data.mention_roles,
-					data.mention_everyone,
-					data.mention_channels,
-					data.referenced_message?.author,
-				);
-			else
-				data.mentions instanceof Mentions
-					? (this.mentions = data.mentions)
-					: (this.mentions = null);
+			this.mentions = new Mentions(
+				this,
+				data.mentions,
+				data.mention_roles,
+				data.mention_everyone,
+				data.mention_channels,
+				data.referenced_message?.author,
+			);
 		} else {
 			this.mentions = new Mentions(
 				this,
@@ -491,9 +486,8 @@ class Message extends Base {
 	 * @readonly
 	 */
 	get url() {
-		return `https://discord.com/channels/${this.guildId ?? '@me'}/${
-			this.channelId
-		}/${this.id}`;
+		return `https://discord.com/channels/${this.guildId ?? '@me'}/${this.channelId
+			}/${this.id}`;
 	}
 
 	/**
@@ -619,8 +613,8 @@ class Message extends Base {
 	get editable() {
 		const precheck = Boolean(
 			this.author.id === this.client.user.id &&
-				!deletedMessages.has(this) &&
-				(!this.guild || this.channel?.viewable),
+			!deletedMessages.has(this) &&
+			(!this.guild || this.channel?.viewable),
 		);
 		// Regardless of permissions thread messages cannot be edited if
 		// the thread is locked.
@@ -654,8 +648,8 @@ class Message extends Base {
 
 		return Boolean(
 			this.author.id === this.client.user.id ||
-				(permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, false) &&
-					this.guild.me.communicationDisabledUntilTimestamp < Date.now()),
+			(permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, false) &&
+				this.guild.me.communicationDisabledUntilTimestamp < Date.now()),
 		);
 	}
 
@@ -668,12 +662,12 @@ class Message extends Base {
 		const { channel } = this;
 		return Boolean(
 			!this.system &&
-				!deletedMessages.has(this) &&
-				(!this.guild ||
-					(channel?.viewable &&
-						channel
-							?.permissionsFor(this.client.user)
-							?.has(Permissions.FLAGS.MANAGE_MESSAGES, false))),
+			!deletedMessages.has(this) &&
+			(!this.guild ||
+				(channel?.viewable &&
+					channel
+						?.permissionsFor(this.client.user)
+						?.has(Permissions.FLAGS.MANAGE_MESSAGES, false))),
 		);
 	}
 
@@ -704,11 +698,11 @@ class Message extends Base {
 		const { channel } = this;
 		return Boolean(
 			channel?.type === 'GUILD_NEWS' &&
-				!this.flags.has(MessageFlags.FLAGS.CROSSPOSTED) &&
-				this.type === 'DEFAULT' &&
-				channel.viewable &&
-				channel.permissionsFor(this.client.user)?.has(bitfield, false) &&
-				!deletedMessages.has(this),
+			!this.flags.has(MessageFlags.FLAGS.CROSSPOSTED) &&
+			this.type === 'DEFAULT' &&
+			channel.viewable &&
+			channel.permissionsFor(this.client.user)?.has(bitfield, false) &&
+			!deletedMessages.has(this),
 		);
 	}
 
@@ -1097,7 +1091,7 @@ class Message extends Base {
 	 */
 	async contextMenu(botID, commandName) {
 		if (!botID) throw new Error('Bot ID is required');
-		const user = await this.client.users.fetch(botID).catch(() => {});
+		const user = await this.client.users.fetch(botID).catch(() => { });
 		if (!user || !user.bot || !user.applications)
 			throw new Error(
 				'BotID is not a bot or does not have an application slash command',
