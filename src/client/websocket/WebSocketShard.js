@@ -13,7 +13,7 @@ let zlib;
 
 try {
   zlib = require('zlib-sync');
-} catch {} // eslint-disable-line no-empty
+} catch { } // eslint-disable-line no-empty
 
 /**
  * Represents a Shard's WebSocket connection
@@ -487,9 +487,8 @@ class WebSocketShard extends EventEmitter {
       () => {
         this.debug(
           `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
-            `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
-              this.expectedGuilds.size
-            }`,
+          `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${this.expectedGuilds.size
+          }`,
         );
 
         this.readyTimeout = null;
@@ -610,7 +609,7 @@ class WebSocketShard extends EventEmitter {
     // Clone the identify payload and assign the token and shard info
     const d = {
       ...client.options.ws,
-      intents: Intents.resolve(client.options.intents),
+      // intents: Intents.resolve(client.options.intents), // Remove, Req by dolfies_person [Reddit]
       token: client.token,
       shard: [this.id, Number(client.options.shardCount)],
     };
