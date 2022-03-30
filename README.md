@@ -60,13 +60,13 @@ window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m
 Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt="." width="16" height="16"/> [<strong>hxr404</strong>](https://github.com/hxr404/Discord-Console-hacks)
 
 ## Selfbot feature ?
-- Friends and Block Members
-- Discord Apps Setting [Theme, Language, HypeSquad, etc.]
-- Get Profile GuildMember [Nitro Time, Boost Time, Connected Account, Bio, etc.]
-- Setting Position Guild and Folder
-- Custom Status and RPC (without button, because it's not working)
-- Interaction [Button, MessageSelectMenu, Slash, ContextMenu]
-- You can request more features for my module by placing an issue!
+- [Friends and Block Members](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#discord-user-friend--blocked)
+- [Discord Apps Setting: Theme, Language, HypeSquad, etc.](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#user-settings)
+- [Get Profile GuildMember: Nitro Time, Boost Time, Connected Account, Bio, etc.](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#discord-user-info)
+- [Setting Position Guild and Folder](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#discord-guild-set-position)
+- [Custom Status and RPC (without button, because it's not working)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#custom-status-and-rpc)
+- [Interaction: Button, MessageSelectMenu, Slash, ContextMenu](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md#interaction)
+- [You can request more features for my module by placing an issue!](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues)
 - Click <strong>[here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong> to see the patched functions
 ## Links [Discord.js]
 
@@ -88,5 +88,13 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 
 ## Need help?
 Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331449)
+
+## Credits
+- [Discord.js Teams](https://github.com/discordjs/discord.js)
+- [Discord S.C.U.M Teams](https://github.com/Merubokkusu/Discord-S.C.U.M)
+- [Yellowy dsb.js](https://github.com/TheDevYellowy/dsb.js)
+- [Discord Console Hack](https://github.com/hxr404/Discord-Console-hacks)
+- And the people who submitted the issue, colab, ...
+
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
 - Tóm lại là module này dùng Discord.js v13 , API v10 nên chưa chết sớm đâu, cứ dùng đi =))

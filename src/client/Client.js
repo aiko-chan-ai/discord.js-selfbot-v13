@@ -193,6 +193,12 @@ class Client extends BaseClient {
      */
     this.readyAt = null;
 
+    /**
+     * Password cache
+     * @type {?string}
+     */
+    this.password = null;
+
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
         'The message sweeping client options are deprecated, use the global sweepers instead.',

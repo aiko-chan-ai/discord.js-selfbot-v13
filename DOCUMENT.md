@@ -119,6 +119,7 @@ User {
   flags: UserFlagsBitField { bitfield: 256 },
   friend: false,
   blocked: false,
+  note: null,
   connectedAccounds: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
@@ -303,14 +304,35 @@ await message.contextMenu(botID, commandName);
 - Credit: [Here](https://www.reddit.com/r/Discord_selfbots/comments/tczprx/discum_help_creating_a_selfbot_that_can_do_ping/)
 </details>
 
-## User HypeSquad
+## User & ClientUser Method
 <details>
 <summary>Click to show</summary>
 
 ```js
+// HypeSquad
 await client.user.setHypeSquad('HOUSE_BRAVERY');
 await client.user.setHypeSquad('HOUSE_BRILLIANCE');
 await client.user.setHypeSquad('HOUSE_BALANCE');
+// Set Note to User
+await user.setNote('Hello World');
+// Set Username
+await client.user.setUsername('new username', 'password');
+// Set Accent Color
+await client.user.setAccentColor('RED'); // set color same as Embed.setColor()
+// Set Banner
+await client.user.setBanner('image file / image url'); // same as setAvatar & Require Nitro level 2
+// Set Discord Tag
+await client.user.setDiscriminator('1234', 'password'); // #1234
+// Set About me
+await client.user.setAboutMe('Hello World');
+// Set Email
+await client.user.setEmail('aiko.dev@mail.nezukobot.vn', 'password'); // It is clone email =))
+// Change Password
+await client.user.setPassword('old password', 'new password');
+// Disable Account
+await client.user.disableAccount('password');
+// Delete Account [WARNING] Cannot be changed once used!
+await client.user.deleteAccount('password');
 ```
 </details>
 

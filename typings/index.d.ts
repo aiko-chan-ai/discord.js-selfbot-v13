@@ -565,6 +565,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public users: UserManager;
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
+  public password: String | null;
   public destroy(): void;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
@@ -636,10 +637,19 @@ export class ClientUser extends User {
   public setActivity(name: string, options?: ActivityOptions): ClientPresence;
   public setAFK(afk?: boolean, shardId?: number | number[]): ClientPresence;
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
+  public setBanner(banner: BufferResolvable | Base64Resolvable | null): Promise<this>;
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
-  public setUsername(username: string): Promise<this>;
+  public setUsername(username: string, password: string): Promise<this>;
   public setHypeSquad(type: HypeSquadOptions<Number|String>): Promise<void>;
+  public setAccentColor(color: ColorResolvable): Promise<this>;
+  public setDiscriminator(discriminator: string, password: string): Promise<this>;
+  public setAboutMe(bio: string): Promise<this>;
+  public setBanner(): Promise<this>;
+  public setEmail(email: string, password: string): Promise<this>;
+  public setPassword(oldPassword: string, newPassword: string): Promise<this>;
+  public disableAccount(password: string): Promise<this>;
+  public deleteAccount(password: string): Promise<this>;
   // Selfbot
   public readonly nitro: boolean;
     /**
@@ -2427,6 +2437,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public system: boolean;
   public readonly tag: string;
   public username: string;
+  public note: string | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -2440,6 +2451,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public sendFriendRequest(): Promise<User>;
   public unFriend(): Promise<User>;
   public unBlock(): Promise<User>;
+  public setNote(note): Promise<String>;
   public getProfile(): Promise<User>;
   public toString(): UserMention;
 }
