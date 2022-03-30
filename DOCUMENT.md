@@ -254,20 +254,7 @@ await message.selectMenu(options) // If message has 1 menu
 <summary>Slash Command</summary>
 
 ```js
-// v1
-const botID = '12345678987654321'
-const user = await client.users.fetch(botID);
-const application = await user.applications.fetch();
-const command = application.first();
-// Message: Discord.Message, using Message contructor create
-/*
-guildID: Guild.id || null,
-channelID: Channel.id,
-messageID: Message.id,
-*/
-await command.sendSlashCommand(Message, ['option1', 'option2']);
-// Eg: Slash /add role:123456789 user:987654321
-// value: ['123456789', '987654321']
+// v1 [deprecated]
 // v2
 await Channel.sendSlash(botID, commandName, ['option1', 'option2']);
 // Eg /addrole roleID: 12345678987654321 userID: 98765432123456789
@@ -282,19 +269,7 @@ await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2'
 <summary>Message Context Command</summary>
 
 ```js
-// v1
-const botID = '12345678987654321'
-const user = await client.users.fetch(botID);
-const application = await user.applications.fetch();
-const command = application.first();
-// Message: Discord.Message, using Message contructor create
-/*
-guildID: Guild.id || null,
-channelID: Channel.id,
-messageID: Message.id,
-author:  Message.author,
-*/
-await command.sendContextMenu(Message);
+// v1 [deprecated]
 // v2
 await message.contextMenu(botID, commandName);
 ```
@@ -354,6 +329,8 @@ await client.fetchInvite('code').then(async invite => {
 `invite.acceptInvite(true);` => Auto skip verify screen
 
 <img src= 'https://cdn.discordapp.com/attachments/820557032016969751/957247688666132520/unknown.png'>
+
+<strong>But if you are blocked by HCaptcha, this will not work</strong>
 </details>
 
 ## Reddem Nitro ?
