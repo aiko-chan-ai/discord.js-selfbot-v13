@@ -270,6 +270,12 @@ await command.sendSlashCommand(Message, ['option1', 'option2']);
 // value: ['123456789', '987654321']
 // v2
 await Channel.sendSlash(botID, commandName, ['option1', 'option2']);
+// Eg /addrole roleID: 12345678987654321 userID: 98765432123456789
+// => await Channel.sendSlash(botID, 'addrole', ['12345678987654321', '98765432123456789']);
+// Command group
+await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2']);
+// Eg: /role add roleID: 12345678987654321 userID: 98765432123456789
+// => await Channel.sendSlash(botID, 'role', ['add', '12345678987654321', '98765432123456789']);
 ```
 </details>
 <details>

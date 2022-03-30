@@ -2,7 +2,11 @@
 
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
-const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
+const {
+  ApplicationCommandOptionTypes,
+  ApplicationCommandTypes,
+  ChannelTypes,
+} = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const { Message } = require('discord.js');
 
@@ -43,7 +47,10 @@ class ApplicationCommand extends Base {
      * The manager for permissions of this command on its guild or arbitrary guilds when the command is global
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this, this.applicationId);
+    this.permissions = new ApplicationCommandPermissionsManager(
+      this,
+      this.applicationId,
+    );
 
     /**
      * The type of this application command
@@ -78,7 +85,9 @@ class ApplicationCommand extends Base {
        * The options of this command
        * @type {ApplicationCommandOption[]}
        */
-      this.options = data.options.map(o => this.constructor.transformOption(o, true));
+      this.options = data.options.map((o) =>
+        this.constructor.transformOption(o, true),
+      );
     } else {
       this.options ??= [];
     }
@@ -236,23 +245,32 @@ class ApplicationCommand extends Base {
     if (command.id && this.id !== command.id) return false;
 
     // Check top level parameters
-    const commandType = typeof command.type === 'string' ? command.type : ApplicationCommandTypes[command.type];
+    const commandType =
+      typeof command.type === 'string'
+        ? command.type
+        : ApplicationCommandTypes[command.type];
     if (
       command.name !== this.name ||
       ('description' in command && command.description !== this.description) ||
       ('version' in command && command.version !== this.version) ||
-      ('autocomplete' in command && command.autocomplete !== this.autocomplete) ||
+      ('autocomplete' in command &&
+        command.autocomplete !== this.autocomplete) ||
       (commandType && commandType !== this.type) ||
       // Future proof for options being nullable
       // TODO: remove ?? 0 on each when nullable
       (command.options?.length ?? 0) !== (this.options?.length ?? 0) ||
-      (command.defaultPermission ?? command.default_permission ?? true) !== this.defaultPermission
+      (command.defaultPermission ?? command.default_permission ?? true) !==
+      this.defaultPermission
     ) {
       return false;
     }
 
     if (command.options) {
-      return this.constructor.optionsEqual(this.options, command.options, enforceOptionOrder);
+      return this.constructor.optionsEqual(
+        this.options,
+        command.options,
+        enforceOptionOrder,
+      );
     }
     return true;
   }
@@ -270,12 +288,15 @@ class ApplicationCommand extends Base {
   static optionsEqual(existing, options, enforceOptionOrder = false) {
     if (existing.length !== options.length) return false;
     if (enforceOptionOrder) {
-      return existing.every((option, index) => this._optionEquals(option, options[index], enforceOptionOrder));
+      return existing.every((option, index) =>
+        this._optionEquals(option, options[index], enforceOptionOrder),
+      );
     }
-    const newOptions = new Map(options.map(option => [option.name, option]));
+    const newOptions = new Map(options.map((option) => [option.name, option]));
     for (const option of existing) {
       const foundOption = newOptions.get(option.name);
-      if (!foundOption || !this._optionEquals(option, foundOption)) return false;
+      if (!foundOption || !this._optionEquals(option, foundOption))
+        return false;
     }
     return true;
   }
@@ -292,17 +313,23 @@ class ApplicationCommand extends Base {
    * @private
    */
   static _optionEquals(existing, option, enforceOptionOrder = false) {
-    const optionType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
+    const optionType =
+      typeof option.type === 'string'
+        ? option.type
+        : ApplicationCommandOptionTypes[option.type];
     if (
       option.name !== existing.name ||
       optionType !== existing.type ||
       option.description !== existing.description ||
       option.autocomplete !== existing.autocomplete ||
-      (option.required ?? (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(optionType) ? undefined : false)) !==
-        existing.required ||
+      (option.required ??
+        (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(optionType)
+          ? undefined
+          : false)) !== existing.required ||
       option.choices?.length !== existing.choices?.length ||
       option.options?.length !== existing.options?.length ||
-      (option.channelTypes ?? option.channel_types)?.length !== existing.channelTypes?.length ||
+      (option.channelTypes ?? option.channel_types)?.length !==
+      existing.channelTypes?.length ||
       (option.minValue ?? option.min_value) !== existing.minValue ||
       (option.maxValue ?? option.max_value) !== existing.maxValue
     ) {
@@ -313,13 +340,17 @@ class ApplicationCommand extends Base {
       if (
         enforceOptionOrder &&
         !existing.choices.every(
-          (choice, index) => choice.name === option.choices[index].name && choice.value === option.choices[index].value,
+          (choice, index) =>
+            choice.name === option.choices[index].name &&
+            choice.value === option.choices[index].value,
         )
       ) {
         return false;
       }
       if (!enforceOptionOrder) {
-        const newChoices = new Map(option.choices.map(choice => [choice.name, choice]));
+        const newChoices = new Map(
+          option.choices.map((choice) => [choice.name, choice]),
+        );
         for (const choice of existing.choices) {
           const foundChoice = newChoices.get(choice.name);
           if (!foundChoice || foundChoice.value !== choice.value) return false;
@@ -328,8 +359,8 @@ class ApplicationCommand extends Base {
     }
 
     if (existing.channelTypes) {
-      const newTypes = (option.channelTypes ?? option.channel_types).map(type =>
-        typeof type === 'number' ? ChannelTypes[type] : type,
+      const newTypes = (option.channelTypes ?? option.channel_types).map(
+        (type) => (typeof type === 'number' ? ChannelTypes[type] : type),
       );
       for (const type of existing.channelTypes) {
         if (!newTypes.includes(type)) return false;
@@ -337,7 +368,11 @@ class ApplicationCommand extends Base {
     }
 
     if (existing.options) {
-      return this.optionsEqual(existing.options, option.options, enforceOptionOrder);
+      return this.optionsEqual(
+        existing.options,
+        option.options,
+        enforceOptionOrder,
+      );
     }
     return true;
   }
@@ -373,24 +408,35 @@ class ApplicationCommand extends Base {
    * @private
    */
   static transformOption(option, received) {
-    const stringType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
+    const stringType =
+      typeof option.type === 'string'
+        ? option.type
+        : ApplicationCommandOptionTypes[option.type];
     const channelTypesKey = received ? 'channelTypes' : 'channel_types';
     const minValueKey = received ? 'minValue' : 'min_value';
     const maxValueKey = received ? 'maxValue' : 'max_value';
     return {
-      type: typeof option.type === 'number' && !received ? option.type : ApplicationCommandOptionTypes[option.type],
+      type:
+        typeof option.type === 'number' && !received
+          ? option.type
+          : ApplicationCommandOptionTypes[option.type],
       name: option.name,
       description: option.description,
       required:
-        option.required ?? (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP' ? undefined : false),
+        option.required ??
+        (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP'
+          ? undefined
+          : false),
       autocomplete: option.autocomplete,
       choices: option.choices,
-      options: option.options?.map(o => this.transformOption(o, received)),
+      options: option.options?.map((o) => this.transformOption(o, received)),
       [channelTypesKey]: received
-        ? option.channel_types?.map(type => ChannelTypes[type])
-        : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
-          // When transforming to API data, accept API data
-          option.channel_types,
+        ? option.channel_types?.map((type) => ChannelTypes[type])
+        : option.channelTypes?.map((type) =>
+          typeof type === 'string' ? ChannelTypes[type] : type,
+        ) ??
+        // When transforming to API data, accept API data
+        option.channel_types,
       [minValueKey]: option.minValue ?? option.min_value,
       [maxValueKey]: option.maxValue ?? option.max_value,
     };
@@ -409,40 +455,81 @@ class ApplicationCommand extends Base {
    */
   async sendSlashCommand(message, options = []) {
     // Check Options
-    if (!message instanceof Message) throw new TypeError('The message must be a Discord.Message');
-    if (!Array.isArray(options)) throw new TypeError('The options must be an array of strings');
+    if (!message instanceof Message)
+      throw new TypeError('The message must be a Discord.Message');
+    if (!Array.isArray(options))
+      throw new TypeError('The options must be an array of strings');
     if (this.type !== 'CHAT_INPUT') return false;
     const optionFormat = [];
+    let option_ = [];
     let i = 0;
-    for (i; i < options.length ; i++) {
+    // Check Command type is Sub group ?
+    const subCommandCheck = this.options.some((option) =>
+      ['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type),
+    );
+    let subCommand;
+    if (subCommandCheck) {
+      subCommand = this.options.find((option) => option.name == options[0]);
+      option_[0] = {
+        type: ApplicationCommandOptionTypes[subCommand.type],
+        name: subCommand.name,
+        options: optionFormat,
+      };
+    } else {
+      option_ = optionFormat;
+    }
+    for (i; i < options.length; i++) {
       const value = options[i];
       if (typeof value !== 'string') {
-        throw new TypeError(`Expected option to be a String, got ${typeof value}`);
+        throw new TypeError(
+          `Expected option to be a String, got ${typeof value}`,
+        );
       }
-      if (!this.options[i]) continue;
-      const data = {
-        type: ApplicationCommandOptionTypes[this.options[i].type],
-        name: this.options[i].name,
-        value: value,
+      if (!subCommandCheck && !this.options[i]) continue;
+      if (subCommandCheck && !subCommand.options[i]) continue;
+      if (!subCommandCheck) {
+        const data = {
+          type: ApplicationCommandOptionTypes[this.options[i].type],
+          name: this.options[i].name,
+          value: this.options[i].type == 'INTEGER' ? Number(value) : (this.options[i].type == 'BOOLEAN' ? Boolean(value) : value),
+        };
+        optionFormat.push(data);
+      } else {
+        if (!options[i + 1]) continue;
+        const data = {
+          type: ApplicationCommandOptionTypes[subCommand.options[i].type],
+          name: subCommand.options[i].name,
+          value:
+            subCommand.options[i].type == 'INTEGER'
+              ? Number(options[i + 1])
+              : subCommand.options[i].type == 'BOOLEAN'
+                ? Boolean(options[i + 1])
+                : options[i + 1],
+        };
+        optionFormat.push(data);
       }
-      optionFormat.push(data);
     }
-    if (this.options[i]?.required) throw new Error('Value required missing');
-    await this.client.api.interactions.post({ body: {
-				type: 2, // ???
-				application_id: this.applicationId,
-				guild_id: message.guildId,
-				channel_id: message.channelId,
-				session_id: this.client.session_id,
-				data: {
+    if (!subCommandCheck && this.options[i]?.required)
+			throw new Error('Value required missing');
+    if (subCommandCheck && subCommand.options[i-1]?.required)
+			throw new Error('Value required missing');
+    await this.client.api.interactions.post({
+      body: {
+        type: 2, // ???
+        application_id: this.applicationId,
+        guild_id: message.guildId,
+        channel_id: message.channelId,
+        session_id: this.client.session_id,
+        data: {
           // ApplicationCommandData
-					version: this.version,
-					id: this.id,
-					name: this.name,
-					type: ApplicationCommandTypes[this.type],
-					options: optionFormat,
-				},
-			}})
+          version: this.version,
+          id: this.id,
+          name: this.name,
+          type: ApplicationCommandTypes[this.type],
+          options: option_,
+        },
+      },
+    });
     return true;
   }
   /**
@@ -457,23 +544,29 @@ class ApplicationCommand extends Base {
    * await command.sendContextMenu(messsage);
    */
   async sendContextMenu(message, sendFromMessage = false) {
-    if (!message instanceof Message && !sendFromMessage) throw new TypeError('The message must be a Discord.Message');
+    if (!message instanceof Message && !sendFromMessage)
+      throw new TypeError('The message must be a Discord.Message');
     if (this.type == 'CHAT_INPUT') return false;
-    await this.client.api.interactions.post({ body: {
-				type: 2, // ???
-				application_id: this.applicationId,
-				guild_id: message.guildId,
-				channel_id: message.channelId,
-				session_id: this.client.session_id,
-				data: {
+    await this.client.api.interactions.post({
+      body: {
+        type: 2, // ???
+        application_id: this.applicationId,
+        guild_id: message.guildId,
+        channel_id: message.channelId,
+        session_id: this.client.session_id,
+        data: {
           // ApplicationCommandData
-					version: this.version,
-					id: this.id,
-					name: this.name,
-					type: ApplicationCommandTypes[this.type],
-          target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
-				},
-			}})
+          version: this.version,
+          id: this.id,
+          name: this.name,
+          type: ApplicationCommandTypes[this.type],
+          target_id:
+            ApplicationCommandTypes[this.type] == 1
+              ? message.author.id
+              : message.id,
+        },
+      },
+    });
     return true;
   }
 }
