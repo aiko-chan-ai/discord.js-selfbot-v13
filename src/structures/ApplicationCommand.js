@@ -485,33 +485,68 @@ class ApplicationCommand extends Base {
           `Expected option to be a String, got ${typeof value}`,
         );
       }
-      if (!subCommandCheck && !this.options[i]) continue;
-      if (subCommandCheck && !subCommand.options[i]) continue;
+      if (!subCommandCheck && !this?.options[i]) continue;
+      if (subCommandCheck && subCommand && !subCommand?.options[i]) continue;
       if (!subCommandCheck) {
+        // Check value is invalid
+        let choice;
+        if (this.options[i].choices && this.options[i].choices.length > 0) {
+					choice =
+						this.options[i].choices.find((c) => c.name == value) ||
+						this.options[i].choices.find((c) => c.value == value);
+					if (!choice) {
+						throw new Error(
+							`Invalid option: ${value} is not a valid choice for this option\nList of choices: ${this.options[
+								i
+							].choices
+								.map((c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`)
+								.join('')}`,
+						);
+					}
+				}
         const data = {
           type: ApplicationCommandOptionTypes[this.options[i].type],
           name: this.options[i].name,
-          value: this.options[i].type == 'INTEGER' ? Number(value) : (this.options[i].type == 'BOOLEAN' ? Boolean(value) : value),
+          value: choice?.value || (this.options[i].type == 'INTEGER' ? Number(value) : (this.options[i].type == 'BOOLEAN' ? Boolean(value) : value)),
         };
         optionFormat.push(data);
       } else {
         if (!options[i + 1]) continue;
+        // Check value is invalid
+        let choice;
+        if (
+					subCommand.options[i].choices &&
+					subCommand.options[i].choices.length > 0
+				) {
+					choice =
+						subCommand.options[i].choices.find((c) => c.name == value) ||
+						subCommand.options[i].choices.find((c) => c.value == value);
+					if (!choice) {
+						throw new Error(
+							`Invalid option: ${value} is not a valid choice for this option\nList of choices: ${subCommand.options[
+								i
+							].choices.map(
+								(c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`,
+							).join('')}`,
+						);
+					}
+				}
         const data = {
           type: ApplicationCommandOptionTypes[subCommand.options[i].type],
           name: subCommand.options[i].name,
-          value:
-            subCommand.options[i].type == 'INTEGER'
+          value: choice?.value ||
+            (subCommand.options[i].type == 'INTEGER'
               ? Number(options[i + 1])
               : subCommand.options[i].type == 'BOOLEAN'
                 ? Boolean(options[i + 1])
-                : options[i + 1],
+                : options[i + 1]),
         };
         optionFormat.push(data);
       }
     }
     if (!subCommandCheck && this.options[i]?.required)
 			throw new Error('Value required missing');
-    if (subCommandCheck && subCommand.options[i-1]?.required)
+    if (subCommandCheck && subCommand?.options[i-1]?.required)
 			throw new Error('Value required missing');
     await this.client.api.interactions.post({
       body: {
