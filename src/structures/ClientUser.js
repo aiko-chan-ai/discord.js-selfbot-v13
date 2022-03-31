@@ -174,6 +174,7 @@ class ClientUser extends User {
 	 * @returns {Promise}
 	 */
 	setDiscriminator(discriminator, password) {
+		if (!this.nitro) throw new Error('You must be a Nitro User to change your discriminator.');
 		if (!password && !this.client.password)
 			throw new Error('A password is required to change a discriminator.');
 		return this.edit({

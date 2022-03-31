@@ -303,7 +303,7 @@ await client.user.setAccentColor('RED'); // set color same as Embed.setColor()
 // Set Banner
 await client.user.setBanner('image file / image url'); // same as setAvatar & Require Nitro level 2
 // Set Discord Tag
-await client.user.setDiscriminator('1234', 'password'); // #1234
+await client.user.setDiscriminator('1234', 'password'); // #1234 & Require Nitro
 // Set About me
 await client.user.setAboutMe('Hello World');
 // Set Email
