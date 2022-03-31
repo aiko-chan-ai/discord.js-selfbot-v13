@@ -486,7 +486,7 @@ class ApplicationCommand extends Base {
         );
       }
       if (!subCommandCheck && !this?.options[i]) continue;
-      if (subCommandCheck && subCommand && !subCommand?.options[i]) continue;
+      if (subCommandCheck && subCommand?.options && !subCommand?.options[i]) continue;
       if (!subCommandCheck) {
         // Check value is invalid
         let choice;
@@ -515,6 +515,7 @@ class ApplicationCommand extends Base {
         // Check value is invalid
         let choice;
         if (
+          subCommand?.options &&
 					subCommand.options[i].choices &&
 					subCommand.options[i].choices.length > 0
 				) {
@@ -546,7 +547,11 @@ class ApplicationCommand extends Base {
     }
     if (!subCommandCheck && this.options[i]?.required)
 			throw new Error('Value required missing');
-    if (subCommandCheck && subCommand?.options[i-1]?.required)
+    if (
+			subCommandCheck &&
+			subCommand?.options &&
+			subCommand?.options[i - 1]?.required
+		)
 			throw new Error('Value required missing');
     await this.client.api.interactions.post({
       body: {
