@@ -12,6 +12,18 @@ class WebEmbed {
     }
     _setup(data) {
         /**
+         * Shorten the link
+         * @type {?boolean}
+         */
+        this.shorten = data.shorten ?? false;
+
+        /**
+         * Hidden Embed link
+         * @type {?boolean}
+         */
+        this.hidden = data.hidden ?? false;
+
+        /**
          * The title of this embed
          * @type {?string}
          */
@@ -234,17 +246,15 @@ class WebEmbed {
 
     /**
      * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
-     * @param {boolean} hidden Hidden Embed link
-     * @param {boolean} shorten Shorten link ?
      * @returns {string} Message Content
      */
-    async toMessage(hidden = false, shorten = true) {
+    async toMessage() {
         const arrayQuery = [];
         if (this.title) {
-            arrayQuery.push(`title=${this.title}`);
+            arrayQuery.push(`title=${encodeURIComponent(this.title)}`);
         }
         if (this.description) {
-            arrayQuery.push(`description=${this.description}`);
+            arrayQuery.push(`description=${encodeURIComponent(this.description)}`);
         }
         if (this.url) {
             arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
@@ -277,12 +287,12 @@ class WebEmbed {
             );
         }
         const fullURL = `${baseURL}${arrayQuery.join('&')}`;
-        if (shorten) {
+        if (this.shorten) {
             const url = await getShorten(fullURL);
             if (!url) console.log('Cannot shorten URL in WebEmbed');
-            return hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
+            return this.hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
         } else {
-            return hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
+            return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
         }
     }
 }
