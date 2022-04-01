@@ -1760,6 +1760,28 @@ export class MessageEmbed {
   public static normalizeFields(...fields: EmbedFieldData[] | EmbedFieldData[][]): Required<EmbedFieldData>[];
 }
 
+export class WebEmbed {
+  public constructor(data?: MessageEmbed | MessageEmbedOptions | APIEmbed);
+  public author: MessageEmbedAuthor | null;
+  public color: number | null;
+  public description: string | null;
+  public readonly hexColor: HexColorString | null;
+  public image: MessageEmbedImage | null;
+  public provider: MessageEmbedProvider | null;
+  public title: string | null;
+  public url: string | null;
+  public video: MessageEmbedVideo | null;
+  public setAuthor(options: EmbedAuthorData | null): this;
+  public setColor(color: ColorResolvable): this;
+  public setDescription(description: string): this;
+  public setImage(url: string): this;
+  public setVideo(url: string): this;
+  public setTitle(title: string): this;
+  public setURL(url: string): this;
+  public setProvider(options: MessageEmbedProvider | null): this;
+  public toMessage(hidden: boolean, shorten: boolean): Promise<string>;
+}
+
 export class MessageFlags extends BitField<MessageFlagsString> {
   public static FLAGS: Record<MessageFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<MessageFlagsString, number>): number;

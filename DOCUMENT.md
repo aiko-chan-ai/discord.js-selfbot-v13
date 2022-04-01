@@ -285,6 +285,53 @@ await message.contextMenu(botID, commandName);
 - Credit: [Here](https://www.reddit.com/r/Discord_selfbots/comments/tczprx/discum_help_creating_a_selfbot_that_can_do_ping/)
 </details>
 
+## MessageEmbed ?
+- Because Discord has removed the ability to send Embeds in its API, that means MessageEmbed is unusable. But I have created a constructor that uses oEmbed from [page](https://embed.benny.fun/) (known to this site by module py discord.py-self_embed, thanks)
+
+<details>
+<summary><strong>Click to show</strong></summary>
+
+
+Code:
+```js
+const Discord = require('discord.js-selfbot-v13');
+const w = new Discord.WebEmbed()
+	.setAuthor({ name: 'hello', url: 'https://google.com' })
+	.setColor('RED')
+	.setDescription('description uh')
+	.setProvider({ name: 'provider', url: 'https://google.com' })
+	.setTitle('This is Title')
+	.setImage(
+		'https://cdn.discordapp.com/attachments/820557032016969751/959093026695835648/unknown.png',
+	)
+	.setVideo(
+		'https://cdn.discordapp.com/attachments/877060758092021801/957691816143097936/The_Quintessential_Quintuplets_And_Rick_Astley_Autotune_Remix.mp4',
+	);
+/**
+ * w.toMessage(hidden: true | false, shorten: true | false) => Promise<string>
+*/
+// Normal mode (Auto shorten)
+message.channel.send({ content: `${await w.toMessage()}` })
+// Normal mode (Not shorten)
+message.channel.send({ content: `${await w.toMessage(false, false)}` })
+// Hidden mode (with shorten)
+message.channel.send({ content: `${await w.toMessage(true, true)}` })
+// Hidden mode (no shorten)
+message.channel.send({ content: `${await w.toMessage(true, false)}` })
+// Custom content + Shorten + Hidden
+message.channel.send({ content: `Hello world ${await w.toMessage(true, true)}` })
+// etc ...
+
+```
+### Features & Issues
+- No Timestamp, Footer, Thumbnail (but embed video, thumbnail working), Fields, Author iconURL
+- Video with Embed working
+- Description limit 350 characters
+- If you use hidden mode you must make sure your custom content is less than 1000 characters without nitro (because hidden mode uses 1000 characters + URL)
+
+</details>
+
+
 ## User & ClientUser Method
 <details>
 <summary>Click to show</summary>

@@ -118,6 +118,7 @@ exports.MessageCollector = require('./structures/MessageCollector');
 exports.MessageComponentInteraction = require('./structures/MessageComponentInteraction');
 exports.MessageContextMenuInteraction = require('./structures/MessageContextMenuInteraction');
 exports.MessageEmbed = require('./structures/MessageEmbed');
+exports.WebEmbed = require('./structures/WebEmbed');
 exports.MessageMentions = require('./structures/MessageMentions');
 exports.MessagePayload = require('./structures/MessagePayload');
 exports.MessageReaction = require('./structures/MessageReaction');
@@ -153,5 +154,4 @@ exports.Widget = require('./structures/Widget');
 exports.WidgetMember = require('./structures/WidgetMember');
 exports.WelcomeChannel = require('./structures/WelcomeChannel');
 exports.WelcomeScreen = require('./structures/WelcomeScreen');
-
 exports.WebSocket = require('./WebSocket');
