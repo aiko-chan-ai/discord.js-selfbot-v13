@@ -194,17 +194,20 @@ class MessagePayload {
         this.options.embeds = [this.options.embeds];
       }
 
-      let webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
-      this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
+      const webembeds = this.options.embeds.filter(
+				(e) => !(e instanceof MessageEmbed),
+			);
+      this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 
       if (webembeds.length > 0) {
         // add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
-      }
-      while (webembeds.length) {
-        const embed = webembeds.shift();
+        if (webembeds.length > 1) {
+          console.warn('Multiple webembeds are not supported, only the first one will be sent');
+        }
+        const embed = webembeds[0];
         const data = await embed.toMessage();
-        content +=`\n${data}`
+        content += `\n${data}`;
       }
       // Check content
       if (content.length > 2000) {
