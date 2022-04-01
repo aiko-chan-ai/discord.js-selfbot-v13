@@ -287,18 +287,22 @@ class WebEmbed {
     }
 }
 
-// API by Shiraori#1782 (me)
+ // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
-    // Please not using this API, it's hosting in Heroku, very slow
+    const APIurl = [
+        'https://is.gd/create.php?format=simple&url=',
+        'https://tinyurl.com/api-create.php?url=',
+        // 'https://cdpt.in/shorten?url=', Redirects 5s :(
+    ];
     try {
-        const res = await axios
-            .post('https://sagiri-fansub.tk/api/v1/embed', {
-                url,
-            })
-        return `https://sagiri-fansub.tk/api/v1/embed/${res.data.path}`;
+        const res = await axios.get(
+            `${APIurl[Math.floor(Math.random() * APIurl.length)]}${url}`,
+        );
+        return `${res.data}`;
     } catch {
         return void 0;
     }
 }
 
 module.exports = WebEmbed;
+module.exports.hiddenEmbed = hiddenCharter;
