@@ -121,12 +121,12 @@ class MessagePayload {
    * Resolves data.
    * @returns {MessagePayload}
    */
-  resolveData() {
+  async resolveData() {
     if (this.data) return this;
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
 
-    const content = this.makeContent();
+    let content = this.makeContent();
     const tts = Boolean(this.options.tts);
 
     let nonce;
@@ -202,7 +202,7 @@ class MessagePayload {
       //while loop to make sure all embeds will be added to the content
       while (this.options.embeds.length) {
         const embed = this.options.embeds.shift();
-        const data = await embed.toMessage(true, true); //set to true hidden, shorten...
+        const data = await embed.toMessage();
         content +=`\n${data}`
       }
     }
