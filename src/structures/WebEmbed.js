@@ -291,9 +291,9 @@ class WebEmbed {
         if (this.shorten) {
             const url = await getShorten(fullURL);
             if (!url) console.log('Cannot shorten URL in WebEmbed');
-            return this.hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
+            return (url || fullURL);
         } else {
-            return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
+            return fullURL;
         }
     }
 }
@@ -301,8 +301,8 @@ class WebEmbed {
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
     const APIurl = [
-        'https://is.gd/create.php?format=simple&url=',
-        'https://tinyurl.com/api-create.php?url=',
+        //'https://is.gd/create.php?format=simple&url=',
+        'https://tinyurl.com/api-create.php?url=', //this looks fine to me
         // 'https://cdpt.in/shorten?url=', Redirects 5s :(
     ];
     try {
