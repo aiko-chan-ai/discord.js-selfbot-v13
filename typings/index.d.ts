@@ -1765,7 +1765,6 @@ export class WebEmbed {
   public author: MessageEmbedAuthor | null;
   public color: number | null;
   public description: string | null;
-  public readonly hexColor: HexColorString | null;
   public image: MessageEmbedImage | null;
   public provider: MessageEmbedProvider | null;
   public title: string | null;

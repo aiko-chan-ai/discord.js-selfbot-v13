@@ -53,6 +53,7 @@ import {
   MessageCollector,
   MessageComponentInteraction,
   MessageEmbed,
+  WebEmbed,
   MessageReaction,
   NewsChannel,
   Options,
