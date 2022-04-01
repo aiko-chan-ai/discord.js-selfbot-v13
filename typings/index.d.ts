@@ -1761,7 +1761,7 @@ export class MessageEmbed {
 }
 
 export class WebEmbed {
-  public constructor(data?: WebEmbed | WebEmbedOptions);
+  public constructor(data?: MessageEmbed | MessageEmbedOptions | APIEmbed);
   public author: MessageEmbedAuthor | null;
   public color: number | null;
   public description: string | null;
@@ -5172,23 +5172,6 @@ export interface MessageEmbedImage {
   width?: number;
 }
 
-
-export interface WebEmbedOptions {
-  shorten?: boolean;
-  hidden?: boolean;
-  title?: string;
-  description?: string;
-  url?: string;
-  timestamp?: Date | number;
-  color?: ColorResolvable;
-  fields?: EmbedFieldData[];
-  author?: Partial<MessageEmbedAuthor> & { icon_url?: string; proxy_icon_url?: string };
-  thumbnail?: Partial<MessageEmbedThumbnail> & { proxy_url?: string };
-  image?: Partial<MessageEmbedImage> & { proxy_url?: string };
-  video?: Partial<MessageEmbedVideo> & { proxy_url?: string };
-  footer?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
-}
-
 export interface MessageEmbedOptions {
   title?: string;
   description?: string;
@@ -5264,7 +5247,7 @@ export interface MessageOptions {
   tts?: boolean;
   nonce?: string | number;
   content?: string | null;
-  embeds?: (WebEmbed | MessageEmbedOptions | APIEmbed)[];
+  embeds?: (WebEmbed | MessageEmbed | MessageEmbedOptions | APIEmbed)[];
   components?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[];
   allowedMentions?: MessageMentionOptions;
   files?: (FileOptions | BufferResolvable | Stream | MessageAttachment)[];

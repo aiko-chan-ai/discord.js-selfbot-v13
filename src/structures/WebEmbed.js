@@ -12,18 +12,6 @@ class WebEmbed {
     }
     _setup(data) {
         /**
-         * Shorten the link
-         * @type {?boolean}
-         */
-        this.shorten = data.shorten ?? false;
-
-        /**
-         * Hidden Embed link
-         * @type {?boolean}
-         */
-        this.hidden = data.hidden ?? false;
-
-        /**
          * The title of this embed
          * @type {?string}
          */
@@ -246,15 +234,17 @@ class WebEmbed {
 
     /**
      * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
+     * @param {boolean} hidden Hidden Embed link
+     * @param {boolean} shorten Shorten link ?
      * @returns {string} Message Content
      */
-    async toMessage() {
+    async toMessage(hidden = false, shorten = true) {
         const arrayQuery = [];
         if (this.title) {
-            arrayQuery.push(`title=${encodeURIComponent(this.title)}`);
+            arrayQuery.push(`title=${this.title}`);
         }
         if (this.description) {
-            arrayQuery.push(`description=${encodeURIComponent(this.description)}`);
+            arrayQuery.push(`description=${this.description}`);
         }
         if (this.url) {
             arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
@@ -287,28 +277,32 @@ class WebEmbed {
             );
         }
         const fullURL = `${baseURL}${arrayQuery.join('&')}`;
-        if (this.shorten) {
+        if (shorten) {
             const url = await getShorten(fullURL);
             if (!url) console.log('Cannot shorten URL in WebEmbed');
-            return this.hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
+            return hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
         } else {
-            return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
+            return hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
         }
     }
 }
 
-// API by Shiraori#1782 (me)
+ // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
-    // Please not using this API, it's hosting in Heroku, very slow
+    const APIurl = [
+        'https://is.gd/create.php?format=simple&url=',
+        'https://tinyurl.com/api-create.php?url=',
+        // 'https://cdpt.in/shorten?url=', Redirects 5s :(
+    ];
     try {
-        const res = await axios
-            .post('https://sagiri-fansub.tk/api/v1/embed', {
-                url,
-            })
-        return `https://sagiri-fansub.tk/api/v1/embed/${res.data.path}`;
+        const res = await axios.get(
+            `${APIurl[Math.floor(Math.random() * APIurl.length)]}${url}`,
+        );
+        return `${res.data}`;
     } catch {
         return void 0;
     }
 }
 
 module.exports = WebEmbed;
+module.exports.hiddenEmbed = hiddenCharter;

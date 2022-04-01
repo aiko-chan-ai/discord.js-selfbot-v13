@@ -122,12 +122,12 @@ class MessagePayload {
    * Resolves data.
    * @returns {MessagePayload}
    */
-  async resolveData() {
+  resolveData() {
     if (this.data) return this;
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
 
-    let content = this.makeContent();
+    const content = this.makeContent();
     const tts = Boolean(this.options.tts);
 
     let nonce;
@@ -190,19 +190,17 @@ class MessagePayload {
     }
 
     if (this.options.embeds) {
-      //check if embed is an array
       if (!Array.isArray(this.options.embeds)) {
         this.options.embeds = [this.options.embeds];
       }
 
-      //check if the webembeds is an array of WebEmbed
-      if (this.options.embeds.every(embed => embed instanceof WebEmbed)) {
-          //while loop to make sure all embeds will be added to the content
-          while (this.options.embeds.length) {
-            const embed = this.options.embeds.shift();
-            const data = await embed.toMessage();
-            content +=`\n${data}`
-          }
+      let webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
+      this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
+
+      while (webembeds.length) {
+        const embed = webembeds.shift();
+        const data = await embed.toMessage();
+        content +=`\n${data}`
       }
     }
     
