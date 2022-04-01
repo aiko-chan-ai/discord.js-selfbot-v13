@@ -470,6 +470,7 @@ class ApplicationCommand extends Base {
     let subCommand;
     if (subCommandCheck) {
       subCommand = this.options.find((option) => option.name == options[0]);
+      options.shift();
       option_[0] = {
         type: ApplicationCommandOptionTypes[subCommand.type],
         name: subCommand.name,
@@ -482,7 +483,7 @@ class ApplicationCommand extends Base {
       const value = options[i];
       if (typeof value !== 'string') {
         throw new TypeError(
-          `Expected option to be a String, got ${typeof value}`,
+          `Expected option to be a String, got ${typeof value}. If you type Number, please convert to String.`,
         );
       }
       if (!subCommandCheck && !this?.options[i]) continue;
@@ -511,7 +512,8 @@ class ApplicationCommand extends Base {
         };
         optionFormat.push(data);
       } else {
-        if (!options[i + 1]) continue;
+        // First element is sub command and removed
+        if (!value) continue;
         // Check value is invalid
         let choice;
         if (
@@ -524,7 +526,7 @@ class ApplicationCommand extends Base {
 						subCommand.options[i].choices.find((c) => c.value == value);
 					if (!choice) {
 						throw new Error(
-							`Invalid option: ${value} is not a valid choice for this option\nList of choices: ${subCommand.options[
+							`Invalid option: ${value} is not a valid choice for this option\nList of choices: \n${subCommand.options[
 								i
 							].choices.map(
 								(c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`,
@@ -533,15 +535,16 @@ class ApplicationCommand extends Base {
 					}
 				}
         const data = {
-          type: ApplicationCommandOptionTypes[subCommand.options[i].type],
-          name: subCommand.options[i].name,
-          value: choice?.value ||
-            (subCommand.options[i].type == 'INTEGER'
-              ? Number(options[i + 1])
-              : subCommand.options[i].type == 'BOOLEAN'
-                ? Boolean(options[i + 1])
-                : options[i + 1]),
-        };
+					type: ApplicationCommandOptionTypes[subCommand.options[i].type],
+					name: subCommand.options[i].name,
+					value:
+						choice?.value ||
+						(subCommand.options[i].type == 'INTEGER'
+							? Number(value)
+							: subCommand.options[i].type == 'BOOLEAN'
+							? Boolean(value)
+							: value),
+				};
         optionFormat.push(data);
       }
     }
@@ -550,7 +553,7 @@ class ApplicationCommand extends Base {
     if (
 			subCommandCheck &&
 			subCommand?.options &&
-			subCommand?.options[i - 1]?.required
+			subCommand?.options[i]?.required
 		)
 			throw new Error('Value required missing');
     await this.client.api.interactions.post({
