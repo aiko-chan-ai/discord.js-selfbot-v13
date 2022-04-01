@@ -124,12 +124,16 @@ class MessageManager extends CachedManager {
     const messageId = this.resolveId(message);
     if (!messageId) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    const { data, files } = await (options instanceof MessagePayload
-      ? options
-      : MessagePayload.create(message instanceof Message ? message : this, options)
-    )
-      .resolveData()
-      .resolveFiles();
+    let messagePayload;
+    if (options instanceof MessagePayload) {
+      messagePayload = await options.resolveData();
+    } else {
+      messagePayload = await MessagePayload.create(
+				message instanceof Message ? message : this,
+				options,
+			).resolveData();
+    }
+    const { data, files } = await messagePayload.resolveFiles();
     const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data, files });
 
     const existing = this.cache.get(messageId);
@@ -220,15 +224,15 @@ class MessageManager extends CachedManager {
     // const data = await this.client.api.channels[this.channel.id].messages[messageId].get(); // Discord Block
     // https://canary.discord.com/api/v9/guilds/809133733591384155/messages/search?channel_id=840225732902518825&max_id=957254525360697375&min_id=957254525360697373
     const data = (
-			await this.client.api.guilds[this.channel.guild.id].messages.search.get({
-				query: {
-					channel_id: this.channel.id,
-					max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-					min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
-				},
-			})
-		).messages[0]
-    if (data) return this._add(data[0],	cache);
+      await this.client.api.guilds[this.channel.guild.id].messages.search.get({
+        query: {
+          channel_id: this.channel.id,
+          max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
+          min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+        },
+      })
+    ).messages[0]
+    if (data) return this._add(data[0], cache);
     else throw new Error('MESSAGE_ID_NOT_FOUND');
   }
 

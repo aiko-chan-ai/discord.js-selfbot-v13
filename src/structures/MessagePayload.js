@@ -195,19 +195,21 @@ class MessagePayload {
       }
 
       const webembeds = this.options.embeds.filter(
-				(e) => !(e instanceof MessageEmbed),
-			);
+        (e) => !(e instanceof MessageEmbed),
+      );
       this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 
       if (webembeds.length > 0) {
         // add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
         if (webembeds.length > 1) {
-          console.warn('Multiple webembeds are not supported, only the first one will be sent');
+          console.warn('Multiple webembeds are not supported, this will be ignored.');
         }
-        const embed = webembeds[0];
-        const data = await embed.toMessage();
-        content += `\n${data}`;
+        // const embed = webembeds[0];
+        for (const webE of webembeds) {
+          const data = await webE.toMessage();
+          content += `\n${data}`;
+        }
       }
       // Check content
       if (content.length > 2000) {
@@ -217,7 +219,7 @@ class MessagePayload {
         throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
       }
     }
-    
+
     this.data = {
       content,
       tts,

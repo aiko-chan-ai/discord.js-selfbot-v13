@@ -316,11 +316,15 @@ class Webhook {
     if (!this.token) throw new Error('WEBHOOK_TOKEN_UNAVAILABLE');
 
     let messagePayload;
-
-    if (options instanceof MessagePayload) messagePayload = options;
-    else messagePayload = MessagePayload.create(this, options);
-
-    const { data, files } = await messagePayload.resolveData().resolveFiles();
+		if (options instanceof MessagePayload) {
+			messagePayload = await options.resolveData();
+		} else {
+			messagePayload = await MessagePayload.create(
+				message instanceof Message ? message : this,
+				options,
+			).resolveData();
+		}
+		const { data, files } = await messagePayload.resolveFiles();
 
     const d = await this.client.api
       .webhooks(this.id, this.token)

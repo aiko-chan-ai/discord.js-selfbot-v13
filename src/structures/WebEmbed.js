@@ -301,7 +301,7 @@ class WebEmbed {
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
     const APIurl = [
-        'https://is.gd/create.php?format=simple&url=',
+        // 'https://is.gd/create.php?format=simple&url=', :(
         'https://tinyurl.com/api-create.php?url=',
         // 'https://cdpt.in/shorten?url=', Redirects 5s :(
     ];
