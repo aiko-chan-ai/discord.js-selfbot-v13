@@ -127,7 +127,7 @@ class MessagePayload {
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
 
-    const content = this.makeContent();
+    let content = this.makeContent();
     const tts = Boolean(this.options.tts);
 
     let nonce;
@@ -197,10 +197,21 @@ class MessagePayload {
       let webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
       this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
 
+      if (webembeds.length > 0) {
+        // add hidden embed link
+        content += `\n${WebEmbed.hiddenEmbed} \n`;
+      }
       while (webembeds.length) {
         const embed = webembeds.shift();
         const data = await embed.toMessage();
         content +=`\n${data}`
+      }
+      // Check content
+      if (content.length > 2000) {
+        console.warn(`[WARN] Content is longer than 2000 characters.`);
+      }
+      if (content.length > 4000) { // Max length if user has nitro boost
+        throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
       }
     }
     

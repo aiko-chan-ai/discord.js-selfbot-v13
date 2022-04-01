@@ -1761,7 +1761,7 @@ export class MessageEmbed {
 }
 
 export class WebEmbed {
-  public constructor(data?: MessageEmbed | MessageEmbedOptions | APIEmbed);
+  public constructor(data?: WebEmbedOptions);
   public author: MessageEmbedAuthor | null;
   public color: number | null;
   public description: string | null;
@@ -1770,6 +1770,8 @@ export class WebEmbed {
   public title: string | null;
   public url: string | null;
   public video: MessageEmbedVideo | null;
+  public hidden: Boolean;
+  public shorten: Boolean;
   public setAuthor(options: EmbedAuthorData | null): this;
   public setColor(color: ColorResolvable): this;
   public setDescription(description: string): this;
@@ -1778,7 +1780,7 @@ export class WebEmbed {
   public setTitle(title: string): this;
   public setURL(url: string): this;
   public setProvider(options: MessageEmbedProvider | null): this;
-  public toMessage(hidden: boolean, shorten: boolean): Promise<string>;
+  public toMessage(): Promise<string>;
 }
 
 export class MessageFlags extends BitField<MessageFlagsString> {
@@ -5150,6 +5152,22 @@ export interface MessageEditOptions {
   flags?: BitFieldResolvable<MessageFlagsString, number>;
   allowedMentions?: MessageMentionOptions;
   components?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[];
+}
+
+export interface WebEmbedOptions {
+  shorten?: boolean;
+  hidden?: boolean;
+  title?: string;
+  description?: string;
+  url?: string;
+  timestamp?: Date | number;
+  color?: ColorResolvable;
+  fields?: EmbedFieldData[];
+  author?: Partial<MessageEmbedAuthor> & { icon_url?: string; proxy_icon_url?: string };
+  thumbnail?: Partial<MessageEmbedThumbnail> & { proxy_url?: string };
+  image?: Partial<MessageEmbedImage> & { proxy_url?: string };
+  video?: Partial<MessageEmbedVideo> & { proxy_url?: string };
+  footer?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
 }
 
 export interface MessageEmbedAuthor {

@@ -200,6 +200,7 @@ const Messages = {
 	APPLICATION_ID_INVALID: "The application isn't BOT",
 	INVALID_NITRO: 'Invalid Nitro Code',
 	MESSAGE_ID_NOT_FOUND: 'Message ID not found',
+	MESSAGE_EMBED_LINK_LENGTH: 'Message content with embed link length is too long',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

@@ -2,7 +2,7 @@
 const axios = require('axios');
 const baseURL = 'https://embed.benny.fun/?';
 const hiddenCharter =
-	'||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
+    '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
 const { RangeError } = require('../errors');
 const Util = require('../util/Util');
 
@@ -11,6 +11,17 @@ class WebEmbed {
         this._setup(data);
     }
     _setup(data) {
+        /**
+         * Shorten the link
+         * @type {?boolean}
+         */
+        this.shorten = data.shorten ?? true;
+
+        /**
+         * Hidden Embed link
+         * @type {?boolean}
+         */
+        this.hidden = data.hidden ?? false;
         /**
          * The title of this embed
          * @type {?string}
@@ -234,17 +245,17 @@ class WebEmbed {
 
     /**
      * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
-     * @param {boolean} hidden Hidden Embed link
-     * @param {boolean} shorten Shorten link ?
      * @returns {string} Message Content
      */
-    async toMessage(hidden = false, shorten = true) {
+    async toMessage() {
         const arrayQuery = [];
         if (this.title) {
-            arrayQuery.push(`title=${this.title}`);
+            arrayQuery.push(`title=${encodeURIComponent(this.title)}`);
         }
         if (this.description) {
-            arrayQuery.push(`description=${this.description}`);
+            arrayQuery.push(
+                `description=${encodeURIComponent(this.description)}`,
+            );
         }
         if (this.url) {
             arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
@@ -262,7 +273,7 @@ class WebEmbed {
         }
         if (this.author) {
             if (this.author.name) arrayQuery.push(
-                `author_name=${this.author.name}`,
+                `author_name=${encodeURIComponent(this.author.name)}`,
             );
             if (this.author.url) arrayQuery.push(
                 `author_url=${encodeURIComponent(this.author.url)}`,
@@ -270,24 +281,24 @@ class WebEmbed {
         }
         if (this.provider) {
             if (this.provider.name) arrayQuery.push(
-                `provider_name=${this.provider.name}`,
+                `provider_name=${encodeURIComponent(this.provider.name)}`,
             );
             if (this.provider.url) arrayQuery.push(
                 `provider_url=${encodeURIComponent(this.provider.url)}`,
             );
         }
         const fullURL = `${baseURL}${arrayQuery.join('&')}`;
-        if (shorten) {
+        if (this.shorten) {
             const url = await getShorten(fullURL);
             if (!url) console.log('Cannot shorten URL in WebEmbed');
-            return hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
+            return this.hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
         } else {
-            return hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
+            return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
         }
     }
 }
 
- // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
+// Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
     const APIurl = [
         'https://is.gd/create.php?format=simple&url=',
