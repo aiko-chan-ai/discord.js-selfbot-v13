@@ -295,7 +295,10 @@ await message.contextMenu(botID, commandName);
 Code:
 ```js
 const Discord = require('discord.js-selfbot-v13');
-const w = new Discord.WebEmbed()
+const w = new Discord.WebEmbed({
+  shorten: true,
+  hidden: false // if you send this embed with MessagePayload.options.embeds, it must set to false
+})
 	.setAuthor({ name: 'hello', url: 'https://google.com' })
 	.setColor('RED')
 	.setDescription('description uh')
@@ -308,20 +311,7 @@ const w = new Discord.WebEmbed()
 	.setVideo(
 		'https://cdn.discordapp.com/attachments/877060758092021801/957691816143097936/The_Quintessential_Quintuplets_And_Rick_Astley_Autotune_Remix.mp4',
 	);
-/**
- * w.toMessage(hidden: true | false, shorten: true | false) => Promise<string>
-*/
-// Normal mode (Auto shorten)
-message.channel.send({ content: `${await w.toMessage()}` })
-// Normal mode (Not shorten)
-message.channel.send({ content: `${await w.toMessage(false, false)}` })
-// Hidden mode (with shorten)
-message.channel.send({ content: `${await w.toMessage(true, true)}` })
-// Hidden mode (no shorten)
-message.channel.send({ content: `${await w.toMessage(true, false)}` })
-// Custom content + Shorten + Hidden
-message.channel.send({ content: `Hello world ${await w.toMessage(true, true)}` })
-// etc ...
+message.channel.send({ content: `Hello world`, embeds: [w] }) // Patched :)
 
 ```
 ### Features & Issues
