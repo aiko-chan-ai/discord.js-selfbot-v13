@@ -58,7 +58,7 @@ class TextBasedChannel {
    * @property {boolean} [tts=false] Whether or not the message should be spoken aloud
    * @property {string} [nonce=''] The nonce for the message
    * @property {string} [content=''] The content for the message
-   * @property {WebEmbed[]} [embeds] The embeds for the message
+   * @property {MessageEmbed[]|APIEmbed[]} [embeds] The embeds for the message
    * (see [here](https://discord.com/developers/docs/resources/channel#embed-object) for more details)
    * @property {MessageMentionOptions} [allowedMentions] Which mentions should be parsed from the message content
    * (see [here](https://discord.com/developers/docs/resources/channel#allowed-mentions-object) for more details)
@@ -166,9 +166,9 @@ class TextBasedChannel {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
+      messagePayload = options.resolveData();
     } else {
-      messagePayload = await MessagePayload.create(this, options).resolveData();
+      messagePayload = MessagePayload.create(this, options).resolveData();
     }
 
     const { data, files } = await messagePayload.resolveFiles();
