@@ -189,22 +189,20 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
-    if (this.options.webembeds) {
-      //check if webembeds is an array
+    if (this.options.embeds) {
+      //check if embed is an array
       if (!Array.isArray(this.options.embeds)) {
         this.options.embeds = [this.options.embeds];
       }
 
       //check if the webembeds is an array of WebEmbed
-      if (!this.options.webembeds.every(e => e instanceof WebEmbed)) {
-        throw new TypeError('WEB_EMBEDS_TYPE');
-      }
-
-      //while loop to make sure all embeds will be added to the content
-      while (this.options.webembeds.length) {
-        const webembeds = this.options.webembeds.shift();
-        const data = await webembeds.toMessage();
-        content +=`\n${data}`
+      if (this.options.embeds.every(embed => embed instanceof WebEmbed)) {
+          //while loop to make sure all embeds will be added to the content
+          while (this.options.embeds.length) {
+            const embed = this.options.embeds.shift();
+            const data = await embed.toMessage();
+            content +=`\n${data}`
+          }
       }
     }
     
