@@ -246,11 +246,9 @@ class WebEmbed {
 
     /**
      * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
-     * @param {boolean} hidden Hidden Embed link
-     * @param {boolean} shorten Shorten link ?
      * @returns {string} Message Content
      */
-    async toMessage(hidden = false, shorten = true) {
+    async toMessage() {
         const arrayQuery = [];
         if (this.title) {
             arrayQuery.push(`title=${this.title}`);
