@@ -166,9 +166,9 @@ class TextBasedChannel {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = options.resolveData();
+      messagePayload = await options.resolveData();
     } else {
-      messagePayload = MessagePayload.create(this, options).resolveData();
+      messagePayload = await MessagePayload.create(this, options).resolveData();
     }
 
     const { data, files } = await messagePayload.resolveFiles();
