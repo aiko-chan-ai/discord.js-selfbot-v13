@@ -122,7 +122,7 @@ class MessagePayload {
    * Resolves data.
    * @returns {MessagePayload}
    */
-  resolveData() {
+  async resolveData() {
     if (this.data) return this;
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
