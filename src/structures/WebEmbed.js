@@ -251,10 +251,10 @@ class WebEmbed {
     async toMessage() {
         const arrayQuery = [];
         if (this.title) {
-            arrayQuery.push(`title=${this.title}`);
+            arrayQuery.push(`title=${encodeURIComponent(this.title)}`);
         }
         if (this.description) {
-            arrayQuery.push(`description=${this.description}`);
+            arrayQuery.push(`description=${encodeURIComponent(this.description)}`);
         }
         if (this.url) {
             arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
