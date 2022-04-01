@@ -12,6 +12,18 @@ class WebEmbed {
     }
     _setup(data) {
         /**
+         * Shorten the link
+         * @type {?boolean}
+         */
+        this.shorten = data.shorten ?? false;
+
+        /**
+         * Hidden Embed link
+         * @type {?boolean}
+         */
+        this.hidden = data.hidden ?? false;
+
+        /**
          * The title of this embed
          * @type {?string}
          */
@@ -277,12 +289,12 @@ class WebEmbed {
             );
         }
         const fullURL = `${baseURL}${arrayQuery.join('&')}`;
-        if (shorten) {
+        if (this.shorten) {
             const url = await getShorten(fullURL);
             if (!url) console.log('Cannot shorten URL in WebEmbed');
-            return hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
+            return this.hidden ? `${hiddenCharter} ${url || fullURL}` : (url || fullURL);
         } else {
-            return hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
+            return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
         }
     }
 }
