@@ -301,6 +301,7 @@ const w = new Discord.WebEmbed()
 	.setDescription('description uh')
 	.setProvider({ name: 'provider', url: 'https://google.com' })
 	.setTitle('This is Title')
+  .setURL('https://google.com')
 	.setImage(
 		'https://cdn.discordapp.com/attachments/820557032016969751/959093026695835648/unknown.png',
 	)
