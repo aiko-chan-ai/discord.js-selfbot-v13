@@ -188,56 +188,36 @@ class MessagePayload {
     } else {
       this.options.attachments = attachments;
     }
- 
+
     if (this.options.embeds) {
       if (!Array.isArray(this.options.embeds)) {
         this.options.embeds = [this.options.embeds];
       }
 
-      let webembeds = this.options.embeds.filter(e => (e instanceof WebEmbed) && Boolean(e.hidden) === true);
-      let webembeds_ = this.options.embeds.filter(e => (e instanceof WebEmbed) && Boolean(e.hidden) === false);
-      this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
-      let hidden = false;
-
-      if (webembeds.length > 0) {
-        content += "\n";
-
-        while (webembeds_.length) {
-          const embed = webembeds_.shift();
-          const data = await embed.toMessage();
-          content +=`\n${data}`
-
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-      }
+      const webembeds = this.options.embeds.filter(
+				(e) => !(e instanceof MessageEmbed),
+			);
+      this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 
       if (webembeds.length > 0) {
         // add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
-        hidden = true;
-
-        while (webembeds.length) {
-          const embed = webembeds.shift();
-          const data = await embed.toMessage();
-          content +=`\n${data}`
-
-          await new Promise(resolve => setTimeout(resolve, 1000))
+        if (webembeds.length > 1) {
+          console.warn('Multiple webembeds are not supported, only the first one will be sent');
         }
+        const embed = webembeds[0];
+        const data = await embed.toMessage();
+        content += `\n${data}`;
       }
-
       // Check content
       if (content.length > 2000) {
-        console.warn(`[WARN] Content length is ${content.length} characters. This exceeds Discord's 2000 character limit.`);
+        console.warn(`[WARN] Content is longer than 2000 characters.`);
       }
-      if (hidden && content.length > 2000) { // Max length if user has nitro boost
-        content = content.replace(`\n${WebEmbed.hiddenEmbed} \n`, ""); // Remove hidden character
-        console.warn(`[WARN] Removing hidden character to make content fit. Your content length now is ${content.length} characters long.`);
-      }
-      if (content.length > 4000) { // Recheck the content length
+      if (content.length > 4000) { // Max length if user has nitro boost
         throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
       }
     }
-
+    
     this.data = {
       content,
       tts,
