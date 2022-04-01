@@ -200,7 +200,7 @@ class MessagePayload {
       let hidden = false;
 
       if (webembeds.length > 0) {
-        content = "\n";
+        content += "\n";
 
         while (webembeds_.length) {
           const embed = webembeds_.shift();
