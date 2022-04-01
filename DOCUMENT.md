@@ -329,6 +329,7 @@ message.channel.send({ content: `Hello world ${await w.toMessage(true, true)}` }
 - Video with Embed working
 - Description limit 350 characters
 - If you use hidden mode you must make sure your custom content is less than 1000 characters without nitro (because hidden mode uses 1000 characters + URL)
+- <strong>PLEASE DON'T CREATE TOO MUCH EMBEDS WITH THE SHORTEN OPTION BECAUSE IT MAY DROP MY API (I USE THE API HOST BY HEROKU) OVERLOAD</strong>
 
 </details>
 
