@@ -5247,7 +5247,7 @@ export interface MessageOptions {
   tts?: boolean;
   nonce?: string | number;
   content?: string | null;
-  embeds?: (MessageEmbed | MessageEmbedOptions | APIEmbed)[];
+  embeds?: (WebEmbed)[];
   components?: (MessageActionRow | (Required<BaseMessageComponentOptions> & MessageActionRowOptions))[];
   allowedMentions?: MessageMentionOptions;
   files?: (FileOptions | BufferResolvable | Stream | MessageAttachment)[];
