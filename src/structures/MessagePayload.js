@@ -2,6 +2,7 @@
 
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
+const MessageEmbed = require('./MessageEmbed');
 const WebEmbed = require('./WebEmbed');
 const { RangeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
@@ -188,21 +189,21 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
-    if (this.options.embeds) {
-      //check if embeds is an array
+    if (this.options.webembeds) {
+      //check if webembeds is an array
       if (!Array.isArray(this.options.embeds)) {
         this.options.embeds = [this.options.embeds];
       }
 
-      //check if the embeds is an array of WebEmbed
-      if (!this.options.embeds.every(e => e instanceof WebEmbed)) {
+      //check if the webembeds is an array of WebEmbed
+      if (!this.options.webembeds.every(e => e instanceof WebEmbed)) {
         throw new TypeError('WEB_EMBEDS_TYPE');
       }
 
       //while loop to make sure all embeds will be added to the content
-      while (this.options.embeds.length) {
-        const embed = this.options.embeds.shift();
-        const data = await embed.toMessage();
+      while (this.options.webembeds.length) {
+        const webembeds = this.options.webembeds.shift();
+        const data = await webembeds.toMessage();
         content +=`\n${data}`
       }
     }
@@ -211,6 +212,7 @@ class MessagePayload {
       content,
       tts,
       nonce,
+      embeds: this.options.embeds?.map(embed => new MessageEmbed(embed).toJSON()),
       components,
       username,
       avatar_url: avatarURL,
