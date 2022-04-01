@@ -3,6 +3,7 @@
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
+const WebEmbed = require('./WebEmbed');
 const { RangeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
 const MessageFlags = require('../util/MessageFlags');
@@ -188,6 +189,21 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
+    if (this.options.embeds) {
+      if (!Array.isArray(this.options.embeds)) {
+        this.options.embeds = [this.options.embeds];
+      }
+
+      let webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
+      this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
+
+      while (webembeds.length) {
+        const embed = webembeds.shift();
+        const data = await embed.toMessage();
+        content +=`\n${data}`
+      }
+    }
+    
     this.data = {
       content,
       tts,
