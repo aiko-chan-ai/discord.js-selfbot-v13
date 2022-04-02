@@ -34,7 +34,7 @@ class User extends Base {
 		this.blocked = client.blocked.cache.has(this.id);
 
 		// Code written by https://github.com/aiko-chan-ai
-		this.connectedAccounds = [];
+		this.connectedAccounts = [];
 		this.premiumSince = null;
 		this.premiumGuildSince = null;
 		this.mutualGuilds = new Collection();
@@ -134,7 +134,7 @@ class User extends Base {
 		if (!data) return;
 
 		if (data.connected_accounts.length > 0)
-			this.connectedAccounds = data.connected_accounts;
+			this.connectedAccounts = data.connected_accounts;
 
 		if ('premium_since' in data) {
 			const date = new Date(data.premium_since);
