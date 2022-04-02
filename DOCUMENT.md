@@ -80,7 +80,7 @@ User {
   flags: UserFlagsBitField { bitfield: 256 },
   friend: false,
   blocked: false,
-  connectedAccounds: [],
+  connectedAccounts: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
   mutualGuilds: Collection(3) [Map] {
@@ -120,7 +120,7 @@ User {
   friend: false,
   blocked: false,
   note: null,
-  connectedAccounds: [],
+  connectedAccounts: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
   mutualGuilds: Collection(3) [Map] {
