@@ -301,10 +301,11 @@ class WebEmbed {
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
     const APIurl = [
-        // 'https://is.gd/create.php?format=simple&url=', :(
-        'https://tinyurl.com/api-create.php?url=',
-        // 'https://cdpt.in/shorten?url=', Redirects 5s :(
-    ];
+			// 'https://is.gd/create.php?format=simple&url=', :(
+			'https://tinyurl.com/api-create.php?url=',
+			'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
+			// 'https://cdpt.in/shorten?url=', Redirects 5s :(
+		];
     try {
         const res = await axios.get(
             `${APIurl[Math.floor(Math.random() * APIurl.length)]}${url}`,
