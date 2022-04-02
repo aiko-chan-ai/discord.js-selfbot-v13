@@ -67,6 +67,7 @@ class ClientUserSettingManager extends CachedManager {
 		this.customStatus = null;
 		// Guild folder and position
 		this.guildMetadata = new Collection();
+		// Todo: add new method from Discum
 	}
 	/**
 	 *
