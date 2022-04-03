@@ -9,8 +9,6 @@ const Util = require('../util/Util');
 class WebEmbed {
     constructor(data = {}) {
         this._setup(data);
-    }
-    _setup(data) {
         /**
          * Shorten the link
          * @type {?boolean}
@@ -22,6 +20,8 @@ class WebEmbed {
          * @type {?boolean}
          */
         this.hidden = data.hidden ?? false;
+    }
+    _setup(data) {
         /**
          * The title of this embed
          * @type {?string}
@@ -301,15 +301,17 @@ class WebEmbed {
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url) => {
     const APIurl = [
-			// 'https://is.gd/create.php?format=simple&url=', :(
-			'https://tinyurl.com/api-create.php?url=',
-			'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
-			// 'https://cdpt.in/shorten?url=', Redirects 5s :(
-		];
+        // 'https://is.gd/create.php?format=simple&url=', :(
+        'https://tinyurl.com/api-create.php?url=',
+        'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
+        // 'https://cdpt.in/shorten?url=', Redirects 5s :(
+    ];
     try {
         const res = await axios.get(
-            `${APIurl[Math.floor(Math.random() * APIurl.length)]}${url}`,
-        );
+					`${
+						APIurl[Math.floor(Math.random() * APIurl.length)]
+					}${encodeURIComponent(url)}`,
+				);
         return `${res.data}`;
     } catch {
         return void 0;
