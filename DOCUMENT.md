@@ -78,8 +78,6 @@ User {
   bot: false,
   system: false,
   flags: UserFlagsBitField { bitfield: 256 },
-  friend: false,
-  blocked: false,
   connectedAccounts: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
