@@ -4,6 +4,8 @@ const process = require('node:process');
 const CachedManager = require('./CachedManager');
 const { Channel } = require('../structures/Channel');
 const { Events, ThreadChannelTypes } = require('../util/Constants');
+const User = require('../structures/User');
+const PartialGroupDMChannel = require('../structures/PartialGroupDMChannel');
 
 let cacheWarningEmitted = false;
 
@@ -113,7 +115,26 @@ class ChannelManager extends CachedManager {
     }
 
     const data = await this.client.api.channels(id).get();
+    // delete in cache
+    this._remove(id);
     return this._add(data, null, { cache, allowUnknownGuild });
+  }
+  // Create Group DM
+  /**
+   * Create Group DM
+   * @param {Array<Discord.User>} recipients Array of recipients
+   * @returns {PartialGroupDMChannel} Channel
+   */
+  async createGroupDM(recipients) {
+    // Check
+    if (!recipients || !Array.isArray(recipients)) throw new Error('No recipients || Invalid Type (Array)');
+    recipients = recipients.filter(r => r instanceof User && r.id && r.friend);
+    console.log(recipients);
+    if (recipients.length < 2 || recipients.length > 9) throw new Error('Invalid Users length (2 - 9)');
+    const data = await this.client.api.users['@me'].channels.post({
+			data: { recipients: recipients.map((r) => r.id) },
+		});
+    return this._add(data, null, { cache: true, allowUnknownGuild: true });
   }
 }
 

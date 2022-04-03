@@ -2,6 +2,14 @@
 
 const { Channel } = require('./Channel');
 const { Error } = require('../errors');
+const { Collection } = require('discord.js');
+const { Message } = require('./Message');
+const MessageManager = require('../managers/MessageManager');
+const User = require('./User');
+const DataResolver = require('../util/DataResolver');
+const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const Invite = require('./Invite');
+
 
 /**
  * Represents a Partial Group DM Channel on Discord.
@@ -10,7 +18,6 @@ const { Error } = require('../errors');
 class PartialGroupDMChannel extends Channel {
   constructor(client, data) {
     super(client, data);
-
     /**
      * The name of this Group DM Channel
      * @type {?string}
@@ -33,7 +40,84 @@ class PartialGroupDMChannel extends Channel {
      * The recipients of this Group DM Channel.
      * @type {PartialRecipient[]}
      */
-    this.recipients = data.recipients;
+    this.recipients = new Collection();
+
+    /**
+     * Messages data
+     * @type {Collection}
+     */
+    this.messages = new MessageManager(this);
+
+    /**
+     * Last Message ID
+     * @type {?snowflake<Message.id>}
+     */
+    this.lastMessageId = null;
+
+    /**
+     * Last Pin Timestamp
+     * @type {UnixTimestamp}
+     */
+    this.lastPinTimestamp = null;
+
+    /**
+     * The owner of this Group DM Channel
+     * @type {?User}
+     * @readonly
+     */
+    this.owner = client.users.cache.get(data.owner_id);
+    this.ownerId = data.owner_id;
+
+    /**
+     * Invites fetch
+     */
+    this.invites = new Collection();
+
+    this._setup(client, data);
+  }
+
+  /**
+   * 
+   * @param {Discord.Client} client 
+   * @param {object} data 
+   * @private
+   */
+  _setup(client, data) {
+    if ('recipients' in data) {
+      Promise.all(
+        data.recipients.map((recipient) => {
+          this.recipients.set(
+            recipient.id,
+            client.users.cache.get(data.owner_id) || recipient,
+          );
+        }),
+      );
+    }
+    if ('last_pin_timestamp' in data) {
+      const date = new Date(data.last_pin_timestamp);
+      this.lastPinTimestamp = date.getTime();
+    }
+    if ('last_message_id' in data) {
+      this.lastMessageId = data.last_message_id;
+    }
+  }
+
+  /**
+   * 
+   * @param {Object} data name, icon
+   * @returns 
+   * @private
+   */
+  async edit(data) {
+    const _data = {};
+    if ('name' in data) _data.name = data.name?.trim() ?? null;
+    if (typeof data.icon !== 'undefined')
+      _data.icon = await DataResolver.resolveImage(data.icon);
+    const newData = await this.client.api.channels(this.id).patch({
+      data: _data,
+    });
+
+    return this.client.actions.ChannelUpdate.handle(newData).updated;
   }
 
   /**
@@ -42,16 +126,85 @@ class PartialGroupDMChannel extends Channel {
    * @returns {?string}
    */
   iconURL({ format, size } = {}) {
-    return this.icon && this.client.rest.cdn.GDMIcon(this.id, this.icon, format, size);
+    return (
+      this.icon &&
+      this.client.rest.cdn.GDMIcon(this.id, this.icon, format, size)
+    );
   }
 
-  delete() {
-    return Promise.reject(new Error('DELETE_GROUP_DM_CHANNEL'));
+  async addMember(user) {
+    if (this.ownerId !== this.client.user.id)
+      return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
+    if (!user instanceof User)
+      return Promise.reject(
+        new TypeError('User is not an instance of Discord.User'),
+      );
+    if (this.recipients.get(user.id)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL'));
+    //
+    await this.client.api.channels[this.id].recipients[user.id].put();
+    this.recipients.set(user.id, user);
+    return this;
   }
 
-  fetch() {
-    return Promise.reject(new Error('FETCH_GROUP_DM_CHANNEL'));
+  async removeMember(user) {
+    if (this.ownerId !== this.client.user.id)
+      return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
+    if (!user instanceof User)
+      return Promise.reject(
+        new TypeError('User is not an instance of Discord.User'),
+      );
+    if (!this.recipients.get(user.id)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
+    await this.client.api.channels[this.id].recipients[user.id].delete();
+    this.recipients.delete(user.id);
+    return this;
   }
+
+  setName(name) {
+    return this.edit({ name });
+  }
+
+  setIcon(icon) {
+    return this.edit({ icon });
+  }
+
+  async getInvite() {
+    const inviteCode = await this.client.api.channels(this.id).invites.post({
+			data: {
+				max_age: 86400,
+			},
+		});
+    const invite = new Invite(this.client, inviteCode);
+    this.invites.set(invite.code, invite);
+    return invite;
+  }
+
+  async fetchInvite(force = false) {
+    if (this.ownerId !== this.client.user.id)
+      return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
+    if (!force && this.invites.size) return this.invites;
+    const invites = await this.client.api.channels(this.id).invites.get();
+    await Promise.all(invites.map(invite => this.invites.set(invite.code, new Invite(this.client, invite))));
+    return this.invites;
+  }
+
+  async removeInvite(invite) {
+    if (this.ownerId !== this.client.user.id)
+      return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
+    if (!invite instanceof Invite)
+      return Promise.reject(new TypeError('Invite is not an instance of Discord.Invite'));
+    await this.client.api.channels(this.id).invites[invite.code].delete();
+    this.invites.delete(invite.code);
+    return this;
+  }
+
+  // These are here only for documentation purposes - they are implemented by TextBasedChannel
+  /* eslint-disable no-empty-function */
+  get lastMessage() { }
+  get lastPinAt() { }
+  send() { }
+  sendTyping() { }
 }
+
+TextBasedChannel.applyToClass(PartialGroupDMChannel, false);
 
 module.exports = PartialGroupDMChannel;

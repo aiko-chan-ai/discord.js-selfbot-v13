@@ -1897,12 +1897,25 @@ export class OAuth2Guild extends BaseGuild {
   public permissions: Readonly<Permissions>;
 }
 
-export class PartialGroupDMChannel extends Channel {
+export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, ['bulkDelete']) {
   private constructor(client: Client, data: RawPartialGroupDMChannelData);
   public name: string | null;
   public icon: string | null;
-  public recipients: PartialRecipient[];
+  public recipients: Collection<User>;
+  public messages: MessageManager<PartialGroupDMChannel>;
+  public invites: Collection<Invite.code, Invite>;
+  public lastMessageId: Snowflake | null;
+  public lastPinTimestamp: String<number> | null;
+  public owner: User | null;
+  public ownerId: Snowflake | null;
   public iconURL(options?: StaticImageURLOptions): string | null;
+  public addMember(user: User): Promise<PartialGroupDMChannel>;
+  public removeMember(user: User): Promise<PartialGroupDMChannel>;
+  public setName(name: string): Promise<PartialGroupDMChannel>;
+  public setIcon(icon: Base64Resolvable | null): Promise<PartialGroupDMChannel>;
+  public getInvite(): Promise<Invite>;
+  public fetchInvite(force: boolean): Promise<PartialGroupDMChannel.invites>;
+  public removeInvite(invite: Invite): Promise<PartialGroupDMChannel>;
 }
 
 export class PermissionOverwrites extends Base {
@@ -2449,6 +2462,8 @@ export class User extends PartialTextBasedChannel(Base) {
   public banner: string | null | undefined;
   public bot: boolean;
   public readonly createdAt: Date;
+  public readonly friend: Boolean;
+  public readonly blocked: Boolean;
   public readonly createdTimestamp: number;
   public discriminator: string;
   public readonly defaultAvatarURL: string;
@@ -3044,6 +3059,7 @@ export class BaseGuildEmojiManager extends CachedManager<Snowflake, GuildEmoji, 
 export class ChannelManager extends CachedManager<Snowflake, AnyChannel, ChannelResolvable> {
   private constructor(client: Client, iterable: Iterable<RawChannelData>);
   public fetch(id: Snowflake, options?: FetchChannelOptions): Promise<AnyChannel | null>;
+  public createGroupDM(recipients: Array<User>): Promise<PartialGroupDMChannel>;
 }
 
 export class ClientUserSettingManager extends CachedManager<Snowflake, null> {

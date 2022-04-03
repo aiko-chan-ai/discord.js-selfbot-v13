@@ -1,6 +1,6 @@
 {
   "name": "discord.js-selfbot-v13",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "A unofficial discord.js fork for creating selfbots [Based on discord.js v13]",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
@@ -47,6 +47,7 @@
     "@types/ws": "^8.5.2",
     "axios": "^0.26.1",
     "bignumber.js": "^9.0.2",
+    "bufferutil": "^4.0.6",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.27.3",
     "discord-bettermarkdown": "^1.1.0",
@@ -59,6 +60,7 @@
     "node-fetch": "^2.6.1",
     "string-similarity": "^4.0.4",
     "undici": "^4.15.0",
+    "utf-8-validate": "^5.0.9",
     "ws": "^8.5.0"
   },
   "engines": {

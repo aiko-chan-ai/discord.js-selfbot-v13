@@ -117,8 +117,6 @@ User {
   bot: false,
   system: false,
   flags: UserFlagsBitField { bitfield: 256 },
-  friend: false,
-  blocked: false,
   note: null,
   connectedAccounts: [],
   premiumSince: 1623357181151,
@@ -149,6 +147,40 @@ guild.setPosition(position, type, folderID);
 //     + 'FOLDER': Move guild to folder
 //     + 'HOME': Move the guild out of the directory
 // FolderID: The folder's ID , if you want to move the guild to a folder
+```
+Response
+```js
+Guild {}
+```
+</details>
+
+## Group DM
+<details>
+<summary><strong>Click to show</strong></summary>
+
+Code:
+```js
+/* Create */
+const memberAdd = [
+	client.users.cache.get('id1'),
+	client.users.cache.get('id2'),
+	...
+	client.users.cache.get('id9')
+]
+// Max member add to Group: 9, Min: 2
+await client.channels.createGroupDM(memberAdd);
+/* Edit */
+const groupDM = client.channels.cache.get('id');
+await groupDM.setName('New Name');
+await groupDM.setIcon('iconURL');
+await groupDM.getInvite();
+await groupDM.fetchInvite();
+await groupDM.removeInvite(invite);
+await groupDM.addMember(user);
+await groupDM.removeMember(user);
+/* Text Channel not Bulk delete */
+await groupDM.send('Hello World');
+await groupDM.delete(); // Leave
 ```
 Response
 ```js

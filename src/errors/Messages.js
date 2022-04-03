@@ -56,7 +56,7 @@ const Messages = {
 	EMBED_FOOTER_TEXT: 'MessageEmbed footer text must be a string.',
 	EMBED_DESCRIPTION: 'MessageEmbed description must be a string.',
 	EMBED_AUTHOR_NAME: 'MessageEmbed author name must be a string.',
-  /* add */
+	/* add */
 	EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
 
 	BUTTON_LABEL: 'MessageButton label must be a string',
@@ -152,6 +152,10 @@ const Messages = {
 
 	INVITE_NOT_FOUND: 'Could not find the requested invite.',
 
+	NOT_OWNER_GROUP_DM_CHANNEL: "You can't do this action [Missing Permission]",
+	USER_ALREADY_IN_GROUP_DM_CHANNEL: 'User is already in the channel.',
+	USER_NOT_IN_GROUP_DM_CHANNEL: 'User is not in the channel.',
+
 	DELETE_GROUP_DM_CHANNEL:
 		"Bots don't have access to Group DM Channels and cannot delete them",
 	FETCH_GROUP_DM_CHANNEL:
@@ -200,7 +204,8 @@ const Messages = {
 	APPLICATION_ID_INVALID: "The application isn't BOT",
 	INVALID_NITRO: 'Invalid Nitro Code',
 	MESSAGE_ID_NOT_FOUND: 'Message ID not found',
-	MESSAGE_EMBED_LINK_LENGTH: 'Message content with embed link length is too long',
+	MESSAGE_EMBED_LINK_LENGTH:
+		'Message content with embed link length is too long',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
