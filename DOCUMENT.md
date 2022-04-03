@@ -182,10 +182,7 @@ await groupDM.removeMember(user);
 await groupDM.send('Hello World');
 await groupDM.delete(); // Leave
 ```
-Response
-```js
-Guild {}
-```
+	
 </details>
 
 ## Custom Status and RPC
