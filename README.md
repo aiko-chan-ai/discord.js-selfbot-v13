@@ -112,4 +112,4 @@ Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331
 - And the people who submitted the issue, colab, ...
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
-- Tóm lại là module này dùng Discord.js v13 , API v19 nên chưa chết sớm đâu, cứ dùng đi =))
+- Tóm lại là module này dùng Discord.js v13 , API v9 nên chưa chết sớm đâu, cứ dùng đi =))
