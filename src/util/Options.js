@@ -171,7 +171,7 @@ class Options extends null {
           $browser: 'Chrome',
           $device: 'ASUS ROG Phone 5',
         },
-        version: 10,
+        version: 9,
       },
       http: {
         headers: {
@@ -194,7 +194,7 @@ class Options extends null {
           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36',
         },
         agent: {},
-        version: 10,
+        version: 9,
         api: 'https://discord.com/api',
         cdn: 'https://cdn.discordapp.com',
         invite: 'https://discord.gg',

@@ -14,7 +14,7 @@
 
 ## About
 
-- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v10.
+- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
 
 <div align="center">
@@ -26,6 +26,21 @@
 
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
+
+### <strong>[Feature + Example Code](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong>
+### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
+
+## Checklist
+- [x] Send + receive messages with Attachment, Embed (WebEmbed), etc.
+- [x] Setting Discord App (Missing a lot of functions)
+- [X] Requests (add friends, join guilds, etc.)
+- [X] Profile Editing (Name, Status, Avatar, Bio, Rich-Presence, etc.)
+- [X] Interactions (slash commands, buttons, etc.)
+- [X] Voice Channel (Join, Leave, Speak, etc.)
+- [ ] Improve documentation (maybe)
+- [ ] Add more guild http api wraps
+- [ ] Audio / Video call 
+- [ ] Everything
 
 ## Installation
 
@@ -97,4 +112,4 @@ Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331
 - And the people who submitted the issue, colab, ...
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
-- Tóm lại là module này dùng Discord.js v13 , API v10 nên chưa chết sớm đâu, cứ dùng đi =))
+- Tóm lại là module này dùng Discord.js v13 , API v19 nên chưa chết sớm đâu, cứ dùng đi =))

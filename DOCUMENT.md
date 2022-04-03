@@ -1,6 +1,24 @@
 # Discord.js Selfbot v13
 - Install: <strong>```npm i discord.js-selfbot-v13@latest```</strong>
 
+# <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
+
+## Change log:
+
+```js
+/* If you want to change the API version from v9 to v10, here are the instructions */
+const { Client } = require('discord.js-selfbot-v13');
+const client = new Client({
+	ws: {
+		version: 10
+	},
+	http: {
+		version: 10
+	}
+});
+
+```
+
 ## Client Settings
 <details>
 <summary><strong>Click to show</strong></summary>
