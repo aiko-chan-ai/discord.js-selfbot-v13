@@ -304,6 +304,7 @@ const getShorten = async (url) => {
         // 'https://is.gd/create.php?format=simple&url=', :(
         'https://tinyurl.com/api-create.php?url=',
         'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
+	'https://lazuee.ga/api/v1/shorten?url='
         // 'https://cdpt.in/shorten?url=', Redirects 5s :(
     ];
     try {
