@@ -3,7 +3,7 @@
 
 # <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
-## Change log:
+## HTTP options:
 
 ```js
 /* If you want to change the API version from v9 to v10, here are the instructions */
