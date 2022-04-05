@@ -103,6 +103,51 @@ const listUserAgent = [
     "Mozilla/5.0 (Windows NT 5.1; rv:13.0) Gecko/20100101 Firefox/13.0.1"
 ]
 
+exports.DMScanLevel = {
+  0: 'NOT_SCAN',
+  1: 'NOT_FRIEND',
+  2: 'EVERYONE',
+};
+
+exports.stickerAnimationMode = {
+  0: 'ALWAYS',
+  1: 'INTERACTION',
+  2: 'NEVER',
+};
+
+exports.localeObject = {
+	da: 'DANISH',
+	de: 'GERMAN',
+	'en-GB': 'ENGLISH_UK',
+	'en-US': 'ENGLISH_US',
+	'es-ES': 'SPANISH',
+	fr: 'FRENCH',
+	hr: 'CROATIAN',
+	it: 'ITALIAN',
+	lt: 'LITHUANIAN',
+	hu: 'HUNGARIAN',
+	nl: 'DUTCH',
+	no: 'NORWEGIAN',
+	pl: 'POLISH',
+	'pt-BR': 'BRAZILIAN_PORTUGUESE',
+	ro: 'ROMANIA_ROMANIAN',
+	fi: 'FINNISH',
+	'sv-SE': 'SWEDISH',
+	vi: 'VIETNAMESE',
+	tr: 'TURKISH',
+	cs: 'CZECH',
+	el: 'GREEK',
+	bg: 'BULGARIAN',
+	ru: 'RUSSIAN',
+	uk: 'UKRAINIAN',
+	hi: 'HINDI',
+	th: 'THAI',
+	'zh-CN': 'CHINA_CHINESE',
+	ja: 'JAPANESE',
+	'zh-TW': 'TAIWAN_CHINESE',
+	ko: 'KOREAN',
+};
+
 exports.UserAgent = listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
 
 exports.WSCodes = {

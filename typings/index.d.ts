@@ -941,6 +941,7 @@ export class Guild extends AnonymousGuild {
   public premiumProgressBarEnabled: boolean;
   public premiumTier: PremiumTier;
   public presences: PresenceManager;
+  public readonly disableDM: boolean;
   public readonly publicUpdatesChannel: TextChannel | null;
   public publicUpdatesChannelId: Snowflake | null;
   public roles: RoleManager;
@@ -3067,7 +3068,7 @@ export class ClientUserSettingManager extends CachedManager<Snowflake, null> {
   public fetch(): Promise<ClientUserSetting>;
   public setDisplayCompactMode(value?: boolean): Promise<ClientUserSetting>;
   public setTheme(value?: 'dark' | 'light'): Promise<ClientUserSetting>;
-  public setLocale(value: LocaleStrings): Promise<ClientUserSetting>;
+  public setLocale(value: localeSetting): Promise<ClientUserSetting>;
 }
 
 export class GuildApplicationCommandManager extends ApplicationCommandManager<ApplicationCommand, {}, Guild> {

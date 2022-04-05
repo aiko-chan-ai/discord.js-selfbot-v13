@@ -4,42 +4,11 @@ const CachedManager = require('./CachedManager');
 const { default: Collection } = require('@discordjs/collection');
 const { Error, TypeError } = require('../errors/DJSError');
 const { remove } = require('lodash');
+const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants')
 /**
  * Manages API methods for users and stores their cache.
  * @extends {CachedManager}
  */
-const localeObject = {
-	DANISH: 'da',
-	GERMAN: 'de',
-	ENGLISH_UK: 'en-GB',
-	ENGLISH_US: 'en-US',
-	SPANISH: 'es-ES',
-	FRENCH: 'fr',
-	CROATIAN: 'hr',
-	ITALIAN: 'it',
-	LITHUANIAN: 'lt',
-	HUNGARIAN: 'hu',
-	DUTCH: 'nl',
-	NORWEGIAN: 'no',
-	POLISH: 'pl',
-	BRAZILIAN_PORTUGUESE: 'pt-BR',
-	ROMANIA_ROMANIAN: 'ro',
-	FINNISH: 'fi',
-	SWEDISH: 'sv-SE',
-	VIETNAMESE: 'vi',
-	TURKISH: 'tr',
-	CZECH: 'cs',
-	GREEK: 'el',
-	BULGARIAN: 'bg',
-	RUSSIAN: 'ru',
-	UKRAINIAN: 'uk',
-	HINDI: 'hi',
-	THAI: 'th',
-	CHINA_CHINESE: 'zh-CN',
-	JAPANESE: 'ja',
-	TAIWAN_CHINESE: 'zh-TW',
-	KOREAN: 'ko',
-};
 class ClientUserSettingManager extends CachedManager {
 	constructor(client, iterable) {
 		super(client);
@@ -48,19 +17,43 @@ class ClientUserSettingManager extends CachedManager {
 		// Language
 		this.locale = null;
 		// Setting => ACTIVITY SETTINGS => Activity Status => Display current activity as a status message
-		this.showCurrentGame = null;
+		this.activityDisplay = null;
+		//
+		this.disableDMfromServer = new Collection();
+		// Allow direct messages from server members
+		this.DMfromServerMode = null;
+		//
+		this.displayImage = null;
+		//
+		this.linkedImageDisplay = null;
 		// Setting => APP SETTINGS => Accessibility => Automatically play GIFs when Discord is focused.
 		this.autoplayGIF = null;
+		// Show embeds and preview website links pasted into chat
+		this.previewLink = null;
+		// Setting => APP SETTINGS => Accessibility => Play Animated Emojis
+		this.animatedEmojis = null;
+		// Setting => APP SETTINGS => Accessibility => Text-to-speech => Allow playback
+		this.allowTTS = null;
 		// Setting => APP SETTINGS => Appearance => Message Display => Compact Mode [OK]
 		this.compactMode = null;
 		// Setting => APP SETTINGS => Text & Images => Emoji => Convert Emoticons
 		this.convertEmoticons = null;
-		// Setting => APP SETTINGS => Accessibility => Text-to-speech => Allow playback
-		this.allowTTS = null;
+		// SAFE DIRECT MESSAGING
+		this.DMScanLevel = null;
 		// Setting => APP SETTINGS => Appearance => Theme [OK]
 		this.theme = '';
-		// Setting => APP SETTINGS => Accessibility => Play Animated Emojis
-		this.animatedEmojis = null;
+		//
+		this.developerMode = null;
+		//
+		this.afkTimeout = null;
+		//
+		this.stickerAnimationMode = null;
+		// WHO CAN ADD YOU AS A FRIEND ?
+		this.addFriendFrom = {
+			all: null,
+			mutual_friends: null,
+			mutual_guilds: null,
+		};
 		// Setting => APP SETTINGS => Text & Images => Emoji => Show emoji reactions
 		this.showEmojiReactions = null;
 		// Custom Stauts [It's not working now]
@@ -72,18 +65,37 @@ class ClientUserSettingManager extends CachedManager {
 	/**
 	 *
 	 * @param {Object} data Raw Data to patch
+	 * @extends https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/user/user.py
 	 * @private
 	 */
 	_patch(data) {
 		this.rawSetting = data;
 		if ('locale' in data) {
-			this.locale = data.locale;
+			this.locale = localeObject[data.locale];
 		}
 		if ('show_current_game' in data) {
-			this.showCurrentGame = data.show_current_game;
+			this.activityDisplay = data.show_current_game;
+		}
+		if ('default_guilds_restricted' in data) {
+			this.DMfromServerMode = data.default_guilds_restricted;
+		}
+		if ('inline_attachment_media' in data) {
+			this.displayImage = data.inline_attachment_media;
+		}
+		if ('inline_embed_media' in data) {
+			this.linkedImageDisplay = data.inline_embed_media;
 		}
 		if ('gif_auto_play' in data) {
 			this.autoplayGIF = data.gif_auto_play;
+		}
+		if ('render_embeds' in data) {
+			this.previewLink = data.render_embeds;
+		}
+		if ('animate_emoji' in data) {
+			this.animatedEmojis = data.animate_emoji;
+		}
+		if ('enable_tts_command' in data) {
+			this.allowTTS = data.enable_tts_command;
 		}
 		if ('message_display_compact' in data) {
 			this.compactMode = data.message_display_compact;
@@ -91,14 +103,20 @@ class ClientUserSettingManager extends CachedManager {
 		if ('convert_emoticons' in data) {
 			this.convertEmoticons = data.convert_emoticons;
 		}
-		if ('enable_tts_command' in data) {
-			this.allowTTS = data.enable_tts_command;
+		if ('explicit_content_filter' in data) {
+			this.DMScanLevel = DMScanLevel[data.explicit_content_filter];
 		}
 		if ('theme' in data) {
 			this.theme = data.theme;
 		}
-		if ('animate_emoji' in data) {
-			this.animatedEmojis = data.animate_emoji;
+		if ('developer_mode' in data) {
+			this.developerMode = data.developer_mode;
+		}
+		if ('afk_timeout' in data) {
+			this.afkTimeout = data.afk_timeout * 1000; // second => milisecond
+		}
+		if ('animate_stickers' in data) {
+			this.stickerAnimationMode = stickerAnimationMode[data.animate_stickers];
 		}
 		if ('render_reactions' in data) {
 			this.showEmojiReactions = data.render_reactions;
@@ -106,6 +124,15 @@ class ClientUserSettingManager extends CachedManager {
 		if ('custom_status' in data) {
 			this.customStatus = data.custom_status || {}; // Thanks PinkDuwc._#3443 reported this issue
 			this.customStatus.status = data.status;
+		}
+		if ('friend_source_flags' in data) {
+			this.addFriendFrom = {
+				all: data.friend_source_flags.all || false,
+				mutual_friends:
+					data.friend_source_flags.all ? true : data.friend_source_flags.mutual_friends,
+				mutual_guilds:
+					data.friend_source_flags.all ? true : data.friend_source_flags.mutual_guilds,
+			};
 		}
 		if ('guild_folders' in data) {
 			const data_ = data.guild_positions.map((guildId, i) => {
@@ -125,6 +152,14 @@ class ClientUserSettingManager extends CachedManager {
 				return [guildId, metadata];
 			});
 			this.guildMetadata = new Collection(data_);
+		}
+		if ('restricted_guilds' in data) {
+			data.restricted_guilds.map((guildId) => {
+				const guild = this.client.guilds.cache.get(guildId);
+				if (!guild) return;
+				guild.disableDM = true;
+				this.disableDMfromServer.set(guildId, true);
+			});
 		}
 	}
 	async fetch() {
@@ -286,8 +321,9 @@ class ClientUserSettingManager extends CachedManager {
 		const oldGuildFolderPosition = this.rawSetting.guild_folders.findIndex(
 			(value) => value.guild_ids.includes(guildId),
 		);
-		const newGuildFolderPosition = this.rawSetting.guild_folders.findIndex((value) =>
-			value.guild_ids.includes(this.rawSetting.guild_positions[newPosition]),
+		const newGuildFolderPosition = this.rawSetting.guild_folders.findIndex(
+			(value) =>
+				value.guild_ids.includes(this.rawSetting.guild_positions[newPosition]),
 		);
 		if (type == 2 || `${type}`.toUpperCase() == 'HOME') {
 			// Delete GuildID from Folder and create new Folder

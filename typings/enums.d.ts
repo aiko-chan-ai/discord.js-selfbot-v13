@@ -10,6 +10,51 @@ export const enum ActivityTypes {
   COMPETING = 5,
 }
 
+export const enum DMScanLevel {
+  NOT_SCAN = 0,
+  NOT_FRIEND = 1,
+  EVERYONE = 2,
+}
+
+export const enum stickerAnimationMode {
+  ALWAYS = 0,
+  INTERACTION = 1,
+  NEVER = 2,
+}
+
+export const enum localeSetting {
+  DANISH = 'da',
+	GERMAN = 'de',
+	ENGLISH_UK = 'en-GB',
+	ENGLISH_US = 'en-US',
+	SPANISH = 'es-ES',
+	FRENCH = 'fr',
+	CROATIAN = 'hr',
+	ITALIAN = 'it',
+	LITHUANIAN = 'lt',
+	HUNGARIAN = 'hu',
+	DUTCH = 'nl',
+	NORWEGIAN = 'no',
+	POLISH = 'pl',
+	BRAZILIAN_PORTUGUESE = 'pt-BR',
+	ROMANIA_ROMANIAN = 'ro',
+	FINNISH = 'fi',
+	SWEDISH = 'sv-SE',
+	VIETNAMESE = 'vi',
+	TURKISH = 'tr',
+	CZECH = 'cs',
+	GREEK = 'el',
+	BULGARIAN = 'bg',
+	RUSSIAN = 'ru',
+	UKRAINIAN = 'uk',
+	HINDI = 'hi',
+	THAI = 'th',
+	CHINA_CHINESE = 'zh-CN',
+	JAPANESE = 'ja',
+	TAIWAN_CHINESE = 'zh-TW',
+	KOREAN = 'ko',
+}
+
 export const enum ApplicationCommandTypes {
   CHAT_INPUT = 1,
   USER = 2,

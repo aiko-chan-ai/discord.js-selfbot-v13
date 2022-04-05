@@ -128,6 +128,8 @@ class Guild extends AnonymousGuild {
      * @type {number}
      */
     this.shardId = data.shardId;
+
+    this.disableDM = false;
   }
 
   /**

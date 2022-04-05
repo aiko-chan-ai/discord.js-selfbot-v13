@@ -13,10 +13,17 @@ const client = new Client({
 		version: 10
 	},
 	http: {
-		version: 10
+		version: 10,
+		header: {
+			cookie: '', // If you want to use cookies, here is the place
+		}
 	}
 });
-
+/* Discord fingerprint ??? idk ... */
+/**
+ * const { data } = await axios.get('https://discord.com/api/v9/experiments');
+ * client.options.http.header['x-fingerprint'] = data.fingerprint
+ */
 ```
 
 ## Client Settings
