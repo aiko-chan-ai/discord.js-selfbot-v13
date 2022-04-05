@@ -142,6 +142,7 @@ class ClientUser extends User {
 	/**
 	 * Set HyperSquad House
 	 * @param {HypeSquadOptions<Number|String>} type
+	 * `LEAVE`: 0
 	 * `HOUSE_BRAVERY`: 1
 	 * `HOUSE_BRILLIANCE`: 2
 	 * `HOUSE_BALANCE`: 3
@@ -149,13 +150,16 @@ class ClientUser extends User {
 	 * @example
 	 * // Set HyperSquad HOUSE_BRAVERY
 	 * client.user.setHypeSquad(1); || client.user.setHypeSquad('HOUSE_BRAVERY');
+	 * // Leave
+	 * client.user.setHypeSquad(0);
 	 */
 	async setHypeSquad(type) {
 		const id = typeof type === 'string' ? HypeSquadOptions[type] : type;
-		if (!id) throw new Error('Invalid HypeSquad type.');
-		return await this.client.api.hypesquad.online.post({
+		if (!id && id !== 0) throw new Error('Invalid HypeSquad type.');
+		if (id !== 0) return await this.client.api.hypesquad.online.post({
 			data: { house_id: id },
 		});
+		else return await this.client.api.hypesquad.online.delete();
 	}
 
 	/**

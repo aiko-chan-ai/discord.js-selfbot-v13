@@ -1327,7 +1327,7 @@ exports.GuildScheduledEventStatuses = createEnum([null, 'SCHEDULED', 'ACTIVE', '
  */
 exports.GuildScheduledEventEntityTypes = createEnum([null, 'STAGE_INSTANCE', 'VOICE', 'EXTERNAL']);
 /* eslint-enable max-len */
-exports.HypeSquadOptions = createEnum([null, 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
+exports.HypeSquadOptions = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
 
 exports._cleanupSymbol = Symbol('djsCleanup');
 
