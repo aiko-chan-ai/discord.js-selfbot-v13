@@ -1012,6 +1012,7 @@ export class Guild extends AnonymousGuild {
   public setSystemChannelFlags(systemChannelFlags: SystemChannelFlagsResolvable, reason?: string): Promise<Guild>;
   public setVerificationLevel(verificationLevel: VerificationLevel | number, reason?: string): Promise<Guild>;
   public setPremiumProgressBarEnabled(enabled?: boolean, reason?: string): Promise<Guild>;
+  public setCommunity(stats: boolean, publicUpdatesChannel: TextChannelResolvable, rulesChannel: TextChannelResolvable, reason?: string): Promise<Guild>;
   public setWidgetSettings(settings: GuildWidgetSettingsData, reason?: string): Promise<Guild>;
   public toJSON(): unknown;
 }

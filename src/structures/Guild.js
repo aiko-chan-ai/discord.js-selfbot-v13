@@ -1174,60 +1174,60 @@ class Guild extends AnonymousGuild {
   setRulesChannel(rulesChannel, reason) {
     return this.edit({ rulesChannel }, reason);
   }
-	/**
-	 * Change Guild Position (from * to Folder or Home)
-	 * @param {number} position  Guild Position
-	 * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
-	 * @param {String|Number} type Move to folder or home
-	 * * `FOLDER`: 1
-	 * * `HOME`: 2
-	 * @param {String|Number|void|null} folderID If you want to move to folder
-	 * @returns {Promise<Guild>}
-	 * @example
-	 * // Move guild to folderID 123456, index 1
-	 * guild.setPosition(1, 'FOLDER', 123456)
-	 * .then(guild => console.log(`Guild moved to folderID ${guild.folder.folderId}`));
-	 */
-	async setPosition(position, type, folderID) {
-		if (type == 1 || `${type}`.toUpperCase() === 'FOLDER') {
-			folderID = folderID || this.folder.folderId;
-			if (!['number', 'string'].includes(typeof folderID)) 
-				throw new TypeError(
-					'INVALID_TYPE',
-					'folderID',
-					'String | Number',
-			);
-			// Get Data from Folder ID
-			const folder = await this.client.setting.rawSetting.guild_folders.find(
-				(obj) => obj.id == folderID,
-			);
-			if (!folder) throw new Error('FOLDER_NOT_FOUND');
-			if (folder.guild_ids.length - 1 < position || position < 0)
-				throw new Error('FOLDER_POSITION_INVALID');
-			if (position !== folder.guild_ids.indexOf(this.id)) {
-				await this.client.setting.guildChangePosition(
-					this.id,
-					position,
-					1,
-					folderID,
-				);
-			}
-		} else if (type == 2 || `${type}`.toUpperCase() === 'HOME') {
-			if (this.client.setting.guild_positions - 1 < position || position < 0)
-				throw new Error('FOLDER_POSITION_INVALID');
-			if (position !== this.position) {
-				await this.client.setting.guildChangePosition(
-					this.id,
-					position,
-					2,
-					null,
-				);
-			}
-		} else {
-			throw new TypeError('INVALID_TYPE', 'type', '`Folder`| `Home`');
-		}
-		return this;
-	}
+  /**
+   * Change Guild Position (from * to Folder or Home)
+   * @param {number} position  Guild Position
+   * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
+   * @param {String|Number} type Move to folder or home
+   * * `FOLDER`: 1
+   * * `HOME`: 2
+   * @param {String|Number|void|null} folderID If you want to move to folder
+   * @returns {Promise<Guild>}
+   * @example
+   * // Move guild to folderID 123456, index 1
+   * guild.setPosition(1, 'FOLDER', 123456)
+   * .then(guild => console.log(`Guild moved to folderID ${guild.folder.folderId}`));
+   */
+  async setPosition(position, type, folderID) {
+    if (type == 1 || `${type}`.toUpperCase() === 'FOLDER') {
+      folderID = folderID || this.folder.folderId;
+      if (!['number', 'string'].includes(typeof folderID))
+        throw new TypeError(
+          'INVALID_TYPE',
+          'folderID',
+          'String | Number',
+        );
+      // Get Data from Folder ID
+      const folder = await this.client.setting.rawSetting.guild_folders.find(
+        (obj) => obj.id == folderID,
+      );
+      if (!folder) throw new Error('FOLDER_NOT_FOUND');
+      if (folder.guild_ids.length - 1 < position || position < 0)
+        throw new Error('FOLDER_POSITION_INVALID');
+      if (position !== folder.guild_ids.indexOf(this.id)) {
+        await this.client.setting.guildChangePosition(
+          this.id,
+          position,
+          1,
+          folderID,
+        );
+      }
+    } else if (type == 2 || `${type}`.toUpperCase() === 'HOME') {
+      if (this.client.setting.guild_positions - 1 < position || position < 0)
+        throw new Error('FOLDER_POSITION_INVALID');
+      if (position !== this.position) {
+        await this.client.setting.guildChangePosition(
+          this.id,
+          position,
+          2,
+          null,
+        );
+      }
+    } else {
+      throw new TypeError('INVALID_TYPE', 'type', '`Folder`| `Home`');
+    }
+    return this;
+  }
 
   /**
    * Edits the community updates channel of the guild.
@@ -1410,6 +1410,46 @@ class Guild extends AnonymousGuild {
         (this.features.length === guild.features.length &&
           this.features.every((feat, i) => feat === guild.features[i])))
     );
+  }
+
+  /**
+   * Set Community Feature
+   * @param {Boolean} stats True / False to enable / disable Community Feature
+   * @param {TextChannelResolvable} publicUpdatesChannel 
+   * @param {TextChannelResolvable} rulesChannel 
+   * @param {String} reason 
+   */
+  async setCommunity(stats = true, publicUpdatesChannel = '1', rulesChannel = '1', reason) {
+    if (stats) {
+      // Check everyone role
+      const everyoneRole = this.roles.everyone;
+      if (everyoneRole.mentionable) {
+        await everyoneRole.setMentionable(false, reason);
+      }
+      // Setting
+      this.edit(
+        {
+          defaultMessageNotifications: 'ONLY_MENTIONS',
+          explicitContentFilter: 'ALL_MEMBERS',
+          features: [...this.features, 'COMMUNITY'],
+          publicUpdatesChannel,
+          rulesChannel,
+          verificationLevel:
+            VerificationLevels[this.verificationLevel] < 1
+              ? 'LOW'
+              : this.verificationLevel, // Email
+        },
+        reason,
+      );
+    } else {
+      this.edit({
+        publicUpdatesChannel: null,
+        rulesChannel: null,
+        features: this.features.filter(f => f !== 'COMMUNITY'),
+        preferredLocale: this.preferredLocale,
+        description: this.description,
+      }, reason);
+    }
   }
 
   toJSON() {
