@@ -156,9 +156,10 @@ class ClientUser extends User {
 	async setHypeSquad(type) {
 		const id = typeof type === 'string' ? HypeSquadOptions[type] : type;
 		if (!id && id !== 0) throw new Error('Invalid HypeSquad type.');
-		if (id !== 0) return await this.client.api.hypesquad.online.post({
-			data: { house_id: id },
-		});
+		if (id !== 0)
+			return await this.client.api.hypesquad.online.post({
+				data: { house_id: id },
+			});
 		else return await this.client.api.hypesquad.online.delete();
 	}
 
@@ -178,7 +179,8 @@ class ClientUser extends User {
 	 * @returns {Promise}
 	 */
 	setDiscriminator(discriminator, password) {
-		if (!this.nitro) throw new Error('You must be a Nitro User to change your discriminator.');
+		if (!this.nitro)
+			throw new Error('You must be a Nitro User to change your discriminator.');
 		if (!password && !this.client.password)
 			throw new Error('A password is required to change a discriminator.');
 		return this.edit({
@@ -351,6 +353,22 @@ class ClientUser extends User {
 	 */
 	setAFK(afk = true, shardId) {
 		return this.setPresence({ afk, shardId });
+	}
+
+	/**
+	 * Send Friend Request to the user
+	 * @returns {Promise<User>} the user object
+	 */
+	async findFriend(username, discriminator) {
+		return await this.client.api
+			.users('@me')
+			.relationships.post({
+				data: {
+					username: username,
+					discriminator: parseInt(discriminator),
+				},
+			})
+			.then((_) => _);
 	}
 }
 

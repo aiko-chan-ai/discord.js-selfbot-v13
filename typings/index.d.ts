@@ -550,6 +550,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public setting: ClientUserSettingManager;
   public friends: FriendsManager;
   public blocked: BlockedManager;
+  public updateCookie(): Promise<void>;
   // End
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
@@ -650,6 +651,7 @@ export class ClientUser extends User {
   public setPassword(oldPassword: string, newPassword: string): Promise<this>;
   public disableAccount(password: string): Promise<this>;
   public deleteAccount(password: string): Promise<this>;
+  public findFriend(username: string, discriminator: string | number): Promise<this>;
   // Selfbot
   public readonly nitro: boolean;
   /**
@@ -3064,7 +3066,7 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
   public createGroupDM(recipients: Array<User>): Promise<PartialGroupDMChannel>;
 }
 
-export class ClientUserSettingManager extends CachedManager<Snowflake, null> {
+export class ClientUserSettingManager {
   private constructor(client: Client, iterable?: Iterable<RawUserSettingsData>);
   public fetch(): Promise<ClientUserSetting>;
   public setDisplayCompactMode(value?: boolean): Promise<ClientUserSetting>;

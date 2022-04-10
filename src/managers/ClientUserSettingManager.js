@@ -1,17 +1,14 @@
 'use strict';
-
-const CachedManager = require('./CachedManager');
 const { default: Collection } = require('@discordjs/collection');
 const { Error, TypeError } = require('../errors/DJSError');
 const { remove } = require('lodash');
 const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants')
 /**
- * Manages API methods for users and stores their cache.
- * @extends {CachedManager}
+ * Manages API methods for users.
  */
-class ClientUserSettingManager extends CachedManager {
+class ClientUserSettingManager {
 	constructor(client, iterable) {
-		super(client);
+		this.client = client;
 		// Raw data
 		this.rawSetting = {};
 		// Language

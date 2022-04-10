@@ -243,6 +243,49 @@ class Client extends BaseClient {
   }
 
   /**
+   * Update Cloudflare Cookie and Discord Fingerprint
+   */
+  async updateCookie() {
+		/* Auto find fingerprint and add Cookie */
+		let cookie = '';
+		await require('axios')({
+			method: 'get',
+			url: 'https://discord.com/api/v9/experiments',
+			headers: this.options.http.headers,
+		})
+			.then((res) => {
+				if (!'set-cookie' in res.headers) return;
+				res.headers['set-cookie'].map((line) => {
+					line.split('; ').map((arr) => {
+						if (
+							arr.startsWith('Expires') ||
+							arr.startsWith('Path') ||
+							arr.startsWith('Domain') ||
+							arr.startsWith('HttpOnly') ||
+							arr.startsWith('Secure') ||
+							arr.startsWith('Max-Age') ||
+							arr.startsWith('SameSite')
+						) {
+							return;
+						} else {
+							cookie += `${arr}; `;
+						}
+					});
+				});
+				this.options.http.headers['Cookie'] = `${cookie}locale=en`;
+				this.options.http.headers['x-fingerprint'] = res.data.fingerprint;
+				this.emit(Events.DEBUG, `Added Cookie: ${cookie}`);
+				this.emit(Events.DEBUG, `Added Fingerprint: ${res.data.fingerprint}`);
+			})
+			.catch((err) => {
+				this.emit(
+					Events.DEBUG,
+					`Finding Cookie and Fingerprint failed: ${err.message}`,
+				);
+			});
+	}
+
+  /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
    * @returns {Promise<string>} Token of the account used
@@ -261,43 +304,7 @@ class Client extends BaseClient {
     );
 
     if (this.options.autoCookie) {
-      /* Auto find fingerprint and add Cookie */
-      let cookie = '';
-      await require('axios')({
-        method: 'get',
-        url: 'https://discord.com/api/v9/experiments',
-        headers: this.options.http.headers,
-      })
-        .then((res) => {
-          if (!'set-cookie' in res.headers) return;
-          res.headers['set-cookie'].map((line) => {
-            line.split('; ').map((arr) => {
-              if (
-                arr.startsWith('Expires') ||
-                arr.startsWith('Path') ||
-                arr.startsWith('Domain') ||
-                arr.startsWith('HttpOnly') ||
-                arr.startsWith('Secure') ||
-                arr.startsWith('Max-Age') ||
-                arr.startsWith('SameSite')
-              ) {
-                return;
-              } else {
-                cookie += `${arr}; `;
-              }
-            });
-          });
-          this.options.http.headers['Cookie'] = `${cookie}locale=en`;
-          this.options.http.headers['x-fingerprint'] = res.data.fingerprint;
-          this.emit(Events.DEBUG, `Added Cookie: ${cookie}`);
-          this.emit(Events.DEBUG, `Added Fingerprint: ${res.data.fingerprint}`);
-        })
-        .catch((err) => {
-          this.emit(
-            Events.DEBUG,
-            `Finding Cookie and Fingerprint failed: ${err.message}`,
-          );
-        });
+      await this.updateCookie();
     }
 
     if (this.options.presence) {

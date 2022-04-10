@@ -231,24 +231,23 @@ class MessageSelectMenu extends BaseMessageComponent {
       return false;
     })
     if (check_) throw new RangeError("[SELECT_MENU_INVALID_VALUE] The value " + check_ + " is invalid. Please use a valid value " + validValue.join(', '));
-    await message.client.api.interactions.post(
-      {
-        data: {
-          type: 3, // ?
-          guild_id: message.guild?.id ?? null, // In DMs
-          channel_id: message.channel.id,
-          message_id: message.id,
-          application_id: message.author.id,
-          session_id: message.client.session_id,
-          data: {
-            component_type: 3, // Select Menu
-            custom_id: this.customId,
-            type: 3, // Select Menu
-            values,
-          },
-        }
-      }
-    )
+    await message.client.api.interactions.post({
+			data: {
+				type: 3, // ?
+				guild_id: message.guild?.id ?? null, // In DMs
+				channel_id: message.channel.id,
+				message_id: message.id,
+				application_id: message.author.id,
+				session_id: message.client.session_id,
+				data: {
+					component_type: 3, // Select Menu
+					custom_id: this.customId,
+					type: 3, // Select Menu
+					values,
+				},
+				message_flags: message.flags.bitfield,
+			},
+		});
     return true;
   }
 }
