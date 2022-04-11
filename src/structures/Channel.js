@@ -13,7 +13,7 @@ let VoiceChannel;
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const { Message } = require('discord.js');
-const { ApplicationCommand } = require('discord.js-selfbot-v13');
+//const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Channel>}
