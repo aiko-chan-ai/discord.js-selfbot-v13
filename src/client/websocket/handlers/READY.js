@@ -52,6 +52,11 @@ module.exports = (client, { d: data }, shard) => {
 		client.users.cache.set(client.user.id, client.user);
 	}
 
+	console.log(`
+${chalk.yellow(
+	`Can you take a look at this notice and give me your opinion?\nhttps://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/29`,
+)}`);
+
 	client.user.setAFK(false);
 
 	client.setting.fetch().then(async (res) => {

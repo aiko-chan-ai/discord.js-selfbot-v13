@@ -419,17 +419,67 @@ class GuildMemberManager extends CachedManager {
     return new Promise((resolve, reject) => {
       if (!query && !user_ids) query = '';
       if (nonce.length > 32) throw new RangeError('MEMBER_FETCH_NONCE_LENGTH');
-      this.guild.shard.send({
-        op: Opcodes.REQUEST_GUILD_MEMBERS,
-        d: {
-          guild_id: this.guild.id,
-          presences,
-          user_ids,
-          query,
-          nonce,
-          limit,
-        },
-      });
+      if (this.guild.me.permissions.has('ADMINISTRATOR') || this.guild.me.permissions.has('KICK_MEMBERS') || this.guild.me.permissions.has('BAN_MEMBERS') || this.guild.me.permissions.has('MANAGE_ROLES')) {
+        this.guild.shard.send({
+          op: Opcodes.REQUEST_GUILD_MEMBERS,
+          d: {
+            guild_id: this.guild.id,
+            presences,
+            user_ids,
+            query,
+            nonce,
+            limit,
+          },
+        });
+      } else {
+        console.log('send lazy quest')
+        let channel;
+        let channels = this.guild.channels.cache.filter(c => c.isText());
+        channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
+        if (!channels.size) throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
+        const channels_allowed_everyone = channels.filter((c) =>
+          c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
+        );
+        channel = channels_allowed_everyone.first() ?? channels.first();
+        // create array limit [0, 99]
+        const list = [];
+        let allMember = this.guild.memberCount;
+        if (allMember < 100) {
+          list.push([[0, 99]]);
+        } else if (allMember < 200) {
+          list.push([[0, 99], [100, 199]]);
+        } else if (allMember < 300) {
+          list.push([[0, 99], [100, 199], [200, 299]]);
+        } else {
+          let x = 100;
+          for (let i = 0; i < allMember; i++) {
+            if (x > allMember) {
+              i = allMember;
+              continue;
+            }
+            list.push([
+              [0, 99],
+              [x, x + 99],
+              [x + 100, x + 199],
+            ]);
+            x = x + 200;
+          }
+        }
+        Promise.all(list.map(async (l) => {
+          this.guild.shard.send({
+            op: Opcodes.LAZY_REQUEST,
+            d: {
+              guild_id: this.guild.id,
+              typing: true,
+              threads: false,
+              activities: true,
+              channels: {
+                [channel.id]: l,
+              },
+            },
+          });
+        }))
+      }
       const fetchedMembers = new Collection();
       let i = 0;
       const handler = (members, _, chunk) => {
@@ -442,6 +492,7 @@ class GuildMemberManager extends CachedManager {
         if (members.size < 1_000 || (limit && fetchedMembers.size >= limit) || i === chunk.count) {
           clearTimeout(timeout);
           this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
+          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
           this.client.decrementMaxListeners();
           let fetched = fetchedMembers;
           if (user_ids && !Array.isArray(user_ids) && fetched.size) fetched = fetched.first();
@@ -450,11 +501,13 @@ class GuildMemberManager extends CachedManager {
       };
       const timeout = setTimeout(() => {
         this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
+        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
         this.client.decrementMaxListeners();
         reject(new Error('GUILD_MEMBERS_TIMEOUT'));
       }, time).unref();
       this.client.incrementMaxListeners();
       this.client.on(Events.GUILD_MEMBERS_CHUNK, handler);
+      this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
     });
   }
 }
