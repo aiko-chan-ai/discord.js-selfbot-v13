@@ -60,8 +60,7 @@ await message.contextMenu(botID, commandName);
 </details>
 
 ## MessageEmbed ?
-- Because Discord has removed the ability to send Embeds in its API, that means MessageEmbed is unusable. But I have created a constructor that uses oEmbed from [page](https://embed.benny.fun/) (known to this site by module py discord.py-self_embed, thanks)
-- Update: This [page](https://embed.benny.fun/) is no longer available.
+- Because Discord has removed the ability to send Embeds in its API, that means MessageEmbed is unusable. But I have created a constructor that uses oEmbed with help [from this site](https://www.reddit.com/r/discordapp/comments/82p8i6/a_basic_tutorial_on_how_to_get_the_most_out_of/)
 
 <details>
 <summary><strong>Click to show</strong></summary>
