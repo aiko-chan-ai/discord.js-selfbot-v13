@@ -1,3 +1,10 @@
+# Quick Links:
+- [Setting](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#user-settings)
+- [User Info](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#discord-user-info)
+- [Relationship](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#discord-user-friend--blocked)
+- [Rich Presence](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#custom-status-and-rpc)
+- [Other](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#user--clientuser-method)
+
 ## User Settings
 <details>
 <summary><strong>Click to show</strong></summary>
@@ -221,15 +228,7 @@ await client.user.setPassword('old password', 'new password');
 await client.user.disableAccount('password');
 // Delete Account [WARNING] Cannot be changed once used!
 await client.user.deleteAccount('password');
-```
-</details>
-
-
-## Reddem Nitro ?
-<details>
-<summary>Click to show</summary>
-
-```js
+// Reddem Nitro
 await client.reddemNitro('code')
 ```
 </details>

@@ -1,3 +1,7 @@
+# Quick Links:
+- [Interaction](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md#interaction)
+- [Embed](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md#messageembed-)
+
 ## Interaction
 <details>
 <summary>Button Click</summary>
@@ -86,8 +90,9 @@ message.channel.send({ content: `Hello world`, embeds: [w] }) // Patched :)
 
 ```
 ### Features & Issues
-- No Timestamp, Footer, Thumbnail (but embed video, thumbnail working), Fields, Author iconURL
+- No Timestamp, Footer, Fields, Author iconURL
 - Video with Embed working
+- Can only choose between image and thumbnail
 - Description limit 350 characters
 - If you use hidden mode you must make sure your custom content is less than 1000 characters without nitro (because hidden mode uses 1000 characters + URL)
 

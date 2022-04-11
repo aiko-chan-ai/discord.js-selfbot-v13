@@ -1776,10 +1776,12 @@ export class WebEmbed {
   public video: MessageEmbedVideo | null;
   public hidden: Boolean;
   public shorten: Boolean;
+  public imageType: 'thumbnail' | 'image';
   public setAuthor(options: EmbedAuthorData | null): this;
   public setColor(color: ColorResolvable): this;
   public setDescription(description: string): this;
   public setImage(url: string): this;
+  public setThumbnail(url: string): this;
   public setVideo(url: string): this;
   public setTitle(title: string): this;
   public setURL(url: string): this;
@@ -5192,6 +5194,7 @@ export interface WebEmbedOptions {
   image?: Partial<MessageEmbedImage> & { proxy_url?: string };
   video?: Partial<MessageEmbedVideo> & { proxy_url?: string };
   footer?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
+  imageType?: 'thumbnail' | 'image';
 }
 
 export interface MessageEmbedAuthor {

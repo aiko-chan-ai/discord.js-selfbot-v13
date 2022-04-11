@@ -1,3 +1,9 @@
+# Quick Links:
+- [Set Guild Folder and Position](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#discord-guild-set-position)
+- [DM group](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#group-dm)
+- [Join Guild](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#join-guild-using-invite)
+- [Community](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#set-community))
+
 ## Discord Guild set position
 <details>
 <summary><strong>Click to show</strong></summary>
@@ -63,4 +69,17 @@ await client.fetchInvite('code').then(async invite => {
 <img src= 'https://cdn.discordapp.com/attachments/820557032016969751/957247688666132520/unknown.png'>
 
 <strong>But if you are blocked by HCaptcha, this will not work</strong>
+</details>
+
+## Set Community
+<details>
+<summary>Click to show</summary>
+
+```js
+await guild.setCommunity(stats: boolean, publicUpdatesChannel: TextChannelResolvable, rulesChannel: TextChannelResolvable, reason?: string): Promise<Guild>;
+// Enable with default
+await guild.setCommunity(true);
+// Disable
+await guild.setCommunity(false);
+```
 </details>

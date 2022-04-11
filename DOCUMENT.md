@@ -4,6 +4,11 @@
 # <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 # Quick links
+- [<strong>ClientOption</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md)
+- [<strong>HTTPOption</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/HTTPOption.md)
+- [<strong>Guild</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md)
+- [<strong>Message</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md)
+- [<strong>User</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md)
 
 ## More features
 

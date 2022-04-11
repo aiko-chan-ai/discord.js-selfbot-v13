@@ -200,6 +200,7 @@ class MessagePayload {
       this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 
       if (webembeds.length > 0) {
+        if (!content) content = '';
         // add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
         if (webembeds.length > 1) {
