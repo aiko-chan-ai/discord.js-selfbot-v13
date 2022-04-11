@@ -1,5 +1,5 @@
 # Quick Links
-- [Client Option](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#client-settings)
+- [Client Settings](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#client-settings)
 - [Client Functions](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#client-functions)
 
 ## Client Settings

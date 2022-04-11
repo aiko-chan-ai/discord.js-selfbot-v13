@@ -2,7 +2,7 @@
 - [Set Guild Folder and Position](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#discord-guild-set-position)
 - [DM group](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#group-dm)
 - [Join Guild](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#join-guild-using-invite)
-- [Community](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#set-community))
+- [Community](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#set-community)
 
 ## Discord Guild set position
 <details>
