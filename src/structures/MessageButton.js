@@ -183,7 +183,6 @@ class MessageButton extends BaseMessageComponent {
             component_type: 2, // Button
             custom_id: this.customId
           },
-          message_flags: message.flags.bitfield,
         }
       }
     )

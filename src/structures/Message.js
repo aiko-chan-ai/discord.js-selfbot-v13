@@ -20,7 +20,7 @@ const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 const { findBestMatch } = require('string-similarity'); // not check similarity
-const { ApplicationCommand } = require('discord.js-selfbot-v13');
+//const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Message>}
