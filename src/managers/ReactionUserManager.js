@@ -3,14 +3,14 @@
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
-const { User } = require('discord.js-selfbot-v13');
+const Discord = require("discord.js-selfbot-v13")
 /**
  * Manages API methods for users who reacted to a reaction and stores their cache.
  * @extends {CachedManager}
  */
 class ReactionUserManager extends CachedManager {
   constructor(reaction, iterable) {
-    super(reaction.client, User, iterable);
+    super(reaction.client, Discord.User, iterable);
 
     /**
      * The reaction that this manager belongs to
@@ -21,7 +21,7 @@ class ReactionUserManager extends CachedManager {
 
   /**
    * The cache of this manager
-   * @type {Collection<Snowflake, User>}
+   * @type {Collection<Snowflake, Discord.User>}
    * @name ReactionUserManager#cache
    */
 
@@ -35,7 +35,7 @@ class ReactionUserManager extends CachedManager {
   /**
    * Fetches all the users that gave this reaction. Resolves with a collection of users, mapped by their ids.
    * @param {FetchReactionUsersOptions} [options] Options for fetching the users
-   * @returns {Promise<Collection<Snowflake, User>>}
+   * @returns {Promise<Collection<Snowflake, Discord.User>>}
    */
   async fetch({ limit = 100, after } = {}) {
     const message = this.reaction.message;
