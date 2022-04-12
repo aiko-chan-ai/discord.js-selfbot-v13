@@ -9,6 +9,7 @@
 - [<strong>Guild</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md)
 - [<strong>Message</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md)
 - [<strong>User</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md)
+- [<strong>API</strong>](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/API.md)
 
 ## More features
 

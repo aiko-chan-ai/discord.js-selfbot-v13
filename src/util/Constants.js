@@ -347,6 +347,8 @@ exports.Events = {
 	TYPING_START: 'typingStart',
 	WEBHOOKS_UPDATE: 'webhookUpdate',
 	INTERACTION_CREATE: 'interactionCreate',
+	INTERACTION_SUCCESS: 'interactionSuccess',
+	INTERACTION_FAILED: 'interactionFailed',
 	ERROR: 'error',
 	WARN: 'warn',
 	DEBUG: 'debug',

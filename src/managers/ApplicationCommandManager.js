@@ -84,7 +84,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetch(id, { guildId, cache = true, force = false } = {}) {
-    await this.user.createDM().catch(() => {});
+    // change from user.createDM to opcode (risky action)
     if (typeof id === 'object') {
       ({ guildId, cache = true } = id);
     } else if (id) {
@@ -92,10 +92,11 @@ class ApplicationCommandManager extends CachedManager {
         const existing = this.cache.get(id);
         if (existing) return existing;
       }
+      await this.user.createDM().catch(() => {});
       const command = await this.commandPath({ id, guildId }).get();
       return this._add(command, cache);
     }
-
+    await this.user.createDM().catch(() => {});
     const data = await this.commandPath({ guildId }).get();
     return data.reduce((coll, command) => coll.set(command.id, this._add(command, cache, guildId)), new Collection());
   }

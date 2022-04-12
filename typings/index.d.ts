@@ -146,6 +146,7 @@ import {
   RawWidgetData,
   RawWidgetMemberData,
 } from './rawDataTypes';
+import { RelationshipType } from '../src/util/Constants';
 
 //#region Classes
 
@@ -975,6 +976,7 @@ export class Guild extends AnonymousGuild {
   public fetchAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'>(
     options?: GuildAuditLogsFetchOptions<T>,
   ): Promise<GuildAuditLogs<T>>;
+  public searchInteraction(options?: guildSearchInteraction): Promise<void>;
   public fetchIntegrations(): Promise<Collection<Snowflake | string, Integration>>;
   public fetchOwner(options?: BaseFetchOptions): Promise<GuildMember>;
   public fetchPreview(): Promise<GuildPreview>;
@@ -3886,6 +3888,14 @@ export interface BaseFetchOptions {
   force?: boolean;
 }
 
+export interface guildSearchInteraction {
+  type?: ApplicationCommandTypes,
+  query?: String | void,
+  limit?: Number,
+  offset?: Number,
+  botID?: Array<User.id>,
+}
+
 export interface BaseMessageComponentOptions {
   type?: MessageComponentType | MessageComponentTypes;
 }
@@ -4052,6 +4062,11 @@ export interface ClientEvents extends BaseClientEvents {
     data: { count: number; index: number; nonce: string | undefined },
   ];
   guildMemberUpdate: [oldMember: GuildMember | PartialGuildMember, newMember: GuildMember];
+  guildMemberListUpdate: [
+    members: Collection<Snowflake, GuildMember>,
+    guild: Guild,
+    data: {}, // see: https://luna.gitlab.io/discord-unofficial-docs/lazy_guilds.html
+  ]
   guildUpdate: [oldGuild: Guild, newGuild: Guild];
   inviteCreate: [invite: Invite];
   inviteDelete: [invite: Invite];
@@ -4089,7 +4104,9 @@ export interface ClientEvents extends BaseClientEvents {
   webhookUpdate: [channel: TextChannel | NewsChannel];
   /** @deprecated Use interactionCreate instead */
   interaction: [interaction: Interaction];
-  interactionCreate: [interaction: Interaction];
+  interactionCreate: [interaction: Interaction | { nonce: Snowflake, id: Snowflake }];
+  interactionSuccess: [interaction: { nonce: Snowflake, id: Snowflake }];
+  interactionFailed: [interaction: { nonce: Snowflake, id: Snowflake }];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
   shardError: [error: Error, shardId: number];
   shardReady: [shardId: number, unavailableGuilds: Set<Snowflake> | undefined];
@@ -4106,6 +4123,16 @@ export interface ClientEvents extends BaseClientEvents {
   guildScheduledEventDelete: [guildScheduledEvent: GuildScheduledEvent];
   guildScheduledEventUserAdd: [guildScheduledEvent: GuildScheduledEvent, user: User];
   guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, user: User];
+  relationshipAdd: [
+    id: Snowflake,
+    type: RelationshipType,
+    user: User,
+  ]
+  relationshipRemove: [
+    id: Snowflake,
+    type: RelationshipType,
+    user: User,
+  ]
 }
 
 export interface ClientFetchInviteOptions {
@@ -4285,74 +4312,79 @@ export interface ConstantsEvents {
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_DELETE: 'applicationCommandDelete';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
-  APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate';
-  GUILD_CREATE: 'guildCreate';
-  GUILD_DELETE: 'guildDelete';
-  GUILD_UPDATE: 'guildUpdate';
-  INVITE_CREATE: 'inviteCreate';
-  INVITE_DELETE: 'inviteDelete';
-  GUILD_UNAVAILABLE: 'guildUnavailable';
-  GUILD_MEMBER_ADD: 'guildMemberAdd';
-  GUILD_MEMBER_REMOVE: 'guildMemberRemove';
-  GUILD_MEMBER_UPDATE: 'guildMemberUpdate';
-  GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable';
-  GUILD_MEMBERS_CHUNK: 'guildMembersChunk';
-  GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate';
-  GUILD_ROLE_CREATE: 'roleCreate';
-  GUILD_ROLE_DELETE: 'roleDelete';
-  GUILD_ROLE_UPDATE: 'roleUpdate';
-  GUILD_EMOJI_CREATE: 'emojiCreate';
-  GUILD_EMOJI_DELETE: 'emojiDelete';
-  GUILD_EMOJI_UPDATE: 'emojiUpdate';
-  GUILD_BAN_ADD: 'guildBanAdd';
-  GUILD_BAN_REMOVE: 'guildBanRemove';
-  CHANNEL_CREATE: 'channelCreate';
-  CHANNEL_DELETE: 'channelDelete';
-  CHANNEL_UPDATE: 'channelUpdate';
-  CHANNEL_PINS_UPDATE: 'channelPinsUpdate';
-  MESSAGE_CREATE: 'messageCreate';
-  MESSAGE_DELETE: 'messageDelete';
-  MESSAGE_UPDATE: 'messageUpdate';
-  MESSAGE_BULK_DELETE: 'messageDeleteBulk';
-  MESSAGE_REACTION_ADD: 'messageReactionAdd';
-  MESSAGE_REACTION_REMOVE: 'messageReactionRemove';
-  MESSAGE_REACTION_REMOVE_ALL: 'messageReactionRemoveAll';
-  MESSAGE_REACTION_REMOVE_EMOJI: 'messageReactionRemoveEmoji';
-  THREAD_CREATE: 'threadCreate';
-  THREAD_DELETE: 'threadDelete';
-  THREAD_UPDATE: 'threadUpdate';
-  THREAD_LIST_SYNC: 'threadListSync';
-  THREAD_MEMBER_UPDATE: 'threadMemberUpdate';
-  THREAD_MEMBERS_UPDATE: 'threadMembersUpdate';
-  USER_UPDATE: 'userUpdate';
-  PRESENCE_UPDATE: 'presenceUpdate';
-  VOICE_SERVER_UPDATE: 'voiceServerUpdate';
-  VOICE_STATE_UPDATE: 'voiceStateUpdate';
-  TYPING_START: 'typingStart';
-  WEBHOOKS_UPDATE: 'webhookUpdate';
-  INTERACTION_CREATE: 'interactionCreate';
-  ERROR: 'error';
-  WARN: 'warn';
-  DEBUG: 'debug';
-  CACHE_SWEEP: 'cacheSweep';
-  SHARD_DISCONNECT: 'shardDisconnect';
-  SHARD_ERROR: 'shardError';
-  SHARD_RECONNECTING: 'shardReconnecting';
-  SHARD_READY: 'shardReady';
-  SHARD_RESUME: 'shardResume';
-  INVALIDATED: 'invalidated';
-  RAW: 'raw';
-  STAGE_INSTANCE_CREATE: 'stageInstanceCreate';
-  STAGE_INSTANCE_UPDATE: 'stageInstanceUpdate';
-  STAGE_INSTANCE_DELETE: 'stageInstanceDelete';
-  GUILD_STICKER_CREATE: 'stickerCreate';
-  GUILD_STICKER_DELETE: 'stickerDelete';
-  GUILD_STICKER_UPDATE: 'stickerUpdate';
-  GUILD_SCHEDULED_EVENT_CREATE: 'guildScheduledEventCreate';
-  GUILD_SCHEDULED_EVENT_UPDATE: 'guildScheduledEventUpdate';
-  GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete';
-  GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd';
-  GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove';
+  APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate',
+  GUILD_CREATE: 'guildCreate',
+  GUILD_DELETE: 'guildDelete',
+  GUILD_UPDATE: 'guildUpdate',
+  GUILD_UNAVAILABLE: 'guildUnavailable',
+  GUILD_MEMBER_ADD: 'guildMemberAdd',
+  GUILD_MEMBER_REMOVE: 'guildMemberRemove',
+  GUILD_MEMBER_UPDATE: 'guildMemberUpdate',
+  GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable',
+  GUILD_MEMBERS_CHUNK: 'guildMembersChunk',
+  GUILD_MEMBER_LIST_UPDATE: 'guildMemberListUpdate',
+  GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate',
+  GUILD_ROLE_CREATE: 'roleCreate',
+  GUILD_ROLE_DELETE: 'roleDelete',
+  INVITE_CREATE: 'inviteCreate',
+  INVITE_DELETE: 'inviteDelete',
+  GUILD_ROLE_UPDATE: 'roleUpdate',
+  GUILD_EMOJI_CREATE: 'emojiCreate',
+  GUILD_EMOJI_DELETE: 'emojiDelete',
+  GUILD_EMOJI_UPDATE: 'emojiUpdate',
+  GUILD_BAN_ADD: 'guildBanAdd',
+  GUILD_BAN_REMOVE: 'guildBanRemove',
+  CHANNEL_CREATE: 'channelCreate',
+  CHANNEL_DELETE: 'channelDelete',
+  CHANNEL_UPDATE: 'channelUpdate',
+  CHANNEL_PINS_UPDATE: 'channelPinsUpdate',
+  MESSAGE_CREATE: 'messageCreate',
+  MESSAGE_DELETE: 'messageDelete',
+  MESSAGE_UPDATE: 'messageUpdate',
+  MESSAGE_BULK_DELETE: 'messageDeleteBulk',
+  MESSAGE_REACTION_ADD: 'messageReactionAdd',
+  MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
+  MESSAGE_REACTION_REMOVE_ALL: 'messageReactionRemoveAll',
+  MESSAGE_REACTION_REMOVE_EMOJI: 'messageReactionRemoveEmoji',
+  THREAD_CREATE: 'threadCreate',
+  THREAD_DELETE: 'threadDelete',
+  THREAD_UPDATE: 'threadUpdate',
+  THREAD_LIST_SYNC: 'threadListSync',
+  THREAD_MEMBER_UPDATE: 'threadMemberUpdate',
+  THREAD_MEMBERS_UPDATE: 'threadMembersUpdate',
+  USER_UPDATE: 'userUpdate',
+  PRESENCE_UPDATE: 'presenceUpdate',
+  VOICE_SERVER_UPDATE: 'voiceServerUpdate',
+  VOICE_STATE_UPDATE: 'voiceStateUpdate',
+  TYPING_START: 'typingStart',
+  WEBHOOKS_UPDATE: 'webhookUpdate',
+  INTERACTION_CREATE: 'interactionCreate',
+  INTERACTION_SUCCESS: 'interactionSuccess',
+  INTERACTION_FAILED: 'interactionFailed',
+  ERROR: 'error',
+  WARN: 'warn',
+  DEBUG: 'debug',
+  CACHE_SWEEP: 'cacheSweep',
+  SHARD_DISCONNECT: 'shardDisconnect',
+  SHARD_ERROR: 'shardError',
+  SHARD_RECONNECTING: 'shardReconnecting',
+  SHARD_READY: 'shardReady',
+  SHARD_RESUME: 'shardResume',
+  INVALIDATED: 'invalidated',
+  RAW: 'raw',
+  STAGE_INSTANCE_CREATE: 'stageInstanceCreate',
+  STAGE_INSTANCE_UPDATE: 'stageInstanceUpdate',
+  STAGE_INSTANCE_DELETE: 'stageInstanceDelete',
+  GUILD_STICKER_CREATE: 'stickerCreate',
+  GUILD_STICKER_DELETE: 'stickerDelete',
+  GUILD_STICKER_UPDATE: 'stickerUpdate',
+  GUILD_SCHEDULED_EVENT_CREATE: 'guildScheduledEventCreate',
+  GUILD_SCHEDULED_EVENT_UPDATE: 'guildScheduledEventUpdate',
+  GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete',
+  GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
+  GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
+  RELATIONSHIP_ADD: 'relationshipAdd',
+  RELATIONSHIP_REMOVE: 'relationshipRemove',
 }
 
 export interface ConstantsOpcodes {

@@ -4,6 +4,30 @@
 
 ## Interaction
 <details>
+<summary>Fetch Commands data</summary>
+
+```js
+/* Save to cache */
+// In guild (Opcode 24)
+await guild.searchInteraction(
+	{
+		limit: 100, // default: 1
+		query: 'ping', // optional
+		type: 'CHAT_INPUT', // default: 'CHAT_INPUT'
+		offset: 0, // default: 0
+		botID: ['botid1', 'botid2'], // optional
+	}
+);
+// Fetch all commands (1 bot) Shouldn't be used
+await bot.applications.fetch(
+	{
+		guildId: 'guild id to search', // optional
+		force: false, // Using cache or createDMs to bot
+	}
+);
+```
+</details>
+<details>
 <summary>Button Click</summary>
 
 ```js
@@ -57,6 +81,7 @@ await message.contextMenu(botID, commandName);
 > In this way, all Slash commands can be obtained
 - I will try to find another way to not need to create DMs with Bot anymore
 - Credit: [Here](https://www.reddit.com/r/Discord_selfbots/comments/tczprx/discum_help_creating_a_selfbot_that_can_do_ping/)
+- <strong>Update: Now to get more secure interaction commands you need to use guild.searchInteraction() (using gateway)</strong>
 </details>
 
 ## MessageEmbed ?

@@ -9,6 +9,7 @@ module.exports = (client, { d: data }) => {
     const guild = client.guilds.cache.get(data.guild_id);
     if (!guild) return;
     const members = new Collection();
+    // Get Member from side Discord Channel (online counting if large server)
     for (const object of data.ops) {
         if (object.op == 'SYNC') {
             for (const member_ of object.items) {
