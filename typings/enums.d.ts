@@ -22,8 +22,15 @@ export const enum stickerAnimationMode {
   NEVER = 2,
 }
 
+export const enum relationshipsType {
+  FRIEND = 1,
+  BLOCKED = 2,
+  INCOMING_REQUEST = 3,
+  OUTGOING_REQUEST = 4,
+}
+
 export const enum localeSetting {
-  DANISH = 'da',
+	DANISH = 'da',
 	GERMAN = 'de',
 	ENGLISH_UK = 'en-GB',
 	ENGLISH_US = 'en-US',

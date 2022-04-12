@@ -93,6 +93,7 @@ User {
 
 Code:
 ```js
+// You can use client.relationships to manage your friends and blocked users.
 GuildMember.user.setFriend();
 User.unFriend();
 Message.member.user.sendFriendRequest();
@@ -208,6 +209,7 @@ And you can change the status 5 times every 20 seconds!
 await client.user.setHypeSquad('HOUSE_BRAVERY');
 await client.user.setHypeSquad('HOUSE_BRILLIANCE');
 await client.user.setHypeSquad('HOUSE_BALANCE');
+await client.user.setHypeSquad('LEAVE');
 // Set Note to User
 await user.setNote('Hello World');
 // Set Username

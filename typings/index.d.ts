@@ -62,6 +62,10 @@ import {
   ApplicationCommandPermissionTypes,
   ApplicationCommandTypes,
   ChannelTypes,
+  relationshipsType,
+  localeSetting,
+  stickerAnimationMode,
+  DMScanLevel,
   DefaultMessageNotificationLevels,
   ExplicitContentFilterLevels,
   InteractionResponseTypes,
@@ -548,8 +552,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public application: If<Ready, ClientApplication>;
   // Added
   public setting: ClientUserSettingManager;
-  public friends: FriendsManager;
-  public blocked: BlockedManager;
+  public relationships: RelationshipsManager;
   public updateCookie(): Promise<void>;
   // End
   public channels: ChannelManager;
@@ -651,7 +654,6 @@ export class ClientUser extends User {
   public setPassword(oldPassword: string, newPassword: string): Promise<this>;
   public disableAccount(password: string): Promise<this>;
   public deleteAccount(password: string): Promise<this>;
-  public findFriend(username: string, discriminator: string | number): Promise<this>;
   // Selfbot
   public readonly nitro: boolean;
   /**
@@ -2468,8 +2470,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public banner: string | null | undefined;
   public bot: boolean;
   public readonly createdAt: Date;
-  public readonly friend: Boolean;
-  public readonly blocked: Boolean;
+  public readonly relationships: relationshipsType;
   public readonly createdTimestamp: number;
   public discriminator: string;
   public readonly defaultAvatarURL: string;
@@ -3369,24 +3370,17 @@ export class UserManager extends CachedManager<Snowflake, User, UserResolvable> 
   public send(user: UserResolvable, options: string | MessagePayload | MessageOptions): Promise<Message>;
 }
 
-export class FriendsManager extends CachedManager<Snowflake, User, UserResolvable> {
-  private constructor(client: Client, iterable?: Iterable<RawUserData>);
-  private dmChannel(userId: Snowflake): DMChannel | null;
-  public createDM(user: UserResolvable, options?: BaseFetchOptions): Promise<DMChannel>;
-  public deleteDM(user: UserResolvable): Promise<DMChannel>;
+export class RelationshipsManager {
+  private constructor(client: Client, users?: Array<RawRelationship>);
+  public cache: Collection<Snowflake, relationshipsType>;
+  public client: Client;
+  private _setup(users: Array<RawRelationship>): null;
   public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<User>;
-  public fetchFlags(user: UserResolvable, options?: BaseFetchOptions): Promise<UserFlags>;
-  public send(user: UserResolvable, options: string | MessagePayload | MessageOptions): Promise<Message>;
-}
-
-export class BlockedManager extends CachedManager<Snowflake, User, UserResolvable> {
-  private constructor(client: Client, iterable?: Iterable<RawUserData>);
-  private dmChannel(userId: Snowflake): DMChannel | null;
-  public createDM(user: UserResolvable, options?: BaseFetchOptions): Promise<DMChannel>;
-  public deleteDM(user: UserResolvable): Promise<DMChannel>;
-  public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<User>;
-  public fetchFlags(user: UserResolvable, options?: BaseFetchOptions): Promise<UserFlags>;
-  public send(user: UserResolvable, options: string | MessagePayload | MessageOptions): Promise<Message>;
+  public deleteFriend(user: UserResolvable): Promise<User>;
+  public deleteBlocked(user: UserResolvable): Promise<User>;
+  public sendFriendRequest(username: User.username, discriminator: User.discriminator): Promise<User>;
+  public addFriend(user: UserResolvable): Promise<User>;
+  public addBlocked(user: UserResolvable): Promise<User>;
 }
 
 export class VoiceStateManager extends CachedManager<Snowflake, VoiceState, typeof VoiceState> {

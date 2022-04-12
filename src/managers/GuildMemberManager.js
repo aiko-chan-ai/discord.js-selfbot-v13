@@ -432,7 +432,6 @@ class GuildMemberManager extends CachedManager {
           },
         });
       } else {
-        console.log('send lazy quest')
         let channel;
         let channels = this.guild.channels.cache.filter(c => c.isText());
         channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));

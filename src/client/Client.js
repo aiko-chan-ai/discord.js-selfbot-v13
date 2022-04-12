@@ -29,8 +29,7 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const Sweepers = require('../util/Sweepers');
 // Patch
-const FriendsManager = require('../managers/FriendsManager');
-const BlockedManager = require('../managers/BlockedManager');
+const RelationshipsManager = require('../managers/RelationshipsManager');
 const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 
 /**
@@ -129,8 +128,7 @@ class Client extends BaseClient {
     /** Patch
      * 
      */
-    this.friends = new FriendsManager(this);
-    this.blocked = new BlockedManager(this);
+    this.relationships = new RelationshipsManager(this);
     this.setting = new ClientUserSettingManager(this);
     /**
      * All of the guilds the client is currently handling, mapped by their ids -

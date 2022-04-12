@@ -284,91 +284,93 @@ exports.Opcodes = {
 };
 
 exports.Events = {
-  RATE_LIMIT: 'rateLimit',
-  INVALID_REQUEST_WARNING: 'invalidRequestWarning',
-  API_RESPONSE: 'apiResponse',
-  API_REQUEST: 'apiRequest',
-  CLIENT_READY: 'ready',
-  /**
-   * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
-   */
-  APPLICATION_COMMAND_CREATE: 'applicationCommandCreate',
-  /**
-   * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
-   */
-  APPLICATION_COMMAND_DELETE: 'applicationCommandDelete',
-  /**
-   * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
-   */
-  APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate',
-  GUILD_CREATE: 'guildCreate',
-  GUILD_DELETE: 'guildDelete',
-  GUILD_UPDATE: 'guildUpdate',
-  GUILD_UNAVAILABLE: 'guildUnavailable',
-  GUILD_MEMBER_ADD: 'guildMemberAdd',
-  GUILD_MEMBER_REMOVE: 'guildMemberRemove',
-  GUILD_MEMBER_UPDATE: 'guildMemberUpdate',
-  GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable',
-  GUILD_MEMBERS_CHUNK: 'guildMembersChunk',
-  GUILD_MEMBER_LIST_UPDATE: 'guildMemberListUpdate',
-  GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate',
-  GUILD_ROLE_CREATE: 'roleCreate',
-  GUILD_ROLE_DELETE: 'roleDelete',
-  INVITE_CREATE: 'inviteCreate',
-  INVITE_DELETE: 'inviteDelete',
-  GUILD_ROLE_UPDATE: 'roleUpdate',
-  GUILD_EMOJI_CREATE: 'emojiCreate',
-  GUILD_EMOJI_DELETE: 'emojiDelete',
-  GUILD_EMOJI_UPDATE: 'emojiUpdate',
-  GUILD_BAN_ADD: 'guildBanAdd',
-  GUILD_BAN_REMOVE: 'guildBanRemove',
-  CHANNEL_CREATE: 'channelCreate',
-  CHANNEL_DELETE: 'channelDelete',
-  CHANNEL_UPDATE: 'channelUpdate',
-  CHANNEL_PINS_UPDATE: 'channelPinsUpdate',
-  MESSAGE_CREATE: 'messageCreate',
-  MESSAGE_DELETE: 'messageDelete',
-  MESSAGE_UPDATE: 'messageUpdate',
-  MESSAGE_BULK_DELETE: 'messageDeleteBulk',
-  MESSAGE_REACTION_ADD: 'messageReactionAdd',
-  MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
-  MESSAGE_REACTION_REMOVE_ALL: 'messageReactionRemoveAll',
-  MESSAGE_REACTION_REMOVE_EMOJI: 'messageReactionRemoveEmoji',
-  THREAD_CREATE: 'threadCreate',
-  THREAD_DELETE: 'threadDelete',
-  THREAD_UPDATE: 'threadUpdate',
-  THREAD_LIST_SYNC: 'threadListSync',
-  THREAD_MEMBER_UPDATE: 'threadMemberUpdate',
-  THREAD_MEMBERS_UPDATE: 'threadMembersUpdate',
-  USER_UPDATE: 'userUpdate',
-  PRESENCE_UPDATE: 'presenceUpdate',
-  VOICE_SERVER_UPDATE: 'voiceServerUpdate',
-  VOICE_STATE_UPDATE: 'voiceStateUpdate',
-  TYPING_START: 'typingStart',
-  WEBHOOKS_UPDATE: 'webhookUpdate',
-  INTERACTION_CREATE: 'interactionCreate',
-  ERROR: 'error',
-  WARN: 'warn',
-  DEBUG: 'debug',
-  CACHE_SWEEP: 'cacheSweep',
-  SHARD_DISCONNECT: 'shardDisconnect',
-  SHARD_ERROR: 'shardError',
-  SHARD_RECONNECTING: 'shardReconnecting',
-  SHARD_READY: 'shardReady',
-  SHARD_RESUME: 'shardResume',
-  INVALIDATED: 'invalidated',
-  RAW: 'raw',
-  STAGE_INSTANCE_CREATE: 'stageInstanceCreate',
-  STAGE_INSTANCE_UPDATE: 'stageInstanceUpdate',
-  STAGE_INSTANCE_DELETE: 'stageInstanceDelete',
-  GUILD_STICKER_CREATE: 'stickerCreate',
-  GUILD_STICKER_DELETE: 'stickerDelete',
-  GUILD_STICKER_UPDATE: 'stickerUpdate',
-  GUILD_SCHEDULED_EVENT_CREATE: 'guildScheduledEventCreate',
-  GUILD_SCHEDULED_EVENT_UPDATE: 'guildScheduledEventUpdate',
-  GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete',
-  GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
-  GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
+	RATE_LIMIT: 'rateLimit',
+	INVALID_REQUEST_WARNING: 'invalidRequestWarning',
+	API_RESPONSE: 'apiResponse',
+	API_REQUEST: 'apiRequest',
+	CLIENT_READY: 'ready',
+	/**
+	 * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
+	 */
+	APPLICATION_COMMAND_CREATE: 'applicationCommandCreate',
+	/**
+	 * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
+	 */
+	APPLICATION_COMMAND_DELETE: 'applicationCommandDelete',
+	/**
+	 * @deprecated See {@link https://github.com/discord/discord-api-docs/issues/3690 this issue} for more information.
+	 */
+	APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate',
+	GUILD_CREATE: 'guildCreate',
+	GUILD_DELETE: 'guildDelete',
+	GUILD_UPDATE: 'guildUpdate',
+	GUILD_UNAVAILABLE: 'guildUnavailable',
+	GUILD_MEMBER_ADD: 'guildMemberAdd',
+	GUILD_MEMBER_REMOVE: 'guildMemberRemove',
+	GUILD_MEMBER_UPDATE: 'guildMemberUpdate',
+	GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable',
+	GUILD_MEMBERS_CHUNK: 'guildMembersChunk',
+	GUILD_MEMBER_LIST_UPDATE: 'guildMemberListUpdate',
+	GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate',
+	GUILD_ROLE_CREATE: 'roleCreate',
+	GUILD_ROLE_DELETE: 'roleDelete',
+	INVITE_CREATE: 'inviteCreate',
+	INVITE_DELETE: 'inviteDelete',
+	GUILD_ROLE_UPDATE: 'roleUpdate',
+	GUILD_EMOJI_CREATE: 'emojiCreate',
+	GUILD_EMOJI_DELETE: 'emojiDelete',
+	GUILD_EMOJI_UPDATE: 'emojiUpdate',
+	GUILD_BAN_ADD: 'guildBanAdd',
+	GUILD_BAN_REMOVE: 'guildBanRemove',
+	CHANNEL_CREATE: 'channelCreate',
+	CHANNEL_DELETE: 'channelDelete',
+	CHANNEL_UPDATE: 'channelUpdate',
+	CHANNEL_PINS_UPDATE: 'channelPinsUpdate',
+	MESSAGE_CREATE: 'messageCreate',
+	MESSAGE_DELETE: 'messageDelete',
+	MESSAGE_UPDATE: 'messageUpdate',
+	MESSAGE_BULK_DELETE: 'messageDeleteBulk',
+	MESSAGE_REACTION_ADD: 'messageReactionAdd',
+	MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
+	MESSAGE_REACTION_REMOVE_ALL: 'messageReactionRemoveAll',
+	MESSAGE_REACTION_REMOVE_EMOJI: 'messageReactionRemoveEmoji',
+	THREAD_CREATE: 'threadCreate',
+	THREAD_DELETE: 'threadDelete',
+	THREAD_UPDATE: 'threadUpdate',
+	THREAD_LIST_SYNC: 'threadListSync',
+	THREAD_MEMBER_UPDATE: 'threadMemberUpdate',
+	THREAD_MEMBERS_UPDATE: 'threadMembersUpdate',
+	USER_UPDATE: 'userUpdate',
+	PRESENCE_UPDATE: 'presenceUpdate',
+	VOICE_SERVER_UPDATE: 'voiceServerUpdate',
+	VOICE_STATE_UPDATE: 'voiceStateUpdate',
+	TYPING_START: 'typingStart',
+	WEBHOOKS_UPDATE: 'webhookUpdate',
+	INTERACTION_CREATE: 'interactionCreate',
+	ERROR: 'error',
+	WARN: 'warn',
+	DEBUG: 'debug',
+	CACHE_SWEEP: 'cacheSweep',
+	SHARD_DISCONNECT: 'shardDisconnect',
+	SHARD_ERROR: 'shardError',
+	SHARD_RECONNECTING: 'shardReconnecting',
+	SHARD_READY: 'shardReady',
+	SHARD_RESUME: 'shardResume',
+	INVALIDATED: 'invalidated',
+	RAW: 'raw',
+	STAGE_INSTANCE_CREATE: 'stageInstanceCreate',
+	STAGE_INSTANCE_UPDATE: 'stageInstanceUpdate',
+	STAGE_INSTANCE_DELETE: 'stageInstanceDelete',
+	GUILD_STICKER_CREATE: 'stickerCreate',
+	GUILD_STICKER_DELETE: 'stickerDelete',
+	GUILD_STICKER_UPDATE: 'stickerUpdate',
+	GUILD_SCHEDULED_EVENT_CREATE: 'guildScheduledEventCreate',
+	GUILD_SCHEDULED_EVENT_UPDATE: 'guildScheduledEventUpdate',
+	GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete',
+	GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
+	GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
+	RELATIONSHIP_ADD: 'relationshipAdd',
+	RELATIONSHIP_REMOVE: 'relationshipRemove',
 };
 
 exports.ShardEvents = {
@@ -1309,6 +1311,26 @@ exports.PrivacyLevels = createEnum([null, 'PUBLIC', 'GUILD_ONLY']);
  * @see {@link https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-privacy-level}
  */
 exports.GuildScheduledEventPrivacyLevels = createEnum([null, null, 'GUILD_ONLY']);
+
+/**
+ * Relationship Enum
+ * * FRIEND
+ * * BLOCKED
+ * * INCOMING_REQUEST
+ * * OUTGOING_REQUEST
+ * @typedef {string} RelationshipType
+ * @see {@link https://luna.gitlab.io/discord-unofficial-docs/relationships.html}
+ */
+
+exports.RelationshipTypes = createEnum([null, 'FRIEND', 'BLOCKED', 'INCOMING_REQUEST', 'OUTGOING_REQUEST']);
+
+exports.Relationship = {
+  0: 'NONE',
+	1: 'FRIEND',
+	2: 'BLOCKED',
+  3: 'INCOMING_REQUEST',
+  4: 'OUTGOING_REQUEST',
+};
 
 /**
  * The premium tier (Server Boost level) of a guild:

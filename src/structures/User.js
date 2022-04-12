@@ -7,6 +7,7 @@ const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
 const { default: Collection } = require('@discordjs/collection');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
+const { Relationship } = require('../util/Constants');
 
 /**
  * Represents a user on Discord.
@@ -129,18 +130,12 @@ class User extends Base {
 	}
 
 	/**
-	 * Friend ?
+	 * Check relationship status
 	 * @readonly
 	 */
-	get friend() {
-		return this.client.friends.cache.has(this.id);
-	}
-	/**
-	 * Blocked ?
-	 * @readonly
-	 */
-	get blocked() {
-		return this.client.blocked.cache.has(this.id);
+	get relationships() {
+		const i = this.client.relationships.cache.get(this.id) ?? 0;
+		return Relationship[parseInt(i)];
 	}
 
 	// Code written by https://github.com/aiko-chan-ai
@@ -185,10 +180,7 @@ class User extends Base {
 	 * @returns {Promise<User>} the user object
 	 */
 	async setFriend() {
-		return await this.client.api
-			.user('@me')
-			.relationships[this.id].put({ data: { type: 1 } })
-			.then((_) => _);
+		return this.client.relationships.addFriend(this);
 	}
 
 	/**
@@ -196,25 +188,14 @@ class User extends Base {
 	 * @returns {Promise<User>} the user object
 	 */
 	async sendFriendRequest() {
-		return await this.client.api
-			.users('@me')
-			.relationships.post({
-				data: {
-					username: this.username,
-					discriminator: parseInt(this.discriminator),
-				},
-			})
-			.then((_) => _);
+		return this.client.relationships.sendFriendRequest(this.username, this.discriminator);
 	}
 	/**
 	 * Blocks the user
 	 * @returns {Promise<User>} the user object
 	 */
 	async setBlock() {
-		return this.client.api
-			.users('@me')
-			.relationships[this.id].put({ data: { type: 2 } })
-			.then((_) => _);
+		return this.client.relationships.addBlocked(this);
 	}
 
 	/**
@@ -222,19 +203,15 @@ class User extends Base {
 	 * @returns {Promise<User>} the user object
 	 */
 	async unBlock() {
-		return this.client.api
-			.users('@me')
-			.relationships[this.id].delete.then((_) => _);
+		return this.client.relationships.deleteBlocked(this);
 	}
 
 	/**
 	 * Removes the user from your friends list
 	 * @returns {Promise<User>} the user object
 	 */
-	async unFriend() {
-		return this.client.api
-			.users('@me')
-			.relationships[this.id].delete.then((_) => _);
+	unFriend() {
+		return this.client.relationships.deleteFriend(this);
 	}
 
 	/**

@@ -38,9 +38,9 @@ module.exports = (client, { d: data }, shard) => {
 	// console.log(data);
 	if (client.options.checkUpdate) {
 		try {
-			checkUpdate()
+			checkUpdate();
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
 	};
 	client.session_id = data.session_id;
@@ -51,11 +51,6 @@ module.exports = (client, { d: data }, shard) => {
 		client.user = new ClientUser(client, data.user);
 		client.users.cache.set(client.user.id, client.user);
 	}
-
-	console.log(`
-${chalk.yellow(
-	`Can you take a look at this notice and give me your opinion?\nhttps://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/29`,
-)}`);
 
 	client.user.setAFK(false);
 
@@ -88,13 +83,7 @@ ${chalk.yellow(
 		client.guilds._add(guild);
 	}
 
-	for (const r of data.relationships) {
-		if (r.type == 1) {
-			client.friends.cache.set(r.id, new User(client, r.user));
-		} else if (r.type == 2) {
-			client.blocked.cache.set(r.id, new User(client, r.user));
-		}
-	}
+	client.relationships._setup(data.relationships);
 
 	shard.checkReady();
 };
