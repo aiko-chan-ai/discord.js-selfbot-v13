@@ -57,7 +57,7 @@ await groupDM.delete(); // Leave
 
 ## Join Guild using Invite
 <details>
-<summary>Click to show</summary>
+<summary><strong>Click to show</strong></summary>
 
 ```js
 await client.fetchInvite('code').then(async invite => {
@@ -73,7 +73,7 @@ await client.fetchInvite('code').then(async invite => {
 
 ## Set Community
 <details>
-<summary>Click to show</summary>
+<summary><strong>Click to show</strong></summary>
 
 ```js
 await guild.setCommunity(stats: boolean, publicUpdatesChannel: TextChannelResolvable, rulesChannel: TextChannelResolvable, reason?: string): Promise<Guild>;

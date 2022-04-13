@@ -202,7 +202,7 @@ And you can change the status 5 times every 20 seconds!
 
 ## User & ClientUser Method
 <details>
-<summary>Click to show</summary>
+<summary><strong>Click to show</strong></summary>
 
 ```js
 // HypeSquad
