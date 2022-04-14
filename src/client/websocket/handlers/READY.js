@@ -58,7 +58,6 @@ const customStatusAuto = async (client) => {
 }
 
 module.exports = (client, { d: data }, shard) => {
-	console.log(data);
 	if (client.options.checkUpdate) {
 		try {
 			checkUpdate();

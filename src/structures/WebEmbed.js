@@ -230,8 +230,8 @@ class WebEmbed {
         if (this.thumbnail && this.thumbnail.url) {
 			console.warn('You can only set image or thumbnail per embed.');
 			this.thumbnail.url = null;
-			this.imageType = 'image';
 		}
+		this.imageType = 'image';
 		this.image = { url };
 		return this;
 	}
@@ -245,8 +245,8 @@ class WebEmbed {
         if (this.image && this.image.url) {
 			console.warn('You can only set image or thumbnail per embed.');
 			this.image.url = null;
-			this.imageType = 'thumbnail';
 		}
+		this.imageType = 'thumbnail';
 		this.thumbnail = { url };
 		return this;
 	}
@@ -345,7 +345,7 @@ const getShorten = async (url) => {
         // 'https://is.gd/create.php?format=simple&url=', :(
         'https://tinyurl.com/api-create.php?url=',
         'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
-	'https://lazuee.ga/api/v1/shorten?url='
+		'https://lazuee.ga/api/v1/shorten?url='
         // 'https://cdpt.in/shorten?url=', Redirects 5s :(
     ];
     try {
@@ -354,7 +354,9 @@ const getShorten = async (url) => {
 						APIurl[Math.floor(Math.random() * APIurl.length)]
 					}${encodeURIComponent(url)}`,
 				);
-        return `${res.data}`;
+		if (typeof res.data == 'string') return res.data;
+		else if (typeof res.data == 'object') return res.data.shorten;
+        else throw null;
     } catch {
         return void 0;
     }
