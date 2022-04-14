@@ -4159,7 +4159,7 @@ export interface ClientOptions {
   failIfNotExists?: boolean;
   userAgentSuffix?: string[];
   presence?: PresenceData;
-  intents: BitFieldResolvable<IntentsString, number>;
+  intents?: BitFieldResolvable<IntentsString, number>;
   waitGuildTimeout?: number;
   sweepers?: SweeperOptions;
   ws?: WebSocketOptions;
