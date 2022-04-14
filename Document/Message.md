@@ -114,6 +114,7 @@ message.channel.send({ content: `Hello world`, embeds: [w] }) // Patched :)
 
 ```
 ### Features & Issues
+- <strong>Only works with Discord Web and Discord Client (no custom theme installed)</strong>
 - No Timestamp, Footer, Fields, Author iconURL
 - Video with Embed working
 - Can only choose between image and thumbnail
