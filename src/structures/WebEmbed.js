@@ -227,10 +227,10 @@ class WebEmbed {
 	 * @returns {MessageEmbed}
 	 */
 	setImage(url) {
-        if (this.thumbnail.url) {
+        if (this.thumbnail && this.thumbnail.url) {
 			console.warn('You can only set image or thumbnail per embed.');
 			this.thumbnail.url = null;
-            this.imageType = 'image';
+			this.imageType = 'image';
 		}
 		this.image = { url };
 		return this;
@@ -242,11 +242,11 @@ class WebEmbed {
 	 * @returns {MessageEmbed}
 	 */
 	setThumbnail(url) {
-        if (this.image.url) {
-            console.warn('You can only set image or thumbnail per embed.');
-            this.image.url = null;
-            this.imageType = 'thumbnail';
-        }
+        if (this.image && this.image.url) {
+			console.warn('You can only set image or thumbnail per embed.');
+			this.image.url = null;
+			this.imageType = 'thumbnail';
+		}
 		this.thumbnail = { url };
 		return this;
 	}
