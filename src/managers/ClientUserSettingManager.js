@@ -69,7 +69,7 @@ class ClientUserSettingManager extends CachedManager {
 	 * @private
 	 */
 	_patch(data) {
-		this.rawSetting = data;
+		this.rawSetting = Object.assign(this.rawSetting, data);
 		if ('locale' in data) {
 			this.locale = localeObject[data.locale];
 		}

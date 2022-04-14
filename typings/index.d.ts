@@ -2484,7 +2484,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public system: boolean;
   public readonly tag: string;
   public username: string;
-  public note: string | null;
+  public readonly note: string | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -3073,7 +3073,29 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
 
 export class ClientUserSettingManager {
   private constructor(client: Client, iterable?: Iterable<RawUserSettingsData>);
-  public fetch(): Promise<ClientUserSetting>;
+  public rawSetting: RawUserSettingsData | object;
+  public locale: localeSetting | null;
+  public activityDisplay: boolean | null;
+  public DMfromServerMode: boolean | null;
+  public displayImage: boolean | null;
+  public linkedImageDisplay: boolean | null;
+  public autoplayGIF: boolean | null;
+  public previewLink: boolean | null;
+  public animatedEmojis: boolean | null;
+  public allowTTS: boolean | null;
+  public compactMode: boolean | null;
+  public convertEmoticons: boolean | null;
+  public DMScanLevel: DMScanLevel;
+  public theme: 'dark' | 'light' | null;
+  public developerMode: boolean | null;
+  public afkTimeout: number | null; // second
+  public stickerAnimationMode: stickerAnimationMode;
+  public showEmojiReactions: boolean | null;
+  public customStatus: { text?: string, expires_at?: string | null, emoji_name?: string, emoji_id?: Snowflake | null, status?: PresenceStatusData } | object;
+  public addFriendFrom: { all?: boolean, mutual_friends?: boolean, mututal_guilds?: boolean } | object;
+  public guildMetadata: Collection<Snowflake, object>;
+  public disableDMfromServer: Collection<Snowflake, boolean>;
+  public fetch(): Promise<RawUserSettingsData>;
   public setDisplayCompactMode(value?: boolean): Promise<ClientUserSetting>;
   public setTheme(value?: 'dark' | 'light'): Promise<ClientUserSetting>;
   public setLocale(value: localeSetting): Promise<ClientUserSetting>;
@@ -5557,6 +5579,44 @@ export interface RateLimitData {
   path: string;
   route: string;
   global: boolean;
+}
+
+/**
+ * @extends https://luna.gitlab.io/discord-unofficial-docs/user_settings.html
+ */
+export interface RawUserSettingsData {
+  afk_timeout?: number;
+  allow_accessibility_detection?: boolean;
+  animate_emoji?: boolean;
+  animate_stickers?: number;
+  contact_sync_enabled:? boolean;
+  convert_emoticons?: boolean;
+  custom_status?: { text?: string, expires_at?: string | null, emoji_name?: string, emoji_id?: Snowflake | null };
+  default_guilds_restricted?: boolean;
+  detect_platform_accounts?: boolean;
+  developer_mode?: boolean;
+  disable_games_tab?: boolean;
+  enable_tts_command?: boolean;
+  explicit_content_filter?: DMScanLevel;
+  friend_discovery_flags?: number;
+  friend_source_flags?: { all?: boolean, mutual_friends?: boolean, mututal_guilds?: boolean };
+  gif_auto_play?: boolean;
+  guild_folders?: Array<{ id?: Snowflake, guild_ids?: Array<Snowflake>, name?: string }>;
+  guild_positions?: Array;
+  inline_attachment_media?: boolean;
+  inline_embed_media?: boolean;
+  locale?: string;
+  message_display_compact?: boolean;
+  native_phone_integration_enabled?: boolean;
+  render_embeds?: boolean;
+  render_reactions?: boolean;
+  restricted_guilds?: Array;
+  show_current_game?: boolean;
+  status?: PresenceStatusData;
+  stream_notifications_enabled?: boolean;
+  theme?: 'dark' | 'light';
+  timezone_offset?: number;
+  view_nsfw_guilds?: boolean;
 }
 
 export interface InvalidRequestWarningData {

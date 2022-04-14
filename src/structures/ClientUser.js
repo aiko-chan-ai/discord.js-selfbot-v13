@@ -4,6 +4,7 @@ const User = require('./User');
 const DataResolver = require('../util/DataResolver');
 const { HypeSquadOptions } = require('../util/Constants');
 const { Util } = require('..');
+const { Collection } = require('@discordjs/collection');
 
 /**
  * Represents the logged in client's Discord user.
@@ -12,6 +13,12 @@ const { Util } = require('..');
 class ClientUser extends User {
 	_patch(data) {
 		super._patch(data);
+
+		/*
+		Add: notes
+		*/
+		this.notes = new Collection();
+		// this.messageMentions = new Collection();
 
 		if ('verified' in data) {
 			/**

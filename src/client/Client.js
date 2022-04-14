@@ -40,7 +40,7 @@ class Client extends BaseClient {
   /**
    * @param {ClientOptions} options Options for the client
    */
-  constructor(options) {
+  constructor(options = {}) {
     super(options);
 
     const data = require('node:worker_threads').workerData ?? process.env;

@@ -47,6 +47,10 @@ const handlers = Object.fromEntries([
 	['THREAD_LIST_SYNC', require('./THREAD_LIST_SYNC')],
 	['THREAD_MEMBER_UPDATE', require('./THREAD_MEMBER_UPDATE')],
 	['THREAD_MEMBERS_UPDATE', require('./THREAD_MEMBERS_UPDATE')],
+	['USER_SETTINGS_UPDATE', require('./USER_SETTINGS_UPDATE')], // opcode 0
+	// USER_SETTINGS_PROTO_UPDATE // opcode 0
+	['MESSAGE_ACK', require('./MESSAGE_ACK')],
+	['USER_NOTE_UPDATE', require('./USER_NOTE_UPDATE')],
 	['USER_UPDATE', require('./USER_UPDATE')],
 	['PRESENCE_UPDATE', require('./PRESENCE_UPDATE')],
 	['TYPING_START', require('./TYPING_START')],

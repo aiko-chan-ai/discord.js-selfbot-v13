@@ -36,7 +36,6 @@ class User extends Base {
 		this.premiumGuildSince = null;
 		this.mutualGuilds = new Collection();
 		this.applications = null;
-		this.note = null;
 		this._patch(data);
 	}
 
@@ -138,6 +137,14 @@ class User extends Base {
 		return Relationship[parseInt(i)];
 	}
 
+	/**
+	 * Check note
+	 * @readonly
+	 */
+	get note() {
+		return this.client.user.notes.get(this.id);
+	}
+
 	// Code written by https://github.com/aiko-chan-ai
 	_ProfilePatch(data) {
 		if (!data) return;
@@ -188,7 +195,10 @@ class User extends Base {
 	 * @returns {Promise<User>} the user object
 	 */
 	async sendFriendRequest() {
-		return this.client.relationships.sendFriendRequest(this.username, this.discriminator);
+		return this.client.relationships.sendFriendRequest(
+			this.username,
+			this.discriminator,
+		);
 	}
 	/**
 	 * Blocks the user
