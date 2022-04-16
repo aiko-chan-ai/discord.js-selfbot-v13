@@ -610,7 +610,7 @@ class WebSocketShard extends EventEmitter {
     // Clone the identify payload and assign the token and shard info
     const d = {
       ...client.options.ws,
-      // intents: Intents.resolve(client.options.intents), // Remove, Req by dolfies_person [Reddit]
+      // Intents: Intents.resolve(client.options.intents), // Remove, Req by dolfies_person [Reddit]
       token: client.token,
       shard: [this.id, Number(client.options.shardCount)],
     };

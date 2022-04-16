@@ -84,7 +84,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetch(id, { guildId, cache = true, force = false } = {}) {
-    // change from user.createDM to opcode (risky action)
+    // Change from user.createDM to opcode (risky action)
     if (typeof id === 'object') {
       ({ guildId, cache = true } = id);
     } else if (id) {

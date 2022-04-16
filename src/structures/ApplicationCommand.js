@@ -1,10 +1,10 @@
 'use strict';
 
+const { Message } = require('discord.js');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-const { Message } = require('discord.js');
 
 /**
  * Represents an application command.
@@ -401,7 +401,7 @@ class ApplicationCommand extends Base {
    * Send Slash command to channel
    * @param {Message} message Discord Message
    * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<Boolean>}
+   * @returns {Promise<boolean>}
    * @example
    * const botID = '12345678987654321'
    * const user = await client.users.fetch(botID);
@@ -411,7 +411,7 @@ class ApplicationCommand extends Base {
    */
   async sendSlashCommand(message, options = []) {
     // Check Options
-    if (!message instanceof Message) {
+    if (!(message instanceof Message)) {
       throw new TypeError('The message must be a Discord.Message');
     }
     if (!Array.isArray(options)) {
@@ -533,7 +533,8 @@ class ApplicationCommand extends Base {
   /**
    * Message Context Menu
    * @param {Message} message Discord Message
-   * @returns {Promise<Boolean>}
+   * @param {boolean} sendFromMessage nothing .-. not used
+   * @returns {Promise<boolean>}
    * @example
    * const botID = '12345678987654321'
    * const user = await client.users.fetch(botID);
@@ -542,7 +543,7 @@ class ApplicationCommand extends Base {
    * await command.sendContextMenu(messsage);
    */
   async sendContextMenu(message, sendFromMessage = false) {
-    if (!message instanceof Message && !sendFromMessage) {
+    if (!(message instanceof Message && !sendFromMessage)) {
       throw new TypeError('The message must be a Discord.Message');
     }
     if (this.type == 'CHAT_INPUT') return false;

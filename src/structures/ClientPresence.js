@@ -2,7 +2,7 @@
 
 const { Presence } = require('./Presence');
 const { TypeError } = require('../errors');
-const { ActivityTypes, Opcodes } = require('../util/Constants');
+const { Opcodes } = require('../util/Constants');
 
 /**
  * Represents the client's presence.

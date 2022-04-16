@@ -4,7 +4,7 @@ const { Collection } = require('@discordjs/collection');
 const { Events } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
-  // console.log(data);
+  // Console.log(data);
   // console.log(data.ops[0])
   const guild = client.guilds.cache.get(data.guild_id);
   if (!guild) return;
@@ -30,7 +30,7 @@ module.exports = (client, { d: data }) => {
         guild.presences._add(Object.assign(member.presence, { guild }));
       }
     } else if (object.op == 'DELETE') {
-      // nothing;
+      // Nothing;
     }
   }
   client.emit(Events.GUILD_MEMBER_LIST_UPDATE, members, guild, data);

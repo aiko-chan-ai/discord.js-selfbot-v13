@@ -440,13 +440,14 @@ class GuildMemberManager extends CachedManager {
         let channel;
         let channels = this.guild.channels.cache.filter(c => c.isText());
         channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
-        if (!channels.size)
+        if (!channels.size) {
           throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
+        }
         const channels_allowed_everyone = channels.filter(c =>
           c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
         );
         channel = channels_allowed_everyone.first() ?? channels.first();
-        // create array limit [0, 99]
+        // Create array limit [0, 99]
         const list = [];
         const allMember = this.guild.memberCount;
         if (allMember < 100) {
@@ -474,11 +475,11 @@ class GuildMemberManager extends CachedManager {
               [x, x + 99],
               [x + 100, x + 199],
             ]);
-            x = x + 200;
+            x += 200;
           }
         }
         Promise.all(
-          list.map(async l => {
+          list.map(l => {
             this.guild.shard.send({
               op: Opcodes.LAZY_REQUEST,
               d: {
@@ -491,6 +492,7 @@ class GuildMemberManager extends CachedManager {
                 },
               },
             });
+            return true;
           }),
         );
       }

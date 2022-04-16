@@ -1,9 +1,8 @@
 'use strict';
 
 const Team = require('./Team');
-const { Error } = require('../errors/DJSError');
 const Application = require('./interfaces/Application');
-const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
+const { Error } = require('../errors/DJSError');
 const ApplicationFlags = require('../util/ApplicationFlags');
 
 /**

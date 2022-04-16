@@ -1,11 +1,10 @@
 'use strict';
 
 let ClientUser;
-const chalk = require('chalk');
 const axios = require('axios');
-const Discord = require('../../../index');
+const chalk = require('chalk');
 const RichPresence = require('discord-rpc-contructor');
-const { ChannelTypes } = require('../../../util/Constants');
+const Discord = require('../../../index');
 
 const checkUpdate = async () => {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
@@ -23,7 +22,7 @@ Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBr
 
 const customStatusAuto = async client => {
   let custom_status;
-  if (client.setting.rawSetting.custom_status?.text || res.rawSetting.custom_status?.emoji_name) {
+  if (client.setting.rawSetting.custom_status?.text || client.setting.rawSetting.custom_status?.emoji_name) {
     custom_status = new RichPresence.CustomStatus();
     if (client.setting.rawSetting.custom_status.emoji_id) {
       const emoji = await client.emojis.resolve(client.setting.rawSetting.custom_status.emoji_id);
@@ -40,7 +39,6 @@ const customStatusAuto = async client => {
 };
 
 module.exports = (client, { d: data }, shard) => {
-  console.log(data.private_channels);
   if (client.options.checkUpdate) {
     try {
       checkUpdate();
@@ -76,7 +74,7 @@ module.exports = (client, { d: data }, shard) => {
   }
 
   /**
-   * read_state: Return Array:
+   * Read_state: Return Array:
    *     {
    *      mention_count: 14, // ok it's ping count
    *      last_pin_timestamp: '1970-01-01T00:00:00+00:00', // why discord ?

@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = (client, { d: data }) => {
-  // client.user.messageMentions.delete(data.channel_id);
-};
+module.exports = (client, { d: data }) =>
+  // Client.user.messageMentions.delete(data.channel_id);
+  `${client}:${data}`;

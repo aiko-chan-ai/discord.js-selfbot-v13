@@ -1,6 +1,7 @@
 'use strict';
 
-const process = require('node:process');
+// Not used: const process = require('node:process');
+const Buffer = require('node:buffer').Buffer;
 const JSONBig = require('json-bigint');
 /**
  * Rate limit data

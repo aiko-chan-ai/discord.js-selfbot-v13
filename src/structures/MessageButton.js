@@ -168,7 +168,7 @@ class MessageButton extends BaseMessageComponent {
    * @returns {boolean}
    */
   async click(message) {
-    if (!message instanceof Message) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
+    if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
     await message.client.api.interactions.post({
       data: {

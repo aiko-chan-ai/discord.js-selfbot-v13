@@ -76,16 +76,16 @@ class PartialGroupDMChannel extends Channel {
 
   /**
    *
-   * @param {Discord.Client} client
-   * @param {Object} data
+   * @param {Discord.Client} client Discord Bot Client
+   * @param {Object} data Channel Data
    * @private
    */
   _setup(client, data) {
     if ('recipients' in data) {
       Promise.all(
-        data.recipients.map(recipient => {
-          this.recipients.set(recipient.id, client.users.cache.get(data.owner_id) || recipient);
-        }),
+        data.recipients.map(recipient =>
+          this.recipients.set(recipient.id, client.users.cache.get(data.owner_id) || recipient),
+        ),
       );
     }
     if ('last_pin_timestamp' in data) {
@@ -100,7 +100,7 @@ class PartialGroupDMChannel extends Channel {
   /**
    *
    * @param {Object} data name, icon
-   * @returns
+   * @returns {any} any data .-.
    * @private
    */
   async edit(data) {
@@ -129,7 +129,7 @@ class PartialGroupDMChannel extends Channel {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
     }
-    if (!user instanceof User) {
+    if (!(user instanceof User)) {
       return Promise.reject(new TypeError('User is not an instance of Discord.User'));
     }
     if (this.recipients.get(user.id)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL'));
@@ -143,7 +143,7 @@ class PartialGroupDMChannel extends Channel {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
     }
-    if (!user instanceof User) {
+    if (!(user instanceof User)) {
       return Promise.reject(new TypeError('User is not an instance of Discord.User'));
     }
     if (!this.recipients.get(user.id)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
@@ -185,7 +185,7 @@ class PartialGroupDMChannel extends Channel {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
     }
-    if (!invite instanceof Invite) {
+    if (!(invite instanceof Invite)) {
       return Promise.reject(new TypeError('Invite is not an instance of Discord.Invite'));
     }
     await this.client.api.channels(this.id).invites[invite.code].delete();

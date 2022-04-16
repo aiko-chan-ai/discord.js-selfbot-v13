@@ -1,13 +1,13 @@
 'use strict';
 
+const { default: Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
-const UserFlags = require('../util/UserFlags');
-const { default: Collection } = require('@discordjs/collection');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const { Relationship } = require('../util/Constants');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
+const UserFlags = require('../util/UserFlags');
 
 /**
  * Represents a user on Discord.
@@ -56,7 +56,7 @@ class User extends Base {
        * @type {?boolean}
        */
       this.bot = Boolean(data.bot);
-      if (this.bot == true) {
+      if (this.bot === true) {
         this.applications = new ApplicationCommandManager(this.client, undefined, this);
       }
     } else if (!this.partial && typeof this.bot !== 'boolean') {
@@ -168,20 +168,16 @@ class User extends Base {
    */
   async getProfile() {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    try {
-      const data = await this.client.api.users(this.id).profile.get();
-      this._ProfilePatch(data);
-      return this;
-    } catch (e) {
-      throw e;
-    }
+    const data = await this.client.api.users(this.id).profile.get();
+    this._ProfilePatch(data);
+    return this;
   }
 
   /**
    * Friends the user and send Request [If no request]
    * @returns {Promise<User>} the user object
    */
-  async setFriend() {
+  setFriend() {
     return this.client.relationships.addFriend(this);
   }
 
@@ -189,14 +185,14 @@ class User extends Base {
    * Send Friend Request to the user
    * @returns {Promise<User>} the user object
    */
-  async sendFriendRequest() {
+  sendFriendRequest() {
     return this.client.relationships.sendFriendRequest(this.username, this.discriminator);
   }
   /**
    * Blocks the user
    * @returns {Promise<User>} the user object
    */
-  async setBlock() {
+  setBlock() {
     return this.client.relationships.addBlocked(this);
   }
 
@@ -204,7 +200,7 @@ class User extends Base {
    * Removes the user from your blocks list
    * @returns {Promise<User>} the user object
    */
-  async unBlock() {
+  unBlock() {
     return this.client.relationships.deleteBlocked(this);
   }
 
@@ -419,12 +415,12 @@ class User extends Base {
 
   /**
    * Set note to user
-   * @param {String<User.note>} note Note to set
+   * @param {string<User.note>} note Note to set
    * @returns {Promise<User.note>}
    */
   async setNote(note = null) {
-    await this.client.api.users['@me'].notes(id).put({ data: { note } });
-    return (this.note = note);
+    await this.client.api.users['@me'].notes(this.id).put({ data: { note } });
+    return this;
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel

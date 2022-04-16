@@ -3,9 +3,9 @@
 const process = require('node:process');
 const CachedManager = require('./CachedManager');
 const { Channel } = require('../structures/Channel');
-const { Events, ThreadChannelTypes } = require('../util/Constants');
+// Not used: const PartialGroupDMChannel = require('../structures/PartialGroupDMChannel');
 const User = require('../structures/User');
-const PartialGroupDMChannel = require('../structures/PartialGroupDMChannel');
+const { Events, ThreadChannelTypes } = require('../util/Constants');
 
 let cacheWarningEmitted = false;
 
@@ -115,7 +115,7 @@ class ChannelManager extends CachedManager {
     }
 
     const data = await this.client.api.channels(id).get();
-    // delete in cache
+    // Delete in cache
     this._remove(id);
     return this._add(data, null, { cache, allowUnknownGuild });
   }

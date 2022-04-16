@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:typings": "tslint typings/index.d.ts",
+    "lint:typings:fix": "tslint typings/index.d.ts --fix",
     "format": "prettier --write src/**/*.js typings/**/*.ts",
     "lint:all": "npm run lint &&  npm run lint:typings"
   },

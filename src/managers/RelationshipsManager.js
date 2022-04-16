@@ -43,7 +43,7 @@ class RelationshipsManager {
    * @param {BaseFetchOptions} [options] Additional options for this fetch
    * @returns {Promise<User>}
    */
-  async fetch(user, { cache = true, force = false } = {}) {
+  async fetch(user, { force = false } = {}) {
     const id = this.resolveId(user);
     if (!force) {
       const existing = this.cache.get(id);
@@ -55,11 +55,11 @@ class RelationshipsManager {
     return this.cache.get(id);
   }
 
-  // some option .-.
+  // Some option .-.
 
   async deleteFriend(user) {
     const id = this.resolveId(user);
-    // check if already friends
+    // Check if already friends
     if (this.cache.get(id) !== RelationshipTypes.FRIEND) return false;
     await this.client.api.users['@me'].relationships[id].delete(); // 204 status and no data
     return true;
@@ -67,7 +67,7 @@ class RelationshipsManager {
 
   async deleteBlocked(user) {
     const id = this.resolveId(user);
-    // check if already blocked
+    // Check if already blocked
     if (this.cache.get(id) !== RelationshipTypes.BLOCKED) return false;
     await this.client.api.users['@me'].relationships[id].delete(); // 204 status and no data
     return true;
@@ -85,9 +85,9 @@ class RelationshipsManager {
 
   async addFriend(user) {
     const id = this.resolveId(user);
-    // check if already friends
+    // Check if already friends
     if (this.cache.get(id) === RelationshipTypes.FRIEND) return false;
-    // check if outgoing request
+    // Check if outgoing request
     if (this.cache.get(id) === RelationshipTypes.OUTGOING_REQUEST) return false;
     await this.client.api.users['@me'].relationships[id].put({
       data: {
@@ -99,7 +99,7 @@ class RelationshipsManager {
 
   async addBlocked(user) {
     const id = this.resolveId(user);
-    // check
+    // Check
     if (this.cache.get(id) === RelationshipTypes.BLOCKED) return false;
     await this.client.api.users['@me'].relationships[id].put({
       data: {

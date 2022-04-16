@@ -88,6 +88,7 @@ import {
   GuildScheduledEventEntityTypes,
   GuildScheduledEventStatuses,
   GuildScheduledEventPrivacyLevels,
+  HypeSquadOptions,
 } from './enums';
 import {
   RawActivityData,
@@ -258,8 +259,8 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private static transformCommand(command: ApplicationCommandData): RESTPostAPIApplicationCommandsJSONBody;
   private static isAPICommandData(command: object): command is RESTPostAPIApplicationCommandsJSONBody;
   // Add
-  public static sendSlashCommand(message: Message, options?: Array<string>): Promise<Boolean>;
-  public static sendContextMenu(message: Message): Promise<Boolean>;
+  public static sendSlashCommand(message: Message, options?: string[]): Promise<boolean>;
+  public static sendContextMenu(message: Message): Promise<boolean>;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -539,7 +540,7 @@ export abstract class Channel extends Base {
   public isThread(): this is ThreadChannel;
   public toString(): ChannelMention;
   //
-  public sendSlash(botID: DiscordBotID, commandName: String<ApplicationCommand.name>, args?: Array<Options>): Promise;
+  public sendSlash(botID: DiscordBotID, commandName: String<ApplicationCommand.name>, args?: Options[]): Promise;
 }
 
 export type If<T extends boolean, A, B = null> = T extends true ? A : T extends false ? B : A | B;
@@ -571,7 +572,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public users: UserManager;
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
-  public password: String | null;
+  public password: string | null;
   public destroy(): void;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
@@ -647,11 +648,10 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string, password: string): Promise<this>;
-  public setHypeSquad(type: HypeSquadOptions<Number | String>): Promise<void>;
+  public setHypeSquad(type: HypeSquadOptions<number | string>): Promise<void>;
   public setAccentColor(color: ColorResolvable): Promise<this>;
   public setDiscriminator(discriminator: string, password: string): Promise<this>;
   public setAboutMe(bio: string): Promise<this>;
-  public setBanner(): Promise<this>;
   public setEmail(email: string, password: string): Promise<this>;
   public setPassword(oldPassword: string, newPassword: string): Promise<this>;
   public disableAccount(password: string): Promise<this>;
@@ -665,12 +665,11 @@ export class ClientUser extends User {
    * `2`: Boost
    * @external
    * https://discord.com/developers/docs/resources/user#user-object-premium-types
-   * @type {Number}
    */
   public readonly nitroType: NitroType;
-  public readonly phoneNumber: String;
+  public readonly phoneNumber: string;
   public readonly nsfwAllowed: boolean;
-  public readonly emailAddress: String;
+  public readonly emailAddress: string;
 }
 type NitroType = 0 | 1 | 2;
 export class Options extends null {
@@ -1606,10 +1605,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public inGuild(): this is Message<true> & this;
   // Added
   public clickButton(buttonID: String<MessageButton.customId>): Promise<pending>;
-  public selectMenu(
-    menuID: String<MessageSelectMenu.customId> | Array<options>,
-    options: Array<String>,
-  ): Promise<pending>;
+  public selectMenu(menuID: String<MessageSelectMenu.customId> | options[], options: string[]): Promise<pending>;
   public contextMenu(botID: DiscordBotID, commandName: String<ApplicationCommand.name>): Promise;
 }
 
@@ -1787,8 +1783,8 @@ export class WebEmbed {
   public title: string | null;
   public url: string | null;
   public video: MessageEmbedVideo | null;
-  public hidden: Boolean;
-  public shorten: Boolean;
+  public hidden: boolean;
+  public shorten: boolean;
   public imageType: 'thumbnail' | 'image';
   public setAuthor(options: EmbedAuthorData | null): this;
   public setColor(color: ColorResolvable): this;
@@ -1901,7 +1897,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values: Array<String>): Promise<Boolean>;
+  public select(message: Message, values: string[]): Promise<boolean>;
 }
 
 export class NewsChannel extends BaseGuildTextChannel {
@@ -2507,7 +2503,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public sendFriendRequest(): Promise<User>;
   public unFriend(): Promise<User>;
   public unBlock(): Promise<User>;
-  public setNote(note): Promise<String>;
+  public setNote(note?: any): Promise<string>;
   public getProfile(): Promise<User>;
   public toString(): UserMention;
 }
@@ -3080,7 +3076,7 @@ export class BaseGuildEmojiManager extends CachedManager<Snowflake, GuildEmoji, 
 export class ChannelManager extends CachedManager<Snowflake, AnyChannel, ChannelResolvable> {
   private constructor(client: Client, iterable: Iterable<RawChannelData>);
   public fetch(id: Snowflake, options?: FetchChannelOptions): Promise<AnyChannel | null>;
-  public createGroupDM(recipients: Array<User>): Promise<PartialGroupDMChannel>;
+  public createGroupDM(recipients: User[]): Promise<PartialGroupDMChannel>;
 }
 
 export class ClientUserSettingManager {
@@ -3415,10 +3411,10 @@ export class UserManager extends CachedManager<Snowflake, User, UserResolvable> 
 }
 
 export class RelationshipsManager {
-  private constructor(client: Client, users?: Array<RawRelationship>);
+  private constructor(client: Client, users?: RawRelationship[]);
   public cache: Collection<Snowflake, relationshipsType>;
   public client: Client;
-  private _setup(users: Array<RawRelationship>): null;
+  private _setup(users: RawRelationship[]): null;
   public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<User>;
   public deleteFriend(user: UserResolvable): Promise<User>;
   public deleteBlocked(user: UserResolvable): Promise<User>;
@@ -3932,10 +3928,10 @@ export interface BaseFetchOptions {
 
 export interface guildSearchInteraction {
   type?: ApplicationCommandTypes;
-  query?: String | void;
-  limit?: Number;
-  offset?: Number;
-  botID?: Array<User.id>;
+  query?: string | null | undefined;
+  limit?: number;
+  offset?: number;
+  botID?: User.id[];
 }
 
 export interface BaseMessageComponentOptions {
@@ -5615,8 +5611,8 @@ export interface RawUserSettingsData {
   friend_discovery_flags?: number;
   friend_source_flags?: { all?: boolean; mutual_friends?: boolean; mututal_guilds?: boolean };
   gif_auto_play?: boolean;
-  guild_folders?: Array<{ id?: Snowflake; guild_ids?: Array<Snowflake>; name?: string }>;
-  guild_positions?: Array<T>;
+  guild_folders?: { id?: Snowflake; guild_ids?: Snowflake[]; name?: string }[];
+  guild_positions?: T[];
   inline_attachment_media?: boolean;
   inline_embed_media?: boolean;
   locale?: string;
@@ -5624,7 +5620,7 @@ export interface RawUserSettingsData {
   native_phone_integration_enabled?: boolean;
   render_embeds?: boolean;
   render_reactions?: boolean;
-  restricted_guilds?: Array;
+  restricted_guilds?: any[];
   show_current_game?: boolean;
   status?: PresenceStatusData;
   stream_notifications_enabled?: boolean;

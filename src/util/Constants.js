@@ -1,7 +1,8 @@
 'use strict';
-
+/* Not used:
 const process = require('node:process');
 const Package = (exports.Package = require('../../package.json'));
+*/
 const { Error, RangeError, TypeError } = require('../errors');
 const listUserAgent = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',

@@ -10,7 +10,9 @@ const WebSocketManager = require('./websocket/WebSocketManager');
 const { Error, TypeError, RangeError } = require('../errors');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const ChannelManager = require('../managers/ChannelManager');
+const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 const GuildManager = require('../managers/GuildManager');
+const RelationshipsManager = require('../managers/RelationshipsManager');
 const UserManager = require('../managers/UserManager');
 const ShardClientUtil = require('../sharding/ShardClientUtil');
 const ClientPresence = require('../structures/ClientPresence');
@@ -29,8 +31,6 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const Sweepers = require('../util/Sweepers');
 // Patch
-const RelationshipsManager = require('../managers/RelationshipsManager');
-const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -252,7 +252,7 @@ class Client extends BaseClient {
       headers: this.options.http.headers,
     })
       .then(res => {
-        if (!'set-cookie' in res.headers) return;
+        if (!('set-cookie' in res.headers)) return;
         res.headers['set-cookie'].map(line => {
           line.split('; ').map(arr => {
             if (
@@ -264,13 +264,15 @@ class Client extends BaseClient {
               arr.startsWith('Max-Age') ||
               arr.startsWith('SameSite')
             ) {
-              return;
+              return null;
             } else {
               cookie += `${arr}; `;
+              return true;
             }
           });
+          return true;
         });
-        this.options.http.headers['Cookie'] = `${cookie}locale=en`;
+        this.options.http.headers.Cookie = `${cookie}locale=en`;
         this.options.http.headers['x-fingerprint'] = res.data.fingerprint;
         this.emit(Events.DEBUG, `Added Cookie: ${cookie}`);
         this.emit(Events.DEBUG, `Added Fingerprint: ${res.data.fingerprint}`);
@@ -370,7 +372,7 @@ class Client extends BaseClient {
 
   /**
    * Get Nitro
-   * @param {String<NitroCode>} nitro Nitro Code
+   * @param {string<NitroCode>} nitro Nitro Code
    * discordapp.com/gifts/code | discord.gift/code
    * @returns {Promise}
    */
@@ -379,7 +381,8 @@ class Client extends BaseClient {
     const regexNitro = /discord(?:(?:app)?\.com\/gifts|\.gift)\/([\w-]{2,255})/gi;
     const code = DataResolver.resolveCode(nitro, regexNitro);
     // https://discord.com/api/v9/entitlements/gift-codes/{code}/redeem
-    return await this.api.entitlements['gift-codes'](code).redeem.post({ data: {} });
+    const data = await this.api.entitlements['gift-codes'](code).redeem.post({ data: {} });
+    return data;
   }
 
   /**

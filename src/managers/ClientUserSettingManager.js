@@ -1,16 +1,16 @@
 'use strict';
 
-const CachedManager = require('./CachedManager');
 const { default: Collection } = require('@discordjs/collection');
+// Not used: const { remove } = require('lodash');
+const CachedManager = require('./CachedManager');
 const { Error, TypeError } = require('../errors/DJSError');
-const { remove } = require('lodash');
 const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants');
 /**
  * Manages API methods for users and stores their cache.
  * @extends {CachedManager}
  */
 class ClientUserSettingManager extends CachedManager {
-  constructor(client, iterable) {
+  constructor(client) {
     super(client);
     // Raw data
     this.rawSetting = {};
@@ -63,10 +63,10 @@ class ClientUserSettingManager extends CachedManager {
     // Todo: add new method from Discum
   }
   /**
-   *
-   * @param {Object} data Raw Data to patch
-   * @extends https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/user/user.py
+   * Patch data file
+   * https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/user/user.py
    * @private
+   * @param {Object} data Raw Data to patch
    */
   _patch(data) {
     this.rawSetting = Object.assign(this.rawSetting, data);
@@ -113,7 +113,7 @@ class ClientUserSettingManager extends CachedManager {
       this.developerMode = data.developer_mode;
     }
     if ('afk_timeout' in data) {
-      this.afkTimeout = data.afk_timeout * 1000; // second => milisecond
+      this.afkTimeout = data.afk_timeout * 1000; // Second => milisecond
     }
     if ('animate_stickers' in data) {
       this.stickerAnimationMode = stickerAnimationMode[data.animate_stickers];
@@ -152,21 +152,18 @@ class ClientUserSettingManager extends CachedManager {
     if ('restricted_guilds' in data) {
       data.restricted_guilds.map(guildId => {
         const guild = this.client.guilds.cache.get(guildId);
-        if (!guild) return;
+        if (!guild) return false;
         guild.disableDM = true;
         this.disableDMfromServer.set(guildId, true);
+        return true;
       });
     }
   }
   async fetch() {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    try {
-      const data = await this.client.api.users('@me').settings.get();
-      this._patch(data);
-      return this;
-    } catch (e) {
-      throw e;
-    }
+    const data = await this.client.api.users('@me').settings.get();
+    this._patch(data);
+    return this;
   }
   /**
    * Edit data
@@ -175,22 +172,18 @@ class ClientUserSettingManager extends CachedManager {
    */
   async edit(data) {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    try {
-      const res = await this.client.api.users('@me').settings.patch({ data });
-      this._patch(res);
-      return this;
-    } catch (e) {
-      throw e;
-    }
+    const res = await this.client.api.users('@me').settings.patch({ data });
+    this._patch(res);
+    return this;
   }
   /**
    * Set compact mode
-   * @param {Boolean | null} value Compact mode enable or disable
-   * @returns {Boolean}
+   * @param {boolean | null} value Compact mode enable or disable
+   * @returns {boolean}
    */
   async setDisplayCompactMode(value) {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    if (typeof value !== 'boolean' && typeof value !== 'null' && typeof value !== 'undefined') {
+    if (typeof value !== 'boolean' && value !== null && typeof value !== 'undefined') {
       throw new TypeError('INVALID_TYPE', 'value', 'boolean | null | undefined', true);
     }
     if (!value) value = !this.compactMode;
@@ -207,11 +200,12 @@ class ClientUserSettingManager extends CachedManager {
   async setTheme(value) {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
     const validValues = ['dark', 'light'];
-    if (typeof value !== 'string' && typeof value !== 'null' && typeof value !== 'undefined') {
+    if (typeof value !== 'string' && value !== null && typeof value !== 'undefined') {
       throw new TypeError('INVALID_TYPE', 'value', 'string | null | undefined', true);
     }
     if (!validValues.includes(value)) {
-      value == validValues[0] ? (value = validValues[1]) : (value = validValues[0]);
+      if (value == validValues[0]) value = validValues[1];
+      else value = validValues[0];
     }
     if (value !== this.theme) {
       await this.edit({ theme: value });
@@ -250,7 +244,7 @@ class ClientUserSettingManager extends CachedManager {
    * * `JAPANESE`
    * * `TAIWAN_CHINESE`
    * * `KOREAN`
-   * @param {string} value
+   * @param {string} value Locale to set
    * @returns {locale}
    */
   async setLocale(value) {
@@ -269,8 +263,8 @@ class ClientUserSettingManager extends CachedManager {
   /**
    *
    * @param {Array} array Array
-   * @param {Number} from Index1
-   * @param {Number} to Index2
+   * @param {number} from Index1
+   * @param {number} to Index2
    * @returns {Array}
    * @private
    */
@@ -286,7 +280,7 @@ class ClientUserSettingManager extends CachedManager {
   /**
    * Change Guild Position (from * to Folder or Home)
    * @param {GuildIDResolve} guildId guild.id
-   * @param {Number} newPosition Guild Position
+   * @param {number} newPosition Guild Position
    * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
    * @param {number} type Move to folder or home
    * * `FOLDER`: 1
@@ -294,8 +288,8 @@ class ClientUserSettingManager extends CachedManager {
    * @param {FolderID} folderId If you want to move to folder
    * @private
    */
-  async guildChangePosition(guildId, newPosition, type, folderId) {
-    // get Guild default position
+  guildChangePosition(guildId, newPosition, type, folderId) {
+    // Get Guild default position
     // Escape
     const oldGuildFolderPosition = this.rawSetting.guild_folders.findIndex(value => value.guild_ids.includes(guildId));
     const newGuildFolderPosition = this.rawSetting.guild_folders.findIndex(value =>

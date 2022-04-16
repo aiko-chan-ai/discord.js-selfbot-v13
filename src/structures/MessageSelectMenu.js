@@ -1,9 +1,9 @@
 'use strict';
 
 const BaseMessageComponent = require('./BaseMessageComponent');
+const { Message } = require('./Message');
 const { MessageComponentTypes } = require('../util/Constants');
 const Util = require('../util/Util');
-const { Message } = require('./Message');
 
 /**
  * Represents a select menu message component
@@ -210,35 +210,35 @@ class MessageSelectMenu extends BaseMessageComponent {
   }
   // Add
   /**
-   * Select in menu
-   * @param {Message} message Discord Message
-   * @param {Array<String>} values Option values
-   * @returns {Promise<boolean}
+   * Mesage select menu
+   * @param {Message} message The message this select menu is for
+   * @param {Array<string>} values The values of the select menu
+   * @returns {Promise<boolean>}
    */
   async select(message, values = []) {
     // Github copilot is the best :))
     // POST data from https://github.com/phamleduy04
-    if (!message instanceof Message) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
+    if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!Array.isArray(values)) throw new TypeError('[INVALID_VALUES] Please pass an array of values');
     if (!this.customId || this.disabled || values.length == 0) return false; // Disabled or null customID or [] array
     // Check value is invalid [Max options is 20] => For loop
-    if (values.length < this.minValues)
-      throw new RangeError('[SELECT_MENU_MIN_VALUES] The minimum number of values is ' + this.minValues);
-    if (values.length > this.maxValues)
-      throw new RangeError('[SELECT_MENU_MAX_VALUES] The maximum number of values is ' + this.maxValues);
+    if (values.length < this.minValues) {
+      throw new RangeError(`[SELECT_MENU_MIN_VALUES] The minimum number of values is ${this.minValues}`);
+    }
+    if (values.length > this.maxValues) {
+      throw new RangeError(`[SELECT_MENU_MAX_VALUES] The maximum number of values is ${this.maxValues}`);
+    }
     const validValue = this.options.map(obj => obj.value);
     const check_ = await values.find(element => {
       if (typeof element !== 'string') return true;
       if (!validValue.includes(element)) return true;
       return false;
     });
-    if (check_)
+    if (check_) {
       throw new RangeError(
-        '[SELECT_MENU_INVALID_VALUE] The value ' +
-          check_ +
-          ' is invalid. Please use a valid value ' +
-          validValue.join(', '),
+        `[SELECT_MENU_INVALID_VALUE] The value ${check_} is invalid. Please use a valid value ${validValue.join(', ')}`,
       );
+    }
     await message.client.api.interactions.post({
       data: {
         type: 3, // ?

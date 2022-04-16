@@ -3,7 +3,9 @@
 const { Events } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
-  data.user ? client.users._add(data.user) : null;
+  if (data.user) {
+    client.users._add(data.user);
+  }
   client.relationships.cache.set(data.id, data.type);
   /**
    * Emitted whenever a relationship is updated.

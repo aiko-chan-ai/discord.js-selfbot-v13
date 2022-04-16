@@ -199,12 +199,12 @@ class MessagePayload {
 
       if (webembeds.length > 0) {
         if (!content) content = '';
-        // add hidden embed link
+        // Add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
         if (webembeds.length > 1) {
           console.warn('Multiple webembeds are not supported, this will be ignored.');
         }
-        // const embed = webembeds[0];
+        // Const embed = webembeds[0];
         for (const webE of webembeds) {
           const data = await webE.toMessage();
           content += `\n${data}`;

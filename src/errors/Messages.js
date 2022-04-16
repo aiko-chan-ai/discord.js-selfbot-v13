@@ -47,7 +47,7 @@ const Messages = {
   EMBED_FOOTER_TEXT: 'MessageEmbed footer text must be a string.',
   EMBED_DESCRIPTION: 'MessageEmbed description must be a string.',
   EMBED_AUTHOR_NAME: 'MessageEmbed author name must be a string.',
-  /* add */
+  /* Add */
   EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
 
   BUTTON_LABEL: 'MessageButton label must be a string',

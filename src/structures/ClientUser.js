@@ -1,10 +1,10 @@
 'use strict';
 
-const User = require('./User');
-const DataResolver = require('../util/DataResolver');
-const { HypeSquadOptions } = require('../util/Constants');
-const { Util } = require('..');
 const { Collection } = require('@discordjs/collection');
+const User = require('./User');
+const { Util } = require('..');
+const { HypeSquadOptions } = require('../util/Constants');
+const DataResolver = require('../util/DataResolver');
 
 /**
  * Represents the logged in client's Discord user.
@@ -18,7 +18,7 @@ class ClientUser extends User {
 		Add: notes
 		*/
     this.notes = new Collection();
-    // this.messageMentions = new Collection();
+    // This.messageMentions = new Collection();
 
     if ('verified' in data) {
       /**
@@ -147,7 +147,7 @@ class ClientUser extends User {
 
   /**
    * Set HyperSquad House
-   * @param {HypeSquadOptions<Number|String>} type
+   * @param {HypeSquadOptions<number|string>} type
    * `LEAVE`: 0
    * `HOUSE_BRAVERY`: 1
    * `HOUSE_BRILLIANCE`: 2
@@ -163,11 +163,13 @@ class ClientUser extends User {
     const id = typeof type === 'string' ? HypeSquadOptions[type] : type;
     if (!id && id !== 0) throw new Error('Invalid HypeSquad type.');
     if (id !== 0) {
-      return await this.client.api.hypesquad.online.post({
+      const data = await this.client.api.hypesquad.online.post({
         data: { house_id: id },
       });
+      return data;
     } else {
-      return await this.client.api.hypesquad.online.delete();
+      const data = await this.client.api.hypesquad.online.delete();
+      return data;
     }
   }
 
@@ -199,7 +201,7 @@ class ClientUser extends User {
 
   /**
    * Set About me
-   * @param {String} bio Bio to set
+   * @param {string} bio Bio to set
    * @returns {Promise}
    */
   setAboutMe(bio = null) {
@@ -250,11 +252,12 @@ class ClientUser extends User {
     if (!password && !this.client.password) {
       throw new Error('A password is required to disable an account.');
     }
-    return await this.client.api.users['@me'].disable.post({
+    const data = await this.client.api.users['@me'].disable.post({
       data: {
         password: this.client.password ? this.client.password : password,
       },
     });
+    return data;
   }
 
   /**
@@ -266,11 +269,12 @@ class ClientUser extends User {
     if (!password && !this.client.password) {
       throw new Error('A password is required to delete an account.');
     }
-    return await this.client.api.users['@me'].delete.post({
+    const data = await this.client.api.users['@me'].delete.post({
       data: {
         password: this.client.password ? this.client.password : password,
       },
     });
+    return data;
   }
 
   /**

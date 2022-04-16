@@ -2,6 +2,7 @@
 
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
+// Disable: const { findBestMatch } = require('string-similarity'); // Not check similarity
 const Base = require('./Base');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const ClientApplication = require('./ClientApplication');
@@ -19,8 +20,7 @@ const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
-const { findBestMatch } = require('string-similarity'); // not check similarity
-// const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
+// Const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Message>}
@@ -994,7 +994,7 @@ class Message extends Base {
   // Added
   /**
    * Click specific button [Suggestion: Dux#2925]
-   * @param {String<Button.customId>} buttonID Button ID
+   * @param {string<Button.customId>} buttonID Button ID
    * @returns {Promise<pending>}
    */
   async clickButton(buttonID) {
@@ -1006,10 +1006,11 @@ class Message extends Base {
     await Promise.all(
       this.components.map(async row => {
         await Promise.all(
-          row.components.map(async interactionComponent => {
+          row.components.map(interactionComponent => {
             if (interactionComponent.type == 'BUTTON' && interactionComponent.customId == buttonID) {
               button = interactionComponent;
             }
+            return true;
           }),
         );
       }),
@@ -1019,7 +1020,7 @@ class Message extends Base {
   }
   /**
    * Select specific menu or First Menu
-   * @param {String<MessageSelectMenu.customID>|Array<MenuOptions>} menuID Select Menu specific id or auto select first Menu
+   * @param {string<MessageSelectMenu.customID>|Array<MenuOptions>} menuID Select Menu specific id or auto select first Menu
    * @param {Array<MenuOptions>} options Menu Options
    */
   async selectMenu(menuID, options = []) {
@@ -1028,7 +1029,7 @@ class Message extends Base {
     let menuCorrect;
     let menuCount = 0;
     await Promise.all(
-      this.components.map(async row => {
+      this.components.map(row => {
         const firstElement = row.components[0]; // Because 1 row has only 1 menu;
         if (firstElement.type == 'SELECT_MENU') {
           menuCount++;
@@ -1038,6 +1039,7 @@ class Message extends Base {
             menuFirst = firstElement;
           }
         }
+        return true;
       }),
     );
     if (menuCount == 0) throw new TypeError('MENU_NOT_FOUND');
@@ -1052,7 +1054,7 @@ class Message extends Base {
   /**
    * Send context Menu v2
    * @param {DiscordBotID} botID Bot id
-   * @param {String<ApplicationCommand.name>} commandName Command name in Context Menu
+   * @param {string<ApplicationCommand.name>} commandName Command name in Context Menu
    * @returns {Promise<pending>}
    */
   async contextMenu(botID, commandName) {
@@ -1068,10 +1070,11 @@ class Message extends Base {
       user.applications.cache.size == 0 ? await user.applications.fetch() : user.applications.cache;
     let contextCMD;
     await Promise.all(
-      listApplication.map(async application => {
+      listApplication.map(application => {
         if (commandName == application.name && application.type !== 'CHAT_INPUT') {
           contextCMD = application;
         }
+        return true;
       }),
     );
     if (!contextCMD) {

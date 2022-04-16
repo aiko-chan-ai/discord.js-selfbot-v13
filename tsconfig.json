@@ -42,6 +42,6 @@
         "pretty": false,
         // Completeness
         "skipLibCheck": false,
-        "skipDefaultLibCheck": true
+        "skipDefaultLibCheck": true,
     }
 }

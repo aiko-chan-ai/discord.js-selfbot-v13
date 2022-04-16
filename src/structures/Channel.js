@@ -1,6 +1,7 @@
 'use strict';
 
 const process = require('node:process');
+const { Message } = require('discord.js');
 const Base = require('./Base');
 let CategoryChannel;
 let DMChannel;
@@ -12,8 +13,7 @@ let ThreadChannel;
 let VoiceChannel;
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-const { Message } = require('discord.js');
-// const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
+// Const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Channel>}
@@ -235,7 +235,7 @@ class Channel extends Base {
   /**
    * Send Slash to this channel
    * @param {DiscordBot} botID Bot ID
-   * @param {String<ApplicationCommand.name>} commandName Command name
+   * @param {string<ApplicationCommand.name>} commandName Command name
    * @param {Array<ApplicationCommand.options>} args Command arguments
    * @returns {Promise<pending>}
    */
@@ -243,15 +243,17 @@ class Channel extends Base {
     if (!this.isText()) throw new Error('This channel is not text-based.');
     if (!botID) throw new Error('Bot ID is required');
     const user = await this.client.users.fetch(botID).catch(() => {});
-    if (!user || !user.bot || !user.applications)
+    if (!user || !user.bot || !user.applications) {
       throw new Error('BotID is not a bot or does not have an application slash command');
+    }
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
     const listApplication =
       user.applications.cache.size == 0 ? await user.applications.fetch() : user.applications.cache;
     let slashCommand;
     await Promise.all(
-      listApplication.map(async application => {
+      listApplication.map(application => {
         if (commandName == application.name && application.type == 'CHAT_INPUT') slashCommand = application;
+        return true;
       }),
     );
     if (!slashCommand) {

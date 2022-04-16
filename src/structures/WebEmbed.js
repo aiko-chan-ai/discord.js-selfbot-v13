@@ -23,7 +23,7 @@ class WebEmbed {
   }
   /**
    * @private
-   * @param {object} data
+   * @param {Object} data The data for the embed
    */
   _setup(data) {
     /**
@@ -297,7 +297,7 @@ class WebEmbed {
       arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
     }
     if (this.color) {
-      arrayQuery.push(`color=${encodeURIComponent('#' + this.color.toString(16))}`);
+      arrayQuery.push(`color=${encodeURIComponent(`#${this.color.toString(16)}`)}`);
     }
     if (this.image?.url) {
       arrayQuery.push(`image=${encodeURIComponent(this.image.url)}`);
@@ -340,17 +340,17 @@ const getShorten = async url => {
   const APIurl = [
     // 'https://is.gd/create.php?format=simple&url=', :(
     'https://tinyurl.com/api-create.php?url=',
-    'https://sagiri-fansub.tk/api/v1/short?url=', // my api, pls don't ddos :(
+    'https://sagiri-fansub.tk/api/v1/short?url=', // My api, pls don't ddos :(
     'https://lazuee.ga/api/v1/shorten?url=',
     // 'https://cdpt.in/shorten?url=', Redirects 5s :(
   ];
   try {
     const res = await axios.get(`${APIurl[Math.floor(Math.random() * APIurl.length)]}${encodeURIComponent(url)}`);
-    if (typeof res.data == 'string') return res.data;
-    else if (typeof res.data == 'object') return res.data.shorten;
-    else throw null;
+    if (typeof res.data === 'string') return res.data;
+    else if (typeof res.data === 'object') return res.data.shorten;
+    else throw new Error('Unknown error');
   } catch {
-    return void 0;
+    return undefined;
   }
 };
 

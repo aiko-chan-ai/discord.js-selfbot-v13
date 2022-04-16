@@ -10,7 +10,7 @@ const Integration = require('./Integration');
 const Webhook = require('./Webhook');
 const WelcomeScreen = require('./WelcomeScreen');
 const { Error } = require('../errors');
-const GuildApplicationCommandManager = require('../managers/GuildApplicationCommandManager');
+// Disable: const GuildApplicationCommandManager = require('../managers/GuildApplicationCommandManager');
 const GuildBanManager = require('../managers/GuildBanManager');
 const GuildChannelManager = require('../managers/GuildChannelManager');
 const GuildEmojiManager = require('../managers/GuildEmojiManager');
@@ -637,12 +637,12 @@ class Guild extends AnonymousGuild {
    *
    * }
    */
-  async searchInteraction(options = {}) {
+  searchInteraction(options = {}) {
     let { query, type, limit, offset, botID } = Object.assign(
       { query: undefined, type: 1, limit: 1, offset: 0, botID: [] },
       options,
     );
-    if (typeof type == 'string') {
+    if (typeof type === 'string') {
       if (type == 'CHAT_INPUT') type = 1;
       else if (type == 'USER') type = 2;
       else if (type == 'MESSAGE') type = 3;
@@ -1242,10 +1242,10 @@ class Guild extends AnonymousGuild {
    * Change Guild Position (from * to Folder or Home)
    * @param {number} position  Guild Position
    * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
-   * @param {String|Number} type Move to folder or home
+   * @param {string|number} type Move to folder or home
    * * `FOLDER`: 1
    * * `HOME`: 2
-   * @param {String|Number|void|null} folderID If you want to move to folder
+   * @param {string|number|void|null} folderID If you want to move to folder
    * @returns {Promise<Guild>}
    * @example
    * // Move guild to folderID 123456, index 1
@@ -1465,10 +1465,10 @@ class Guild extends AnonymousGuild {
 
   /**
    * Set Community Feature
-   * @param {Boolean} stats True / False to enable / disable Community Feature
-   * @param {TextChannelResolvable} publicUpdatesChannel
-   * @param {TextChannelResolvable} rulesChannel
-   * @param {String} reason
+   * @param {boolean} stats True / False to enable / disable Community Feature
+   * @param {TextChannelResolvable} publicUpdatesChannel The community updates channel of the guild
+   * @param {TextChannelResolvable} rulesChannel The new rules channel
+   * @param {string} reason Reason for changing the community feature
    */
   async setCommunity(stats = true, publicUpdatesChannel = '1', rulesChannel = '1', reason) {
     if (stats) {
