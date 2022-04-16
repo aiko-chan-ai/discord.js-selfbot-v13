@@ -62,7 +62,7 @@
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
     "lodash.snakecase": "^4.1.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.2.3",
     "string-similarity": "^4.0.4",
     "undici": "^4.15.0",
     "utf-8-validate": "^5.0.9",
