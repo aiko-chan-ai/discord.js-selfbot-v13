@@ -177,10 +177,38 @@ client.user.setActivity(r.toDiscord().game);
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/955767445220646922/unknown.png'>
 
 Rich Presence with Twitch / Spotify
-
 ```js
 Update soon ~
 ```
+
+<strong>New: You can now add custom images for RPC !</strong>
+> Tutorial:
++ Step 1: Send photos by embed.thumbnail
+```js
+const embed = new MessageEmbed().setThumbnail('image url');
+const msg = await channel.send({ embeds: [embed] });
+```
++ Step 2: Get proxyURL from message.embeds[0].thumbnail.proxyURL
+```js
+const proxyURL = msg.embeds[0].thumbnail.proxyURL;
+```
++ Step 3: Put the URL in the constructor
+```js
+const RPC = require('discord-rpc-contructor');
+const r = new RPC.Rpc()
+	.setApplicationId('817229550684471297')
+	.setType(0)
+	.setState('State')
+	.setName('Name')
+	.setDetails('Details')
+	.setAssetsLargeImage(proxyURL) // Custom image
+	.setAssetsLargeText('Youtube')
+	.setAssetsSmallImage('895316294222635008')
+	.setAssetsSmallText('Bot')
+client.user.setActivity(r.toDiscord().game);
+```
+
+
 
 <strong>How to get AssetID ?</strong>
 

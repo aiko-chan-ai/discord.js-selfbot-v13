@@ -181,7 +181,6 @@ class ClientUserSettingManager {
    * @returns {boolean}
    */
   async setDisplayCompactMode(value) {
-    if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
     if (typeof value !== 'boolean' && value !== null && typeof value !== 'undefined') {
       throw new TypeError('INVALID_TYPE', 'value', 'boolean | null | undefined', true);
     }
@@ -197,7 +196,6 @@ class ClientUserSettingManager {
    * @returns {theme}
    */
   async setTheme(value) {
-    if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
     const validValues = ['dark', 'light'];
     if (typeof value !== 'string' && value !== null && typeof value !== 'undefined') {
       throw new TypeError('INVALID_TYPE', 'value', 'string | null | undefined', true);
@@ -296,7 +294,6 @@ class ClientUserSettingManager {
    * @returns {locale}
    */
   async setLocale(value) {
-    if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
     if (typeof value !== 'string') {
       throw new TypeError('INVALID_TYPE', 'value', 'string', true);
     }
