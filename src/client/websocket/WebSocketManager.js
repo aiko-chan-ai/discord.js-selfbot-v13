@@ -217,7 +217,7 @@ class WebSocketManager extends EventEmitter {
         this.shardQueue.add(shard);
 
         if (shard.sessionId) {
-          this.debug(`Session id is present, attempting an immediate reconnect...`, shard);
+          this.debug('Session id is present, attempting an immediate reconnect...', shard);
           this.reconnect();
         } else {
           shard.destroy({ reset: true, emit: false, log: false });
@@ -279,7 +279,7 @@ class WebSocketManager extends EventEmitter {
     } catch (error) {
       this.debug(`Couldn't reconnect or fetch information about the gateway. ${error}`);
       if (error.httpStatus !== 401) {
-        this.debug(`Possible network error occurred. Retrying in 5s...`);
+        this.debug('Possible network error occurred. Retrying in 5s...');
         await sleep(5_000);
         this.reconnecting = false;
         return this.reconnect();

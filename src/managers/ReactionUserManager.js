@@ -3,7 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
-const Discord = require("discord.js-selfbot-v13")
+const Discord = require('discord.js-selfbot-v13');
 /**
  * Manages API methods for users who reacted to a reaction and stores their cache.
  * @extends {CachedManager}

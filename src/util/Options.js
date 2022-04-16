@@ -132,7 +132,7 @@ class Options extends null {
    */
   static createDefault() {
     return {
-      jsonTransformer: (object) => JSONBig.stringify(object),
+      jsonTransformer: object => JSONBig.stringify(object),
       checkUpdate: true,
       readyStatus: false,
       autoCookie: true,
@@ -143,14 +143,7 @@ class Options extends null {
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
       intents: 65535,
-      partials: [
-        'USER',
-        'CHANNEL',
-        'GUILD_MEMBER',
-        'MESSAGE',
-        'REACTION',
-        'GUILD_SCHEDULED_EVENT',
-      ], // Enable the partials
+      partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT'], // Enable the partials
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,
       restGlobalRateLimit: 0,
@@ -165,9 +158,9 @@ class Options extends null {
         large_threshold: 50,
         compress: false,
         properties: {
-          //$os: 'iPhone14,5',
-          //$browser: 'Discord iOS',
-          //$device: 'iPhone14,5 OS 15.2',
+          // $os: 'iPhone14,5',
+          // $browser: 'Discord iOS',
+          // $device: 'iPhone14,5 OS 15.2',
           $os: 'Windows',
           $browser: 'Discord Client',
           $device: 'ASUS ROG Phone 5',
@@ -182,8 +175,7 @@ class Options extends null {
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
           Referer: 'https://discord.com/channels/@me',
-          'Sec-Ch-Ua':
-            '"Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100',
+          'Sec-Ch-Ua': '"Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100',
           'Sec-Ch-Ua-Mobile': '?0',
           'Sec-Ch-Ua-Platform': '"Windows"',
           'Sec-Fetch-Dest': 'empty',

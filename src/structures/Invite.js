@@ -327,8 +327,8 @@ class Invite extends Base {
     await this.client.api.invites(this.code).post({});
     if (autoVerify) {
       const getForm = await this.client.api
-        .guilds(this.guild.id)['member-verification']
-        .get({ query: { with_guild: false, invite_code: this.code } })
+        .guilds(this.guild.id)
+        ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
         .catch(() => {});
       if (!getForm) return void 0;
       const form = Object.assign(getForm.form_fields[0], { response: true });
@@ -338,7 +338,6 @@ class Invite extends Base {
     }
     return void 0;
   }
-
 }
 
 /**

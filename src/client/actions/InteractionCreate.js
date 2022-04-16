@@ -60,7 +60,10 @@ class InteractionCreateAction extends Action {
         InteractionType = AutocompleteInteraction;
         break;
       default:
-        client.emit(Events.DEBUG, `[INTERACTION] Received [BOT] / Send (Selfbot) interactionID ${data.id} with unknown type: ${data.type}`);
+        client.emit(
+          Events.DEBUG,
+          `[INTERACTION] Received [BOT] / Send (Selfbot) interactionID ${data.id} with unknown type: ${data.type}`,
+        );
         return;
     }
 

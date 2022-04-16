@@ -419,7 +419,12 @@ class GuildMemberManager extends CachedManager {
     return new Promise((resolve, reject) => {
       if (!query && !user_ids) query = '';
       if (nonce.length > 32) throw new RangeError('MEMBER_FETCH_NONCE_LENGTH');
-      if (this.guild.me.permissions.has('ADMINISTRATOR') || this.guild.me.permissions.has('KICK_MEMBERS') || this.guild.me.permissions.has('BAN_MEMBERS') || this.guild.me.permissions.has('MANAGE_ROLES')) {
+      if (
+        this.guild.me.permissions.has('ADMINISTRATOR') ||
+        this.guild.me.permissions.has('KICK_MEMBERS') ||
+        this.guild.me.permissions.has('BAN_MEMBERS') ||
+        this.guild.me.permissions.has('MANAGE_ROLES')
+      ) {
         this.guild.shard.send({
           op: Opcodes.REQUEST_GUILD_MEMBERS,
           d: {
@@ -435,20 +440,28 @@ class GuildMemberManager extends CachedManager {
         let channel;
         let channels = this.guild.channels.cache.filter(c => c.isText());
         channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
-        if (!channels.size) throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
-        const channels_allowed_everyone = channels.filter((c) =>
+        if (!channels.size)
+          throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
+        const channels_allowed_everyone = channels.filter(c =>
           c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
         );
         channel = channels_allowed_everyone.first() ?? channels.first();
         // create array limit [0, 99]
         const list = [];
-        let allMember = this.guild.memberCount;
+        const allMember = this.guild.memberCount;
         if (allMember < 100) {
           list.push([[0, 99]]);
         } else if (allMember < 200) {
-          list.push([[0, 99], [100, 199]]);
+          list.push([
+            [0, 99],
+            [100, 199],
+          ]);
         } else if (allMember < 300) {
-          list.push([[0, 99], [100, 199], [200, 299]]);
+          list.push([
+            [0, 99],
+            [100, 199],
+            [200, 299],
+          ]);
         } else {
           let x = 100;
           for (let i = 0; i < allMember; i++) {
@@ -464,20 +477,22 @@ class GuildMemberManager extends CachedManager {
             x = x + 200;
           }
         }
-        Promise.all(list.map(async (l) => {
-          this.guild.shard.send({
-            op: Opcodes.LAZY_REQUEST,
-            d: {
-              guild_id: this.guild.id,
-              typing: true,
-              threads: false,
-              activities: true,
-              channels: {
-                [channel.id]: l,
+        Promise.all(
+          list.map(async l => {
+            this.guild.shard.send({
+              op: Opcodes.LAZY_REQUEST,
+              d: {
+                guild_id: this.guild.id,
+                typing: true,
+                threads: false,
+                activities: true,
+                channels: {
+                  [channel.id]: l,
+                },
               },
-            },
-          });
-        }))
+            });
+          }),
+        );
       }
       const fetchedMembers = new Collection();
       let i = 0;

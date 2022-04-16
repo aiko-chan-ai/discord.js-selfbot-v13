@@ -128,10 +128,7 @@ class MessageManager extends CachedManager {
     if (options instanceof MessagePayload) {
       messagePayload = await options.resolveData();
     } else {
-      messagePayload = await MessagePayload.create(
-				message instanceof Message ? message : this,
-				options,
-			).resolveData();
+      messagePayload = await MessagePayload.create(message instanceof Message ? message : this, options).resolveData();
     }
     const { data, files } = await messagePayload.resolveFiles();
     const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data, files });
@@ -231,7 +228,7 @@ class MessageManager extends CachedManager {
           min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
         },
       })
-    ).messages[0]
+    ).messages[0];
     if (data) return this._add(data[0], cache);
     else throw new Error('MESSAGE_ID_NOT_FOUND');
   }

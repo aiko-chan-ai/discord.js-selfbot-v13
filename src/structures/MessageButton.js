@@ -168,24 +168,22 @@ class MessageButton extends BaseMessageComponent {
    * @returns {boolean}
    */
   async click(message) {
-    if (!message instanceof Message) throw new Error("[UNKNOWN_MESSAGE] Please pass a valid Message");
+    if (!message instanceof Message) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
-    await message.client.api.interactions.post(
-      {
+    await message.client.api.interactions.post({
+      data: {
+        type: 3, // ?
+        guild_id: message.guild?.id ?? null, // In DMs
+        channel_id: message.channel.id,
+        message_id: message.id,
+        application_id: message.author.id,
+        session_id: message.client.session_id,
         data: {
-          type: 3, // ?
-          guild_id: message.guild?.id ?? null, // In DMs
-          channel_id: message.channel.id,
-          message_id: message.id,
-          application_id: message.author.id,
-          session_id: message.client.session_id,
-          data: {
-            component_type: 2, // Button
-            custom_id: this.customId
-          },
-        }
-      }
-    )
+          component_type: 2, // Button
+          custom_id: this.customId,
+        },
+      },
+    });
     return true;
   }
 }

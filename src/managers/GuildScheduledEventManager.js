@@ -268,7 +268,7 @@ class GuildScheduledEventManager extends CachedManager {
     const guildScheduledEventId = this.resolveId(guildScheduledEvent);
     if (!guildScheduledEventId) throw new Error('GUILD_SCHEDULED_EVENT_RESOLVE');
 
-    let { limit, withMember, before, after } = options;
+    const { limit, withMember, before, after } = options;
 
     const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).users.get({
       query: { limit, with_member: withMember, before, after },

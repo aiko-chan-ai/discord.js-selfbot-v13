@@ -194,9 +194,7 @@ class MessagePayload {
         this.options.embeds = [this.options.embeds];
       }
 
-      const webembeds = this.options.embeds.filter(
-        (e) => e instanceof WebEmbed,
-      );
+      const webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
       this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 
       if (webembeds.length > 0) {
@@ -214,9 +212,10 @@ class MessagePayload {
       }
       // Check content
       if (content.length > 2000) {
-        console.warn(`[WARN] Content is longer than 2000 characters.`);
+        console.warn('[WARN] Content is longer than 2000 characters.');
       }
-      if (content.length > 4000) { // Max length if user has nitro boost
+      if (content.length > 4000) {
+        // Max length if user has nitro boost
         throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
       }
     }

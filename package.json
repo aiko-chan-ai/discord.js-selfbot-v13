@@ -5,7 +5,12 @@
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:typings": "tslint typings/index.d.ts",
+    "format": "prettier --write src/**/*.js typings/**/*.ts",
+    "lint:all": "npm run lint &&  npm run lint:typings"
   },
   "files": [
     "src",

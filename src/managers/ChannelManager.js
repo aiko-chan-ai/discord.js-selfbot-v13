@@ -132,8 +132,8 @@ class ChannelManager extends CachedManager {
     console.log(recipients);
     if (recipients.length < 2 || recipients.length > 9) throw new Error('Invalid Users length (2 - 9)');
     const data = await this.client.api.users['@me'].channels.post({
-			data: { recipients: recipients.map((r) => r.id) },
-		});
+      data: { recipients: recipients.map(r => r.id) },
+    });
     return this._add(data, null, { cache: true, allowUnknownGuild: true });
   }
 }

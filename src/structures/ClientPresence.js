@@ -54,14 +54,14 @@ class ClientPresence extends Presence {
       }
     } else if (!activities && (status || afk || since) && this.activities.length) {
       data.activities.push(
-				...this.activities.map((a) =>
-					Object.assign(a, {
-						name: a.name,
-						type: a.type,
-						url: a.url ?? undefined,
-					}),
-				),
-			);
+        ...this.activities.map(a =>
+          Object.assign(a, {
+            name: a.name,
+            type: a.type,
+            url: a.url ?? undefined,
+          }),
+        ),
+      );
     }
 
     return data;
