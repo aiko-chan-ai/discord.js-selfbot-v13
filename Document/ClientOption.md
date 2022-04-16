@@ -1,6 +1,7 @@
 # Quick Links
 - [Client Settings](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#client-settings)
 - [Client Functions](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#client-functions)
+- [Custom Status](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/ClientOption.md#sync-status)
 
 ## Client Settings
 ```js
@@ -19,4 +20,9 @@ client.updateCookie(): Promise<void>
 - Reddem Nitro
 ```js
 client.reddemNitro('code'): Promise<void>
+```
+
+## Sync Status
+```js
+client.customStatusAuto(): Promise<void>
 ```

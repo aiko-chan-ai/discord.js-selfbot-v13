@@ -3,7 +3,6 @@
 let ClientUser;
 const axios = require('axios');
 const chalk = require('chalk');
-const RichPresence = require('discord-rpc-contructor');
 const Discord = require('../../../index');
 
 const checkUpdate = async () => {
@@ -18,24 +17,6 @@ Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBr
   return console.log(
     `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
   );
-};
-
-const customStatusAuto = async client => {
-  let custom_status;
-  if (client.setting.rawSetting.custom_status?.text || client.setting.rawSetting.custom_status?.emoji_name) {
-    custom_status = new RichPresence.CustomStatus();
-    if (client.setting.rawSetting.custom_status.emoji_id) {
-      const emoji = await client.emojis.resolve(client.setting.rawSetting.custom_status.emoji_id);
-      if (emoji) custom_status.setDiscordEmoji(emoji);
-    } else {
-      custom_status.setUnicodeEmoji(client.setting.rawSetting.custom_status.emoji_name);
-    }
-    custom_status.setState(client.setting.rawSetting.custom_status?.text);
-    client.user.setPresence({
-      activities: custom_status ? [custom_status.toDiscord()] : [],
-      status: client.setting.rawSetting.status,
-    });
-  }
 };
 
 module.exports = (client, { d: data }, shard) => {
@@ -70,7 +51,7 @@ module.exports = (client, { d: data }, shard) => {
   }
 
   if (client.options.readyStatus) {
-    customStatusAuto(client);
+    client.customStatusAuto(client);
   }
 
   /**

@@ -46,9 +46,16 @@ client.setting.setLocale(value); // Set Language
 	 * * `JAPANESE`
 	 * * `TAIWAN_CHINESE`
 	 * * `KOREAN`
-	 * @param {string} value
-	 * @returns {locale}
 	 */
+// Setting Status
+client.setting.setCustomStatus({
+  status: 'online', // 'online' | 'idle' | 'dnd' | 'invisible' | null
+  text: 'Hello world', // String | null
+  emoji: '🎮', // UnicodeEmoji | DiscordEmoji | null
+  expires: null, // Date.now() + 1 * 3600 * 1000 <= 1h to ms
+});
+// => Clear
+client.setting.setCustomStatus();
 ```
 
 </details>

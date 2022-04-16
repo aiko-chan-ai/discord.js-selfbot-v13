@@ -3080,7 +3080,7 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
 }
 
 export class ClientUserSettingManager {
-  private constructor(client: Client, iterable?: Iterable<RawUserSettingsData>);
+  private constructor(client: Client);
   public rawSetting: RawUserSettingsData | object;
   public locale: localeSetting | null;
   public activityDisplay: boolean | null;
@@ -3115,6 +3115,7 @@ export class ClientUserSettingManager {
   public setDisplayCompactMode(value?: boolean): Promise<ClientUserSetting>;
   public setTheme(value?: 'dark' | 'light'): Promise<ClientUserSetting>;
   public setLocale(value: localeSetting): Promise<ClientUserSetting>;
+  public setCustomStatus(value?: CustomStatusOption): Promise<ClientUserSetting>;
 }
 
 export class GuildApplicationCommandManager extends ApplicationCommandManager<ApplicationCommand, {}, Guild> {

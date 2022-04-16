@@ -2,16 +2,15 @@
 
 const { default: Collection } = require('@discordjs/collection');
 // Not used: const { remove } = require('lodash');
-const CachedManager = require('./CachedManager');
 const { Error, TypeError } = require('../errors/DJSError');
 const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants');
 /**
  * Manages API methods for users and stores their cache.
  * @extends {CachedManager}
  */
-class ClientUserSettingManager extends CachedManager {
+class ClientUserSettingManager {
   constructor(client) {
-    super(client);
+    this.client = client;
     // Raw data
     this.rawSetting = {};
     // Language
@@ -212,6 +211,55 @@ class ClientUserSettingManager extends CachedManager {
     }
     return this.theme;
   }
+
+  /**
+   * CustomStatus Object
+   * @typedef {Object} CustomStatusOption
+   * @property {string | null} text Text to set
+   * @property {string | null} status The status to set: 'online', 'idle', 'dnd', 'invisible' or null.
+   * @property {any} emoji UnicodeEmoji, DiscordEmoji, or null.
+   * @property {number | null} expires The number of seconds until the status expires, or null.
+   */
+
+  /**
+   * Set custom status (Setting)
+   * @param {CustomStatusOption} options Object | null
+   */
+  setCustomStatus(options) {
+    if (typeof options !== 'object') {
+      this.edit({ custom_status: null });
+    } else {
+      let data = {
+        emoji_name: null,
+        expires_at: null,
+        text: null,
+      };
+      if (typeof options.text === 'string') {
+        if (options.text.length > 128) {
+          throw new RangeError('[INVALID_VALUE] Custom status text must be less than 128 characters');
+        }
+        data.text = options.text;
+      }
+      if (options.emoji) {
+        const emoji = this.client.emojis.resolve(options.emoji);
+        if (emoji) {
+          data.emoji_name = emoji.name;
+          data.emoji_id = emoji.id;
+        } else {
+          data.emoji_name = typeof options.emoji === 'string' ? options.emoji : null;
+        }
+      }
+      if (typeof options.expires === 'number') {
+        if (options.expires < Date.now()) {
+          throw new RangeError(`[INVALID_VALUE] Custom status expiration must be greater than ${Date.now()}`);
+        }
+        data.expires_at = new Date(options.expires).toISOString();
+      }
+      if (['online', 'idle', 'dnd', 'invisible'].includes(options.status)) this.edit({ status: options.status });
+      this.edit({ custom_status: data });
+    }
+  }
+
   /**
    * * Locale Setting, must be one of:
    * * `DANISH`

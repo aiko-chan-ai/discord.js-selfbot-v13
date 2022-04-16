@@ -3,6 +3,7 @@
 const process = require('node:process');
 const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
+const RichPresence = require('discord-rpc-contructor');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -611,6 +612,25 @@ class Client extends BaseClient {
    */
   _eval(script) {
     return eval(script);
+  }
+
+  async customStatusAuto(client) {
+    client = client ?? this;
+    let custom_status;
+    if (client.setting.rawSetting.custom_status?.text || client.setting.rawSetting.custom_status?.emoji_name) {
+      custom_status = new RichPresence.CustomStatus();
+      if (client.setting.rawSetting.custom_status.emoji_id) {
+        const emoji = await client.emojis.resolve(client.setting.rawSetting.custom_status.emoji_id);
+        if (emoji) custom_status.setDiscordEmoji(emoji);
+      } else {
+        custom_status.setUnicodeEmoji(client.setting.rawSetting.custom_status.emoji_name);
+      }
+      custom_status.setState(client.setting.rawSetting.custom_status?.text);
+      client.user.setPresence({
+        activities: custom_status ? [custom_status.toDiscord()] : [],
+        status: client.setting.rawSetting.status,
+      });
+    }
   }
 
   /**
