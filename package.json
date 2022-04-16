@@ -54,7 +54,7 @@
     "bignumber.js": "^9.0.2",
     "bufferutil": "^4.0.6",
     "chalk": "^4.1.2",
-    "discord-api-types": "^0.27.3",
+    "discord-api-types": "^0.31.1",
     "discord-bettermarkdown": "^1.1.0",
     "discord-rpc-contructor": "^1.0.5",
     "discord.js": "^13.6.0",
