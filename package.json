@@ -64,7 +64,7 @@
     "lodash.snakecase": "^4.1.1",
     "node-fetch": "^2.6.1",
     "string-similarity": "^4.0.4",
-    "undici": "^4.15.0",
+    "undici": "^5.0.0",
     "utf-8-validate": "^5.0.9",
     "ws": "^8.5.0"
   },
