@@ -352,6 +352,7 @@ class WebSocketManager extends EventEmitter {
     } else if (packet) {
       /* Debug mode */
       // console.log(`Unhandled packet: ${packet.t}`, packet);
+      this.client.emit(Events.UNHANDLED_PACKET, packet, shard);
     }
     return true;
   }

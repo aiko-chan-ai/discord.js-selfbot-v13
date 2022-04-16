@@ -195,7 +195,7 @@ class MessagePayload {
       }
 
       const webembeds = this.options.embeds.filter(
-        (e) => !(e instanceof MessageEmbed),
+        (e) => e instanceof WebEmbed,
       );
       this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
 

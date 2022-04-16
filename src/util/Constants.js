@@ -373,6 +373,8 @@ exports.Events = {
 	GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
 	RELATIONSHIP_ADD: 'relationshipAdd',
 	RELATIONSHIP_REMOVE: 'relationshipRemove',
+	/* Add */
+	UNHANDLED_PACKET: 'unhandledPacket',
 };
 
 exports.ShardEvents = {

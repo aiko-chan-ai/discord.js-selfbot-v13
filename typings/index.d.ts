@@ -44,6 +44,7 @@ import {
   APISelectMenuComponent,
   APITemplateSerializedSourceGuild,
   APIUser,
+  GatewayOpcodes,
   GatewayVoiceServerUpdateDispatchData,
   GatewayVoiceStateUpdateDispatchData,
   RESTPostAPIApplicationCommandsJSONBody,
@@ -4149,12 +4150,16 @@ export interface ClientEvents extends BaseClientEvents {
     id: Snowflake,
     type: RelationshipType,
     user: User,
-  ]
+  ];
   relationshipRemove: [
     id: Snowflake,
     type: RelationshipType,
     user: User,
-  ]
+  ];
+  unhandledPacket: [
+    packet: { op: GatewayOpcodes | number, d?: any, s?: number, t?: string },
+    shard: WebSocketShard,
+  ];
 }
 
 export interface ClientFetchInviteOptions {
@@ -4407,6 +4412,7 @@ export interface ConstantsEvents {
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
   RELATIONSHIP_ADD: 'relationshipAdd',
   RELATIONSHIP_REMOVE: 'relationshipRemove',
+  UNHANDLED_PACKET: 'unhandledPacket',
 }
 
 export interface ConstantsOpcodes {

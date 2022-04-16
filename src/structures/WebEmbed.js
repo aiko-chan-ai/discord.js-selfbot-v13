@@ -21,6 +21,10 @@ class WebEmbed {
 		 */
 		this.hidden = data.hidden ?? false;
 	}
+	/**
+	 * @private
+	 * @param {object} data 
+	 */
 	_setup(data) {
         /**
          * Type image of this embed
