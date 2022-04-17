@@ -21,7 +21,7 @@ module.exports = (client, { d: data }) => {
         }
       }
     } else if (object.op == 'INVALIDATE') {
-      console.warn(`Invalidate [${object.range[0]}, ${object.range[1]}]`);
+      client.emit(Events.DEBUG, `Invalidate [${object.range[0]}, ${object.range[1]}]`);
     } else if (object.op == 'UPDATE' || object.op == 'INSERT') {
       const member = object.item.member;
       if (!member) continue;

@@ -1,7 +1,7 @@
 'use strict';
 
 const process = require('node:process');
-const { setInterval } = require('node:timers');
+const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const RichPresence = require('discord-rpc-contructor');
 const BaseClient = require('./BaseClient');
@@ -633,6 +633,9 @@ class Client extends BaseClient {
     }
   }
 
+  sleep(miliseconds) {
+    return new Promise(r => setTimeout(r, miliseconds));
+  }
   /**
    * Validates the client options.
    * @param {ClientOptions} [options=this.options] Options to validate

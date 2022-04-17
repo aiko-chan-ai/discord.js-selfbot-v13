@@ -415,7 +415,9 @@ class GuildMemberManager extends CachedManager {
     query,
     time = 120e3,
     nonce = SnowflakeUtil.generate(),
+    sleepTime = 2e3, // 2 seconds
   } = {}) {
+    let type;
     return new Promise((resolve, reject) => {
       if (!query && !user_ids) query = '';
       if (nonce.length > 32) throw new RangeError('MEMBER_FETCH_NONCE_LENGTH');
@@ -425,6 +427,7 @@ class GuildMemberManager extends CachedManager {
         this.guild.me.permissions.has('BAN_MEMBERS') ||
         this.guild.me.permissions.has('MANAGE_ROLES')
       ) {
+        type = 8; // This is opcode
         this.guild.shard.send({
           op: Opcodes.REQUEST_GUILD_MEMBERS,
           d: {
@@ -437,6 +440,7 @@ class GuildMemberManager extends CachedManager {
           },
         });
       } else {
+        type = 14; // This is opcode
         let channel;
         let channels = this.guild.channels.cache.filter(c => c.isText());
         channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
@@ -446,7 +450,8 @@ class GuildMemberManager extends CachedManager {
         const channels_allowed_everyone = channels.filter(c =>
           c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
         );
-        channel = channels_allowed_everyone.first() ?? channels.first();
+        channel = channels_allowed_everyone.random() ?? channels.random();
+        console.log(channel);
         // Create array limit [0, 99]
         const list = [];
         const allMember = this.guild.memberCount;
@@ -500,7 +505,7 @@ class GuildMemberManager extends CachedManager {
       let i = 0;
       const handler = (members, _, chunk) => {
         timeout.refresh();
-        if (chunk.nonce !== nonce) return;
+        if (chunk.nonce !== nonce && type === 8) return;
         i++;
         for (const member of members.values()) {
           fetchedMembers.set(member.id, member);
@@ -510,9 +515,13 @@ class GuildMemberManager extends CachedManager {
           this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
           this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
           this.client.decrementMaxListeners();
-          let fetched = fetchedMembers;
+          let fetched = fetchedMembers.size < this.guild.members.cache.size ? this.guild.members.cache : fetchedMembers;
           if (user_ids && !Array.isArray(user_ids) && fetched.size) fetched = fetched.first();
-          resolve(fetched);
+          if (type == 14) {
+            this.guild.client.sleep(sleepTime).then(() => resolve(fetched));
+          } else {
+            resolve(fetched);
+          }
         }
       };
       const timeout = setTimeout(() => {
