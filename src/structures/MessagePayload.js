@@ -211,10 +211,10 @@ class MessagePayload {
         }
       }
       // Check content
-      if (content.length > 2000) {
+      if (typeof content == 'string' && content.length > 2000) {
         console.warn('[WARN] Content is longer than 2000 characters.');
       }
-      if (content.length > 4000) {
+      if (typeof content == 'string' && content.length > 4000) {
         // Max length if user has nitro boost
         throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
       }
