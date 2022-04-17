@@ -93,11 +93,7 @@ class UserManager extends CachedManager {
     const data = await this.client.api.users(id).get();
     const userObject = this._add(data, cache);
     await userObject.getProfile().catch(() => {});
-    const noteObject = await this.client.api.users['@me']
-      .notes(id)
-      .get()
-      .catch(() => null);
-    userObject.note = noteObject?.note ?? null;
+    // Clear not because event emitted .-. Bug report by https://github.com/aSashaaa
     return userObject;
   }
 
