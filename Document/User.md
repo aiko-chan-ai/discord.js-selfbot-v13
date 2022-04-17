@@ -183,16 +183,39 @@ Update soon ~
 
 <strong>New: You can now add custom images for RPC !</strong>
 > Tutorial:
+
+<strong>New Method - require ver 1.1.1 - latest</strong>
+
+```js
+const RPC = require('discord-rpc-contructor');
+const r = new RPC.Rpc()
+	.setApplicationId('817229550684471297')
+	.setType(0)
+	.setState('State')
+	.setName('Name')
+	.setDetails('Details')
+	.setAssetsLargeImage(await RPC.getImageCustom(imageURL1)) // Custom image
+	.setAssetsLargeText('Youtube')
+	.setAssetsSmallImage(await RPC.getImageCustom(imageURL2)) // Custom image
+	.setAssetsSmallText('Bot')
+client.user.setActivity(r.toDiscord().game);
+```
+
+<strong>Old Method</strong>
+
 + Step 1: Send photos by embed.thumbnail
+
 ```js
 const embed = new MessageEmbed().setThumbnail('image url');
 const msg = await channel.send({ embeds: [embed] });
 ```
 + Step 2: Get proxyURL from message.embeds[0].thumbnail.proxyURL
+
 ```js
 const proxyURL = msg.embeds[0].thumbnail.proxyURL;
 ```
 + Step 3: Put the URL in the constructor
+
 ```js
 const RPC = require('discord-rpc-contructor');
 const r = new RPC.Rpc()
