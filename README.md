@@ -16,6 +16,8 @@
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
+- <strong>`If there is a Discord.js v13.7 version, I will patch it, rest assured 😊`</strong>
+
 
 <div align="center">
   <p>
