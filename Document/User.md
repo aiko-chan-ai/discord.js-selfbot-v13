@@ -187,10 +187,10 @@ Update soon ~
 <strong>New Method - require ver 1.1.1 - latest</strong>
 
 ```
-Note: If you use time-varying RPC, or if the time to place the image is too long, use the second method
-because: 
+Note: If you use time-varying RPC, or if it takes too long to place images, use the 2nd method because it spams me too much .-.
 ```
-	![image](https://user-images.githubusercontent.com/71698422/164040950-9679cec3-b47e-4521-b5f6-ee83a79a1978.png)
+
+![image](https://user-images.githubusercontent.com/71698422/164040950-9679cec3-b47e-4521-b5f6-ee83a79a1978.png)
 
 	
 ```js
