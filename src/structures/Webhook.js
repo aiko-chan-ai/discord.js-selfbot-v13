@@ -212,7 +212,7 @@ class Webhook {
         query: { thread_id: messagePayload.options.threadId, wait: true },
         auth: false,
       });
-      d.webembed = this.messages.cache.get(_d.id) ?? this.messages._add(_d);
+      d.webembed = this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
     }
  
     return this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
