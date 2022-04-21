@@ -192,13 +192,29 @@ class Webhook {
       messagePayload = await MessagePayload.create(this, options).resolveData();
     }
 
-    const { data, files } = await messagePayload.resolveFiles();
-    const d = await this.client.api.webhooks(this.id, this.token).post({
+    let { data, files } = await messagePayload.resolveFiles();
+    let webembed = data.webembed;
+    delete data.webembed; //remove webembed
+
+    let d = await this.client.api.webhooks(this.id, this.token).post({
       data,
       files,
       query: { thread_id: messagePayload.options.threadId, wait: true },
       auth: false,
     });
+
+    if (webembed) {
+      data.content = webembed;
+
+      const _d = await this.client.api.webhooks(this.id, this.token).post({
+        data,
+        files,
+        query: { thread_id: messagePayload.options.threadId, wait: true },
+        auth: false,
+      });
+      d.webembed = this.messages.cache.get(_d.id) ?? this.messages._add(_d);
+    }
+ 
     return this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
   }
 
