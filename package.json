@@ -87,7 +87,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.4",
     "is-ci": "^3.0.1",
-    "jest": "^27.4.5",
+    "jest": "^28.0.0",
     "lint-staged": "^12.1.4",
     "prettier": "^2.5.1",
     "tsd": "^0.20.0",
