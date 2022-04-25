@@ -2631,6 +2631,7 @@ export class VoiceState extends Base {
   public setChannel(channel: GuildVoiceChannelResolvable | null, reason?: string): Promise<GuildMember>;
   public setRequestToSpeak(request?: boolean): Promise<void>;
   public setSuppressed(suppressed?: boolean): Promise<void>;
+  public getPreview(): Promise<string>;
 }
 
 export class Webhook extends WebhookMixin() {

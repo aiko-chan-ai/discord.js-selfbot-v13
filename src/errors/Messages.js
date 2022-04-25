@@ -170,6 +170,7 @@ const Messages = {
   MESSAGE_ID_NOT_FOUND: 'Message ID not found',
   MESSAGE_EMBED_LINK_LENGTH: 'Message content with embed link length is too long',
   GUILD_MEMBERS_FETCH: msg => `${msg}`,
+  USER_NOT_STREAMING: 'User is not streaming',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

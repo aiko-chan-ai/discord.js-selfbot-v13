@@ -259,6 +259,19 @@ class VoiceState extends Base {
     });
   }
 
+  /**
+   * Get URL Image of the user's streaming video (NOT STREAMING !!!)
+   * @returns {string} URL Image of the user's streaming video
+   */
+  async getPreview() {
+    if (!this.streaming) throw new Error('USER_NOT_STREAMING');
+    // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
+    const data = await this.client.api.streams[
+      `guild%3A${this.guild.id}%3A${this.channelId}%3A${this.id}`
+    ].preview.get();
+    return data.url;
+  }
+
   toJSON() {
     return super.toJSON({
       id: true,
