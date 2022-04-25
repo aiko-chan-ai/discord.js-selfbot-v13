@@ -4163,8 +4163,8 @@ export interface ClientEvents extends BaseClientEvents {
   guildScheduledEventDelete: [guildScheduledEvent: GuildScheduledEvent];
   guildScheduledEventUserAdd: [guildScheduledEvent: GuildScheduledEvent, user: User];
   guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, user: User];
-  relationshipAdd: [id: Snowflake, type: RelationshipTypes, user: User];
-  relationshipRemove: [id: Snowflake, type: RelationshipTypes, user: User];
+  relationshipAdd: [id: Snowflake, type: RelationshipTypes];
+  relationshipRemove: [id: Snowflake];
   unhandledPacket: [packet: { op: GatewayOpcodes | number; d?: any; s?: number; t?: string }, shard: WebSocketShard];
 }
 
