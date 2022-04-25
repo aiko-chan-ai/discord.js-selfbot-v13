@@ -295,7 +295,7 @@ await client.user.setPassword('old password', 'new password');
 await client.user.disableAccount('password');
 // Delete Account [WARNING] Cannot be changed once used!
 await client.user.deleteAccount('password');
-// Reddem Nitro
-await client.reddemNitro('code')
+// Redeem Nitro
+await client.redeemNitro('code')
 ```
 </details>

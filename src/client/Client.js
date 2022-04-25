@@ -377,7 +377,7 @@ class Client extends BaseClient {
    * discordapp.com/gifts/code | discord.gift/code
    * @returns {Promise}
    */
-  async reddemNitro(nitro) {
+  async redeemNitro(nitro) {
     if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
     const regexNitro = /discord(?:(?:app)?\.com\/gifts|\.gift)\/([\w-]{2,255})/gi;
     const code = DataResolver.resolveCode(nitro, regexNitro);
