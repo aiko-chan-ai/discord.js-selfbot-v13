@@ -17,9 +17,9 @@ new Client({
 ```js
 client.updateCookie(): Promise<void>
 ```
-- Reddem Nitro
+- Redeem Nitro
 ```js
-client.reddemNitro('code'): Promise<void>
+client.redeemNitro('code'): Promise<void>
 ```
 
 ## Sync Status
