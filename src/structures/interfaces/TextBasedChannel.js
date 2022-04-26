@@ -171,20 +171,10 @@ class TextBasedChannel {
       messagePayload = await MessagePayload.create(this, options).resolveData();
     }
 
-    let { data, files } = await messagePayload.resolveFiles();
-    let webembed = data.webembed;
-    delete data.webembed; //remove webembed
+    const { data, files } = await messagePayload.resolveFiles();
+    const d = await this.client.api.channels[this.id].messages.post({ data, files });
 
-    let d = await this.client.api.channels[this.id].messages.post({ data, files });
-
-    if (webembed) {
-      data.content = webembed;
-
-      const _d = await this.client.api.channels[this.id].messages.post({ data, files });
-      d.webembed = this.messages.cache.get(_d.id) ?? this.messages._add(_d);
-    }
-
-    return this.messages.cache.get(d.id) ?? this.messages._add(d); //webembed missing after cached..  ¯\_(ツ)_/¯
+    return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
 
   /**

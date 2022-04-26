@@ -118,47 +118,6 @@ class MessagePayload {
     return content;
   }
 
-   /**
-   * Makes the webembed content of this message.
-   * @returns {?string}
-   */
-  async makeWebEmbed() {
-    let content;
-
-    if (this.options.embeds) {
-      if (!Array.isArray(this.options.embeds)) {
-        this.options.embeds = [this.options.embeds];
-      }
-
-      const webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
-      this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
-
-      if (webembeds.length > 0) {
-        if (!content) content = '';
-        // Add hidden embed link
-        content += `${WebEmbed.hiddenEmbed} `;
-
-        for (const webE of webembeds) {
-          const data = await webE.toMessage();
-          content += `${data} `;
-        }
-
-        content = content.trim();
-      }
-
-      // Check content
-      if (typeof content == 'string' && content.length > 2000) {
-        console.warn('[WARN] WebEmbed is longer than 2000 characters.');
-      }
-      if (typeof content == 'string' && content.length > 4000) {
-        // Max length if user has nitro boost
-        throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
-      }
-    }
-
-    return content;
-  }
-  
   /**
    * Resolves data.
    * @returns {MessagePayload}
@@ -169,7 +128,6 @@ class MessagePayload {
     const isWebhook = this.isWebhook;
 
     let content = this.makeContent();
-    let webembed = await this.makeWebEmbed();
     const tts = Boolean(this.options.tts);
 
     let nonce;
@@ -231,8 +189,38 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
+    if (this.options.embeds) {
+      if (!Array.isArray(this.options.embeds)) {
+        this.options.embeds = [this.options.embeds];
+      }
+
+      const webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
+      this.options.embeds = this.options.embeds.filter(e => e instanceof MessageEmbed);
+
+      if (webembeds.length > 0) {
+        if (!content) content = '';
+        // Add hidden embed link
+        content += `\n${WebEmbed.hiddenEmbed} \n`;
+        if (webembeds.length > 1) {
+          console.warn('Multiple webembeds are not supported, this will be ignored.');
+        }
+        // Const embed = webembeds[0];
+        for (const webE of webembeds) {
+          const data = await webE.toMessage();
+          content += `\n${data}`;
+        }
+      }
+      // Check content
+      if (typeof content == 'string' && content.length > 2000) {
+        console.warn('[WARN] Content is longer than 2000 characters.');
+      }
+      if (typeof content == 'string' && content.length > 4000) {
+        // Max length if user has nitro boost
+        throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
+      }
+    }
+
     this.data = {
-      webembed,
       content,
       tts,
       nonce,
