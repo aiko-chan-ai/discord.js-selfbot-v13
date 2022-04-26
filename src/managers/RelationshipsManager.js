@@ -8,7 +8,7 @@ const User = require('../structures/User');
 const { RelationshipTypes } = require('../util/Constants');
 
 /**
- * Manages API methods for users and stores their cache.
+ * Manages API methods for Relationships and stores their cache.
  */
 class RelationshipsManager {
   constructor(client, users) {
@@ -17,6 +17,11 @@ class RelationshipsManager {
     this._setup(users);
   }
 
+  /**
+   * @private
+   * @param {Array<User>} users An array of users to add to the cache
+   * @returns {void}
+   */
   _setup(users) {
     if (!Array.isArray(users)) return;
     for (const relationShip of users) {
