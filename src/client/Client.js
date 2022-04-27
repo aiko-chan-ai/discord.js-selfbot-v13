@@ -371,6 +371,14 @@ class Client extends BaseClient {
     return new Invite(this, data);
   }
 
+  // TODO: Remove this in the next major version
+  reddemNitro(code) {
+    process.emitWarning(
+      'This function will no longer be available after a major update. Using .redeemNitro()\nSee here: https://github.com/aiko-chan-ai/discord.js-selfbot-v13/pull/59',
+      'DeprecationWarning',
+    );
+    return this.redeemNitro(code);
+  }
   /**
    * Get Nitro
    * @param {string<NitroCode>} nitro Nitro Code
