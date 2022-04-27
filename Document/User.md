@@ -80,6 +80,7 @@ User {
   connectedAccounts: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
+  bio: null,
   mutualGuilds: Collection(3) [Map] {
     '906765260017516605' => { id: '906765260017516605', nick: null },
     '809133733591384155' => { id: '809133733591384155', nick: 'uwu' },
@@ -119,6 +120,7 @@ User {
   connectedAccounts: [],
   premiumSince: 1623357181151,
   premiumGuildSince: 0,
+  bio: null,
   mutualGuilds: Collection(3) [Map] {
     '906765260017516605' => { id: '906765260017516605', nick: null },
     '809133733591384155' => { id: '809133733591384155', nick: 'uwu' },

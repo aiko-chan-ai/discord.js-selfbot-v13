@@ -2490,6 +2490,11 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly tag: string;
   public username: string;
   public readonly note: string | null;
+  public readonly connectedAccounts: Array<Object>;
+  public readonly premiumSince: Date;
+  public readonly premiumGuildSince: Date;
+  public readonly bio: string | null;
+  public readonly mutualGuilds: Collection<Snowflake, object>;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;

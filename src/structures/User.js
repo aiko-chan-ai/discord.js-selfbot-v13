@@ -34,6 +34,7 @@ class User extends Base {
     this.connectedAccounts = [];
     this.premiumSince = null;
     this.premiumGuildSince = null;
+    this.bio = null;
     this.mutualGuilds = new Collection();
     this.applications = null;
     this._patch(data);
@@ -157,6 +158,10 @@ class User extends Base {
     if ('premium_guild_since' in data) {
       const date = new Date(data.premium_guild_since);
       this.premiumGuildSince = date.getTime();
+    }
+
+    if ('bio' in data.user) {
+      this.bio = data.user.bio;
     }
 
     this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
