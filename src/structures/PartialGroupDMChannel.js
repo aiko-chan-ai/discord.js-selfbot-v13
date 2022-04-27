@@ -199,6 +199,22 @@ class PartialGroupDMChannel extends Channel {
   get lastPinAt() {}
   send() {}
   sendTyping() {}
+
+  // Testing feature: Call
+  // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
+  /**
+   * Call this DMChannel. [TEST only]
+   * @returns {Promise<void>}
+   */
+  call() {
+    console.log('TEST only, and not working !');
+    return this.client.api.channels(this.id).call.ring.post({
+      usingApplicationJson: true,
+      data: {
+        recipients: null,
+      },
+    });
+  }
 }
 
 TextBasedChannel.applyToClass(PartialGroupDMChannel, false);

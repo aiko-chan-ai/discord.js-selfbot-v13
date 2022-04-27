@@ -656,6 +656,8 @@ export class ClientUser extends User {
   public setPassword(oldPassword: string, newPassword: string): Promise<this>;
   public disableAccount(password: string): Promise<this>;
   public deleteAccount(password: string): Promise<this>;
+  public setDeaf(status: boolean): Promise<boolean>;
+  public setMute(status: boolean): Promise<boolean>;
   // Selfbot
   public readonly nitro: boolean;
   /**

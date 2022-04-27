@@ -3,7 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const User = require('./User');
 const { Util } = require('..');
-const { HypeSquadOptions } = require('../util/Constants');
+const { HypeSquadOptions, Opcodes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 
 /**
@@ -258,6 +258,34 @@ class ClientUser extends User {
       },
     });
     return data;
+  }
+
+  /**
+   * Set selfdeaf (Global)
+   * @param {boolean} status Whether or not the ClientUser is deafened
+   * @returns {boolean}
+   */
+  setDeaf(status) {
+    if (typeof status !== 'boolean') throw new Error('Deaf status must be a boolean.');
+    this.client.ws.broadcast({
+      op: Opcodes.VOICE_STATE_UPDATE,
+      d: { guild_id: null, channel_id: null, self_deaf: status },
+    });
+    return status;
+  }
+
+  /**
+   * Set selfmute (Global)
+   * @param {boolean} status Whether or not the ClientUser is muted
+   * @returns {boolean}
+   */
+  setMute(status) {
+    if (typeof status !== 'boolean') throw new Error('Mute status must be a boolean.');
+    this.client.ws.broadcast({
+      op: Opcodes.VOICE_STATE_UPDATE,
+      d: { guild_id: null, channel_id: null, self_mute: status },
+    });
+    return status;
   }
 
   /**
