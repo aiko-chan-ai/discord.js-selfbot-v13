@@ -269,7 +269,7 @@ class ClientUser extends User {
     if (typeof status !== 'boolean') throw new Error('Deaf status must be a boolean.');
     this.client.ws.broadcast({
       op: Opcodes.VOICE_STATE_UPDATE,
-      d: { guild_id: null, channel_id: null, self_deaf: status },
+      d: { self_deaf: status },
     });
     return status;
   }
@@ -283,7 +283,7 @@ class ClientUser extends User {
     if (typeof status !== 'boolean') throw new Error('Mute status must be a boolean.');
     this.client.ws.broadcast({
       op: Opcodes.VOICE_STATE_UPDATE,
-      d: { guild_id: null, channel_id: null, self_mute: status },
+      d: { self_mute: status },
     });
     return status;
   }
