@@ -4147,6 +4147,7 @@ export interface ClientEvents extends BaseClientEvents {
   threadUpdate: [oldThread: ThreadChannel, newThread: ThreadChannel];
   typingStart: [typing: Typing];
   userUpdate: [oldUser: User | PartialUser, newUser: User];
+  userSettingsUpdate: [setting: RawUserSettingsData];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
   webhookUpdate: [channel: TextChannel | NewsChannel];
   /** @deprecated Use interactionCreate instead */
@@ -4393,6 +4394,7 @@ export interface ConstantsEvents {
   THREAD_MEMBER_UPDATE: 'threadMemberUpdate';
   THREAD_MEMBERS_UPDATE: 'threadMembersUpdate';
   USER_UPDATE: 'userUpdate';
+  USER_SETTINGS_UPDATE: 'userSettingsUpdate';
   PRESENCE_UPDATE: 'presenceUpdate';
   VOICE_SERVER_UPDATE: 'voiceServerUpdate';
   VOICE_STATE_UPDATE: 'voiceStateUpdate';
