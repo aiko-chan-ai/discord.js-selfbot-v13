@@ -993,6 +993,26 @@ class Message extends Base {
   }
   // Added
   /**
+   * Marks the message as unread.
+   * @returns {boolean}
+   */
+  async markUnread() {
+    await this.client.api.channels[this.channelId].messages[this.id].ack({
+      usingApplicationJson: true,
+      data: {
+        manual: true,
+        mention_count:
+          this.mentions.everyone ||
+          this.mentions.repliedUser?.id === this.client.user.id ||
+          this.mentions.users.has(this.client.user.id) ||
+          (this.guildId && this.mentions.roles.some(r => this.guild.me._roles?.includes(r.id)))
+            ? 1
+            : 0,
+      },
+    });
+    return true;
+  }
+  /**
    * Click specific button [Suggestion: Dux#2925]
    * @param {string<Button.customId>} buttonID Button ID
    * @returns {Promise<pending>}

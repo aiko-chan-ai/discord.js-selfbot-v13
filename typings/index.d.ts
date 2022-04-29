@@ -1606,6 +1606,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public unpin(): Promise<Message>;
   public inGuild(): this is Message<true> & this;
   // Added
+  public markUnread(): Promise<boolean>;
   public clickButton(buttonID: String<MessageButton.customId>): Promise<pending>;
   public selectMenu(menuID: String<MessageSelectMenu.customId> | options[], options: string[]): Promise<pending>;
   public contextMenu(botID: DiscordBotID, commandName: String<ApplicationCommand.name>): Promise;
