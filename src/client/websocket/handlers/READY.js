@@ -4,6 +4,7 @@ let ClientUser;
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
+const { Events } = require('../../../util/Constants');
 
 const checkUpdate = async () => {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
@@ -49,10 +50,12 @@ module.exports = (client, { d: data }, shard) => {
   for (const private_channel of data.private_channels) {
     client.channels._add(private_channel);
   }
-
-  if (client.options.readyStatus) {
-    client.customStatusAuto(client);
-  }
+  // Start event
+  client.on(Events.USER_SETTINGS_UPDATE, s => {
+    if (('status' in s || 'custom_status' in s) && client.options.readyStatus) {
+      client.customStatusAuto(client);
+    }
+  });
 
   /**
    * Read_state: Return Array:

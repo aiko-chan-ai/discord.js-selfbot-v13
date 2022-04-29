@@ -635,7 +635,9 @@ class Client extends BaseClient {
       }
       custom_status.setState(client.setting.rawSetting.custom_status?.text);
       client.user.setPresence({
-        activities: custom_status ? [custom_status.toDiscord()] : [],
+        activities: custom_status
+          ? [custom_status.toDiscord(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')]
+          : this.presence.activities.filter(a => a.type !== 'CUSTOM'),
         status: client.setting.rawSetting.status,
       });
     }

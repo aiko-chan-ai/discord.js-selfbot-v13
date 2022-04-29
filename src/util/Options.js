@@ -135,7 +135,7 @@ class Options extends null {
     return {
       jsonTransformer: object => JSONBig.stringify(object),
       checkUpdate: true,
-      readyStatus: false,
+      readyStatus: true,
       autoCookie: true,
       waitGuildTimeout: 15_000,
       shardCount: 1,
@@ -153,7 +153,9 @@ class Options extends null {
       restSweepInterval: 60,
       failIfNotExists: false,
       userAgentSuffix: [],
-      presence: {},
+      presence: {
+        status: 'invisible',
+      },
       sweepers: {},
       ws: {
         large_threshold: 50,

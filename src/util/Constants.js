@@ -342,6 +342,7 @@ exports.Events = {
   THREAD_MEMBER_UPDATE: 'threadMemberUpdate',
   THREAD_MEMBERS_UPDATE: 'threadMembersUpdate',
   USER_UPDATE: 'userUpdate',
+  USER_SETTINGS_UPDATE: 'userSettingsUpdate',
   PRESENCE_UPDATE: 'presenceUpdate',
   VOICE_SERVER_UPDATE: 'voiceServerUpdate',
   VOICE_STATE_UPDATE: 'voiceStateUpdate',
