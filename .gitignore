@@ -80,3 +80,4 @@ deploy/deploy_key.pub
 
 # Custom
 data/
+update.mjs
