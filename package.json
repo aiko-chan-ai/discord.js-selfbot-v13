@@ -72,7 +72,7 @@
     "safe-base64": "^2.0.1-0",
     "string_decoder": "^1.3.0",
     "string-similarity": "^4.0.4",
-    "undici": "^4.16.0",
+    "undici": "^5.1.1",
     "utf-8-validate": "^5.0.9",
     "ws": "^8.5.0"
   },
