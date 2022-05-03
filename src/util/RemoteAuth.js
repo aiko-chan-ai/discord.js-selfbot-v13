@@ -3,7 +3,6 @@
 const { Buffer } = require('buffer');
 const crypto = require('crypto');
 const { setInterval, clearInterval, setTimeout, clearTimeout } = require('node:timers');
-const { process } = require('process');
 const { StringDecoder } = require('string_decoder');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
@@ -148,7 +147,7 @@ class DiscordAuthWebsocket {
     if (this.debug) {
       console.log(`[WebSocket] Connection Destroyed, User login state: ${this.login_state ? 'success' : 'failure'}`);
     }
-    if (!this.login_state) process.exit(1);
+    if (!this.login_state) throw new Error('Login failed');
   }
 
   public_key() {
