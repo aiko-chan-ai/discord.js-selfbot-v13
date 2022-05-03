@@ -3126,6 +3126,9 @@ export class ClientUserSettingManager {
   public setTheme(value?: 'dark' | 'light'): Promise<ClientUserSetting>;
   public setLocale(value: localeSetting): Promise<ClientUserSetting>;
   public setCustomStatus(value?: CustomStatusOption): Promise<ClientUserSetting>;
+  public restrictedGuilds(status: boolean): Promise;
+  public addRestrictedGuild(guildId: GuildIdResolvable): Promise;
+  public removeRestrictedGuild(guildId: GuildIdResolvable): Promise;
 }
 
 export class GuildApplicationCommandManager extends ApplicationCommandManager<ApplicationCommand, {}, Guild> {

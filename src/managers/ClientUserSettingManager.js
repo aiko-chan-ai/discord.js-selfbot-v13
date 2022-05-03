@@ -373,6 +373,45 @@ class ClientUserSettingManager {
     }
     this.edit({ guild_folders: this.rawSetting.guild_folders });
   }
+
+  /**
+   * Restricted guilds setting
+   * @param {boolean} status Restricted status
+   * @returns {Promise}
+   */
+  restrictedGuilds(status) {
+    if (typeof status !== 'boolean') {
+      throw new TypeError('INVALID_TYPE', 'status', 'boolean', true);
+    }
+    return this.edit({
+      default_guilds_restricted: status,
+      restricted_guilds: status ? this.client.guilds.map(v => v.id) : [],
+    });
+  }
+  /**
+   * Add a guild to the list of restricted guilds.
+   * @param {GuildIDResolve} guildId The guild to add
+   * @returns {Promise}
+   */
+  addRestrictedGuild(guildId) {
+    const temp = Object.assign(
+      [],
+      this.disableDMfromServer.map((v, k) => k),
+    );
+    if (temp.includes(guildId)) throw new Error('Guild is already restricted');
+    temp.push(guildId);
+    return this.edit({ restricted_guilds: temp });
+  }
+
+  /**
+   * Remove a guild from the list of restricted guilds.
+   * @param {GuildIDResolve} guildId The guild to remove
+   * @returns {Promise}
+   */
+  removeRestrictedGuild(guildId) {
+    if (!this.disableDMfromServer.delete(guildId)) throw new Error('Guild is already restricted');
+    return this.edit({ restricted_guilds: this.disableDMfromServer.map((v, k) => k) });
+  }
 }
 
 module.exports = ClientUserSettingManager;
