@@ -212,6 +212,7 @@ class Options extends null {
         invite: 'https://discord.gg',
         template: 'https://discord.new',
         scheduledEvent: 'https://discord.com/events',
+        remoteAuth: 'wss://remote-auth-gateway.discord.gg/?v=1',
       },
     };
   }

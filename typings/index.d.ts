@@ -585,6 +585,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public redeemNitro(code: String<NitroCode>): Promise;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
+  public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;

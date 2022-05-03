@@ -30,6 +30,7 @@ const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
 const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
+const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
 // Patch
 
@@ -318,6 +319,20 @@ class Client extends BaseClient {
       this.destroy();
       throw error;
     }
+  }
+
+  /**
+   * Sign in with the QR code on your phone.
+   * @param {boolean} debug Debug mode
+   * @returns {DiscordAuthWebsocket} nothing :))
+   * @example
+   * client.QRLogin();
+   */
+  QRLogin(debug = false) {
+    console.log(this.options);
+    const QR = new DiscordAuthWebsocket(this, debug);
+    this.emit(Events.DEBUG, `Preparing to connect to the gateway`, QR);
+    return QR;
   }
 
   /**

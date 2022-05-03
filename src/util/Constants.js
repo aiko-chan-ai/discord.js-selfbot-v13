@@ -151,6 +151,8 @@ exports.localeObject = {
 
 exports.UserAgent = listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
 
+exports.randomUA = () => listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
+
 exports.WSCodes = {
   1000: 'WS_CLOSE_REQUESTED',
   4004: 'TOKEN_INVALID',
