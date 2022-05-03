@@ -385,7 +385,7 @@ class ClientUserSettingManager {
     }
     return this.edit({
       default_guilds_restricted: status,
-      restricted_guilds: status ? this.client.guilds.map(v => v.id) : [],
+      restricted_guilds: status ? this.client.guilds.cache.map(v => v.id) : [],
     });
   }
   /**
