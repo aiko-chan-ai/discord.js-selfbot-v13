@@ -149,13 +149,7 @@ class ClientUserSettingManager {
       this.guildMetadata = new Collection(data_);
     }
     if ('restricted_guilds' in data) {
-      data.restricted_guilds.map(guildId => {
-        const guild = this.client.guilds.cache.get(guildId);
-        if (!guild) return false;
-        guild.disableDM = true;
-        this.disableDMfromServer.set(guildId, true);
-        return true;
-      });
+      this.disableDMfromServer = new Collection(data.restricted_guilds.map(guildId => [guildId, true]));
     }
   }
   async fetch() {
