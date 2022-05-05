@@ -7,8 +7,7 @@
 ```js
 new Client({
   checkUpdate: true, // Check Package Update (Bot Ready) [Enable Default] you can also input 0, 1, and 2
-  /*
-   * 0 or false - Don't check for Package Update
+  /* 0 or false - Don't check for Package Update
    * 1 or true - Check for Package Update
    * 2 - Check for Package Update, but only log to the console if the package is not updated
    */
