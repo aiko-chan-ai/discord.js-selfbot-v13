@@ -6,7 +6,7 @@ const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events } = require('../../../util/Constants');
 
-const checkUpdate = async () => {
+const checkUpdate = async (logVersion) => {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
   const lastest_tag = res_.data['dist-tags'].latest;
   // Checking if the package is outdated
@@ -15,15 +15,19 @@ const checkUpdate = async () => {
     return console.log(`${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
 Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`);
   }
-  return console.log(
-    `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
-  );
+  // Only log if the user wants it
+  if (logVersion) {
+    return console.log(
+      `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
+    );
+  }
 };
 
 module.exports = (client, { d: data }, shard) => {
   if (client.options.checkUpdate) {
+    const logVersion = (client.options.checkUpdate == 1);
     try {
-      checkUpdate();
+      checkUpdate(logVersion);
     } catch (e) {
       console.log(e);
     }
