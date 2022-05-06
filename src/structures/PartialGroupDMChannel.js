@@ -68,6 +68,7 @@ class PartialGroupDMChannel extends Channel {
 
     /**
      * Invites fetch
+     * @type {Collection<string, Invite>}
      */
     this.invites = new Collection();
 

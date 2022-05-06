@@ -127,10 +127,16 @@ class Client extends BaseClient {
      */
     this.users = new UserManager(this);
 
-    /** Patch
-     *
+    // Patch
+    /**
+     * All of the relationships {@link User}
+     * @type {RelationshipsManager}
      */
     this.relationships = new RelationshipsManager(this);
+    /**
+     * All of the settings {@link Object}
+     * @type {ClientUserSettingManager}
+     */
     this.setting = new ClientUserSettingManager(this);
     /**
      * All of the guilds the client is currently handling, mapped by their ids -

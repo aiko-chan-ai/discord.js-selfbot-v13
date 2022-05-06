@@ -195,7 +195,7 @@ exports.Opcodes = {
   INVALID_SESSION: 9, // #  Receive         used to notify client they have an invalid session id
   HELLO: 10, // #  Receive         sent immediately after connecting, contains heartbeat and server debug information
   HEARTBEAT_ACK: 11, // #  Sent            immediately following a client heartbeat that was received
-  // GUILD_SYNC: 12, // #  Receive         guild_sync but not used anymore
+  GUILD_SYNC: 12, // #  Receive         guild_sync but not used anymore
   /** Add some opcode from Discum
   /* @extends https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/gateway/gateway.py#L56
   */

@@ -127,6 +127,7 @@ class User extends Base {
 
   /**
    * Check relationship status
+   * @type {Relationship}
    * @readonly
    */
   get relationships() {
@@ -136,6 +137,7 @@ class User extends Base {
 
   /**
    * Check note
+   * @type {?string}
    * @readonly
    */
   get note() {

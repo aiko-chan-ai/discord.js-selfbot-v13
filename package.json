@@ -5,14 +5,17 @@
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run lint:all && npm run lint:typings && npm run docs:test",
+    "test:typescript": "tsc --noEmit && tsd",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:typings": "tslint typings/index.d.ts",
     "lint:typings:fix": "tslint typings/index.d.ts --fix",
     "format": "prettier --write src/**/*.js typings/**/*.ts",
     "lint:all": "npm run lint &&  npm run lint:typings",
-    "checkup": "node update.mjs"
+    "checkup": "node update.mjs",
+    "docs": "docgen --source src --custom docs/index.yml --output docs/docs.json",
+    "docs:test": "docgen --source src --custom docs/index.yml"
   },
   "files": [
     "src",
@@ -83,7 +86,7 @@
   "devDependencies": {
     "@commitlint/cli": "^16.0.1",
     "@commitlint/config-angular": "^16.0.0",
-    "@discordjs/docgen": "^0.11.0",
+    "@discordjs/docgen": "^0.11.1",
     "@favware/npm-deprecate": "^1.0.4",
     "@types/node": "^16.11.12",
     "conventional-changelog-cli": "^2.2.2",

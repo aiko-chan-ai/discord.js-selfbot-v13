@@ -9,8 +9,8 @@ module.exports = (client, { d: data }) => {
   client.relationships.cache.set(data.id, data.type);
   /**
    * Emitted whenever a relationship is updated.
-   * @event Client#relationshipUpdate
-   * @param {UserID} user The userID that was updated
+   * @event Client#relationshipAdd
+   * @param {UserId} user The userID that was updated
    * @param {Number} type The new relationship type
    */
   client.emit(Events.RELATIONSHIP_ADD, data.id, data.type);
