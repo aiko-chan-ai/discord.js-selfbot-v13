@@ -30,6 +30,12 @@ const listUserAgent = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/100.0.1185.39',
 ];
 
+exports.NitroState = {
+  0: 'NONE',
+  1: 'CLASSIC',
+  2: 'BOOST',
+};
+
 exports.DMScanLevel = {
   0: 'NOT_SCAN',
   1: 'NOT_FRIEND',

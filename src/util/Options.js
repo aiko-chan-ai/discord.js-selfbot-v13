@@ -34,6 +34,9 @@ const JSONBig = require('json-bigint');
  * @property {number|number[]|string} [shards] The shard's id to run, or an array of shard ids. If not specified,
  * the client will spawn {@link ClientOptions#shardCount} shards. If set to `auto`, it will fetch the
  * recommended amount of shards from Discord and spawn that amount
+ * @property {boolean} [checkUpdate=true] Check for module updates at startup
+ * @property {boolean} [readyStatus=true] Sync state with Discord Client
+ * @property {boolean} [autoCookie=true] Automatically add Cookies to Request on startup
  * @property {number} [shardCount=1] The total amount of shards used by all processes of this bot
  * (e.g. recommended shard count, shard count of the ShardingManager)
  * @property {CacheFactory} [makeCache] Function to create a cache.
@@ -49,7 +52,7 @@ const JSONBig = require('json-bigint');
  * @property {number} [invalidRequestWarningInterval=0] The number of invalid REST requests (those that return
  * 401, 403, or 429) in a 10 minute window between emitted warnings (0 for no warnings). That is, if set to 500,
  * warnings will be emitted at invalid request number 500, 1000, 1500, and so on.
- * @property {PartialType[]} [partials] Structures allowed to be partial. This means events can be emitted even when
+ * @property {PartialType[]} [partials=['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT']] Structures allowed to be partial. This means events can be emitted even when
  * they're missing all the data for a particular structure. See the "Partial Structures" topic on the
  * [guide](https://discordjs.guide/popular-topics/partials.html) for some
  * important usage information, as partials require you to put checks in place when handling data.
@@ -72,7 +75,7 @@ const JSONBig = require('json-bigint');
  * @property {string[]} [userAgentSuffix] An array of additional bot info to be appended to the end of the required
  * [User Agent](https://discord.com/developers/docs/reference#user-agent) header
  * @property {PresenceData} [presence={}] Presence data to use upon login
- * @property {IntentsResolvable} intents Intents to enable for this connection
+ * @property {IntentsResolvable} [intents] Intents to enable for this connection
  * @property {number} [waitGuildTimeout=15_000] Time in milliseconds that Clients with the GUILDS intent should wait for
  * missing guilds to be recieved before starting the bot. If not specified, the default is 15 seconds.
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping

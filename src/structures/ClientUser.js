@@ -3,7 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const User = require('./User');
 const { Util } = require('..');
-const { HypeSquadOptions, Opcodes } = require('../util/Constants');
+const { HypeSquadOptions, Opcodes, NitroState } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 
 /**
@@ -17,6 +17,10 @@ class ClientUser extends User {
     /*
 		Add: notes
 		*/
+    /**
+     * The notes cache of the client user.
+     * @type {Collection<Snowflake, Message>}
+     */
     this.notes = new Collection();
     // This.messageMentions = new Collection();
 
@@ -41,15 +45,11 @@ class ClientUser extends User {
     if ('token' in data) this.client.token = data.token;
 
     // Add (Selfbot)
-    if ('premium' in data) this.nitro = data.premium;
+    if ('premium' in data) this.nitro = NitroState[data.premium];
     /**
      * Nitro Status
-     * `0`: None
-     * `1`: Classic
-     * `2`: Boost
-     * @external
-     * https://discord.com/developers/docs/resources/user#user-object-premium-types
-     * @type {Number}
+     * @type {NitroState}
+     * @see https://discord.com/developers/docs/resources/user#user-object-premium-types
      */
     if ('purchased_flags' in data) this.nitroType = data.purchased_flags;
     if ('phone' in data) this.phoneNumber = data.phone;
