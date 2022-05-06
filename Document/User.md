@@ -185,32 +185,8 @@ Update soon ~
 
 <strong>New: You can now add custom images for RPC !</strong>
 > Tutorial:
-
-<strong>New Method - require ver 1.1.1 - latest</strong>
-
-```
-Note: If you use time-varying RPC, or if it takes too long to place images, use the 2nd method because it spams me too much .-.
-```
-
-![image](https://user-images.githubusercontent.com/71698422/164040950-9679cec3-b47e-4521-b5f6-ee83a79a1978.png)
-
 	
-```js
-const RPC = require('discord-rpc-contructor');
-const r = new RPC.Rpc()
-	.setApplicationId('817229550684471297')
-	.setType(0)
-	.setState('State')
-	.setName('Name')
-	.setDetails('Details')
-	.setAssetsLargeImage(await RPC.getImageCustom(imageURL1)) // Custom image
-	.setAssetsLargeText('Youtube')
-	.setAssetsSmallImage(await RPC.getImageCustom(imageURL2)) // Custom image
-	.setAssetsSmallText('Bot')
-client.user.setActivity(r.toDiscord().game);
-```
-
-<strong>Old Method</strong>
+<strong>Method 1</strong>
 
 + Step 1: Send photos by embed.thumbnail
 
@@ -240,6 +216,29 @@ const r = new RPC.Rpc()
 client.user.setActivity(r.toDiscord().game);
 ```
 
+<strong>Method 2 - require ver 1.1.1 - latest</strong>
+
+```
+Note: If you use time-varying RPC, or if it takes too long to place images, use the 2nd method because it spams me too much .-.
+```
+
+![image](https://user-images.githubusercontent.com/71698422/164040950-9679cec3-b47e-4521-b5f6-ee83a79a1978.png)
+
+	
+```js
+const RPC = require('discord-rpc-contructor');
+const r = new RPC.Rpc()
+	.setApplicationId('817229550684471297')
+	.setType(0)
+	.setState('State')
+	.setName('Name')
+	.setDetails('Details')
+	.setAssetsLargeImage(await RPC.getImageCustom(imageURL1)) // Custom image
+	.setAssetsLargeText('Youtube')
+	.setAssetsSmallImage(await RPC.getImageCustom(imageURL2)) // Custom image
+	.setAssetsSmallText('Bot')
+client.user.setActivity(r.toDiscord().game);
+```
 
 
 <strong>How to get AssetID ?</strong>
