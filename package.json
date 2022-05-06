@@ -14,8 +14,8 @@
     "format": "prettier --write src/**/*.js typings/**/*.ts",
     "lint:all": "npm run lint &&  npm run lint:typings",
     "checkup": "node update.mjs",
-    "docs": "docgen --source src --custom discord.js/index.yml --output discord.js/main.json",
-    "docs:test": "docgen --source src --custom discord.js/index.yml"
+    "docs": "docgen --source src --custom docs/index.yml --output docs/main.json",
+    "docs:test": "docgen --source src --custom docs/index.yml"
   },
   "files": [
     "src",
