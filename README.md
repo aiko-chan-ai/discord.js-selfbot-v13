@@ -16,8 +16,6 @@
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
-- <strong>`If there is a Discord.js v13.7 version, I will patch it, rest assured 😊`</strong>
-
 
 <div align="center">
   <p>
@@ -30,7 +28,10 @@
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
 
-### <strong>[Feature + Example Code](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong>
+## <strong>[1. Document Website (recommend)](https://discordjs-self-v13.cf)</strong>
+
+### <strong>[2. Document but Markdown :)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/DOCUMENT.md)</strong>
+### <strong>[3. Document but Wiki :v](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/wiki)</strong>
 ### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 ## Checklist
@@ -72,14 +73,29 @@ client.login('token');
 <strong>Copy code to console Discord [Ctrl + Shift + I]</strong>
 
 ```js
-window.webpackChunkdiscord_app.push([[Math.random()], {}, (req) => {for (const m of Object.keys(req.c).map((x) => req.c[x].exports).filter((x) => x)) {if (m.default && m.default.getToken !== undefined) {return copy(m.default.getToken())}if (m.getToken !== undefined) {return copy(m.getToken())}}}]); console.log("%cWorked!", "font-size: 50px"); console.log(`%cYou now have your token in the clipboard!`, "font-size: 16px")
+window.webpackChunkdiscord_app.push([
+  [Math.random()],
+  {},
+  req => {
+    for (const m of Object.keys(req.c)
+      .map(x => req.c[x].exports)
+      .filter(x => x)) {
+      if (m.default && m.default.getToken !== undefined) {
+        return copy(m.default.getToken());
+      }
+      if (m.getToken !== undefined) {
+        return copy(m.getToken());
+      }
+    }
+  },
+]);
+console.log('%cWorked!', 'font-size: 50px');
+console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
 ```
 
 Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt="." width="16" height="16"/> [<strong>hxr404</strong>](https://github.com/hxr404/Discord-Console-hacks)
 
-## Selfbot feature ?
-- Click <strong>[here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/DOCUMENT.md)</strong> to see the patched functions
-## Links [Discord.js]
+## Links Discord.js
 
 - [Website](https://discord.js.org/) ([source](https://github.com/discordjs/website))
 - [Documentation](https://discord.js.org/#/docs)
@@ -91,7 +107,7 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 - [npm](https://www.npmjs.com/package/discord.js)
 - [Related libraries](https://discord.com/developers/docs/topics/community-resources#libraries)
 
-## Contributing [Discord.js]
+## Contributing Discord.js
 
 - Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
 [documentation](https://discord.js.org/#/docs).  
@@ -101,11 +117,10 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331449)
 
 ## Credits
-- [Discord.js Teams](https://github.com/discordjs/discord.js)
-- [Discord S.C.U.M Teams](https://github.com/Merubokkusu/Discord-S.C.U.M)
-- [Yellowy dsb.js](https://github.com/TheDevYellowy/dsb.js)
+- [Discord.js](https://github.com/discordjs/discord.js)
+- [Discord S.C.U.M](https://github.com/Merubokkusu/Discord-S.C.U.M)
 - [Discord Console Hack](https://github.com/hxr404/Discord-Console-hacks)
 - And the people who submitted the issue, colab, ...
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
-- Tóm lại là module này dùng Discord.js v13 , API v9 nên chưa chết sớm đâu, cứ dùng đi =))
+Được tạo bởi người Việt Nam, dựa trên Discord API v9, đây là một trong những module selfbot được hỗ trợ tốt nhất.
