@@ -28,10 +28,8 @@
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
 
-## <strong>[1. Document Website (recommend)](https://discordjs-self-v13.cf)</strong>
-
-### <strong>[2. Document but Markdown :)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/DOCUMENT.md)</strong>
-### <strong>[3. Document but Wiki :v](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/wiki)</strong>
+### <strong>[Document Website (recommend)](https://www.discordjs-self-v13.cf)</strong>
+But if you want to see some specific notes (with pictures) you can go to [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/DOCUMENT.md) or go to [wiki](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/wiki)
 ### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 ## Checklist
