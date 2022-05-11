@@ -627,7 +627,7 @@ class Guild extends AnonymousGuild {
    * @property {?string} [query] Command name
    * @property {?number} [limit=1] Maximum number of results
    * @property {?number} [offset=0] Only return entries for actions made by this user
-   * @property {Snowflake[]} [botId] Array of bot IDs to filter by
+   * @property {Snowflake[]} botId Array of bot IDs to filter by
    */
   /**
    * Searches for guild interactions
