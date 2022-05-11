@@ -156,9 +156,7 @@ class Options extends null {
       restSweepInterval: 60,
       failIfNotExists: false,
       userAgentSuffix: [],
-      presence: {
-        status: 'invisible',
-      },
+      presence: { status: 'invisible', since: 0, activities: [], afk: false },
       sweepers: {},
       ws: {
         large_threshold: 50,
@@ -170,8 +168,25 @@ class Options extends null {
           $os: 'Windows',
           $browser: 'Discord Client',
           $device: 'ASUS ROG Phone 5',
+          // Add
+          $os_version: '10',
+          $referrer: '',
+          $referring_domain: '',
+          $referrer_current: '',
+          $referring_domain_current: '',
+          $release_channel: 'stable',
+          $client_build_number: 127546,
+          $client_event_source: null,
         },
+        // ? capabilities: 253,
         version: 9,
+        client_state: {
+          guild_hashes: {},
+          highest_last_message_id: '0',
+          read_state_version: 0,
+          user_guild_settings_version: -1,
+          user_settings_version: -1,
+        },
       },
       http: {
         headers: {

@@ -20,6 +20,7 @@ class ClientUser extends User {
     /**
      * The notes cache of the client user.
      * @type {Collection<Snowflake, Message>}
+     * @private
      */
     this.notes = new Collection();
     // This.messageMentions = new Collection();
@@ -45,16 +46,30 @@ class ClientUser extends User {
     if ('token' in data) this.client.token = data.token;
 
     // Add (Selfbot)
-    if ('premium' in data) this.nitro = NitroState[data.premium];
+    if ('purchased_flags' in data) this.nitro = NitroState[data.purchased_flags] ?? 'NONE';
+    // Key: premium = boolean;
     /**
-     * Nitro Status
+     * Nitro state of the client user.
      * @type {NitroState}
      * @see https://discord.com/developers/docs/resources/user#user-object-premium-types
      */
-    if ('purchased_flags' in data) this.nitroType = data.purchased_flags;
     if ('phone' in data) this.phoneNumber = data.phone;
+    /**
+     * Phone number of the client user.
+     * @type {?string}
+     */
     if ('nsfw_allowed' in data) this.nsfwAllowed = data.nsfw_allowed;
+    /**
+     * Whether or not the client user is allowed to send NSFW messages [iOS device].
+     * @type {?boolean}
+     */
     if ('email' in data) this.emailAddress = data.email;
+    /**
+     * Email address of the client user.
+     * @type {?string}
+     * @deprecated
+     * @see https://discord.com/developers/docs/resources/user#user-object
+     */
   }
 
   /**

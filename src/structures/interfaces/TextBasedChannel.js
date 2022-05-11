@@ -2,6 +2,7 @@
 
 /* eslint-disable import/order */
 const MessageCollector = require('../MessageCollector');
+const { Message } = require('../Message');
 const MessagePayload = require('../MessagePayload');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const { Collection } = require('@discordjs/collection');
@@ -327,6 +328,48 @@ class TextBasedChannel {
       return this.bulkDelete(msgs, filterOld);
     }
     throw new TypeError('MESSAGE_BULK_DELETE_TYPE');
+  }
+
+  /**
+   * Send Slash to this channel
+   * @param {Snowflake} botId Bot Id
+   * @param {string} commandName Command name
+   * @param {?Array<string>} args Command arguments
+   * @returns {Promise<pending>}
+   */
+  async sendSlash(botId, commandName, args = []) {
+    // If (!this.isText()) throw new Error('This channel is not text-based.');
+    if (!botId) throw new Error('Bot ID is required');
+    const user = await this.client.users.fetch(botId).catch(() => {});
+    if (!user || !user.bot || !user.applications) {
+      throw new Error('botId is not a bot or does not have an application slash command');
+    }
+    if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
+    const commandTarget = (
+      user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT')
+        ? this.guild
+          ? await this.guild.searchInteraction({
+              type: 'CHAT_INPUT',
+              query: commandName,
+              botId: [botId],
+              limit: 1,
+            })
+          : await user.applications.fetch()
+        : user.applications.cache
+    ).find(application => commandName == application.name && application.type == 'CHAT_INPUT');
+    if (!commandTarget) {
+      throw new Error(`Command ${commandName} is not found`);
+    }
+    return commandTarget.sendSlashCommand(
+      new Message(this.client, {
+        channel_id: this.id,
+        guild_id: this.guild?.id || null,
+        author: this.client.user,
+        content: '',
+        id: this.client.user.id,
+      }),
+      args,
+    );
   }
 
   static applyToClass(structure, full = false, ignore = []) {

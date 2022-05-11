@@ -608,12 +608,19 @@ class WebSocketShard extends EventEmitter {
     this.status = Status.IDENTIFYING;
 
     // Clone the identify payload and assign the token and shard info
+    client.options.ws.properties = Object.assign(client.options.ws.properties, {
+      $browser_user_agent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
+      $browser_version: '101.0.4951.54',
+    });
     const d = {
       ...client.options.ws,
-      // Intents: Intents.resolve(client.options.intents), // Remove, Req by dolfies_person [Reddit]
+      // Remove, Req by dolfies_person [Reddit]: intents: Intents.resolve(client.options.intents),
       token: client.token,
-      shard: [this.id, Number(client.options.shardCount)],
+      // Remove: shard: [this.id, Number(client.options.shardCount)],
     };
+
+    delete d.large_threshold;
 
     this.debug(`[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: ${32767} :)`);
     this.send({ op: Opcodes.IDENTIFY, d }, true);

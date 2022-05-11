@@ -539,8 +539,6 @@ export abstract class Channel extends Base {
   public isVoice(): this is BaseGuildVoiceChannel;
   public isThread(): this is ThreadChannel;
   public toString(): ChannelMention;
-  //
-  public sendSlash(botID: DiscordBotID, commandName: String<ApplicationCommand.name>, args?: Options[]): Promise;
 }
 
 export type If<T extends boolean, A, B = null> = T extends true ? A : T extends false ? B : A | B;
@@ -659,22 +657,19 @@ export class ClientUser extends User {
   public deleteAccount(password: string): Promise<this>;
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
-  // Selfbot
-  public readonly nitro: boolean;
   /**
    * Nitro Status
    * `0`: None
    * `1`: Classic
    * `2`: Boost
-   * @external
-   * https://discord.com/developers/docs/resources/user#user-object-premium-types
+   * @external https://discord.com/developers/docs/resources/user#user-object-premium-types
    */
   public readonly nitroType: NitroType;
   public readonly phoneNumber: string;
   public readonly nsfwAllowed: boolean;
   public readonly emailAddress: string;
 }
-type NitroType = 0 | 1 | 2;
+type NitroType = 'NONE' | 'CLASSIC' | 'BOOST';
 export class Options extends null {
   private constructor();
   public static defaultMakeCacheSettings: CacheWithLimitsOptions;
@@ -979,7 +974,7 @@ export class Guild extends AnonymousGuild {
   public fetchAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'>(
     options?: GuildAuditLogsFetchOptions<T>,
   ): Promise<GuildAuditLogs<T>>;
-  public searchInteraction(options?: guildSearchInteraction): Promise<void>;
+  public searchInteraction(options?: guildSearchInteraction): Promise<Collection<Snowflake, ApplicationCommand>>;
   public fetchIntegrations(): Promise<Collection<Snowflake | string, Integration>>;
   public fetchOwner(options?: BaseFetchOptions): Promise<GuildMember>;
   public fetchPreview(): Promise<GuildPreview>;
@@ -2388,6 +2383,7 @@ export class TextChannel extends BaseGuildTextChannel {
   public threads: ThreadManager<AllowedThreadTypeForTextChannel>;
   public type: 'GUILD_TEXT';
   public setRateLimitPerUser(rateLimitPerUser: number, reason?: string): Promise<TextChannel>;
+  public sendSlash(botID: Snowflake, commandName: string, args?: Options[]): Promise<undefined>;
 }
 
 export class ThreadChannel extends TextBasedChannelMixin(Channel) {

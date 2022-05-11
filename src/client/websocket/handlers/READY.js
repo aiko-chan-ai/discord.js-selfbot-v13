@@ -4,7 +4,7 @@ let ClientUser;
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
-const { Events } = require('../../../util/Constants');
+const { Events, Opcodes } = require('../../../util/Constants');
 
 async function checkUpdate() {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
@@ -47,7 +47,7 @@ module.exports = (client, { d: data }, shard) => {
 
   client.user.connectedAccounts = data.connected_accounts ?? [];
 
-  for (const [userid, note] of Object.entries(data.notes)) {
+  for (const [userid, note] of Object.entries(data.notes ?? {})) {
     client.user.notes.set(userid, note);
   }
 
@@ -82,6 +82,25 @@ module.exports = (client, { d: data }, shard) => {
     guild.shardId = shard.id;
     client.guilds._add(guild);
   }
+
+  // Receive messages in large guilds [Test]
+  client.guilds.cache.map(guild => {
+    client.ws.broadcast({
+      op: Opcodes.LAZY_REQUEST,
+      d: {
+        guild_id: guild.id,
+        typing: true,
+        threads: false,
+        activities: true,
+        thread_member_lists: [],
+        members: [],
+        channels: {
+          // [guild.channels.cache.first().id]: [[0, 99]],
+        },
+      },
+    });
+    return true;
+  });
 
   client.relationships._setup(data.relationships);
 

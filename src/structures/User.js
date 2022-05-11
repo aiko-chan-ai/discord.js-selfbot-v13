@@ -30,12 +30,49 @@ class User extends Base {
 
     this.flags = null;
 
-    // Code written by https://github.com/aiko-chan-ai
+    /**
+     * An array of object (connected accounts), containing the following properties:
+     * * type: string
+     * * id: string
+     * * name: string
+     * * verified: boolean
+     * @typedef {Object} ConnectionAccount
+     */
+
+    /**
+     * Accounts connected to this user
+     * @type {?ConnectionAccount[]}
+     */
     this.connectedAccounts = [];
+    /**
+     * Time that User has nitro (Unix Timestamp)
+     * @type {?number}
+     * @readonly
+     */
     this.premiumSince = null;
+    /**
+     * Time that User has nitro and boost server (Unix Timestamp)
+     * @type {?number}
+     * @readonly
+     */
     this.premiumGuildSince = null;
+    /**
+     * About me (User)
+     * @type {?string}
+     * @readonly
+     */
     this.bio = null;
+    /**
+     * This user is on the same servers as Client User
+     * @type {Collection<Snowflake, Object>}
+     * @readonly
+     */
     this.mutualGuilds = new Collection();
+    /**
+     * [Bot] Interaction command manager
+     * @type {?ApplicationCommandManager}
+     * @readonly
+     */
     this.applications = null;
     this._patch(data);
   }
@@ -144,7 +181,6 @@ class User extends Base {
     return this.client.user.notes.get(this.id);
   }
 
-  // Code written by https://github.com/aiko-chan-ai
   _ProfilePatch(data) {
     if (!data) return;
 
@@ -171,7 +207,7 @@ class User extends Base {
 
   /**
    * Get profile from Discord, if client is in a server with the target.
-   * <br>Code written by https://github.com/aiko-chan-ai
+   * @returns {Promise<User>} the user object
    */
   async getProfile() {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');

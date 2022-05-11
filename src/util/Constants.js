@@ -239,6 +239,10 @@ exports.Events = {
   GUILD_CREATE: 'guildCreate',
   GUILD_DELETE: 'guildDelete',
   GUILD_UPDATE: 'guildUpdate',
+  GUILD_APPLICATION_COMMANDS_UPDATE: 'guildApplicationCommandUpdate',
+  /**
+   * @private This event is not documented in the API.
+   */
   GUILD_UNAVAILABLE: 'guildUnavailable',
   GUILD_MEMBER_ADD: 'guildMemberAdd',
   GUILD_MEMBER_REMOVE: 'guildMemberRemove',
@@ -246,6 +250,9 @@ exports.Events = {
   GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable',
   GUILD_MEMBERS_CHUNK: 'guildMembersChunk',
   GUILD_MEMBER_LIST_UPDATE: 'guildMemberListUpdate',
+  /**
+   * @private This event is not documented in the API.
+   */
   GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate',
   GUILD_ROLE_CREATE: 'roleCreate',
   GUILD_ROLE_DELETE: 'roleDelete',
@@ -284,7 +291,13 @@ exports.Events = {
   WEBHOOKS_UPDATE: 'webhookUpdate',
   INTERACTION_CREATE: 'interactionCreate',
   INTERACTION_SUCCESS: 'interactionSuccess',
+  /**
+   * @private This event is not documented in the API.
+   */
   INTERACTION_FAILED: 'interactionFailed',
+  /**
+   * @private This event is not documented in the API.
+   */
   ERROR: 'error',
   WARN: 'warn',
   DEBUG: 'debug',
@@ -308,8 +321,13 @@ exports.Events = {
   GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
   RELATIONSHIP_ADD: 'relationshipAdd',
+  /**
+   * @private This event is not documented in the API.
+   */
   RELATIONSHIP_REMOVE: 'relationshipRemove',
-  /* Add */
+  /**
+   * @private This event is not documented in the API.
+   */
   UNHANDLED_PACKET: 'unhandledPacket',
 };
 

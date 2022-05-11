@@ -1,6 +1,7 @@
 'use strict';
 
 const process = require('node:process');
+const setTimeout = require('node:timers').setTimeout;
 const { Collection } = require('@discordjs/collection');
 const AnonymousGuild = require('./AnonymousGuild');
 const GuildAuditLogs = require('./GuildAuditLogs');
@@ -32,6 +33,7 @@ const {
   MFALevels,
   PremiumTiers,
   Opcodes,
+  Events,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
@@ -619,31 +621,29 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Search slash command / message context
-   * @param {guildSearchInteraction} options
-   * {
-   *
-   *  type: 1 | 2 | 3, [CHAT_INPUT | USER | MESSAGE]
-   *
-   *  query: string | undefined,
-   *
-   *  limit: number | 1,
-   *
-   *  offset: number | 0,
-   *
-   *  botID: [Snowflake] | undefined,
-   *
-   * }
+   * Options for guildSearchInteraction
+   * @typedef {Object} GuildSearchInteractionOptions
+   * @property {?number|string} [type=1] {@link ApplicationCommandTypes}
+   * @property {?string} [query] Command name
+   * @property {?number} [limit=1] Maximum number of results
+   * @property {?number} [offset=0] Only return entries for actions made by this user
+   * @property {Snowflake[]} [botId] Array of bot IDs to filter by
+   */
+  /**
+   * Searches for guild interactions
+   * @param {GuildSearchInteractionOptions} options Options for the search
+   * @returns {Promise}
    */
   searchInteraction(options = {}) {
-    let { query, type, limit, offset, botID } = Object.assign(
-      { query: undefined, type: 1, limit: 1, offset: 0, botID: [] },
+    let { query, type, limit, offset, botId } = Object.assign(
+      { query: undefined, type: 1, limit: 1, offset: 0, botId: [] },
       options,
     );
     if (typeof type === 'string') {
       if (type == 'CHAT_INPUT') type = 1;
       else if (type == 'USER') type = 2;
       else if (type == 'MESSAGE') type = 3;
+      // MODAL_SUMMIT :))
     }
     if (type < 1 || type > 3) {
       throw new RangeError('Type must be 1, 2, 3');
@@ -660,8 +660,24 @@ class Guild extends AnonymousGuild {
         offset,
         type,
         query: query,
-        command_ids: Array.isArray(botID) ? botID : undefined,
+        command_ids: Array.isArray(botId) ? botId : undefined,
       },
+    });
+    return new Promise((resolve, reject) => {
+      const handler = application => {
+        timeout.refresh();
+        clearTimeout(timeout);
+        this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
+        this.client.decrementMaxListeners();
+        resolve(application.slice(0, limit));
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('GUILD_APPLICATION_COMMANDS_SEARCH_TIMEOUT'));
+      }, 10000).unref();
+      this.client.incrementMaxListeners();
+      this.client.on(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
     });
   }
 
