@@ -1,13 +1,7 @@
 name: Bug report
 description: Report incorrect or unexpected behavior of a package
-labels: [bug, need repro]
+labels: [bug]
 body:
-  - type: input
-    attributes:
-      label: Summary
-      description: A simple summary of your bug report
-    validations:
-      required: true
   - type: textarea
     id: description
     attributes:
