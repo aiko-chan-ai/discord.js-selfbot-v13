@@ -178,7 +178,7 @@ class Invite extends Base {
       this.channel = this.client.channels.cache.get(data.channel_id);
     }
 
-    if ('channel' in data) {
+    if ('channel' in data && data.channel) {
       /**
        * The channel this invite is for
        * @type {Channel}
@@ -324,6 +324,7 @@ class Invite extends Base {
    * });
    */
   async acceptInvite(autoVerify = true) {
+    if (!this.guild) throw new Error('INVITE_NO_GUILD');
     await this.client.api.invites(this.code).post({});
     if (autoVerify) {
       const getForm = await this.client.api

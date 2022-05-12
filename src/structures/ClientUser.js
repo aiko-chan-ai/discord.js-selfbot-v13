@@ -1,11 +1,11 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const Invite = require('./Invite');
 const User = require('./User');
 const { Util } = require('..');
 const { HypeSquadOptions, Opcodes, NitroState } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
-
 /**
  * Represents the logged in client's Discord user.
  * @extends {User}
@@ -409,6 +409,30 @@ class ClientUser extends User {
    */
   setAFK(afk = true, shardId) {
     return this.setPresence({ afk, shardId });
+  }
+
+  /**
+   * Create an invite [Friend Invites]
+   * @param {CreateInviteOptions} [options={}] The options for creating the invite [maxAge and maxUses are available]
+   * @returns {Promise<Invite>}
+   * @see https://github.com/13-05/hidden-disc-docs#js-snippet-for-creating-friend-invites
+   * @example
+   * // Create an invite to a selected channel
+   * client.user.getInvite({ maxAge: 0, maxUses: 0 });
+   *   .then(console.log)
+   *   .catch(console.error);
+   */
+  async getInvite({ maxAge = 86400, maxUses = 0 } = {}) {
+    const data = await this.client.api.users['@me'].invites.post({
+      data: {
+        validate: null,
+        max_age: maxAge,
+        max_uses: maxUses,
+        target_type: 2,
+        temporary: false,
+      },
+    });
+    return new Invite(this.client, data);
   }
 }
 

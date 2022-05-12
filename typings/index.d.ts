@@ -657,6 +657,7 @@ export class ClientUser extends User {
   public deleteAccount(password: string): Promise<this>;
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
+  public getInvite(options?: CreateInviteOptions): Promise<Invite>;
   /**
    * Nitro Status
    * `0`: None
