@@ -44,6 +44,9 @@ class APIRequest {
       'User-Agent': this.fullUserAgent,
     };
 
+    // Edit UA
+    this.client.options.http.headers['User-Agent'] = this.fullUserAgent;
+
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
     if (this.options.reason) headers['X-Audit-Log-Reason'] = encodeURIComponent(this.options.reason);
     if (this.options.headers) headers = Object.assign(headers, this.options.headers);

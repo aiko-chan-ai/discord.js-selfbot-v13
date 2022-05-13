@@ -80,9 +80,9 @@ exports.localeObject = {
   'zh-TW': 'TAIWAN_CHINESE',
   ko: 'KOREAN',
 };
-
+// No used
 exports.UserAgent = listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
-
+// Useful
 exports.randomUA = () => listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
 
 exports.WSCodes = {
