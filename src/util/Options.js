@@ -191,11 +191,10 @@ class Options extends null {
       http: {
         headers: {
           Accept: '*/*',
-          // 'Accept-Encoding': 'gzip, deflate, br', => cause axios bug
           'Accept-Language': 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
-          Referer: 'https://discord.com/channels/@me',
+          // Referer: 'https://discord.com/channels/@me',
           'Sec-Ch-Ua': '"Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100',
           'Sec-Ch-Ua-Mobile': '?0',
           'Sec-Ch-Ua-Platform': '"Windows"',
@@ -219,7 +218,7 @@ class Options extends null {
             'ascii',
           ).toString('base64')}`,
           'X-Discord-Locale': 'en-US',
-          Origin: 'https://discord.com',
+          // Origin: 'https://discord.com', Webhook Error
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9004 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36',
         },

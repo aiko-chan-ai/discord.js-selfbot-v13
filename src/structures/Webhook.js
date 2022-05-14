@@ -198,6 +198,7 @@ class Webhook {
       files,
       query: { thread_id: messagePayload.options.threadId, wait: true },
       auth: false,
+      versioned: true,
     });
     return this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
   }
