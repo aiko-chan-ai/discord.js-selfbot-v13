@@ -171,6 +171,18 @@ const Messages = {
   MESSAGE_EMBED_LINK_LENGTH: 'Message content with embed link length is too long',
   GUILD_MEMBERS_FETCH: msg => `${msg}`,
   USER_NOT_STREAMING: 'User is not streaming',
+  // Djs v13.7
+  TEXT_INPUT_CUSTOM_ID: 'TextInputComponent customId must be a string',
+  TEXT_INPUT_LABEL: 'TextInputComponent label must be a string',
+  TEXT_INPUT_PLACEHOLDER: 'TextInputComponent placeholder must be a string',
+  TEXT_INPUT_VALUE: 'TextInputComponent value must be a string',
+
+  MODAL_CUSTOM_ID: 'Modal customId must be a string',
+  MODAL_TITLE: 'Modal title must be a string',
+
+  MODAL_SUBMIT_INTERACTION_FIELD_NOT_FOUND: customId => `Required field with custom id "${customId}" not found.`,
+  MODAL_SUBMIT_INTERACTION_FIELD_TYPE: (customId, type, expected) =>
+    `Field with custom id "${customId}" is of type: ${type}; expected ${expected}.`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

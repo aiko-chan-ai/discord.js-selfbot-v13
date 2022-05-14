@@ -3,7 +3,15 @@
 const Team = require('./Team');
 const Application = require('./interfaces/Application');
 const { Error } = require('../errors/DJSError');
+const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const ApplicationFlags = require('../util/ApplicationFlags');
+const Permissions = require('../util/Permissions');
+
+/**
+ * @typedef {Object} ClientApplicationInstallParams
+ * @property {InviteScope[]} scopes The scopes to add the application to the server with
+ * @property {Readonly<Permissions>} permissions The permissions this bot will request upon joining
+ */
 
 /**
  * Represents a Client OAuth2 Application.
@@ -17,11 +25,40 @@ class ClientApplication extends Application {
      * The application command manager for this application
      * @type {ApplicationCommandManager}
      */
-    this.commands = null; // Selfbot
+    this.commands = new ApplicationCommandManager(this.client);
   }
 
   _patch(data) {
     super._patch(data);
+
+    /**
+     * The tags this application has (max of 5)
+     * @type {string[]}
+     */
+    this.tags = data.tags ?? [];
+
+    if ('install_params' in data) {
+      /**
+       * Settings for this application's default in-app authorization
+       * @type {?ClientApplicationInstallParams}
+       */
+      this.installParams = {
+        scopes: data.install_params.scopes,
+        permissions: new Permissions(data.install_params.permissions).freeze(),
+      };
+    } else {
+      this.installParams ??= null;
+    }
+
+    if ('custom_install_url' in data) {
+      /**
+       * This application's custom installation URL
+       * @type {?string}
+       */
+      this.customInstallURL = data.custom_install_url;
+    } else {
+      this.customInstallURL = null;
+    }
 
     if ('flags' in data) {
       /**

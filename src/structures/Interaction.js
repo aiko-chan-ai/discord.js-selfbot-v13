@@ -76,15 +76,50 @@ class Interaction extends Base {
     this.memberPermissions = data.member?.permissions ? new Permissions(data.member.permissions).freeze() : null;
 
     /**
+     * A Discord locale string, possible values are:
+     * * en-US (English, US)
+     * * en-GB (English, UK)
+     * * bg (Bulgarian)
+     * * zh-CN (Chinese, China)
+     * * zh-TW (Chinese, Taiwan)
+     * * hr (Croatian)
+     * * cs (Czech)
+     * * da (Danish)
+     * * nl (Dutch)
+     * * fi (Finnish)
+     * * fr (French)
+     * * de (German)
+     * * el (Greek)
+     * * hi (Hindi)
+     * * hu (Hungarian)
+     * * it (Italian)
+     * * ja (Japanese)
+     * * ko (Korean)
+     * * lt (Lithuanian)
+     * * no (Norwegian)
+     * * pl (Polish)
+     * * pt-BR (Portuguese, Brazilian)
+     * * ro (Romanian, Romania)
+     * * ru (Russian)
+     * * es-ES (Spanish)
+     * * sv-SE (Swedish)
+     * * th (Thai)
+     * * tr (Turkish)
+     * * uk (Ukrainian)
+     * * vi (Vietnamese)
+     * @see {@link https://discord.com/developers/docs/reference#locales}
+     * @typedef {string} Locale
+     */
+
+    /**
      * The locale of the user who invoked this interaction
-     * @type {string}
-     * @see {@link https://discord.com/developers/docs/dispatch/field-values#predefined-field-values-accepted-locales}
+     * @type {Locale}
      */
     this.locale = data.locale;
 
     /**
      * The preferred locale from the guild this interaction was sent in
-     * @type {?string}
+     * @type {?Locale}
      */
     this.guildLocale = data.guild_locale ?? null;
   }
@@ -174,6 +209,14 @@ class Interaction extends Base {
   }
 
   /**
+   * Indicates whether this interaction is a {@link ModalSubmitInteraction}
+   * @returns {boolean}
+   */
+  isModalSubmit() {
+    return InteractionTypes[this.type] === InteractionTypes.MODAL_SUBMIT;
+  }
+
+  /**
    * Indicates whether this interaction is a {@link UserContextMenuInteraction}
    * @returns {boolean}
    */
@@ -224,6 +267,16 @@ class Interaction extends Base {
     return (
       InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
       MessageComponentTypes[this.componentType] === MessageComponentTypes.SELECT_MENU
+    );
+  }
+
+  /**
+   * Indicates whether this interaction can be replied to.
+   * @returns {boolean}
+   */
+  isRepliable() {
+    return ![InteractionTypes.PING, InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE].includes(
+      InteractionTypes[this.type],
     );
   }
 }

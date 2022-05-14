@@ -156,6 +156,8 @@ exports.Endpoints = {
         `${root}/stickers/${stickerId}.${stickerFormat === 'LOTTIE' ? 'json' : 'png'}`,
       RoleIcon: (roleId, hash, format = 'webp', size) =>
         makeImageUrl(`${root}/role-icons/${roleId}/${hash}`, { size, format }),
+      guildScheduledEventCover: (scheduledEventId, coverHash, format, size) =>
+        makeImageUrl(`${root}/guild-events/${scheduledEventId}/${coverHash}`, { size, format }),
     };
   },
   invite: (root, code, eventId) => (eventId ? `${root}/${code}?event=${eventId}` : `${root}/${code}`),
@@ -647,6 +649,7 @@ exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHI
  * * `GUILD_PUBLIC_THREAD` - a guild text channel's public thread channel
  * * `GUILD_PRIVATE_THREAD` - a guild text channel's private thread channel
  * * `GUILD_STAGE_VOICE` - a guild stage voice channel
+ * * `GUILD_DIRECTORY` - the channel in a hub containing guilds
  * * `UNKNOWN` - a generic channel of unknown type, could be Channel or GuildChannel
  * @typedef {string} ChannelType
  * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-channel-types}
@@ -665,6 +668,7 @@ exports.ChannelTypes = createEnum([
   'GUILD_PUBLIC_THREAD',
   'GUILD_PRIVATE_THREAD',
   'GUILD_STAGE_VOICE',
+  'GUILD_DIRECTORY',
 ]);
 
 /**
@@ -674,6 +678,13 @@ exports.ChannelTypes = createEnum([
  * * NewsChannel
  * * ThreadChannel
  * @typedef {DMChannel|TextChannel|NewsChannel|ThreadChannel} TextBasedChannels
+ */
+
+/**
+ * Data that resolves to give a text-based channel. This can be:
+ * * A text-based channel
+ * * A snowflake
+ * @typedef {TextBasedChannels|Snowflake} TextBasedChannelsResolvable
  */
 
 /**
@@ -1160,6 +1171,7 @@ exports.ApplicationCommandOptionTypes = createEnum([
   'ROLE',
   'MENTIONABLE',
   'NUMBER',
+  'ATTACHMENT',
 ]);
 
 /**
@@ -1186,6 +1198,7 @@ exports.InteractionTypes = createEnum([
   'APPLICATION_COMMAND',
   'MESSAGE_COMPONENT',
   'APPLICATION_COMMAND_AUTOCOMPLETE',
+  'MODAL_SUBMIT',
 ]);
 
 /**
@@ -1209,6 +1222,7 @@ exports.InteractionResponseTypes = createEnum([
   'DEFERRED_MESSAGE_UPDATE',
   'UPDATE_MESSAGE',
   'APPLICATION_COMMAND_AUTOCOMPLETE_RESULT',
+  'MODAL',
 ]);
 
 /**
@@ -1216,10 +1230,11 @@ exports.InteractionResponseTypes = createEnum([
  * * ACTION_ROW
  * * BUTTON
  * * SELECT_MENU
+ * * TEXT_INPUT
  * @typedef {string} MessageComponentType
  * @see {@link https://discord.com/developers/docs/interactions/message-components#component-object-component-types}
  */
-exports.MessageComponentTypes = createEnum([null, 'ACTION_ROW', 'BUTTON', 'SELECT_MENU']);
+exports.MessageComponentTypes = createEnum([null, 'ACTION_ROW', 'BUTTON', 'SELECT_MENU', 'TEXT_INPUT']);
 
 /**
  * The style of a message button
@@ -1261,6 +1276,15 @@ exports.NSFWLevels = createEnum(['DEFAULT', 'EXPLICIT', 'SAFE', 'AGE_RESTRICTED'
  * @see {@link https://discord.com/developers/docs/resources/stage-instance#stage-instance-object-privacy-level}
  */
 exports.PrivacyLevels = createEnum([null, 'PUBLIC', 'GUILD_ONLY']);
+
+/**
+ * The style of a text input component
+ * * SHORT
+ * * PARAGRAPH
+ * @typedef {string} TextInputStyle
+ * @see {@link https://discord.com/developers/docs/interactions/message-components#text-inputs-text-input-styles}
+ */
+exports.TextInputStyles = createEnum([null, 'SHORT', 'PARAGRAPH']);
 
 /**
  * Privacy level of a {@link GuildScheduledEvent} object:
@@ -1323,6 +1347,15 @@ exports.GuildScheduledEventStatuses = createEnum([null, 'SCHEDULED', 'ACTIVE', '
  */
 exports.GuildScheduledEventEntityTypes = createEnum([null, 'STAGE_INSTANCE', 'VOICE', 'EXTERNAL']);
 /* eslint-enable max-len */
+/**
+ * The camera video quality mode of a {@link VoiceChannel}:
+ * * AUTO
+ * * FULL
+ * @typedef {string} VideoQualityMode
+ * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-video-quality-modes}
+ */
+exports.VideoQualityModes = createEnum([null, 'AUTO', 'FULL']);
+
 exports.HypeSquadOptions = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
 
 exports._cleanupSymbol = Symbol('djsCleanup');
@@ -1376,6 +1409,7 @@ function createEnum(keys) {
  * @property {StickerFormatType} StickerFormatTypes The value set for a sticker's format type.
  * @property {StickerType} StickerTypes The value set for a sticker's type.
  * @property {VerificationLevel} VerificationLevels The value set for the verification levels for a guild.
+ * @property {VideoQualityMode} VideoQualityModes The camera video quality mode for a {@link VoiceChannel}.
  * @property {WebhookType} WebhookTypes The value set for a webhook's type.
  * @property {WSEventType} WSEvents The type of a WebSocket message event.
  */

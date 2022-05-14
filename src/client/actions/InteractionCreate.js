@@ -6,6 +6,7 @@ const AutocompleteInteraction = require('../../structures/AutocompleteInteractio
 const ButtonInteraction = require('../../structures/ButtonInteraction');
 const CommandInteraction = require('../../structures/CommandInteraction');
 const MessageContextMenuInteraction = require('../../structures/MessageContextMenuInteraction');
+const ModalSubmitInteraction = require('../../structures/ModalSubmitInteraction');
 const SelectMenuInteraction = require('../../structures/SelectMenuInteraction');
 const UserContextMenuInteraction = require('../../structures/UserContextMenuInteraction');
 const { Events, InteractionTypes, MessageComponentTypes, ApplicationCommandTypes } = require('../../util/Constants');
@@ -17,8 +18,8 @@ class InteractionCreateAction extends Action {
     const client = this.client;
 
     // Resolve and cache partial channels for Interaction#channel getter
-    this.getChannel(data);
-
+    const channel = this.getChannel(data);
+    // Do not emit this for interactions that cache messages that are non-text-based.
     let InteractionType;
     switch (data.type) {
       case InteractionTypes.APPLICATION_COMMAND:
@@ -41,6 +42,7 @@ class InteractionCreateAction extends Action {
         }
         break;
       case InteractionTypes.MESSAGE_COMPONENT:
+        if (channel && !channel.isText()) return;
         switch (data.data.component_type) {
           case MessageComponentTypes.BUTTON:
             InteractionType = ButtonInteraction;
@@ -58,6 +60,9 @@ class InteractionCreateAction extends Action {
         break;
       case InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE:
         InteractionType = AutocompleteInteraction;
+        break;
+      case InteractionTypes.MODAL_SUBMIT:
+        InteractionType = ModalSubmitInteraction;
         break;
       default:
         client.emit(

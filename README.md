@@ -14,6 +14,8 @@
 
 ## About
 
+<strong>Welcome to `discord.js-selfbot-v13@v2`, based on `discord.js@13.7.0`</strong>
+
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
 
@@ -28,6 +30,7 @@
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
 
+
 ### <strong>[Document Website (recommend)](https://www.discordjs-self-v13.cf)</strong>
 But if you want to see some specific notes (with pictures) you can go to [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/DOCUMENT.md) or go to [wiki](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/wiki)
 ### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
@@ -39,7 +42,7 @@ But if you want to see some specific notes (with pictures) you can go to [here](
 - [X] Profile Editing (Name, Status, Avatar, Bio, Rich-Presence, etc.)
 - [X] Interactions (slash commands, buttons, etc.)
 - [X] Voice Channel (Join, Leave, Speak, etc.)
-- [ ] Improve documentation (maybe)
+- [X] Documentation
 - [ ] Add more guild http api wraps
 - [ ] Audio / Video call 
 - [ ] Everything
@@ -55,7 +58,7 @@ npm install discord.js-selfbot-v13@latest
 
 ```js
 const { Client } = require('discord.js-selfbot-v13');
-const client = new Client(); // Intents and Partials are already set so you don't have to define them
+const client = new Client(); // All partials are loaded automatically
 
 client.on('ready', async () => {
   console.log(`${client.user.username} is ready!`);

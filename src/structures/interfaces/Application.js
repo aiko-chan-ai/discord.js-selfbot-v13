@@ -1,10 +1,13 @@
 'use strict';
 
+const process = require('node:process');
 const { ClientApplicationAssetTypes, Endpoints } = require('../../util/Constants');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const Base = require('../Base');
 
 const AssetTypes = Object.keys(ClientApplicationAssetTypes);
+
+let deprecationEmittedForFetchAssets = false;
 
 /**
  * Represents an OAuth2 Application.
@@ -13,10 +16,7 @@ const AssetTypes = Object.keys(ClientApplicationAssetTypes);
 class Application extends Base {
   constructor(client, data) {
     super(client);
-
-    if (data) {
-      this._patch(data);
-    }
+    this._patch(data);
   }
 
   _patch(data) {
@@ -106,8 +106,18 @@ class Application extends Base {
   /**
    * Gets the application's rich presence assets.
    * @returns {Promise<Array<ApplicationAsset>>}
+   * @deprecated This will be removed in the next major as it is unsupported functionality.
    */
   async fetchAssets() {
+    if (!deprecationEmittedForFetchAssets) {
+      process.emitWarning(
+        'Application#fetchAssets is deprecated as it is unsupported and will be removed in the next major version.',
+        'DeprecationWarning',
+      );
+
+      deprecationEmittedForFetchAssets = true;
+    }
+
     const assets = await this.client.api.oauth2.applications(this.id).assets.get();
     return assets.map(a => ({
       id: a.id,
