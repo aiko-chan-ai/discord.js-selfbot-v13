@@ -105,12 +105,17 @@ class DMChannel extends Channel {
    */
   call(options = {}) {
     return new Promise((resolve, reject) => {
-      this.client.api.channels(this.id).call.ring.post({
-        usingApplicationJson: true,
-        data: {
-          recipients: null,
-        },
-      });
+      this.client.api
+        .channels(this.id)
+        .call.ring.post({
+          usingApplicationJson: true,
+          data: {
+            recipients: null,
+          },
+        })
+        .catch(e => {
+          console.error('Emit ring error:', e.message);
+        });
       const connection = joinVoiceChannel({
         channelId: this.id,
         guildId: null,
@@ -141,7 +146,6 @@ class DMChannel extends Channel {
             self_video: false,
           };
           if (this.shard.status !== Status.READY) return false;
-          console.log('DM channel send payload', data);
           this.shard.send(data);
           return true;
         },
