@@ -43,8 +43,9 @@ But if you want to see some specific notes (with pictures) you can go to [here](
 - [X] Interactions (slash commands, buttons, etc.)
 - [X] Voice Channel (Join, Leave, Speak, etc.)
 - [X] Documentation
+- [X] Audio call
 - [ ] Add more guild http api wraps
-- [ ] Audio / Video call 
+- [ ] Video stream
 - [ ] Everything
 
 ## Installation
