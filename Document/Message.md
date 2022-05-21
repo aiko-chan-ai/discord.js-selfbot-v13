@@ -3,7 +3,7 @@
 - [Embed](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md#messageembed-)
 
 ## Interaction
-<details>
+<details open>
 <summary>Fetch Commands data</summary>
 
 ```js
@@ -27,7 +27,7 @@ await bot.applications.fetch(
 );
 ```
 </details>
-<details>
+<details open>
 <summary>Button Click</summary>
 
 ```js
@@ -36,7 +36,7 @@ await Button.click(Message); // Message has button (v1)
 await message.clickButton(buttonID); // Message has button (v2)
 ```
 </details>
-<details>
+<details open>
 <summary>Message Select Menu</summary>
 
 ```js
@@ -46,7 +46,7 @@ await message.selectMenu(menuID, options) // If message has >= 2 menu
 await message.selectMenu(options) // If message has 1 menu
 ```
 </details>
-<details>
+<details open>
 <summary>Slash Command</summary>
 
 ```js
@@ -61,7 +61,7 @@ await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2'
 // => await Channel.sendSlash(botID, 'role', ['add', '12345678987654321', '98765432123456789']);
 ```
 </details>
-<details>
+<details open>
 <summary>Message Context Command</summary>
 
 ```js
@@ -70,7 +70,7 @@ await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2'
 await message.contextMenu(botID, commandName);
 ```
 </details>
-<details>
+<details open>
 <summary>Issue ?</summary>
 
 - It has some minor bugs.
@@ -87,7 +87,7 @@ await message.contextMenu(botID, commandName);
 ## MessageEmbed ?
 - Because Discord has removed the ability to send Embeds in its API, that means MessageEmbed is unusable. But I have created a constructor that uses oEmbed with help [from this site](https://www.reddit.com/r/discordapp/comments/82p8i6/a_basic_tutorial_on_how_to_get_the_most_out_of/)
 
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 

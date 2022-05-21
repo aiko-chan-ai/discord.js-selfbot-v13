@@ -5,7 +5,7 @@
 - [Community](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Guild.md#set-community)
 
 ## Discord Guild set position
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 Code:
@@ -24,7 +24,7 @@ Guild {}
 </details>
 
 ## Group DM
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 Code:
@@ -56,7 +56,7 @@ await groupDM.delete(); // Leave
 
 
 ## Join Guild using Invite
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 ```js
@@ -72,7 +72,7 @@ await client.fetchInvite('code').then(async invite => {
 </details>
 
 ## Set Community
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 ```js

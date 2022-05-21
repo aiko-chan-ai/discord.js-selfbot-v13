@@ -6,7 +6,7 @@
 - [Other](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/User.md#user--clientuser-method)
 
 ## User Settings
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 ```js
@@ -61,7 +61,7 @@ client.setting.setCustomStatus();
 </details>
 
 ## Discord User Info
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 Code:
@@ -96,7 +96,7 @@ User {
 </details>
 
 ## Discord User Friend / Blocked
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 Code:
@@ -137,7 +137,7 @@ User {
 
 ## Custom Status and RPC
 
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 Custom Status
 
@@ -267,7 +267,7 @@ And you can change the status 5 times every 20 seconds!
 </details>
 
 ## User & ClientUser Method
-<details>
+<details open>
 <summary><strong>Click to show</strong></summary>
 
 ```js
