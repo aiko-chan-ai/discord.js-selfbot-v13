@@ -132,6 +132,7 @@ class VoiceState extends Base {
    * @readonly
    */
   get member() {
+    if (!this.guild?.id) return null;
     return this.guild.members.cache.get(this.id) ?? null;
   }
 
@@ -141,6 +142,7 @@ class VoiceState extends Base {
    * @readonly
    */
   get channel() {
+    if (!this.guild?.id) return null;
     return this.guild.channels.cache.get(this.channelId) ?? null;
   }
 
@@ -169,6 +171,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setMute(mute = true, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { mute }, reason);
   }
 
@@ -179,6 +182,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setDeaf(deaf = true, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { deaf }, reason);
   }
 
@@ -188,6 +192,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   disconnect(reason) {
+    if (!this.guild?.id) return this.callVoice?.disconnect();
     return this.setChannel(null, reason);
   }
 
@@ -199,6 +204,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setChannel(channel, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { channel }, reason);
   }
 
@@ -215,16 +221,18 @@ class VoiceState extends Base {
    * @returns {Promise<void>}
    */
   async setRequestToSpeak(request = true) {
-    if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
+    if (this.guild?.id) {
+      if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
 
-    if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
+      if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
 
-    await this.client.api.guilds(this.guild.id, 'voice-states', '@me').patch({
-      data: {
-        channel_id: this.channelId,
-        request_to_speak_timestamp: request ? new Date().toISOString() : null,
-      },
-    });
+      await this.client.api.guilds(this.guild.id, 'voice-states', '@me').patch({
+        data: {
+          channel_id: this.channelId,
+          request_to_speak_timestamp: request ? new Date().toISOString() : null,
+        },
+      });
+    }
   }
 
   /**
@@ -245,18 +253,20 @@ class VoiceState extends Base {
    * @returns {Promise<void>}
    */
   async setSuppressed(suppressed = true) {
-    if (typeof suppressed !== 'boolean') throw new TypeError('VOICE_STATE_INVALID_TYPE', 'suppressed');
+    if (this.guild?.id) {
+      if (typeof suppressed !== 'boolean') throw new TypeError('VOICE_STATE_INVALID_TYPE', 'suppressed');
 
-    if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
+      if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
 
-    const target = this.client.user.id === this.id ? '@me' : this.id;
+      const target = this.client.user.id === this.id ? '@me' : this.id;
 
-    await this.client.api.guilds(this.guild.id, 'voice-states', target).patch({
-      data: {
-        channel_id: this.channelId,
-        suppress: suppressed,
-      },
-    });
+      await this.client.api.guilds(this.guild.id, 'voice-states', target).patch({
+        data: {
+          channel_id: this.channelId,
+          suppress: suppressed,
+        },
+      });
+    }
   }
 
   /**
@@ -264,6 +274,8 @@ class VoiceState extends Base {
    * @returns {string} URL Image of the user's streaming video
    */
   async getPreview() {
+    if (!this.guild?.id) return null;
+
     if (!this.streaming) throw new Error('USER_NOT_STREAMING');
     // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
     const data = await this.client.api.streams[

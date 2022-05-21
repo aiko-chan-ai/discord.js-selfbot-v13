@@ -3,6 +3,7 @@
 const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
+const { getVoiceConnection } = require('@discordjs/voice');
 const RichPresence = require('discord-rpc-contructor');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
@@ -15,6 +16,7 @@ const ClientUserSettingManager = require('../managers/ClientUserSettingManager')
 const GuildManager = require('../managers/GuildManager');
 const RelationshipsManager = require('../managers/RelationshipsManager');
 const UserManager = require('../managers/UserManager');
+const VoiceStateManager = require('../managers/VoiceStateManager');
 const ShardClientUtil = require('../sharding/ShardClientUtil');
 const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
@@ -112,6 +114,8 @@ class Client extends BaseClient {
      * @type {ClientVoiceManager}
      */
     this.voice = new ClientVoiceManager(this);
+
+    this.voiceStates = new VoiceStateManager({ client: this });
 
     /**
      * Shard helpers for the client (only if the process was spawned from a {@link ShardingManager})
@@ -249,6 +253,15 @@ class Client extends BaseClient {
   }
 
   /**
+   * Get connection to current call
+   * @type {?VoiceConnection}
+   * @readonly
+   */
+  get callVoice() {
+    return getVoiceConnection(null);
+  }
+
+  /**
    * Update Cloudflare Cookie and Discord Fingerprint
    */
   async updateCookie() {
@@ -335,7 +348,6 @@ class Client extends BaseClient {
    * client.QRLogin();
    */
   QRLogin(debug = false) {
-    console.log(this.options);
     const QR = new DiscordAuthWebsocket(this, debug);
     this.emit(Events.DEBUG, `Preparing to connect to the gateway`, QR);
     return QR;

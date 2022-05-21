@@ -1,8 +1,10 @@
 'use strict';
 
+const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const MessageManager = require('../managers/MessageManager');
+const { Status } = require('../util/Constants');
 
 /**
  * Represents a direct message channel between two users.
@@ -97,17 +99,57 @@ class DMChannel extends Channel {
   // Testing feature: Call
   // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
   /**
-   * Call this DMChannel. [TEST only]
-   * @returns {Promise<void>}
+   * Call this DMChannel. Return discordjs/voice VoiceConnection
+   * @param {Object} options Options for the call (selfDeaf, selfMute: Boolean)
+   * @returns {Promise<VoiceConnection>}
    */
-  call() {
-    console.log('TEST only, and not working !');
-    return this.client.api.channels(this.id).call.ring.post({
-      usingApplicationJson: true,
-      data: {
-        recipients: null,
-      },
+  call(options = {}) {
+    return new Promise((resolve, reject) => {
+      this.client.api.channels(this.id).call.ring.post({
+        usingApplicationJson: true,
+        data: {
+          recipients: null,
+        },
+      });
+      const connection = joinVoiceChannel({
+        channelId: this.id,
+        guildId: null,
+        adapterCreator: this.voiceAdapterCreator,
+        selfDeaf: options.selfDeaf ?? false,
+        selfMute: options.selfMute ?? false,
+      });
+      entersState(connection, VoiceConnectionStatus.Ready, 30000)
+        .then(connection => {
+          resolve(connection);
+        })
+        .catch(err => {
+          connection.destroy();
+          reject(err);
+        });
     });
+  }
+  get shard() {
+    return this.client.ws.shards.first();
+  }
+  get voiceAdapterCreator() {
+    return methods => {
+      this.client.voice.adapters.set(this.id, methods);
+      return {
+        sendPayload: data => {
+          data.d = {
+            ...data.d,
+            self_video: false,
+          };
+          if (this.shard.status !== Status.READY) return false;
+          console.log('DM channel send payload', data);
+          this.shard.send(data);
+          return true;
+        },
+        destroy: () => {
+          this.client.voice.adapters.delete(this.id);
+        },
+      };
+    };
   }
 }
 

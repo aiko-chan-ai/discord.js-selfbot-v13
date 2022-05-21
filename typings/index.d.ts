@@ -625,6 +625,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
+  public readonly callVoice: VoiceConnection | undefined;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
@@ -940,6 +941,9 @@ export class DMChannel extends TextBasedChannelMixin(Channel, ['bulkDelete']) {
   public recipient: User;
   public type: 'DM';
   public fetch(force?: boolean): Promise<this>;
+  public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
+  public call(options?: object): Promise<VoiceConnection>;
+  public readonly shard: WebSocketShard;
 }
 
 export class Emoji extends Base {
@@ -2068,6 +2072,9 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, ['bulk
   public getInvite(): Promise<Invite>;
   public fetchInvite(force: boolean): Promise<PartialGroupDMChannel.invites>;
   public removeInvite(invite: Invite): Promise<PartialGroupDMChannel>;
+  public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
+  public call(options?: object): Promise<VoiceConnection>;
+  public readonly shard: WebSocketShard;
 }
 
 export class PermissionOverwrites extends Base {
@@ -4208,6 +4215,7 @@ export interface ClientOptions {
   checkUpdate?: boolean;
   readyStatus?: boolean;
   autoCookie?: boolean;
+  patchVoice?: boolean;
 }
 
 // end copy

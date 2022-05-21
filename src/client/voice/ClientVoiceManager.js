@@ -24,19 +24,26 @@ class ClientVoiceManager {
     client.on(Events.SHARD_DISCONNECT, (_, shardId) => {
       for (const [guildId, adapter] of this.adapters.entries()) {
         if (client.guilds.cache.get(guildId)?.shardId === shardId) {
-          adapter.destroy();
+          // Because it has 1 shard => adapter.destroy();
         }
+        adapter.destroy();
       }
     });
   }
 
   onVoiceServer(payload) {
-    this.adapters.get(payload.guild_id)?.onVoiceServerUpdate(payload);
+    if (payload.guild_id) {
+      this.adapters.get(payload.guild_id)?.onVoiceServerUpdate(payload);
+    } else {
+      this.adapters.get(payload.channel_id)?.onVoiceServerUpdate(payload);
+    }
   }
 
   onVoiceStateUpdate(payload) {
     if (payload.guild_id && payload.session_id && payload.user_id === this.client.user?.id) {
       this.adapters.get(payload.guild_id)?.onVoiceStateUpdate(payload);
+    } else if (payload.channel_id && payload.session_id && payload.user_id === this.client.user?.id) {
+      this.adapters.get(payload.channel_id)?.onVoiceStateUpdate(payload);
     }
   }
 }

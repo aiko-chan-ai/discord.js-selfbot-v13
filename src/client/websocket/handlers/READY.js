@@ -1,10 +1,12 @@
 'use strict';
 
 let ClientUser;
+const { VoiceConnection, VoiceConnectionStatus } = require('@discordjs/voice');
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
+const { Networking } = require('../../../util/Voice');
 
 async function checkUpdate() {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
@@ -29,9 +31,42 @@ module.exports = (client, { d: data }, shard) => {
     try {
       checkUpdate();
     } catch (e) {
-      console.log(e);
+      console.log(`${chalk.redBright('[Fail]')} Check Update error:`, e.message);
     }
   }
+
+  if (client.options.patchVoice) {
+    /* eslint-disable */
+    VoiceConnection.prototype.configureNetworking = function () {
+      const { server, state } = this.packets;
+      if (!server || !state || this.state.status === VoiceConnectionStatus.Destroyed || !server.endpoint) return;
+      const networking = new Networking(
+        {
+          endpoint: server.endpoint,
+          serverId: server.guild_id ?? server.channel_id,
+          token: server.token,
+          sessionId: state.session_id,
+          userId: state.user_id,
+        },
+        Boolean(this.debug),
+      );
+      networking.once('close', this.onNetworkingClose);
+      networking.on('stateChange', this.onNetworkingStateChange);
+      networking.on('error', this.onNetworkingError);
+      networking.on('debug', this.onNetworkingDebug);
+      this.state = {
+        ...this.state,
+        status: VoiceConnectionStatus.Connecting,
+        networking,
+      };
+    };
+    client.emit(
+      Events.DEBUG,
+      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice]`,
+    );
+    /* eslint-enable */
+  }
+
   client.session_id = data.session_id;
   if (client.user) {
     client.user._patch(data.user);
