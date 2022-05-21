@@ -2027,7 +2027,6 @@ function demuxProbe(stream, probeSize = 1024, validator = validateDiscordOpusHea
 }
 __name(demuxProbe, 'demuxProbe');
 // Annotate the CommonJS export names for ESM import in node:
-console.log(Networking);
 0 &&
   (module.exports = {
     AudioPlayer,
