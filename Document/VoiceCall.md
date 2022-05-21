@@ -26,6 +26,7 @@ const play = require('play-dl');
 const {
 	createAudioPlayer,
 	createAudioResource,
+  NoSubscriberBehavior,
 } = require('@discordjs/voice');
 let stream = await play.stream('youtube link');
 let resource = createAudioResource(stream.stream, {
