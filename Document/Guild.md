@@ -50,6 +50,8 @@ await groupDM.removeMember(user);
 /* Text Channel not Bulk delete */
 await groupDM.send('Hello World');
 await groupDM.delete(); // Leave
+/* Voice Channel */
+await groupDM.call()
 ```
 	
 </details>
