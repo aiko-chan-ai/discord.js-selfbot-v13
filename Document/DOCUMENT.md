@@ -2,7 +2,7 @@
 - Install: <strong>```npm i discord.js-selfbot-v13@latest```</strong>
 
 # Document is available
-I made it pretty sketchy, but you can see it in the Wiki tab and [here](https://www.discordjs-self-v13.cf/)
+I made it pretty sketchy, but you can see it in the Wiki tab and [here](https://discordjs-self-v13.netlify.app/)
 # <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 # Quick links (Example Codes)
