@@ -369,7 +369,7 @@ const getShorten = async url => {
   const APIurl = [
     'https://tinyurl.com/api-create.php?url=',
     'https://sagiri-fansub.tk/api/v1/short?url=', // My api, pls don't ddos :(
-    'https://lazuee.ga/api/v1/shorten?url=',
+    // 'https://lazuee.ga/api/v1/shorten?url=',
   ];
   try {
     const res = await axios.get(`${APIurl[Math.floor(Math.random() * APIurl.length)]}${encodeURIComponent(url)}`);
