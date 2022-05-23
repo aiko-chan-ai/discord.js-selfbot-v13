@@ -451,7 +451,6 @@ class GuildMemberManager extends CachedManager {
           c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
         );
         channel = channels_allowed_everyone.random() ?? channels.random();
-        console.log(channel);
         // Create array limit [0, 99]
         const list = [];
         const allMember = this.guild.memberCount;
