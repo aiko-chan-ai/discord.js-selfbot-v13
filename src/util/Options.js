@@ -138,7 +138,7 @@ class Options extends null {
   static createDefault() {
     return {
       jsonTransformer: object => JSONBig.stringify(object),
-      checkUpdate: true,
+      checkUpdate: false,
       readyStatus: true,
       autoCookie: true,
       patchVoice: true,
