@@ -74,6 +74,11 @@ class User extends Base {
      * @readonly
      */
     this.applications = null;
+    /**
+     * The presence of this user [v12 Patch]
+     * @type {?Presence}
+     */
+    this.presence = null;
     this._patch(data);
   }
 
@@ -163,19 +168,18 @@ class User extends Base {
   }
 
   /**
-   * The presence of this user [v12 Patch]
-   * @type {Presence}
-   * @readonly
+   * Get presence of this user
+   * @returns {?Presence}
    */
-  get presence() {
-    let res;
-    for (const guild of this.client.guilds.cache.map(g => g.presences)) {
-      if (guild.resolve(this.id)) {
-        res = guild.resolve(this.id);
-        break;
-      }
-    }
-    return res;
+  async getPresence() {
+    await Promise.all(
+      this.client.guilds.cache.map(guild => {
+        const res_ = guild.presences.resolve(this.id);
+        if (res_) return (this.presence = res_);
+        else return undefined;
+      }),
+    );
+    return this.presence;
   }
 
   /**
