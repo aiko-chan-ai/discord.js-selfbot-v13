@@ -26,16 +26,30 @@ class UserFlags extends BitField {}
  * * `PARTNERED_SERVER_OWNER`
  * * `HYPESQUAD_EVENTS`
  * * `BUGHUNTER_LEVEL_1`
+ * * `MFA_SMS`
+ * * `PREMIUM_PROMO_DISMISSED`
  * * `HOUSE_BRAVERY`
  * * `HOUSE_BRILLIANCE`
  * * `HOUSE_BALANCE`
  * * `EARLY_SUPPORTER`
  * * `TEAM_USER`
+ * * `INTERNAL_APPLICATION`
+ * * `SYSTEM`
+ * * `HAS_UNREAD_URGENT_MESSAGES`
  * * `BUGHUNTER_LEVEL_2`
+ * * `UNDERAGE_DELETED`
  * * `VERIFIED_BOT`
  * * `EARLY_VERIFIED_BOT_DEVELOPER`
  * * `DISCORD_CERTIFIED_MODERATOR`
  * * `BOT_HTTP_INTERACTIONS`
+ * * `SPAMMER`
+ * * `DISABLE_PREMIUM`
+ * * `PREMIUM_DISCRIMINATOR`
+ * * `USED_DESKTOP_CLIENT`
+ * * `USED_WEB_CLIENT`
+ * * `USED_MOBILE_CLIENT`
+ * * `DISABLED`
+ * * `VERIFIED_EMAIL`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/user#user-object-user-flags}
  * @see {@link https://github.com/LewisTehMinerz/discord-flags}
@@ -52,7 +66,7 @@ UserFlags.FLAGS = {
   HOUSE_BALANCE: 1 << 8,
   EARLY_SUPPORTER: 1 << 9,
   TEAM_USER: 1 << 10,
-  INTERNAL_APPLICATION: 1 << 11, // [Undocumented] 	An internal flag accidentally leaked to the client's private flags. Relates to partner/verification applications but nothing else is known.
+  INTERNAL_APPLICATION: 1 << 11, // [Undocumented] An internal flag accidentally leaked to the client's private flags. Relates to partner/verification applications but nothing else is known.
   SYSTEM: 1 << 12, // [Undocumented] Account is a Discord system account.
   HAS_UNREAD_URGENT_MESSAGES: 1 << 13, // [Undocumented] User has unread messages from Discord.
   BUGHUNTER_LEVEL_2: 1 << 14,
@@ -61,7 +75,7 @@ UserFlags.FLAGS = {
   EARLY_VERIFIED_BOT_DEVELOPER: 1 << 17,
   DISCORD_CERTIFIED_MODERATOR: 1 << 18,
   BOT_HTTP_INTERACTIONS: 1 << 19,
-  SPAMMER: 1 << 20,
+  SPAMMER: 1 << 20, // [Undocumented] User is marked as a spammer.
   DISABLE_PREMIUM: 1 << 21, // [Undocumented] Forcefully disables Nitro features.
   PREMIUM_DISCRIMINATOR: 1 << 37, // [Undocumented] User has a premium discriminator.
   /* Presence Flags */
