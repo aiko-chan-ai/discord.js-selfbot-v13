@@ -231,6 +231,9 @@ class ThreadManager extends CachedManager {
    * @returns {Promise<FetchedThreads>}
    */
   async fetchActive(cache = true) {
+    if (!this.client.user.bot) {
+      throw new Error('INVALID_USER_METHOD: User accounts cannot use this method\nI will fix it .-.');
+    }
     const raw = await this.client.api.guilds(this.channel.guild.id).threads.active.get();
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }

@@ -3173,7 +3173,7 @@ export class ApplicationCommandManager<
   ApplicationCommandScope = ApplicationCommand<{ guild: GuildResolvable }>,
   PermissionsOptionsExtras = { guild: GuildResolvable },
   PermissionsGuildType = null,
-> extends CachedManager<Snowflake, ApplicationCommandScope, ApplicationCommandResolvable> {  
+> extends CachedManager<Snowflake, ApplicationCommandScope, ApplicationCommandResolvable> {
   // @ts-ignore
   protected constructor(client: Client, iterable?: Iterable<unknown>, user: User);
   public permissions: ApplicationCommandPermissionsManager<
