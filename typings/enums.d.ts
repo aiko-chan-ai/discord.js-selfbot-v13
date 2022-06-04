@@ -22,7 +22,7 @@ export const enum stickerAnimationMode {
   NEVER = 2,
 }
 
-export const enum relationshipsType {
+export const enum RelationshipTypes {
   FRIEND = 1,
   BLOCKED = 2,
   INCOMING_REQUEST = 3,

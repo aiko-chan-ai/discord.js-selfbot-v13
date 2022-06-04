@@ -163,6 +163,22 @@ class User extends Base {
   }
 
   /**
+   * The presence of this user [v12 Patch]
+   * @type {Presence}
+   * @readonly
+   */
+  get presence() {
+    let res;
+    for (const guild of this.client.guilds.cache.map(g => g.presences)) {
+      if (guild.resolve(this.id)) {
+        res = guild.resolve(this.id);
+        break;
+      }
+    }
+    return res;
+  }
+
+  /**
    * Check relationship status
    * @type {Relationship}
    * @readonly
