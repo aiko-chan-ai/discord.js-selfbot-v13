@@ -74,11 +74,6 @@ class User extends Base {
      * @readonly
      */
     this.applications = null;
-    /**
-     * The presence of this user [v12 Patch]
-     * @type {?Presence}
-     */
-    this.presence = null;
     this._patch(data);
   }
 
@@ -165,21 +160,6 @@ class User extends Base {
        */
       this.flags = new UserFlags(data.public_flags);
     }
-  }
-
-  /**
-   * Get presence of this user
-   * @returns {?Presence}
-   */
-  async getPresence() {
-    await Promise.all(
-      this.client.guilds.cache.map(guild => {
-        const res_ = guild.presences.resolve(this.id);
-        if (res_) return (this.presence = res_);
-        else return undefined;
-      }),
-    );
-    return this.presence;
   }
 
   /**
