@@ -76,7 +76,7 @@ const JSONBig = require('json-bigint');
  * @property {string[]} [userAgentSuffix] An array of additional bot info to be appended to the end of the required
  * [User Agent](https://discord.com/developers/docs/reference#user-agent) header
  * @property {PresenceData} [presence={}] Presence data to use upon login
- * @property {IntentsResolvable} [intents] Intents to enable for this connection
+ * @property {IntentsResolvable} [intents=131071] Intents to enable for this connection (but not using)
  * @property {number} [waitGuildTimeout=0] Time in milliseconds that Clients with the GUILDS intent should wait for
  * missing guilds to be received before starting the bot. If not specified, the default is 15 seconds.
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
@@ -138,7 +138,7 @@ class Options extends null {
   static createDefault() {
     return {
       jsonTransformer: object => JSONBig.stringify(object),
-      checkUpdate: false,
+      checkUpdate: true,
       readyStatus: true,
       autoCookie: true,
       patchVoice: true,
@@ -148,7 +148,7 @@ class Options extends null {
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
-      intents: 65535,
+      intents: 131071,
       partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT'], // Enable the partials
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,
@@ -158,7 +158,7 @@ class Options extends null {
       restSweepInterval: 60,
       failIfNotExists: false,
       userAgentSuffix: [],
-      presence: { status: 'invisible', since: 0, activities: [], afk: false },
+      presence: { status: 'online', since: 0, activities: [], afk: false },
       sweepers: {},
       ws: {
         large_threshold: 50,
@@ -214,7 +214,7 @@ class Options extends null {
               os_version: '10.0.22000',
               os_arch: 'x64',
               system_locale: 'en-US',
-              client_build_number: 122087,
+              client_build_number: 127546,
               client_event_source: null,
             }),
             'ascii',

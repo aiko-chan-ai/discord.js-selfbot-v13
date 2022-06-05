@@ -207,7 +207,8 @@ class User extends Base {
 
   /**
    * Get profile from Discord, if client is in a server with the target.
-   * @returns {Promise<User>} the user object
+   * @type {User}
+   * @returns {Promise<User>}
    */
   async getProfile() {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
@@ -217,8 +218,9 @@ class User extends Base {
   }
 
   /**
-   * Friends the user and send Request [If no request]
-   * @returns {Promise<User>} the user object
+   * Friends the user [If incoming request]
+   * @type {boolean}
+   * @returns {Promise<boolean>}
    */
   setFriend() {
     return this.client.relationships.addFriend(this);
@@ -226,14 +228,16 @@ class User extends Base {
 
   /**
    * Send Friend Request to the user
-   * @returns {Promise<User>} the user object
+   * @type {boolean}
+   * @returns {Promise<boolean>}
    */
   sendFriendRequest() {
     return this.client.relationships.sendFriendRequest(this.username, this.discriminator);
   }
   /**
    * Blocks the user
-   * @returns {Promise<User>} the user object
+   * @type {boolean}
+   * @returns {Promise<boolean>}
    */
   setBlock() {
     return this.client.relationships.addBlocked(this);
@@ -241,7 +245,8 @@ class User extends Base {
 
   /**
    * Removes the user from your blocks list
-   * @returns {Promise<User>} the user object
+   * @type {boolean}
+   * @returns {Promise<boolean>}
    */
   unBlock() {
     return this.client.relationships.deleteBlocked(this);
@@ -249,7 +254,8 @@ class User extends Base {
 
   /**
    * Removes the user from your friends list
-   * @returns {Promise<User>} the user object
+   * @type {boolean}
+   * @returns {Promise<boolean>}
    */
   unFriend() {
     return this.client.relationships.deleteFriend(this);

@@ -8,30 +8,31 @@ const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
 const { Networking } = require('../../../util/Voice');
 
-async function checkUpdate() {
+async function checkUpdate(client) {
   const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
   const lastest_tag = res_.data['dist-tags'].latest;
   // Checking if the package is outdated
   // Stable version
   if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
-    return console.log(`${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
-Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`);
+    return client.emit(
+      Events.DEBUG,
+      `${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
+Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`,
+    );
   }
-  /*
-  Removed:
-  console.log(
+  client.emit(
+    Events.DEBUG,
     `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
   );
-  */
   return null;
 }
 
 module.exports = (client, { d: data }, shard) => {
   if (client.options.checkUpdate) {
     try {
-      checkUpdate();
+      checkUpdate(client);
     } catch (e) {
-      console.log(`${chalk.redBright('[Fail]')} Check Update error:`, e.message);
+      client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error: ${e.message}`);
     }
   }
 
@@ -82,9 +83,7 @@ module.exports = (client, { d: data }, shard) => {
 
   client.user.connectedAccounts = data.connected_accounts ?? [];
 
-  for (const [userid, note] of Object.entries(data.notes ?? {})) {
-    client.user.notes.set(userid, note);
-  }
+  client.user._patchNote(data.notes);
 
   for (const private_channel of data.private_channels) {
     client.channels._add(private_channel);
@@ -118,7 +117,7 @@ module.exports = (client, { d: data }, shard) => {
     client.guilds._add(guild);
   }
 
-  // Receive messages in large guilds [Test]
+  // Receive messages in large guilds
   client.guilds.cache.map(guild => {
     client.ws.broadcast({
       op: Opcodes.LAZY_REQUEST,

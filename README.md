@@ -44,6 +44,7 @@ But if you want to see some specific notes (with pictures) you can go to [here](
 - [X] Voice Channel (Join, Leave, Speak, etc.)
 - [X] Documentation
 - [X] Audio call
+- [X] Recieve messages from large servers
 - [ ] Add more guild http api wraps
 - [ ] Video stream
 - [ ] Everything

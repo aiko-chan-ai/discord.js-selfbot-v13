@@ -1,6 +1,6 @@
 'use strict';
 
-const { Events } = require('../../../util/Constants');
+const { Events, Relationship } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
   if (data.user) {
@@ -11,7 +11,7 @@ module.exports = (client, { d: data }) => {
    * Emitted whenever a relationship is updated.
    * @event Client#relationshipAdd
    * @param {UserId} user The userID that was updated
-   * @param {Number} type The new relationship type
+   * @param {RelationshipType} type The new relationship type
    */
-  client.emit(Events.RELATIONSHIP_ADD, data.id, data.type);
+  client.emit(Events.RELATIONSHIP_ADD, data.id, Relationship[data.type]);
 };

@@ -14,17 +14,6 @@ class ClientUser extends User {
   _patch(data) {
     super._patch(data);
 
-    /*
-		Add: notes
-		*/
-    /**
-     * The notes cache of the client user.
-     * @type {Collection<Snowflake, Message>}
-     * @private
-     */
-    this.notes = new Collection();
-    // This.messageMentions = new Collection();
-
     if ('verified' in data) {
       /**
        * Whether or not this account has been verified
@@ -67,9 +56,21 @@ class ClientUser extends User {
     /**
      * Email address of the client user.
      * @type {?string}
-     * @deprecated
-     * @see https://discord.com/developers/docs/resources/user#user-object
      */
+  }
+
+  /**
+   * Patch note
+   * @param {Object} data Note data
+   * @private
+   */
+  _patchNote(data) {
+    /**
+     * The notes cache of the client user.
+     * @type {Collection<Snowflake, string>}
+     * @private
+     */
+    this.notes = data ? new Collection(Object.entries(data)) : new Collection();
   }
 
   /**
@@ -163,10 +164,10 @@ class ClientUser extends User {
   /**
    * Set HyperSquad House
    * @param {HypeSquadOptions<number|string>} type
-   * `LEAVE`: 0
-   * `HOUSE_BRAVERY`: 1
-   * `HOUSE_BRILLIANCE`: 2
-   * `HOUSE_BALANCE`: 3
+   * * `LEAVE`: 0
+   * * `HOUSE_BRAVERY`: 1
+   * * `HOUSE_BRILLIANCE`: 2
+   * * `HOUSE_BALANCE`: 3
    * @returns {Promise<void>}
    * @example
    * // Set HyperSquad HOUSE_BRAVERY
