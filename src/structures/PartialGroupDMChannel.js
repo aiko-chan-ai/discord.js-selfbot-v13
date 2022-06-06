@@ -264,6 +264,12 @@ class PartialGroupDMChannel extends Channel {
   }
 }
 
-TextBasedChannel.applyToClass(PartialGroupDMChannel, false);
+TextBasedChannel.applyToClass(PartialGroupDMChannel, true, [
+  'bulkDelete',
+  'fetchWebhooks',
+  'createWebhook',
+  'setRateLimitPerUser',
+  'setNSFW',
+]);
 
 module.exports = PartialGroupDMChannel;

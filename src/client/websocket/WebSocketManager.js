@@ -20,7 +20,7 @@ const BeforeReadyWhitelist = [
   WSEvents.GUILD_MEMBER_REMOVE,
 ];
 
-const UNRECOVERABLE_CLOSE_CODES = Object.keys(WSCodes).slice(1).map(Number);
+const UNRECOVERABLE_CLOSE_CODES = Object.keys(WSCodes).slice(2).map(Number);
 const UNRESUMABLE_CLOSE_CODES = [
   RPCErrorCodes.UnknownError,
   RPCErrorCodes.InvalidPermissions,
@@ -216,13 +216,8 @@ class WebSocketManager extends EventEmitter {
 
         this.shardQueue.add(shard);
 
-        if (shard.sessionId) {
-          this.debug('Session id is present, attempting an immediate reconnect...', shard);
-          this.reconnect();
-        } else {
-          shard.destroy({ reset: true, emit: false, log: false });
-          this.reconnect();
-        }
+        if (shard.sessionId) this.debug(`Session id is present, attempting an immediate reconnect...`, shard);
+        this.reconnect();
       });
 
       shard.on(ShardEvents.INVALID_SESSION, () => {
@@ -352,6 +347,12 @@ class WebSocketManager extends EventEmitter {
     } else if (packet) {
       /* Debug mode */
       // console.log(`Unhandled packet: ${packet.t}`, packet);
+      /**
+       * Emitted whenever a packet isn't handled.
+       * @event Client#unhandledPacket
+       * @param {Object} packet The packet (t: Event name, d: Data)
+       * @param {Number} shard The shard that received the packet (Auto = 0)
+       */
       this.client.emit(Events.UNHANDLED_PACKET, packet, shard);
     }
     return true;

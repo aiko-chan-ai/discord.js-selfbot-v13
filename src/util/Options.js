@@ -34,6 +34,8 @@ const JSONBig = require('json-bigint');
  * @property {number|number[]|string} [shards] The shard's id to run, or an array of shard ids. If not specified,
  * the client will spawn {@link ClientOptions#shardCount} shards. If set to `auto`, it will fetch the
  * recommended amount of shards from Discord and spawn that amount
+ * @property {number} [closeTimeout=5000] The amount of time in milliseconds to wait for the close frame to be received
+ * from the WebSocket. Don't have this too high/low. Its best to have it between 2_000-6_000 ms.
  * @property {boolean} [checkUpdate=true] Check for module updates at startup
  * @property {boolean} [readyStatus=true] Sync state with Discord Client
  * @property {boolean} [autoCookie=true] Automatically add Cookies to Request on startup
@@ -138,6 +140,7 @@ class Options extends null {
   static createDefault() {
     return {
       jsonTransformer: object => JSONBig.stringify(object),
+      closeTimeout: 5_000,
       checkUpdate: true,
       readyStatus: true,
       autoCookie: true,

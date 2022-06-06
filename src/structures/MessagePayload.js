@@ -309,7 +309,7 @@ module.exports = MessagePayload;
 
 /**
  * A target for a message.
- * @typedef {TextChannel|DMChannel|User|GuildMember|Webhook|WebhookClient|Interaction|InteractionWebhook|
+ * @typedef {TextBasedChannel|DMChannel|User|GuildMember|Webhook|WebhookClient|Interaction|InteractionWebhook|
  * Message|MessageManager} MessageTarget
  */
 
