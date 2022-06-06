@@ -622,7 +622,11 @@ class WebSocketShard extends EventEmitter {
 
     delete d.large_threshold;
 
-    this.debug(`[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: ${32767} :)`);
+    this.debug(
+      `[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: ${Intents.resolve(
+        client.options.intents,
+      )} :)`,
+    );
     this.send({ op: Opcodes.IDENTIFY, d }, true);
   }
 
