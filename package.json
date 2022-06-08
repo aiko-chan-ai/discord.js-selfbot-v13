@@ -51,7 +51,7 @@
   },
   "homepage": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13#readme",
   "dependencies": {
-    "@discordjs/builders": "^0.14.0",
+    "@discordjs/builders": "^0.15.0",
     "@discordjs/collection": "^0.7.0",
     "@discordjs/voice": "^0.10.0",
     "@sapphire/async-queue": "^1.3.1",
