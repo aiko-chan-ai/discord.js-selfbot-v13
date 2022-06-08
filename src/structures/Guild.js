@@ -638,7 +638,7 @@ class Guild extends AnonymousGuild {
       // MODAL_SUMMIT :))
     }
     if (type < 1 || type > 3) {
-      throw new RangeError('Type must be 1, 2, 3');
+      throw new RangeError('Type must be 1 (CHAT_INPUT), 2 (USER), 3 (MESSAGE)');
     }
     if (typeof type !== 'number') {
       throw new TypeError('Type must be a number | string');

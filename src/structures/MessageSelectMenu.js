@@ -3,6 +3,7 @@
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
 const { MessageComponentTypes } = require('../util/Constants');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
 /**
@@ -254,6 +255,7 @@ class MessageSelectMenu extends BaseMessageComponent {
           type: 3, // Select Menu
           values,
         },
+        nonce: SnowflakeUtil.generate(),
       },
     });
     return true;

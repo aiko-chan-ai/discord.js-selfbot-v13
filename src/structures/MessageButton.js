@@ -4,6 +4,7 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
 const { RangeError } = require('../errors');
 const { MessageButtonStyles, MessageComponentTypes } = require('../util/Constants');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
 /**
@@ -183,6 +184,7 @@ class MessageButton extends BaseMessageComponent {
           component_type: 2, // Button
           custom_id: this.customId,
         },
+        nonce: SnowflakeUtil.generate(),
       },
     });
     return true;

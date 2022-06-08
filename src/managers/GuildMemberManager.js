@@ -427,9 +427,9 @@ class GuildMemberManager extends CachedManager {
         this.guild.me.permissions.has('BAN_MEMBERS') ||
         this.guild.me.permissions.has('MANAGE_ROLES')
       ) {
-        type = 8; // This is opcode
+        type = Opcodes.REQUEST_GUILD_MEMBERS; // This is opcode
         this.guild.shard.send({
-          op: Opcodes.REQUEST_GUILD_MEMBERS,
+          op: type,
           d: {
             guild_id: this.guild.id,
             presences,
@@ -440,7 +440,7 @@ class GuildMemberManager extends CachedManager {
           },
         });
       } else {
-        type = 14; // This is opcode
+        type = Opcodes.LAZY_REQUEST; // This is opcode
         let channel;
         let channels = this.guild.channels.cache.filter(c => c.isText());
         channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
@@ -468,6 +468,14 @@ class GuildMemberManager extends CachedManager {
             [200, 299],
           ]);
         } else {
+          if (allMember > 1_000) {
+            console.warn(
+              `[WARN] Guild ${this.guild.id} has ${allMember} > 1000 members. Can't get offline members (Opcode 14)\n> https://discordpy-self.readthedocs.io/en/latest/migrating_from_dpy.html#guild-members`,
+            );
+            if (allMember > 75_000) {
+              console.warn(`[WARN] Can't get enough members because the guild is large (Opcode 14)`);
+            }
+          }
           let x = 100;
           for (let i = 0; i < allMember; i++) {
             if (x > allMember) {
@@ -485,7 +493,7 @@ class GuildMemberManager extends CachedManager {
         Promise.all(
           list.map(l => {
             this.guild.shard.send({
-              op: Opcodes.LAZY_REQUEST,
+              op: type,
               d: {
                 guild_id: this.guild.id,
                 typing: true,
@@ -516,7 +524,7 @@ class GuildMemberManager extends CachedManager {
           this.client.decrementMaxListeners();
           let fetched = fetchedMembers.size < this.guild.members.cache.size ? this.guild.members.cache : fetchedMembers;
           if (user_ids && !Array.isArray(user_ids) && fetched.size) fetched = fetched.first();
-          if (type == 14) {
+          if (type == Opcodes.LAZY_REQUEST) {
             this.guild.client.sleep(sleepTime).then(() => resolve(fetched));
           } else {
             resolve(fetched);

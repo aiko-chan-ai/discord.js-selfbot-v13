@@ -630,6 +630,7 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandTypes[this.type],
           options: option_,
         },
+        nonce: SnowflakeUtil.generate(),
       },
     });
     return true;
@@ -666,6 +667,7 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandTypes[this.type],
           target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
         },
+        nonce: SnowflakeUtil.generate(),
       },
     });
     return true;
