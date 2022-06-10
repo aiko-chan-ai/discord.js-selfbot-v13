@@ -88,12 +88,11 @@ module.exports = (client, { d: data }, shard) => {
   for (const private_channel of data.private_channels) {
     client.channels._add(private_channel);
   }
-  // Start event
-  client.on(Events.USER_SETTINGS_UPDATE, s => {
-    if (('status' in s || 'custom_status' in s) && client.options.readyStatus) {
-      client.customStatusAuto(client);
-    }
-  });
+  // Remove event because memory leak
+
+  if (client.options.readyStatus) {
+    client.customStatusAuto(client);
+  }
 
   /**
    * Read_state: Return Array:
