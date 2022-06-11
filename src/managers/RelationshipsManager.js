@@ -18,7 +18,7 @@ class RelationshipsManager {
      */
     this.client = client;
     /**
-     * A collection of users this manager is caching.
+     * A collection of users this manager is caching. (Type: Number)
      * @type {Collection<Snowflake, RelationshipTypes>}
      * @readonly
      */

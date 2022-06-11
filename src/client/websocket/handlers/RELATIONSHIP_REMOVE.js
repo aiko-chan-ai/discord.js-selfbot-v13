@@ -7,7 +7,7 @@ module.exports = (client, { d: data }) => {
   /**
    * Emitted whenever a relationship is updated.
    * @event Client#relationshipRemove
-   * @param {UserId} user The userID that was updated
+   * @param {Snowflake} user The userID that was updated
    */
   client.emit(Events.RELATIONSHIP_REMOVE, data.id);
 };
