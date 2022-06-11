@@ -95,6 +95,7 @@ const Messages = {
   GUILD_CHANNEL_UNOWNED: "The fetched channel does not belong to this manager's guild.",
   GUILD_OWNED: 'Guild is owned by the client.',
   GUILD_MEMBERS_TIMEOUT: "Members didn't arrive in time.",
+  GUILD_APPLICATION_COMMANDS_SEARCH_TIMEOUT: "Application commands didn't arrive in time.",
   GUILD_UNCACHED_ME: 'The client user as a member of this guild is uncached.',
   CHANNEL_NOT_CACHED: 'Could not find the channel where this message came from in the cache!',
   STAGE_CHANNEL_RESOLVE: 'Could not resolve channel to a stage channel.',

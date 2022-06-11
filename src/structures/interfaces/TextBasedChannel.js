@@ -393,10 +393,10 @@ class TextBasedChannel {
    * Send Slash to this channel
    * @param {Snowflake} botId Bot Id
    * @param {string} commandName Command name
-   * @param {?Array<string>} args Command arguments
+   * @param {...?string} args Command arguments
    * @returns {Promise<pending>}
    */
-  async sendSlash(botId, commandName, args = []) {
+  async sendSlash(botId, commandName, ...args) {
     // If (!this.isText()) throw new Error('This channel is not text-based.');
     if (!botId) throw new Error('Bot ID is required');
     const user = await this.client.users.fetch(botId).catch(() => {});
@@ -427,7 +427,7 @@ class TextBasedChannel {
         content: '',
         id: this.client.user.id,
       }),
-      args,
+      args && args.length ? args : [],
     );
   }
 
@@ -447,6 +447,7 @@ class TextBasedChannel {
         'createWebhook',
         'setRateLimitPerUser',
         'setNSFW',
+        'sendSlash',
       );
     }
     for (const prop of props) {
