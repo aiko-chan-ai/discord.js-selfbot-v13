@@ -3036,7 +3036,6 @@ export const Constants: {
     devDependencies: Record<string, string>;
     [key: string]: unknown;
   };
-  UserAgent: string;
   Endpoints: {
     botGateway: string;
     invite: (root: string, code: string, eventId?: Snowflake) => string;
@@ -3150,6 +3149,7 @@ export const Constants: {
   GuildScheduledEventEntityTypes: EnumHolder<typeof GuildScheduledEventEntityTypes>;
   GuildScheduledEventStatuses: EnumHolder<typeof GuildScheduledEventStatuses>;
   GuildScheduledEventPrivacyLevels: EnumHolder<typeof GuildScheduledEventPrivacyLevels>;
+  randomUA: () => string;
 };
 
 export const version: string;

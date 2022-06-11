@@ -9,7 +9,12 @@ const { Events, Opcodes } = require('../../../util/Constants');
 const { Networking } = require('../../../util/Voice');
 
 async function checkUpdate(client) {
-  const res_ = await axios.get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`);
+  const res_ = await axios
+    .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
+    .catch(() => {});
+  if (!res_) {
+    return client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error`);
+  }
   const lastest_tag = res_.data['dist-tags'].latest;
   // Checking if the package is outdated
   // Stable version
@@ -29,11 +34,7 @@ Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBr
 
 module.exports = (client, { d: data }, shard) => {
   if (client.options.checkUpdate) {
-    try {
-      checkUpdate(client);
-    } catch (e) {
-      client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error: ${e.message}`);
-    }
+    checkUpdate(client);
   }
 
   if (client.options.patchVoice) {

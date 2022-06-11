@@ -6,41 +6,39 @@ const Package = (exports.Package = require('../../package.json'));
 const { Error, RangeError, TypeError } = require('../errors');
 // #88: https://jnrbsn.github.io/user-agents/user-agents.json
 const listUserAgent = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (X11; Linux i686; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
-  'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.4; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (X11; Linux i686; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0',
+  'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.3; rv:91.0) Gecko/20100101 Firefox/91.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.4; rv:91.0) Gecko/20100101 Firefox/91.0',
   'Mozilla/5.0 (X11; Linux i686; rv:91.0) Gecko/20100101 Firefox/91.0',
   'Mozilla/5.0 (Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0',
   'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:91.0) Gecko/20100101 Firefox/91.0',
   'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0',
   'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/100.0.1185.39',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/100.0.1185.39',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36 Edg/102.0.1245.33',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36 Edg/102.0.1245.33',
 ];
+/**
+ * Nitro state
+ * * NONE
+ * * CLASSIC
+ * * BOOST
+ * @typedef {string} NitroState
+ */
+exports.NitroState = createEnum(['NONE', 'CLASSIC', 'BOOST']);
 
-exports.NitroState = {
-  0: 'NONE',
-  1: 'CLASSIC',
-  2: 'BOOST',
-};
-
-exports.DMScanLevel = {
-  0: 'NOT_SCAN',
-  1: 'NOT_FRIEND',
-  2: 'EVERYONE',
-};
+exports.DMScanLevel = createEnum(['NOT_SCAN', 'NOT_FRIEND', 'EVERYONE']);
 
 exports.stickerAnimationMode = {
   0: 'ALWAYS',
@@ -80,9 +78,7 @@ exports.localeObject = {
   'zh-TW': 'TAIWAN_CHINESE',
   ko: 'KOREAN',
 };
-// No used
-exports.UserAgent = listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
-// Useful
+
 exports.randomUA = () => listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
 
 exports.WSCodes = {
@@ -206,7 +202,7 @@ exports.Opcodes = {
   HEARTBEAT_ACK: 11, // #  Sent            immediately following a client heartbeat that was received
   GUILD_SYNC: 12, // #  Receive         guild_sync but not used anymore
   /** Add some opcode from Discum
-  /* @extends https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/gateway/gateway.py#L56
+  /* @see https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/gateway/gateway.py#L56
   */
   DM_UPDATE: 13, // #  Send            used to get dm features
   LAZY_REQUEST: 14, // #  Send            discord responds back with GUILD_MEMBER_LIST_UPDATE type SYNC...
@@ -293,14 +289,14 @@ exports.Events = {
   TYPING_START: 'typingStart',
   WEBHOOKS_UPDATE: 'webhookUpdate',
   INTERACTION_CREATE: 'interactionCreate',
+  /**
+   * @private This event is not documented in the API.
+   */
   INTERACTION_SUCCESS: 'interactionSuccess',
   /**
    * @private This event is not documented in the API.
    */
   INTERACTION_FAILED: 'interactionFailed',
-  /**
-   * @private This event is not documented in the API.
-   */
   ERROR: 'error',
   WARN: 'warn',
   DEBUG: 'debug',
@@ -323,13 +319,16 @@ exports.Events = {
   GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete',
   GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
+  /**
+   * @private This event is not documented in the API.
+   */
   RELATIONSHIP_ADD: 'relationshipAdd',
   /**
    * @private This event is not documented in the API.
    */
   RELATIONSHIP_REMOVE: 'relationshipRemove',
   /**
-   * @private This event is not documented in the API.
+   * @private .-. hidden data from discord :))
    */
   UNHANDLED_PACKET: 'unhandledPacket',
 };
@@ -1301,24 +1300,17 @@ exports.TextInputStyles = createEnum([null, 'SHORT', 'PARAGRAPH']);
 exports.GuildScheduledEventPrivacyLevels = createEnum([null, null, 'GUILD_ONLY']);
 
 /**
- * Relationship Enum
- * * FRIEND
- * * BLOCKED
- * * INCOMING_REQUEST
- * * OUTGOING_REQUEST
- * @typedef {string} RelationshipType
+ * Relationship Enums:
+ * * 0: NONE
+ * * 1: FRIEND
+ * * 2: BLOCKED
+ * * 3: INCOMING_REQUEST
+ * * 4: OUTGOING_REQUEST
+ * @typedef {string} RelationshipTypes
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/relationships.html}
  */
 
-exports.RelationshipTypes = createEnum([null, 'FRIEND', 'BLOCKED', 'INCOMING_REQUEST', 'OUTGOING_REQUEST']);
-
-exports.Relationship = {
-  0: 'NONE',
-  1: 'FRIEND',
-  2: 'BLOCKED',
-  3: 'INCOMING_REQUEST',
-  4: 'OUTGOING_REQUEST',
-};
+exports.RelationshipTypes = createEnum(['NONE', 'FRIEND', 'BLOCKED', 'INCOMING_REQUEST', 'OUTGOING_REQUEST']);
 
 /**
  * The premium tier (Server Boost level) of a guild:

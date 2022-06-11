@@ -12,7 +12,16 @@ const { RelationshipTypes } = require('../util/Constants');
  */
 class RelationshipsManager {
   constructor(client, users) {
+    /**
+     * The client that instantiated this manager.
+     * @type {Client}
+     */
     this.client = client;
+    /**
+     * A collection of users this manager is caching.
+     * @type {Collection<Snowflake, RelationshipTypes>}
+     * @readonly
+     */
     this.cache = new Collection();
     this._setup(users);
   }
@@ -62,6 +71,11 @@ class RelationshipsManager {
 
   // Some option .-.
 
+  /**
+   * Deletes a friend relationship with a client user.
+   * @param {User} user Target
+   * @returns {Promise<boolean>}
+   */
   async deleteFriend(user) {
     const id = this.resolveId(user);
     // Check if already friends
@@ -70,6 +84,11 @@ class RelationshipsManager {
     return true;
   }
 
+  /**
+   * Deletes a blocked relationship with a client user.
+   * @param {User} user Target
+   * @returns {Promise<boolean>}
+   */
   async deleteBlocked(user) {
     const id = this.resolveId(user);
     // Check if already blocked
@@ -78,6 +97,12 @@ class RelationshipsManager {
     return true;
   }
 
+  /**
+   * Sends a friend request.
+   * @param {string} username Username of the user to send the request to
+   * @param {number} discriminator Discriminator of the user to send the request to
+   * @returns {Promise<boolean>}
+   */
   async sendFriendRequest(username, discriminator) {
     await this.client.api.users('@me').relationships.post({
       data: {
@@ -88,6 +113,11 @@ class RelationshipsManager {
     return true;
   }
 
+  /**
+   * Accepts a friend request.
+   * @param {UserResolvable} user The user to add as a friend
+   * @returns {Promise<boolean>}
+   */
   async addFriend(user) {
     const id = this.resolveId(user);
     // Check if already friends
@@ -102,6 +132,11 @@ class RelationshipsManager {
     return true;
   }
 
+  /**
+   * Blocks a user.
+   * @param {UserResolvable} user User to block
+   * @returns {Promise<boolean>}
+   */
   async addBlocked(user) {
     const id = this.resolveId(user);
     // Check

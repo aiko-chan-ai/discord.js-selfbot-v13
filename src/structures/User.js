@@ -5,7 +5,7 @@ const Base = require('./Base');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
-const { Relationship } = require('../util/Constants');
+const { RelationshipTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
 
@@ -164,12 +164,12 @@ class User extends Base {
 
   /**
    * Check relationship status
-   * @type {Relationship}
+   * @type {RelationshipTypes}
    * @readonly
    */
   get relationships() {
     const i = this.client.relationships.cache.get(this.id) ?? 0;
-    return Relationship[parseInt(i)];
+    return RelationshipTypes[parseInt(i)];
   }
 
   /**
