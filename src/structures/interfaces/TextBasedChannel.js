@@ -1,8 +1,8 @@
 'use strict';
 
 /* eslint-disable import/order */
+const { Message } = require('discord.js');
 const MessageCollector = require('../MessageCollector');
-const { Message } = require('../Message');
 const MessagePayload = require('../MessagePayload');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const { Collection } = require('@discordjs/collection');
@@ -404,20 +404,9 @@ class TextBasedChannel {
       throw new Error('botId is not a bot or does not have an application slash command');
     }
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    const commandTarget = (
-      user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT')
-        ? this.guild
-          ? await this.guild.searchInteraction({
-              type: 'CHAT_INPUT',
-              query: commandName,
-              botId: [botId],
-              limit: 1,
-            })
-          : await user.applications.fetch()
-        : user.applications.cache
-    ).find(application => commandName == application.name && application.type == 'CHAT_INPUT');
+    const commandTarget = user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
     if (!commandTarget) {
-      throw new Error(`Command ${commandName} is not found`);
+      throw new Error(`Command ${commandName} is not found\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(' | ')}`);
     }
     return commandTarget.sendSlashCommand(
       new Message(this.client, {

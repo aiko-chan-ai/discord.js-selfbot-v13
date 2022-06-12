@@ -36,6 +36,7 @@ const {
   Events,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
 const Util = require('../util/Util');
 
@@ -615,34 +616,24 @@ class Guild extends AnonymousGuild {
   /**
    * Options for guildSearchInteraction
    * @typedef {Object} GuildSearchInteractionOptions
-   * @property {?number|string} [type=1] {@link ApplicationCommandTypes}
-   * @property {?string} [query] Command name
-   * @property {?number} [limit=1] Maximum number of results
+   * @property {string} query Command name
+   * @property {?number} [limit=10] Maximum number of results
    * @property {?number} [offset=0] Only return entries for actions made by this user
-   * @property {Snowflake[]} botId Array of bot IDs to filter by
+   * @property {?Snowflake} [botId] BotID
+   * @property {?ApplicationCommandType} [type=CHAT_INPUT] Type of command
    */
   /**
    * Searches for guild interactions
    * @param {GuildSearchInteractionOptions} options Options for the search
-   * @returns {Promise}
+   * @returns {void | Promise<ApplicationCommand>}
    */
   searchInteraction(options = {}) {
-    let { query, type, limit, offset, botId } = Object.assign(
-      { query: undefined, type: 1, limit: 1, offset: 0, botId: [] },
+    let { query, limit, offset, botId, type } = Object.assign(
+      { query: undefined, limit: 10, offset: 0, botId: undefined, type: 'CHAT_INPUT' },
       options,
     );
-    if (typeof type === 'string') {
-      if (type == 'CHAT_INPUT') type = 1;
-      else if (type == 'USER') type = 2;
-      else if (type == 'MESSAGE') type = 3;
-      // MODAL_SUMMIT :))
-    }
-    if (type < 1 || type > 3) {
-      throw new RangeError('Type must be 1 (CHAT_INPUT), 2 (USER), 3 (MESSAGE)');
-    }
-    if (typeof type !== 'number') {
-      throw new TypeError('Type must be a number | string');
-    }
+    if (!query) throw new Error('MISSING_VALUE', 'searchInteraction', 'query');
+    const nonce = SnowflakeUtil.generate();
     this.shard.send({
       op: Opcodes.REQUEST_APPLICATION_COMMANDS,
       d: {
@@ -650,18 +641,21 @@ class Guild extends AnonymousGuild {
         applications: false,
         limit,
         offset,
-        type,
-        query: query,
-        command_ids: Array.isArray(botId) ? botId : undefined,
+        query,
+        nonce,
       },
     });
+    if (!botId || !type) return undefined;
     return new Promise((resolve, reject) => {
-      const handler = application => {
+      const handler = applications => {
         timeout.refresh();
+        if (applications.nonce !== nonce) return;
+        const cmd = applications.application_commands.find(app => app.name == query && app.application_id == botId);
+        if (!cmd) return;
         clearTimeout(timeout);
         this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
         this.client.decrementMaxListeners();
-        resolve(application.slice(0, limit));
+        resolve(this.client.users.cache.get(botId)?.applications?.cache?.find(c => c.name === query && c.type == type));
       };
       const timeout = setTimeout(() => {
         this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);

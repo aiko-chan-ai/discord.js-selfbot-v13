@@ -11,7 +11,7 @@ module.exports = (client, { d: data }) => {
    * Emitted whenever a relationship is updated.
    * @event Client#relationshipAdd
    * @param {Snowflake} user The userID that was updated
-   * @param {RelationshipTypes} type The new relationship type (String)
+   * @param {RelationshipTypes} type The new relationship type
    */
   client.emit(Events.RELATIONSHIP_ADD, data.id, RelationshipTypes[data.type]);
 };

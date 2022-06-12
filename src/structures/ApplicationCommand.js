@@ -626,9 +626,11 @@ class ApplicationCommand extends Base {
           // ApplicationCommandData
           version: this.version,
           id: this.id,
+          guild_id: message.guildId,
           name: this.name,
           type: ApplicationCommandTypes[this.type],
           options: option_,
+          attachments: [], // Todo
         },
         nonce: SnowflakeUtil.generate(),
       },
@@ -648,7 +650,7 @@ class ApplicationCommand extends Base {
    * await command.sendContextMenu(messsage);
    */
   async sendContextMenu(message, sendFromMessage = false) {
-    if (!(message instanceof Message && !sendFromMessage)) {
+    if (!sendFromMessage && !(message instanceof Message)) {
       throw new TypeError('The message must be a Discord.Message');
     }
     if (this.type == 'CHAT_INPUT') return false;

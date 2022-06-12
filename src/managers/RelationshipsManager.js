@@ -27,6 +27,14 @@ class RelationshipsManager {
   }
 
   /**
+   * Return array of cache
+   * @returns {Array<{id: Snowflake, type: RelationshipTypes}>}
+   */
+  toArray() {
+    return this.cache.map((value, key) => ({ id: key, type: RelationshipTypes[value] }));
+  }
+
+  /**
    * @private
    * @param {Array<User>} users An array of users to add to the cache
    * @returns {void}

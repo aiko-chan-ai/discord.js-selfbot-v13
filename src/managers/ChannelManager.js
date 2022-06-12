@@ -129,7 +129,6 @@ class ChannelManager extends CachedManager {
     // Check
     if (!recipients || !Array.isArray(recipients)) throw new Error('No recipients || Invalid Type (Array)');
     recipients = recipients.filter(r => r instanceof User && r.id && r.friend);
-    console.log(recipients);
     if (recipients.length < 2 || recipients.length > 9) throw new Error('Invalid Users length (2 - 9)');
     const data = await this.client.api.users['@me'].channels.post({
       data: { recipients: recipients.map(r => r.id) },
