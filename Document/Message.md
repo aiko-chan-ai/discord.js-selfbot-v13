@@ -1,6 +1,7 @@
 # Quick Links:
 - [Interaction](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md#interaction)
 - [Embed](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/Message.md#messageembed-)
+- [Slash command demo](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md)
 
 ## Interaction
 <details open>
@@ -9,15 +10,16 @@
 ```js
 /* Save to cache */
 // In guild (Opcode 24)
-await guild.searchInteraction(
+const res = await guild.searchInteraction(
 	{
 		limit: 100, // default: 1
 		query: 'ping', // optional
 		type: 'CHAT_INPUT', // default: 'CHAT_INPUT'
 		offset: 0, // default: 0
-		botID: ['botid1', 'botid2'], // optional
+		botId: 'botid1'
 	}
 );
+// With `type` && `BotId`: Return ApplicationCommand; else return undefined
 // Fetch all commands (1 bot) Shouldn't be used
 await bot.applications.fetch(
 	{
@@ -31,16 +33,16 @@ await bot.applications.fetch(
 <summary>Button Click</summary>
 
 ```js
-await Button.click(Message); // Message has button (v1)
+await Button.click(Message);
 //
-await message.clickButton(buttonID); // Message has button (v2)
+await message.clickButton(buttonID);
 ```
 </details>
 <details open>
 <summary>Message Select Menu</summary>
 
 ```js
-await MessageSelectMenu.select(Message, options); // Message has menu (v1)
+await MessageSelectMenu.select(Message, options); // (v1)
 // value: ['value1', 'value2' , ...]
 await message.selectMenu(menuID, options) // If message has >= 2 menu
 await message.selectMenu(options) // If message has 1 menu
@@ -49,14 +51,15 @@ await message.selectMenu(options) // If message has 1 menu
 <details open>
 <summary>Slash Command</summary>
 
+<strong>[Demo](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md)</strong>
+
 ```js
-// v1 [deprecated]
 // v2
-await Channel.sendSlash(botID, commandName, ['option1', 'option2']);
+await Channel.sendSlash(botID, commandName, 'option1', 123, true, new MessageAttachment(buffer, 'test.png'));
 // Eg /addrole roleID: 12345678987654321 userID: 98765432123456789
 // => await Channel.sendSlash(botID, 'addrole', ['12345678987654321', '98765432123456789']);
 // Command group
-await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2']);
+await Channel.sendSlash(botID, commandName, 'sub command', 'option1', 'option2');
 // Eg: /role add roleID: 12345678987654321 userID: 98765432123456789
 // => await Channel.sendSlash(botID, 'role', ['add', '12345678987654321', '98765432123456789']);
 ```
@@ -65,8 +68,6 @@ await Channel.sendSlash(botID, commandName, ['sub command', 'option1', 'option2'
 <summary>Message Context Command</summary>
 
 ```js
-// v1 [deprecated]
-// v2
 await message.contextMenu(botID, commandName);
 ```
 </details>
@@ -76,12 +77,11 @@ await message.contextMenu(botID, commandName);
 - It has some minor bugs.
 > DiscordAPIError [20012] You are not authorized to perform this action on this application
 > 
-> I tried to fix it by creating 1 DMs with bot
+> Fix it: creating 1 DMs with bot
 > 
 > In this way, all Slash commands can be obtained
-- I will try to find another way to not need to create DMs with Bot anymore
-- Credit: [Here](https://www.reddit.com/r/Discord_selfbots/comments/tczprx/discum_help_creating_a_selfbot_that_can_do_ping/)
-- <strong>Update: Now to get more secure interaction commands you need to use guild.searchInteraction() (using gateway)</strong>
+- <strong>Now to get more secure interaction commands you need to use guild.searchInteraction() (using gateway)</strong>
+- With REST: update soon.
 </details>
 
 ## MessageEmbed ?
