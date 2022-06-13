@@ -3,9 +3,10 @@
 const { Message } = require('discord.js');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
+const MessageAttachment = require('../structures/MessageAttachment');
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
+const DataResolver = require('../util/DataResolver');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-
 /**
  * Represents an application command.
  * @extends {Base}
@@ -523,6 +524,21 @@ class ApplicationCommand extends Base {
     }
     if (this.type !== 'CHAT_INPUT') return false;
     const optionFormat = [];
+    const attachments = [];
+    const attachmentsBuffer = [];
+    async function addDataFromAttachment(data) {
+      if (!(data instanceof MessageAttachment)) {
+        throw new TypeError('The attachment data must be a Discord.MessageAttachment');
+      }
+      const id = attachments.length;
+      attachments.push({
+        id: id,
+        filename: data.name,
+      });
+      const resource = await DataResolver.resolveFile(data.attachment);
+      attachmentsBuffer.push({ attachment: data.attachment, name: data.name, file: resource });
+      return id;
+    }
     let option_ = [];
     let i = 0;
     // Check Command type is Sub group ?
@@ -541,11 +557,6 @@ class ApplicationCommand extends Base {
     }
     for (i; i < options.length; i++) {
       const value = options[i];
-      if (typeof value !== 'string') {
-        throw new TypeError(
-          `Expected option to be a String, got ${typeof value}. If you type Number, please convert to String.`,
-        );
-      }
       if (!subCommandCheck && !this?.options[i]) continue;
       if (subCommandCheck && subCommand?.options && !subCommand?.options[i]) continue;
       if (!subCommandCheck) {
@@ -556,11 +567,11 @@ class ApplicationCommand extends Base {
             this.options[i].choices.find(c => c.name == value) || this.options[i].choices.find(c => c.value == value);
           if (!choice) {
             throw new Error(
-              `Invalid option: ${value} is not a valid choice for this option\nList of choices: ${this.options[
+              `Invalid option: ${value} is not a valid choice for this option\nList of choices:\n${this.options[
                 i
               ].choices
-                .map((c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`)
-                .join('')}`,
+                .map((c, i) => `  #${i + 1} Name: ${c.name} Value: ${c.value}`)
+                .join('\n')}`,
             );
           }
         }
@@ -569,7 +580,9 @@ class ApplicationCommand extends Base {
           name: this.options[i].name,
           value:
             choice?.value ||
-            (this.options[i].type == 'INTEGER'
+            (this.options[i].type == 'ATTACHMENT'
+              ? await addDataFromAttachment(value)
+              : this.options[i].type == 'INTEGER'
               ? Number(value)
               : this.options[i].type == 'BOOLEAN'
               ? Boolean(value)
@@ -600,7 +613,9 @@ class ApplicationCommand extends Base {
           name: subCommand.options[i].name,
           value:
             choice?.value ||
-            (subCommand.options[i].type == 'INTEGER'
+            (subCommand.options[i].type == 'ATTACHMENT'
+              ? await addDataFromAttachment(value)
+              : subCommand.options[i].type == 'INTEGER'
               ? Number(value)
               : subCommand.options[i].type == 'BOOLEAN'
               ? Boolean(value)
@@ -615,25 +630,28 @@ class ApplicationCommand extends Base {
     if (subCommandCheck && subCommand?.options && subCommand?.options[i]?.required) {
       throw new Error('Value required missing');
     }
-    await this.client.api.interactions.post({
-      body: {
-        type: 2, // ???
-        application_id: this.applicationId,
-        guild_id: message.guildId,
-        channel_id: message.channelId,
-        session_id: this.client.session_id,
-        data: {
-          // ApplicationCommandData
-          version: this.version,
-          id: this.id,
-          guild_id: message.guildId,
-          name: this.name,
-          type: ApplicationCommandTypes[this.type],
-          options: option_,
-          attachments: [], // Todo
-        },
-        nonce: SnowflakeUtil.generate(),
+    const data = {
+      type: 2, // ???
+      application_id: this.applicationId,
+      guild_id: message.guildId,
+      channel_id: message.channelId,
+      session_id: this.client.session_id,
+      data: {
+        // ApplicationCommandData
+        version: this.version,
+        id: this.id,
+        name: this.name,
+        type: ApplicationCommandTypes[this.type],
+        options: option_,
+        attachments: attachments,
       },
+      nonce: SnowflakeUtil.generate(),
+    };
+    console.log('Send', data);
+    await this.client.api.interactions.post({
+      body: data,
+      data,
+      files: attachmentsBuffer,
     });
     return true;
   }
