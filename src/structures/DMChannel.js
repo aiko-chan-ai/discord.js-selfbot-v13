@@ -110,7 +110,6 @@ class DMChannel extends Channel {
       this.client.api
         .channels(this.id)
         .call.ring.post({
-          usingApplicationJson: true,
           data: {
             recipients: null,
           },

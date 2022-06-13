@@ -215,8 +215,7 @@ class PartialGroupDMChannel extends Channel {
       this.client.api
         .channels(this.id)
         .call.ring.post({
-          usingApplicationJson: true,
-          data: {
+          body: {
             recipients: null,
           },
         })

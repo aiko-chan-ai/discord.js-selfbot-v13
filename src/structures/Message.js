@@ -999,8 +999,7 @@ class Message extends Base {
    * @returns {boolean}
    */
   async markUnread() {
-    await this.client.api.channels[this.channelId].messages[this.id].ack({
-      usingApplicationJson: true,
+    await this.client.api.channels[this.channelId].messages[this.id].ack.post({
       data: {
         manual: true,
         mention_count:
