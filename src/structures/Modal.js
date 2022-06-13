@@ -142,12 +142,12 @@ class Modal {
    * @example
    * // With Event
    * client.on('interactionModalCreate', modal => {
-   * 	modal.reply('guildId', 'channelId', {
-   * 		customId: 'code',
-   * 		value: '1+1'
-   * 	}, {
+   *  modal.reply('guildId', 'channelId', {
+   *    customId: 'code',
+   *    value: '1+1'
+   *  }, {
    *    customId: 'message',
-   * 		value: 'hello'
+   *    value: 'hello'
    *  })
    * })
    */
