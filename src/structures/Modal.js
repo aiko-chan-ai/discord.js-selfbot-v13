@@ -139,6 +139,17 @@ class Modal {
    * @param {Snowflake} channelId ChannelID of the channel to send the modal to
    * @param  {...ModalReplyData} data Data to send with the modal
    * @returns {Promise<boolean>}
+   * @example
+   * // With Event
+   * client.on('interactionModalCreate', modal => {
+   * 	modal.reply('guildId', 'channelId', {
+   * 		customId: 'code',
+   * 		value: '1+1'
+   * 	}, {
+   *    customId: 'message',
+   * 		value: 'hello'
+   *  })
+   * })
    */
   async reply(guildId, channelId, ...data) {
     // Test
