@@ -146,7 +146,7 @@ class Modal {
    * 		customId: 'code',
    * 		value: '1+1'
    * 	}, {
-   *    customId: 'message',
+   * 		customId: 'message',
    * 		value: 'hello'
    *  })
    * })
