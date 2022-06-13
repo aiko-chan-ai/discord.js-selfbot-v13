@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.2`, based on `discord.js@13.8.0`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.3`, based on `discord.js@13.8.0`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -36,15 +36,12 @@ But if you want to see some specific notes (with pictures) you can go to [here](
 ### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 ## Checklist
-- [x] Send + receive messages with Attachment, Embed (WebEmbed), etc.
+- [x] Send + receive messages (not send Embed :v ).
 - [x] Setting Discord App (Missing a lot of functions)
-- [X] Requests (add friends, join guilds, etc.)
-- [X] Profile Editing (Name, Status, Avatar, Bio, Rich-Presence, etc.)
-- [X] Interactions (slash commands, buttons, etc.)
-- [X] Voice Channel (Join, Leave, Speak, etc.)
+- [X] REST (Guild, Relationships, Profile Editing)
+- [X] Interactions (slash commands, buttons, context menu, modal)
+- [X] Voice (Call, Join, Leave, Speak, etc.)
 - [X] Documentation
-- [X] Audio call
-- [X] Recieve messages from large servers
 - [ ] Add more guild http api wraps
 - [ ] Video stream
 - [ ] Everything
@@ -127,3 +124,5 @@ Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
 Được tạo bởi người Việt Nam, dựa trên Discord API v9, đây là một trong những module selfbot được hỗ trợ tốt nhất.
+
+# From Github with love 💕

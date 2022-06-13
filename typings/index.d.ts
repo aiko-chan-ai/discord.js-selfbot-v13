@@ -1974,6 +1974,9 @@ export class Modal {
   public components: MessageActionRow<ModalActionRowComponent>[];
   public customId: string | null;
   public title: string | null;
+  public application: object | null;
+  public client: Client | null;
+  public nonce: Snowflake | null;
   public addComponents(
     ...components: (
       | MessageActionRow<ModalActionRowComponent>
@@ -1997,6 +2000,12 @@ export class Modal {
   ): this;
   public setTitle(title: string): this;
   public toJSON(): RawModalSubmitInteractionData;
+  public reply(guildId: Snowflake, channelId: Snowflake, ...args: ModalReplyData[]): Promise<boolean>;
+}
+
+export interface ModalReplyData {
+  customId: string;
+  value: string;
 }
 
 export class ModalSubmitFieldsResolver {
@@ -4042,6 +4051,7 @@ export interface ClientEvents extends BaseClientEvents {
   interactionCreate: [interaction: Interaction | { nonce: Snowflake; id: Snowflake }];
   interactionSuccess: [interaction: { nonce: Snowflake; id: Snowflake }];
   interactionFailed: [interaction: { nonce: Snowflake; id: Snowflake }];
+  interactionModalCreate: [modal: Modal];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
   shardError: [error: Error, shardId: number];
   shardReady: [shardId: number, unavailableGuilds: Set<Snowflake> | undefined];
@@ -4123,6 +4133,7 @@ export interface ConstantsEvents {
   WEBHOOKS_UPDATE: 'webhookUpdate';
   INTERACTION_CREATE: 'interactionCreate';
   INTERACTION_SUCCESS: 'interactionSuccess';
+  INTERACTION_MODAL_CREATE: 'interactionModalCreate';
   INTERACTION_FAILED: 'interactionFailed';
   ERROR: 'error';
   WARN: 'warn';

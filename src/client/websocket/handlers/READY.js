@@ -8,25 +8,31 @@ const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
 const { Networking } = require('../../../util/Voice');
 
+/**
+ * Emitted whenever clientOptions.checkUpdate = true
+ * @event Client#update
+ * @param {string} data Log data :)) ehe
+ */
+
 async function checkUpdate(client) {
   const res_ = await axios
     .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
     .catch(() => {});
   if (!res_) {
-    return client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error`);
+    return client.emit('update', `${chalk.redBright('[Fail]')} Check Update error`);
   }
   const lastest_tag = res_.data['dist-tags'].latest;
   // Checking if the package is outdated
   // Stable version
   if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
     return client.emit(
-      Events.DEBUG,
+      'update',
       `${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
 Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`,
     );
   }
   client.emit(
-    Events.DEBUG,
+    'update',
     `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
   );
   return null;

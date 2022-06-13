@@ -297,6 +297,10 @@ exports.Events = {
    * @private This event is not documented in the API.
    */
   INTERACTION_FAILED: 'interactionFailed',
+  /**
+   * @private This event is not documented in the API.
+   */
+  INTERACTION_MODAL_CREATE: 'interactionModalCreate',
   ERROR: 'error',
   WARN: 'warn',
   DEBUG: 'debug',

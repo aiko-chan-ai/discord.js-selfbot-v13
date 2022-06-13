@@ -63,6 +63,12 @@ class APIRequest {
         } else {
           body.append('payload_json', JSON.stringify(this.options.data));
         }
+      } else if (typeof this.options.body !== 'undefined') {
+        if (this.options.dontUsePayloadJSON) {
+          for (const [key, value] of Object.entries(this.options.body)) body.append(key, value);
+        } else {
+          body.append('payload_json', JSON.stringify(this.options.body));
+        }
       }
       headers = Object.assign(headers, body.getHeaders());
       // eslint-disable-next-line eqeqeq

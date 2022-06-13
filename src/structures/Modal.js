@@ -1,6 +1,8 @@
 'use strict';
 
 const BaseMessageComponent = require('./BaseMessageComponent');
+const User = require('./User');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
 /**
@@ -37,6 +39,31 @@ class Modal {
      * @type {?string}
      */
     this.title = data.title ?? null;
+
+    /**
+     * Timestamp (Discord epoch) of when this modal was created
+     * @type {?Snowflake}
+     */
+    this.nonce = data.nonce ?? null;
+
+    /**
+     * ID of modal ???
+     * @type {?Snowflake}
+     */
+    this.id = data.id ?? null;
+
+    /**
+     * Application sending the modal
+     * @type {?Object}
+     */
+    this.application = data.application
+      ? {
+          ...data.application,
+          bot: data.application.bot ? new User(client, data.application.bot) : null,
+        }
+      : null;
+
+    this.client = client;
   }
 
   /**
@@ -96,7 +123,84 @@ class Modal {
       components: this.components.map(c => c.toJSON()),
       custom_id: this.customId,
       title: this.title,
+      id: this.id,
     };
+  }
+
+  /**
+   * @typedef {Object} ModalReplyData
+   * @property {string} [customId] TextInputComponent custom id
+   * @property {string} [value] TextInputComponent value
+   */
+
+  /**
+   * Reply to this modal with data. (Event only)
+   * @param {Snowflake} guildId GuildID of the guild to send the modal to
+   * @param {Snowflake} channelId ChannelID of the channel to send the modal to
+   * @param  {...ModalReplyData} data Data to send with the modal
+   * @returns {Promise<boolean>}
+   */
+  async reply(guildId, channelId, ...data) {
+    // Test
+    if (this.application) throw new Error('Modal cannot reply (Missing Application)');
+    const guild = this.client.guilds.cache.get(guildId);
+    if (!guild) throw new Error('GUILD_NOT_FOUND', `Guild ${guildId} not found`);
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) throw new Error('CHANNEL_NOT_FOUND', `Channel ${channelId} [Guild ${guildId}] not found`);
+    // Add data to components
+    // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
+    // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow
+    for (let i = 0; i < this.components.length; i++) {
+      const value = data.find(d => d.customId == this.components[i].components[0].customId);
+      if (this.components[i].components[0].required == true) {
+        if (!value) {
+          throw new Error(
+            'MODAL_REQUIRED_FIELD_MISSING\n' +
+              `Required fieldId ${this.components[i].components[0].customId} missing value`,
+          );
+        }
+        if (!(typeof value?.value == 'string')) {
+          throw new Error(
+            'MODAL_REPLY_DATA_INVALID\n' +
+              `Data (Required) must be strings, got ${typeof value.value} [Custom ID: ${value.customId}]`,
+          );
+        }
+      }
+      if (value) {
+        if (!(typeof value?.value == 'string')) {
+          console.warn(
+            'Warning: MODAL_REPLY_DATA_INVALID',
+            `Data (Not required) must be strings, got ${typeof value.value} [Custom ID: ${value.customId}]`,
+          );
+          continue;
+        }
+        this.components[i].components[0].value = value.value;
+      }
+      delete this.components[i].components[0].maxLength;
+      delete this.components[i].components[0].minLength;
+      delete this.components[i].components[0].required;
+      delete this.components[i].components[0].placeholder;
+      delete this.components[i].components[0].label;
+      delete this.components[i].components[0].style;
+    }
+    // Filter
+    this.components = this.components.filter(c => c.components[0].value && c.components[0].value !== '');
+    // Get Object
+    const dataFinal = this.toJSON();
+    delete dataFinal.title;
+    const postData = {
+      type: 5, // Maybe modal ... (2: slash, context menu)
+      application_id: this.application.id,
+      guild_id: guildId,
+      channel_id: channelId,
+      data: dataFinal,
+      nonce: SnowflakeUtil.generate(),
+      session_id: this.client.session_id,
+    };
+    await this.client.api.interactions.post({
+      data: postData,
+    });
+    return true;
   }
 }
 
