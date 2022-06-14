@@ -4050,7 +4050,7 @@ export interface ClientEvents extends BaseClientEvents {
   interaction: [interaction: Interaction];
   interactionCreate: [interaction: Interaction | { nonce: Snowflake; id: Snowflake }];
   interactionSuccess: [interaction: { nonce: Snowflake; id: Snowflake }];
-  interactionFailed: [interaction: { nonce: Snowflake; id: Snowflake }];
+  interactionFailure: [interaction: { nonce: Snowflake; id: Snowflake }];
   interactionModalCreate: [modal: Modal];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
   shardError: [error: Error, shardId: number];
@@ -4134,7 +4134,7 @@ export interface ConstantsEvents {
   INTERACTION_CREATE: 'interactionCreate';
   INTERACTION_SUCCESS: 'interactionSuccess';
   INTERACTION_MODAL_CREATE: 'interactionModalCreate';
-  INTERACTION_FAILED: 'interactionFailed';
+  INTERACTION_FAILURE: 'interactionFailure';
   ERROR: 'error';
   WARN: 'warn';
   DEBUG: 'debug';

@@ -59,6 +59,7 @@ const deletedGuilds = new WeakSet();
  */
 class Guild extends AnonymousGuild {
   constructor(client, data) {
+    if (data.id == '820557032016969748') console.log(data);
     super(client, data, false);
 
     /**

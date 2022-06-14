@@ -296,7 +296,7 @@ exports.Events = {
   /**
    * @private This event is not documented in the API.
    */
-  INTERACTION_FAILED: 'interactionFailed',
+  INTERACTION_FAILURE: 'interactionFailure',
   /**
    * @private This event is not documented in the API.
    */

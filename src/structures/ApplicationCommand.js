@@ -630,24 +630,6 @@ class ApplicationCommand extends Base {
     if (subCommandCheck && subCommand?.options && subCommand?.options[i]?.required) {
       throw new Error('Value required missing');
     }
-    const data2 = {
-      type: 2, // Slash command, context menu
-      application_id: this.applicationId,
-      guild_id: message.guildId,
-      channel_id: message.channelId,
-      session_id: this.client.session_id,
-      data: {
-        // ApplicationCommandData
-        version: this.version,
-        id: this.id,
-        name: this.name,
-        guild_id: message.guildId,
-        type: ApplicationCommandTypes[this.type],
-        options: option_,
-        attachments: attachments,
-      },
-      nonce: SnowflakeUtil.generate(),
-    };
     const data = {
       type: 2, // Slash command, context menu
       application_id: this.applicationId,
@@ -671,8 +653,9 @@ class ApplicationCommand extends Base {
         files: attachmentsBuffer,
       })
       .catch(async () => {
+        data.data.guild_id = message.guildId;
         await this.client.api.interactions.post({
-          body: data2,
+          body: data,
           files: attachmentsBuffer,
         });
       });

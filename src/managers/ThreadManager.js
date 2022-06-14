@@ -227,17 +227,17 @@ class ThreadManager extends CachedManager {
 
   /**
    * Discord.js self-bot specific options field for fetching active threads.
-   * @typedef {Object} FetchChannelThreadsOptions 
-   * @property {string} [sort_by] The order in which the threads should be fetched in (default is last_message_time)
-   * @property {string} [sort_order] How the threads should be ordered (default is desc)
+   * @typedef {Object} FetchChannelThreadsOptions
+   * @property {string} [sortBy] The order in which the threads should be fetched in (default is last_message_time)
+   * @property {string} [sortOrder] How the threads should be ordered (default is desc)
    * @property {number} [limit] The maximum number of threads to return (default is 25)
    * @property {number} [offset] The number of threads to offset fetching (useful when making multiple fetches) (default is 0)
-  */
+   */
 
   /**
    * Obtains the accessible active threads from Discord, requires `READ_MESSAGE_HISTORY` in the parent channel.
    * @param {boolean} [cache=true] Whether to cache the new thread objects if they aren't already
-   * @param {FetchChannelThreadsOptions} [selfbot_options] Options for self-bots where advanced users can specify further options
+   * @param {FetchChannelThreadsOptions} [options] Options for self-bots where advanced users can specify further options
    * @returns {Promise<FetchedThreads>}
    */
   async fetchActive(cache = true, options = null) {
@@ -245,10 +245,16 @@ class ThreadManager extends CachedManager {
       throw new Error('INVALID_BOT_OPTIONS: Options can only be specified for user accounts.');
     }
 
-    const raw = this.client.user.bot ? 
-      await this.client.api.guilds(this.channel.guild.id).threads.active.get()
-      : await this.client.api.channels(this.channel.id).threads[`search?archived=false&limit=${options?.limit || '25'}&offset=${options?.offset || '0'}&sort_by=${options?.sort_by || 'last_message_time'}&sort_order=${options?.sort_order || 'desc'}`].get();
-      
+    const raw = this.client.user.bot
+      ? await this.client.api.guilds(this.channel.guild.id).threads.active.get()
+      : await this.client.api
+          .channels(this.channel.id)
+          .threads[
+            `search?archived=false&limit=${options?.limit || '25'}&offset=${options?.offset || '0'}&sort_by=${
+              options?.sortBy || 'last_message_time'
+            }&sort_order=${options?.sortOrder || 'desc'}`
+          ].get();
+
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 
