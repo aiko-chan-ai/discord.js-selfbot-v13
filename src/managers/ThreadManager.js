@@ -247,13 +247,15 @@ class ThreadManager extends CachedManager {
 
     const raw = this.client.user.bot
       ? await this.client.api.guilds(this.channel.guild.id).threads.active.get()
-      : await this.client.api
-          .channels(this.channel.id)
-          .threads[
-            `search?archived=false&limit=${options?.limit || '25'}&offset=${options?.offset || '0'}&sort_by=${
-              options?.sortBy || 'last_message_time'
-            }&sort_order=${options?.sortOrder || 'desc'}`
-          ].get();
+      : await this.client.api.channels(this.channel.id).threads.search.get({
+          query: {
+            archived: false,
+            limit: options?.limit ?? 25,
+            offset: options?.offset ?? 0,
+            sort_by: options?.sortBy ?? 'last_message_time',
+            sort_order: options?.sortOrder ?? 'desc',
+          },
+        });
 
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
