@@ -32,7 +32,7 @@
 
 
 ### <strong>[Document Website (recommend)](https://discordjs-self-v13.netlify.app/)</strong>
-But if you want to see some specific notes (with pictures) you can go to [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/DOCUMENT.md) or go to [wiki](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/wiki)
+But if you want to see some specific notes (with pictures) you can go to [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)
 ### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
 
 ## Checklist
