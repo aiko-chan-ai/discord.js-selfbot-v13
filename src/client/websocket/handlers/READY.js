@@ -11,7 +11,8 @@ const { Networking } = require('../../../util/Voice');
 /**
  * Emitted whenever clientOptions.checkUpdate = true
  * @event Client#update
- * @param {string} data Log data :)) ehe
+ * @param {string} oldVersion Log data :v
+ * @param {string} newVersion Log data :)) ehe
  */
 
 async function checkUpdate(client) {
@@ -22,19 +23,7 @@ async function checkUpdate(client) {
     return client.emit('update', `${chalk.redBright('[Fail]')} Check Update error`);
   }
   const lastest_tag = res_.data['dist-tags'].latest;
-  // Checking if the package is outdated
-  // Stable version
-  if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
-    return client.emit(
-      'update',
-      `${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
-Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}`,
-    );
-  }
-  client.emit(
-    'update',
-    `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(Discord.version)}`,
-  );
+  client.emit('update', Discord.version, lastest_tag);
   return null;
 }
 
