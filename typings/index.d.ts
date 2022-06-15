@@ -528,6 +528,7 @@ export type MappedChannelCategoryTypes = EnumValueMapped<
     GUILD_TEXT: TextChannel;
     GUILD_STORE: StoreChannel;
     GUILD_STAGE_VOICE: StageChannel;
+    GUILD_FORUM: void;
   }
 >;
 
