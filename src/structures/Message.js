@@ -1041,8 +1041,8 @@ class Message extends Base {
   }
   /**
    * Select specific menu or First Menu
-   * @param {string<MessageSelectMenu.customID>|Array<MenuOptions>} menuID Select Menu specific id or auto select first Menu
-   * @param {Array<MenuOptions>} options Menu Options
+   * @param {string|Array<string>} menuID Select Menu specific id or auto select first Menu
+   * @param {Array<string>} options Menu Options
    */
   async selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
@@ -1074,37 +1074,54 @@ class Message extends Base {
   //
   /**
    * Send context Menu v2
-   * @param {DiscordBotID} botID Bot id
-   * @param {string<ApplicationCommand.name>} commandName Command name in Context Menu
-   * @returns {Promise<pending>}
+   * @param {Snowflake} botId Bot id
+   * @param {string} commandName Command name in Context Menu
+   * @param {boolean} [search=true] Search for command
+   * @returns {Promise<void>}
    */
-  async contextMenu(botID, commandName) {
-    if (!botID) throw new Error('Bot ID is required');
-    const user = await this.client.users.fetch(botID).catch(() => {});
+  async contextMenu(botId, commandName, search = true) {
+    if (!botId) throw new Error('Bot ID is required');
+    const user = await this.client.users.fetch(botId).catch(() => {});
     if (!user || !user.bot || !user.applications) {
       throw new Error('BotID is not a bot or does not have an application slash command');
     }
     if (!commandName || typeof commandName !== 'string') {
       throw new Error('Command name is required');
     }
-    const listApplication =
-      user.applications.cache.size == 0 ? await user.applications.fetch() : user.applications.cache;
-    let contextCMD;
-    await Promise.all(
-      listApplication.map(application => {
-        if (commandName == application.name && application.type !== 'CHAT_INPUT') {
-          contextCMD = application;
-        }
-        return true;
-      }),
-    );
-    if (!contextCMD) {
+    // https://discord.com/api/v9/channels/817671035813888030/application-commands/search?type=3&application_id=817229550684471297
+    let contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
+    if (!contextCMD && !search) {
       throw new Error(
-        `Command ${commandName} is not found\nList command avalible: ${listApplication
-          .filter(a => a.type !== 'CHAT_INPUT')
+        'INTERACTION_SEND_FAILURE',
+        `Command ${commandName} is not found (without search)\nList command avalible: ${user.applications.cache
+          .filter(a => a.type == 'MESSAGE')
           .map(a => a.name)
           .join(', ')}`,
       );
+    } else {
+      const data = await this.client.api.channels[this.channelId]['application-commands'].search.get({
+        query: {
+          type: 3, // MESSAGE,
+          // include_applications: false,
+          // query: commandName,
+          limit: 25,
+          // Shet
+          application_id: botId,
+        },
+      });
+      for (const command of data.application_commands) {
+        user.applications._add(command, true);
+      }
+      contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
+      if (!contextCMD) {
+        throw new Error(
+          'INTERACTION_SEND_FAILURE',
+          `Command ${commandName} is not found (with search)\nList command avalible: ${user.applications.cache
+            .filter(a => a.type == 'MESSAGE')
+            .map(a => a.name)
+            .join(', ')}`,
+        );
+      }
     }
     return contextCMD.sendContextMenu(this, true);
   }
