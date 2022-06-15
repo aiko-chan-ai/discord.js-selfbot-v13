@@ -393,11 +393,10 @@ class TextBasedChannel {
    * Send Slash to this channel
    * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
    * @param {string} commandName Command name
-   * @param {boolean} [search=true] Whether to search for the command
    * @param {...?string} args Command arguments
    * @returns {Promise<pending>}
    */
-  async sendSlash(botId, commandName, search = true, ...args) {
+  async sendSlash(botId, commandName, ...args) {
     if (!botId) throw new Error('Bot ID is required');
     // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});
@@ -405,42 +404,33 @@ class TextBasedChannel {
       throw new Error('botId is not a bot or does not have an application slash command');
     }
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    let commandTarget = user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
-    if (!commandTarget && !search) {
+    // Using API to search (without opcode ~ehehe)
+    let commandTarget;
+    // https://discord.com/api/v9/channels/id/application-commands/search?type=1&query=aiko&limit=7&include_applications=false&application_id=id
+    const data = await this.client.api.channels[this.id]['application-commands'].search.get({
+      query: {
+        type: 1, // CHAT_INPUT,
+        include_applications: false,
+        query: commandName,
+        limit: 25,
+        // Shet
+        // application_id: botId,
+      },
+    });
+    for (const command of data.application_commands) {
+      if (user.id == command.application_id) {
+        commandTarget = user.applications._add(command, true);
+      }
+    }
+    // Remove
+    // commandTarget = user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
+    if (!commandTarget) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
-        `SlashCommand ${commandName} is not found (Without search)\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(
+        `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(
           ' | ',
         )}`,
       );
-    } else {
-      // Using API to search (without opcode ~ehehe)
-      // https://discord.com/api/v9/channels/id/application-commands/search?type=1&query=aiko&limit=7&include_applications=false&application_id=id
-      const data = await this.client.api.channels[this.id]['application-commands'].search.get({
-        query: {
-          type: 1, // CHAT_INPUT,
-          include_applications: false,
-          query: commandName,
-          limit: 25,
-          // Shet
-          // application_id: botId,
-        },
-      });
-      for (const command of data.application_commands) {
-        if (user.id == command.application_id) {
-          commandTarget = user.applications._add(command, true);
-        }
-      }
-      // Remove
-      // commandTarget = user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
-      if (!commandTarget) {
-        throw new Error(
-          'INTERACTION_SEND_FAILURE',
-          `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(
-            ' | ',
-          )}`,
-        );
-      }
     }
     return commandTarget.sendSlashCommand(
       new Message(this.client, {

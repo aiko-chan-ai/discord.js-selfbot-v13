@@ -1076,10 +1076,9 @@ class Message extends Base {
    * Send context Menu v2
    * @param {Snowflake} botId Bot id
    * @param {string} commandName Command name in Context Menu
-   * @param {boolean} [search=true] Search for command
    * @returns {Promise<void>}
    */
-  async contextMenu(botId, commandName, search = true) {
+  async contextMenu(botId, commandName) {
     if (!botId) throw new Error('Bot ID is required');
     const user = await this.client.users.fetch(botId).catch(() => {});
     if (!user || !user.bot || !user.applications) {
@@ -1089,39 +1088,29 @@ class Message extends Base {
       throw new Error('Command name is required');
     }
     // https://discord.com/api/v9/channels/817671035813888030/application-commands/search?type=3&application_id=817229550684471297
-    let contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
-    if (!contextCMD && !search) {
+    let contextCMD;
+    const data = await this.client.api.channels[this.channelId]['application-commands'].search.get({
+      query: {
+        type: 3, // MESSAGE,
+        // include_applications: false,
+        // query: commandName,
+        limit: 25,
+        // Shet
+        application_id: botId,
+      },
+    });
+    for (const command of data.application_commands) {
+      user.applications._add(command, true);
+    }
+    contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
+    if (!contextCMD) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
-        `Command ${commandName} is not found (without search)\nList command avalible: ${user.applications.cache
+        `Command ${commandName} is not found (with search)\nList command avalible: ${user.applications.cache
           .filter(a => a.type == 'MESSAGE')
           .map(a => a.name)
           .join(', ')}`,
       );
-    } else {
-      const data = await this.client.api.channels[this.channelId]['application-commands'].search.get({
-        query: {
-          type: 3, // MESSAGE,
-          // include_applications: false,
-          // query: commandName,
-          limit: 25,
-          // Shet
-          application_id: botId,
-        },
-      });
-      for (const command of data.application_commands) {
-        user.applications._add(command, true);
-      }
-      contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
-      if (!contextCMD) {
-        throw new Error(
-          'INTERACTION_SEND_FAILURE',
-          `Command ${commandName} is not found (with search)\nList command avalible: ${user.applications.cache
-            .filter(a => a.type == 'MESSAGE')
-            .map(a => a.name)
-            .join(', ')}`,
-        );
-      }
     }
     return contextCMD.sendContextMenu(this, true);
   }

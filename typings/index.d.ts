@@ -1672,7 +1672,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public clickButton(buttonID: string): Promise<void>;
   public selectMenu(menuID: string, options: string[]): Promise<void>;
   public selectMenu(options: string[]): Promise<void>;
-  public contextMenu(botID: Snowflake, commandName: string, search?: boolean): Promise<void>;
+  public contextMenu(botID: Snowflake, commandName: string): Promise<void>;
 }
 
 export class MessageActionRow<
@@ -3719,7 +3719,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
-  sendSlash(botId: Snowflake, commandName: string, search?: boolean, ...args: any): Promise<undefined>;
+  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<undefined>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;
