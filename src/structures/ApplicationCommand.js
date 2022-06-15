@@ -632,6 +632,7 @@ class ApplicationCommand extends Base {
     }
     const data = {
       type: 2, // Slash command, context menu
+      // Type: 4: Auto-complete
       application_id: this.applicationId,
       guild_id: message.guildId,
       channel_id: message.channelId,
@@ -680,7 +681,7 @@ class ApplicationCommand extends Base {
     if (this.type == 'CHAT_INPUT') return false;
     await this.client.api.interactions.post({
       body: {
-        type: 2, // ???
+        type: 2, // Slash command, context menu
         application_id: this.applicationId,
         guild_id: message.guildId,
         channel_id: message.channelId,

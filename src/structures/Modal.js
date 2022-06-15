@@ -200,7 +200,7 @@ class Modal {
     const dataFinal = this.toJSON();
     delete dataFinal.title;
     const postData = {
-      type: 5, // Maybe modal ... (2: slash, context menu)
+      type: 5, // Modal
       application_id: this.application.id,
       guild_id: guildId,
       channel_id: channelId,
