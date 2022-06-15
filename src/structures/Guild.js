@@ -34,6 +34,7 @@ const {
   PremiumTiers,
   Opcodes,
   Events,
+  ApplicationCommandTypes,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -655,7 +656,13 @@ class Guild extends AnonymousGuild {
         clearTimeout(timeout);
         this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
         this.client.decrementMaxListeners();
-        resolve(this.client.users.cache.get(botId)?.applications?.cache?.find(c => c.name === query && c.type == type));
+        resolve(
+          this.client.users.cache
+            .get(botId)
+            ?.applications?.cache?.find(
+              c => (c.name === query && c.type == type) || c.type == ApplicationCommandTypes[type],
+            ),
+        );
       };
       const timeout = setTimeout(() => {
         this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
