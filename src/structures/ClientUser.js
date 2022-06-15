@@ -2,6 +2,7 @@
 
 const { Collection } = require('@discordjs/collection');
 const Invite = require('./Invite');
+const { Message } = require('./Message');
 const User = require('./User');
 const { Util } = require('..');
 const { HypeSquadOptions, Opcodes, NitroState } = require('../util/Constants');
@@ -418,8 +419,8 @@ class ClientUser extends User {
    * @returns {Promise<Invite>}
    * @see https://github.com/13-05/hidden-disc-docs#js-snippet-for-creating-friend-invites
    * @example
-   * // Create an invite to a selected channel
-   * client.user.getInvite({ maxAge: 0, maxUses: 0 });
+   * // Options not working
+   * client.user.getInvite();
    *   .then(console.log)
    *   .catch(console.error);
    */
@@ -434,6 +435,29 @@ class ClientUser extends User {
       },
     });
     return new Invite(this.client, data);
+  }
+
+  /**
+   * Get a collection of messages mentioning clientUser
+   * @param {number} [limit=25] Maximum number of messages to get
+   * @param {boolean} [mentionRoles=true] Whether or not to mention roles
+   * @param {boolean} [mentionEveryone=true] Whether or not to mention `@everyone`
+   * @returns {Promise<Collection<Snowflake, Message>>}
+   */
+  async getMentions(limit = 25, mentionRoles = true, mentionEveryone = true) {
+    // https://canary.discord.com/api/v9/users/@me/mentions?limit=25&roles=true&everyone=true
+    const data = await this.client.api.users['@me'].mentions.get({
+      query: {
+        limit,
+        roles: mentionRoles,
+        everyone: mentionEveryone,
+      },
+    });
+    const collection = new Collection();
+    for (const msg of data) {
+      collection.set(msg.id, new Message(this.client, msg));
+    }
+    return collection;
   }
 }
 

@@ -702,6 +702,7 @@ export class ClientUser extends User {
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
   public getInvite(options?: CreateInviteOptions): Promise<Invite>;
+  public getMentions(limit?: number, mentionRoles?: boolean, mentionEveryone?: boolean): Promise<Collection<Snowflake, Message>>;
   /**
    * Nitro Status
    * `0`: None
