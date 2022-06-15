@@ -138,7 +138,7 @@ class Modal {
    * @param {Snowflake} guildId GuildID of the guild to send the modal to
    * @param {Snowflake} channelId ChannelID of the channel to send the modal to
    * @param  {...ModalReplyData} data Data to send with the modal
-   * @returns {Promise<boolean>}
+   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    * @example
    * // With Event
    * client.on('interactionModalCreate', modal => {
@@ -199,19 +199,20 @@ class Modal {
     // Get Object
     const dataFinal = this.toJSON();
     delete dataFinal.title;
+    const nonce = SnowflakeUtil.generate();
     const postData = {
       type: 5, // Modal
       application_id: this.application.id,
       guild_id: guildId,
       channel_id: channelId,
       data: dataFinal,
-      nonce: SnowflakeUtil.generate(),
+      nonce,
       session_id: this.client.session_id,
     };
     await this.client.api.interactions.post({
       data: postData,
     });
-    return true;
+    return nonce;
   }
 }
 

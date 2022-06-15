@@ -1076,7 +1076,7 @@ class Message extends Base {
    * Send context Menu v2
    * @param {Snowflake} botId Bot id
    * @param {string} commandName Command name in Context Menu
-   * @returns {Promise<void>}
+   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    */
   async contextMenu(botId, commandName) {
     if (!botId) throw new Error('Bot ID is required');
@@ -1112,7 +1112,8 @@ class Message extends Base {
           .join(', ')}`,
       );
     }
-    return contextCMD.sendContextMenu(this, true);
+    const nonce = await contextCMD.sendContextMenu(this, true);
+    return nonce;
   }
 }
 

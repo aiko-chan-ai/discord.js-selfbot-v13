@@ -279,8 +279,8 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private static transformCommand(command: ApplicationCommandData): RESTPostAPIApplicationCommandsJSONBody;
   private static isAPICommandData(command: object): command is RESTPostAPIApplicationCommandsJSONBody;
   // Add
-  public static sendSlashCommand(message: Message, options?: string[]): Promise<boolean>;
-  public static sendContextMenu(message: Message): Promise<boolean>;
+  public static sendSlashCommand(message: Message, options?: string[]): Promise<Snowflake>;
+  public static sendContextMenu(message: Message): Promise<Snowflake>;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -702,7 +702,11 @@ export class ClientUser extends User {
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
   public getInvite(options?: CreateInviteOptions): Promise<Invite>;
-  public getMentions(limit?: number, mentionRoles?: boolean, mentionEveryone?: boolean): Promise<Collection<Snowflake, Message>>;
+  public getMentions(
+    limit?: number,
+    mentionRoles?: boolean,
+    mentionEveryone?: boolean,
+  ): Promise<Collection<Snowflake, Message>>;
   /**
    * Nitro Status
    * `0`: None
@@ -1673,7 +1677,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public clickButton(buttonID: string): Promise<void>;
   public selectMenu(menuID: string, options: string[]): Promise<void>;
   public selectMenu(options: string[]): Promise<void>;
-  public contextMenu(botID: Snowflake, commandName: string): Promise<void>;
+  public contextMenu(botID: Snowflake, commandName: string): Promise<Snowflake>;
 }
 
 export class MessageActionRow<
@@ -2002,7 +2006,7 @@ export class Modal {
   ): this;
   public setTitle(title: string): this;
   public toJSON(): RawModalSubmitInteractionData;
-  public reply(guildId: Snowflake, channelId: Snowflake, ...args: ModalReplyData[]): Promise<boolean>;
+  public reply(guildId: Snowflake, channelId: Snowflake, ...args: ModalReplyData[]): Promise<Snowflake>;
 }
 
 export interface ModalReplyData {
@@ -3558,6 +3562,23 @@ export class MessageManager extends CachedManager<Snowflake, Message, MessageRes
   public react(message: MessageResolvable, emoji: EmojiIdentifierResolvable): Promise<void>;
   public pin(message: MessageResolvable, reason?: string): Promise<void>;
   public unpin(message: MessageResolvable, reason?: string): Promise<void>;
+  public search(options: MessageSearchOptions): Promise<MessageSearchResult>;
+}
+
+export interface MessageSearchOptions {
+  author: Snowflake[];
+  content: string;
+  mentions: Snowflake[];
+  has: ('link' | 'embed' | 'file' | 'video' | 'image' | 'sound' | 'sticker')[];
+  maxId: Snowflake;
+  minId: Snowflake;
+  channelId: Snowflake[];
+  pinned: boolean;
+}
+
+export interface MessageSearchResult {
+  messages: Collection<Snowflake, Message>;
+  total: number;
 }
 
 export class PermissionOverwriteManager extends CachedManager<
@@ -3720,7 +3741,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
-  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<undefined>;
+  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<Snowflake>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;

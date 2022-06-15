@@ -1,16 +1,17 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const Discord = require('discord.js-selfbot-v13');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
+const { lazy } = require('../util/Util');
+const User = lazy(() => require('../structures/User'));
 /**
  * Manages API methods for users who reacted to a reaction and stores their cache.
  * @extends {CachedManager}
  */
 class ReactionUserManager extends CachedManager {
   constructor(reaction, iterable) {
-    super(reaction.client, Discord.User, iterable);
+    super(reaction.client, User(), iterable);
 
     /**
      * The reaction that this manager belongs to

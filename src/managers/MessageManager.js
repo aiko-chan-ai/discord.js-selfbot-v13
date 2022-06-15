@@ -241,6 +241,76 @@ class MessageManager extends CachedManager {
     for (const message of data) messages.set(message.id, this._add(message, cache));
     return messages;
   }
+
+  /**
+   * @typedef {object} MessageSearchOptions
+   * @property {Array<Snowflake>} [author] An array of author IDs to filter by
+   * @property {Array<Snowflake>} [mentions] An array of user IDs (mentioned) to filter by
+   * @property {string} [content] A messageContent to filter by
+   * @property {Snowflake} [maxId] The maximum Message ID to filter by
+   * @property {Snowflake} [minId] The minimum Message ID to filter by
+   * @property {Array<Snowflake>} [channel] An array of channel IDs to filter by
+   * @property {boolean} [pinned] Whether to filter by pinned messages
+   * @property {Array<string>} [has] Message has: `link`, `embed`, `file`, `video`, `image`, or `sound`
+   */
+
+  /**
+   * @typedef {object} MessageSearchResult
+   * @property {Collection<Snowflake, Message>} messages A collection of found messages
+   * @property {number} total The total number of messages that match the search criteria
+   */
+
+  /**
+   * Search Messages in the channel.
+   * @param {MessageSearchOptions} options Performs a search within the channel.
+   * @returns {MessageSearchResult}
+   */
+  async search(options = {}) {
+    let { author, content, mentions, has, maxId, minId, channelId, pinned } = Object.assign(
+      {
+        author: [],
+        content: '',
+        mentions: [],
+        has: [],
+        maxId: null,
+        minId: null,
+        channelId: [],
+        pinned: false,
+      },
+      options,
+    );
+    const stringQuery = [];
+    const result = new Collection();
+    let data;
+    if (author.length > 0) stringQuery.push(author.map(id => `author_id=${id}`).join('&'));
+    if (content && content.length) stringQuery.push(`content=${encodeURIComponent(content)}`);
+    if (mentions.length > 0) stringQuery.push(mentions.map(id => `mentions=${id}`).join('&'));
+    has = has.filter(v => ['link', 'embed', 'file', 'video', 'image', 'sound', 'sticker'].includes(v));
+    if (has.length > 0) stringQuery.push(has.map(v => `has=${v}`).join('&'));
+    if (maxId) stringQuery.push(`max_id=${maxId}`);
+    if (minId) stringQuery.push(`min_id=${minId}`);
+    if (this.channel.guildId && channelId.length > 0) {
+      stringQuery.push(channelId.map(id => `channel_id=${id}`).join('&'));
+    }
+    if (typeof pinned == 'boolean') stringQuery.push(`pinned=${pinned}`);
+    // Main
+    if (!stringQuery.length) {
+      return {
+        messages: result,
+        total: 0,
+      };
+    }
+    if (this.channel.guildId) {
+      data = await this.client.api.guilds[this.channel.guildId].messages[`search?${stringQuery.join('&')}`].get();
+    } else {
+      data = await this.client.api.channels[this.channel.id].messages[`search?${stringQuery.join('&')}`].get();
+    }
+    for await (const message of data.messages) result.set(message[0].id, new Message(this.client, message[0]));
+    return {
+      messages: result,
+      total: data.total_results,
+    };
+  }
 }
 
 module.exports = MessageManager;

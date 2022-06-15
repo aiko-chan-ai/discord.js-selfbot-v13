@@ -1,12 +1,13 @@
 'use strict';
 
-const { Message } = require('discord.js');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const MessageAttachment = require('../structures/MessageAttachment');
 const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
+const { lazy } = require('../util/Util');
+const Message = lazy(() => require('../structures/Message').Message);
 /**
  * Represents an application command.
  * @extends {Base}
@@ -506,7 +507,7 @@ class ApplicationCommand extends Base {
    * Send Slash command to channel
    * @param {Message} message Discord Message
    * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<boolean>}
+   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    * @example
    * const botID = '12345678987654321'
    * const user = await client.users.fetch(botID);
@@ -516,7 +517,7 @@ class ApplicationCommand extends Base {
    */
   async sendSlashCommand(message, options = []) {
     // Check Options
-    if (!(message instanceof Message)) {
+    if (!(message instanceof Message())) {
       throw new TypeError('The message must be a Discord.Message');
     }
     if (!Array.isArray(options)) {
@@ -630,6 +631,7 @@ class ApplicationCommand extends Base {
     if (subCommandCheck && subCommand?.options && subCommand?.options[i]?.required) {
       throw new Error('Value required missing');
     }
+    let nonce = SnowflakeUtil.generate();
     const data = {
       type: 2, // Slash command, context menu
       // Type: 4: Auto-complete
@@ -646,7 +648,7 @@ class ApplicationCommand extends Base {
         options: option_,
         attachments: attachments,
       },
-      nonce: SnowflakeUtil.generate(),
+      nonce,
     };
     await this.client.api.interactions
       .post({
@@ -654,19 +656,21 @@ class ApplicationCommand extends Base {
         files: attachmentsBuffer,
       })
       .catch(async () => {
+        nonce = SnowflakeUtil.generate();
         data.data.guild_id = message.guildId;
+        data.nonce = nonce;
         await this.client.api.interactions.post({
           body: data,
           files: attachmentsBuffer,
         });
       });
-    return true;
+    return nonce;
   }
   /**
    * Message Context Menu
    * @param {Message} message Discord Message
    * @param {boolean} sendFromMessage nothing .-. not used
-   * @returns {Promise<boolean>}
+   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    * @example
    * const botID = '12345678987654321'
    * const user = await client.users.fetch(botID);
@@ -675,10 +679,11 @@ class ApplicationCommand extends Base {
    * await command.sendContextMenu(messsage);
    */
   async sendContextMenu(message, sendFromMessage = false) {
-    if (!sendFromMessage && !(message instanceof Message)) {
+    if (!sendFromMessage && !(message instanceof Message())) {
       throw new TypeError('The message must be a Discord.Message');
     }
     if (this.type == 'CHAT_INPUT') return false;
+    const nonce = SnowflakeUtil.generate();
     await this.client.api.interactions.post({
       body: {
         type: 2, // Slash command, context menu
@@ -694,10 +699,10 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandTypes[this.type],
           target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
         },
-        nonce: SnowflakeUtil.generate(),
+        nonce,
       },
     });
-    return true;
+    return nonce;
   }
 }
 

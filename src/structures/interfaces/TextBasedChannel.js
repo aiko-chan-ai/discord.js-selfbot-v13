@@ -1,7 +1,6 @@
 'use strict';
 
 /* eslint-disable import/order */
-const { Message } = require('discord.js');
 const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
@@ -9,6 +8,8 @@ const { Collection } = require('@discordjs/collection');
 const { InteractionTypes } = require('../../util/Constants');
 const { TypeError, Error } = require('../../errors');
 const InteractionCollector = require('../InteractionCollector');
+const { lazy } = require('../../util/Util');
+const Message = lazy(() => require('../Message').Message);
 
 /**
  * Interface for classes that have text-channel-like features.
@@ -394,7 +395,7 @@ class TextBasedChannel {
    * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
    * @param {string} commandName Command name
    * @param {...?string} args Command arguments
-   * @returns {Promise<pending>}
+   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    */
   async sendSlash(botId, commandName, ...args) {
     if (!botId) throw new Error('Bot ID is required');
@@ -432,8 +433,8 @@ class TextBasedChannel {
         )}`,
       );
     }
-    return commandTarget.sendSlashCommand(
-      new Message(this.client, {
+    const nonce = await commandTarget.sendSlashCommand(
+      new (Message())(this.client, {
         channel_id: this.id,
         guild_id: this.guild?.id || null,
         author: this.client.user,
@@ -442,6 +443,7 @@ class TextBasedChannel {
       }),
       args && args.length ? args : [],
     );
+    return nonce;
   }
 
   static applyToClass(structure, full = false, ignore = []) {

@@ -625,6 +625,19 @@ class Util extends null {
     if (features.includes('THREE_DAY_THREAD_ARCHIVE')) return 4320;
     return 1440;
   }
+
+  /**
+   * Lazily evaluates a callback function (yea it's v14 :yay:)
+   * @param {Function} cb The callback to lazily evaluate
+   * @returns {Function}
+   * @example
+   * const User = lazy(() => require('./User'));
+   * const user = new (User())(client, data);
+   */
+  static lazy(cb) {
+    let defaultValue;
+    return () => (defaultValue ??= cb());
+  }
 }
 
 module.exports = Util;
