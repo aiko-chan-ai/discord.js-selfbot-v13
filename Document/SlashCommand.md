@@ -1,3 +1,7 @@
+# Slash command demo 
+- Unsupport Autocomplete feature (maybe)
+- Unused `guild.searchInteraction()` (Use only if not working properly)
+
 # Slash Command (no options)
 
 ### Demo
@@ -9,8 +13,8 @@
 ### Code test
 
 ```js
-await message.guild.searchInteraction({  query: 'aiko', botId: '.-.' })
-message.channel.sendSlash('.-.', 'aiko')
+await message.channel.sendSlash('botid', 'aiko')
+// Return nonce (view document)
 ```
 
 ### Result
@@ -26,8 +30,8 @@ message.channel.sendSlash('.-.', 'aiko')
 ### Code test
 
 ```js
-await message.guild.searchInteraction({  query: 'animal', botId: '450323683840491530' })
-message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
+await message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
+// Return nonce (view document)
 ```
 
 ### Result
@@ -46,11 +50,13 @@ message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
 const { MessageAttachment } = require('discord.js-selfbot-v13')
 const fs = require('fs')
 const a = new MessageAttachment(fs.readFileSync('./wallpaper.jpg') , 'test.jpg') 
-await message.guild.searchInteraction({  query: 'sauce', botId: '718642000898818048' })
-message.channel.sendSlash('718642000898818048', 'sauce', a)
+await message.channel.sendSlash('718642000898818048', 'sauce', a)
+// Return nonce (view document)
 ```
 
 ### Result
 
 ![image](https://user-images.githubusercontent.com/71698422/173347075-5c8a1347-3845-489e-956b-63975911b6e0.png)
+
+# Events (Update soon)
 
