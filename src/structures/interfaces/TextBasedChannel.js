@@ -413,18 +413,25 @@ class TextBasedChannel {
         type: 1, // CHAT_INPUT,
         include_applications: false,
         query: commandName,
-        limit: 25,
+        limit: 25, // Max
         // Shet
         // application_id: botId,
       },
     });
     for (const command of data.application_commands) {
       if (user.id == command.application_id) {
-        commandTarget = user.applications._add(command, true);
+        const c = user.applications._add(command, true);
+        if (command.name == commandName) commandTarget = c;
+      } else {
+        const tempUser = this.client.users.cache.get(command.application_id);
+        if (tempUser && tempUser.bot && tempUser.applications) {
+          tempUser.applications._add(command, true);
+        }
       }
     }
     // Remove
-    // commandTarget = user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
+    commandTarget =
+      commandTarget || user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
     if (!commandTarget) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
