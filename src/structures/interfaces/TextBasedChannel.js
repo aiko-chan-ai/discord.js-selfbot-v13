@@ -294,6 +294,7 @@ class TextBasedChannel {
    *   .catch(console.error);
    */
   async bulkDelete(messages, filterOld = false) {
+    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     if (Array.isArray(messages) || messages instanceof Collection) {
       let messageIds = messages instanceof Collection ? [...messages.keys()] : messages.map(m => m.id ?? m);
       if (filterOld) {
