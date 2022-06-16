@@ -188,24 +188,22 @@ exports.Status = {
 };
 
 exports.Opcodes = {
-  DISPATCH: 0, // #  Receive         dispatches an event
-  HEARTBEAT: 1, // #  Send/Receive    used for ping checking
-  IDENTIFY: 2, // #  Send            used for client handshake
-  STATUS_UPDATE: 3, // #  Send            used to update the client status
-  VOICE_STATE_UPDATE: 4, // #  Send            used to join/move/leave voice channels
-  VOICE_GUILD_PING: 5, // #  Send            used for voice ping checking
-  RESUME: 6, //  #  Send            used to resume a closed connection
-  RECONNECT: 7, // #  Receive         used to tell when to reconnect (sometimes...)
-  REQUEST_GUILD_MEMBERS: 8, // #  Send            used to request guild members (when searching for members in the search bar of a guild)
-  INVALID_SESSION: 9, // #  Receive         used to notify client they have an invalid session id
-  HELLO: 10, // #  Receive         sent immediately after connecting, contains heartbeat and server debug information
-  HEARTBEAT_ACK: 11, // #  Sent            immediately following a client heartbeat that was received
-  GUILD_SYNC: 12, // #  Receive         guild_sync but not used anymore
-  /** Add some opcode from Discum
-  /* @see https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/gateway/gateway.py#L56
-  */
-  DM_UPDATE: 13, // #  Send            used to get dm features
-  LAZY_REQUEST: 14, // #  Send            discord responds back with GUILD_MEMBER_LIST_UPDATE type SYNC...
+  DISPATCH: 0, // #  Receive => dispatches an event
+  HEARTBEAT: 1, // #  Send/Receive => used for ping checking
+  IDENTIFY: 2, // #  Send => used for client handshake
+  STATUS_UPDATE: 3, // #  Send => used to update the client status
+  VOICE_STATE_UPDATE: 4, // #  Send => used to join/move/leave voice channels
+  VOICE_GUILD_PING: 5, // #  Send => used for voice ping checking
+  RESUME: 6, //  #  Send => used to resume a closed connection
+  RECONNECT: 7, // #  Receive => used to tell when to reconnect (sometimes...)
+  REQUEST_GUILD_MEMBERS: 8, // #  Send => used to request guild members (when searching for members in the search bar of a guild)
+  INVALID_SESSION: 9, // #  Receive => used to notify client they have an invalid session id
+  HELLO: 10, // #  Receive => sent immediately after connecting, contains heartbeat and server debug information
+  HEARTBEAT_ACK: 11, // #  Sent  => immediately following a client heartbeat that was received
+  GUILD_SYNC: 12, // #  Receive => guild_sync but not used anymore
+  // Add some opcode from Discum: https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/discum/gateway/gateway.py#L56
+  DM_UPDATE: 13, // #  Send => used to get dm features
+  LAZY_REQUEST: 14, // #  Send => discord responds back with GUILD_MEMBER_LIST_UPDATE type SYNC...
   LOBBY_CONNECT: 15,
   LOBBY_DISCONNECT: 16,
   LOBBY_VOICE_STATE_UPDATE: 17, // #  Receive
@@ -214,7 +212,7 @@ exports.Opcodes = {
   STREAM_WATCH: 20,
   STREAM_PING: 21, // #  Send
   STREAM_SET_PAUSED: 22,
-  REQUEST_APPLICATION_COMMANDS: 24, // #  Send            request application/bot cmds (user, message, and slash cmds)
+  REQUEST_APPLICATION_COMMANDS: 24, // #  Send => request application/bot cmds (user, message, and slash cmds)
 };
 
 exports.Events = {

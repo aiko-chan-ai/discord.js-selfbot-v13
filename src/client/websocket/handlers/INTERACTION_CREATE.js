@@ -9,9 +9,5 @@ const { Events } = require('../../../util/Constants');
 
 module.exports = (client, packet) => {
   if (client.user.bot) client.actions.InteractionCreate.handle(packet.d);
-  /**
-   * Emitted whenever client user send interaction
-   * @event Client#interactionSuccess
-   * @param {InteractionResponseBody} data InteractionResponseBody
-   */ else client.emit(Events.INTERACTION_CREATE, packet.d);
+  else client.emit(Events.INTERACTION_CREATE, packet.d);
 };

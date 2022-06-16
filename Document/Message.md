@@ -75,13 +75,13 @@ await message.contextMenu(botID, commandName);
 <summary>Issue ?</summary>
 
 - It has some minor bugs.
-> DiscordAPIError [20012] You are not authorized to perform this action on this application
-> 
-> Fix it: creating 1 DMs with bot
-> 
-> In this way, all Slash commands can be obtained
-- <strong>Now to get more secure interaction commands you need to use guild.searchInteraction() (using gateway)</strong>
-- With REST: update soon.
+```js
+DiscordAPIError [20012] You are not authorized to perform this action on this application
+Fix it: creating 1 DMs with bot
+In this way, all Slash commands can be obtained
+```
+- With Gateway guild.searchInteraction() (using gateway)
+- With REST: Working ! [TextBasedChannel.sendSlash()].
 </details>
 
 ## MessageEmbed ?

@@ -58,5 +58,9 @@ await message.channel.sendSlash('718642000898818048', 'sauce', a)
 
 ![image](https://user-images.githubusercontent.com/71698422/173347075-5c8a1347-3845-489e-956b-63975911b6e0.png)
 
-# Events (Update soon)
+# Events
 
+- [interactionCreate](https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-interactionCreate)
+- [interactionFailure](https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-interactionFailure)
+- [interactionSuccess](https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-interactionSuccess)
+- [interactionModalCreate](https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-interactionModalCreate)
