@@ -1,11 +1,12 @@
 'use strict';
 
+const Buffer = require('node:buffer').Buffer;
 const Base = require('./Base');
 const { GuildScheduledEvent } = require('./GuildScheduledEvent');
 const IntegrationApplication = require('./IntegrationApplication');
 const InviteStageInstance = require('./InviteStageInstance');
 const { Error } = require('../errors');
-const { Endpoints } = require('../util/Constants');
+const { ChannelTypes, Endpoints } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
 
 // TODO: Convert `inviter` and `channel` in this class to a getter.
@@ -320,15 +321,32 @@ class Invite extends Base {
   /**
    * Join this Guild using this invite.
    * @param {boolean} autoVerify Whether to automatically verify member
+   * @param {string} [captcha] The captcha key to add
    * @returns {Promise<void>}
    * @example
    * await client.fetchInvite('code').then(async invite => {
    *   await invite.acceptInvite();
    * });
    */
-  async acceptInvite(autoVerify = true) {
+  async acceptInvite(autoVerify = true, captcha = null) {
     if (!this.guild) throw new Error('INVITE_NO_GUILD');
-    await this.client.api.invites(this.code).post({});
+    const dataHeader = {
+      location: 'Join Guild',
+      location_guild_id: this.guild?.id,
+      location_channel_id: this.channelId,
+      location_channel_type: ChannelTypes[this.channel?.type] ?? 0,
+    };
+    await this.client.api.invites(this.code).post({
+      data: captcha
+        ? {
+            captcha_key: captcha,
+          }
+        : {},
+      // Goodjob discord :) Bypass Phone Verification (not captcha .-.)
+      headers: {
+        'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
+      },
+    });
     if (autoVerify) {
       const getForm = await this.client.api
         .guilds(this.guild.id)

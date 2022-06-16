@@ -172,7 +172,7 @@ class Options extends null {
           // $device: 'iPhone14,5 OS 15.2',
           $os: 'Windows',
           $browser: 'Discord Client',
-          $device: 'ASUS ROG Phone 5',
+          $device: 'ASUS ROG Phone 5', // :)
           // Add
           $os_version: '10',
           $referrer: '',
@@ -208,7 +208,7 @@ class Options extends null {
           'Sec-Fetch-Site': 'same-origin',
           'X-Debug-Options': 'bugReporterEnabled',
           // https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66#issuecomment-1009171667
-          'x-super-properties': `${Buffer.from(
+          'X-Super-Properties': `${Buffer.from(
             JSONBig.stringify({
               os: 'Windows',
               browser: 'Discord Client',
