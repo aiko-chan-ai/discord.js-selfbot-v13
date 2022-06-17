@@ -79,7 +79,7 @@ const JSONBig = require('json-bigint');
  * [User Agent](https://discord.com/developers/docs/reference#user-agent) header
  * @property {PresenceData} [presence={}] Presence data to use upon login
  * @property {IntentsResolvable} [intents=131071] Intents to enable for this connection (but not using)
- * @property {number} [waitGuildTimeout=0] Time in milliseconds that Clients with the GUILDS intent should wait for
+ * @property {number} [waitGuildTimeout=15000] Time in milliseconds that Clients with the GUILDS intent should wait for
  * missing guilds to be received before starting the bot. If not specified, the default is 15 seconds.
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
  * @property {WebsocketOptions} [ws] Options for the WebSocket
@@ -145,7 +145,7 @@ class Options extends null {
       readyStatus: true,
       autoCookie: true,
       patchVoice: true,
-      waitGuildTimeout: 0,
+      waitGuildTimeout: 15_000,
       shardCount: 1,
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
       messageCacheLifetime: 0,

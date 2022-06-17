@@ -532,7 +532,7 @@ class WebSocketShard extends EventEmitter {
 
         this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
       },
-      hasGuildsIntent ? waitGuildTimeout : 0,
+      hasGuildsIntent && this.manager.client.user.bot ? waitGuildTimeout : 0,
     ).unref();
   }
 
