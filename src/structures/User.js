@@ -472,6 +472,22 @@ class User extends Base {
     return this;
   }
 
+  /**
+   * Get presence (~ v12)
+   * @returns {Promise<Presence | null>}
+   */
+  async presenceFetch() {
+    let data = null;
+    await Promise.all(
+      this.client.guilds.cache.map(async guild => {
+        const res_ = await guild.presences.resolve(this.id);
+        if (res_) return (data = res_);
+        return true;
+      }),
+    );
+    return data;
+  }
+
   // These are here only for documentation purposes - they are implemented by TextBasedChannel
   /* eslint-disable no-empty-function */
   send() {}
