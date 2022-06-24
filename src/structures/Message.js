@@ -388,7 +388,7 @@ class Message extends Base {
 
   /**
    * The channel that the message was sent in
-   * @type {TextBasedChannel}
+   * @type {TextBasedChannels}
    * @readonly
    */
   get channel() {
