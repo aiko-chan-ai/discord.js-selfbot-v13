@@ -2256,7 +2256,7 @@ export interface ShardEventTypes {
   death: [child: ChildProcess];
   disconnect: [];
   ready: [];
-  reconnection: [];
+  reconnecting: [];
   error: [error: Error];
   message: [message: any];
 }
