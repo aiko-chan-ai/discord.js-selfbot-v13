@@ -36,7 +36,7 @@ const JSONBig = require('json-bigint');
  * recommended amount of shards from Discord and spawn that amount
  * @property {number} [closeTimeout=5000] The amount of time in milliseconds to wait for the close frame to be received
  * from the WebSocket. Don't have this too high/low. Its best to have it between 2_000-6_000 ms.
- * @property {boolean} [checkUpdate=true] Check for module updates at startup
+ * @property {boolean} [checkUpdate=true] Display module update information on the screen
  * @property {boolean} [readyStatus=true] Sync state with Discord Client
  * @property {boolean} [autoCookie=true] Automatically add Cookies to Request on startup
  * @property {boolean} [patchVoice=true] Automatically patch @discordjs/voice module (support for call)

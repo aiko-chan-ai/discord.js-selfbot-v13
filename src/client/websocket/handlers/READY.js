@@ -23,14 +23,41 @@ async function checkUpdate(client) {
     return client.emit('update', `${chalk.redBright('[Fail]')} Check Update error`);
   }
   const lastest_tag = res_.data['dist-tags'].latest;
-  client.emit('update', Discord.version, lastest_tag);
-  return null;
+  if (client.options.checkUpdate) {
+    if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
+      console.log(`${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
+  Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}
+  
+      If you don't want to show this message, set \`checkUpdate\` to false
+  
+      new Client({
+          checkUpdate: false,
+      });
+  
+      and use event update
+      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`);
+    } else {
+      console.log(
+        `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(
+          Discord.version,
+        )}
+  
+      If you don't want to show this message, set \`checkUpdate\` to false
+  
+      new Client({
+          checkUpdate: false,
+      });
+  
+      and use event update
+      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`,
+      );
+    }
+  }
+  return client.emit('update', Discord.version, lastest_tag);
 }
 
 module.exports = (client, { d: data }, shard) => {
-  if (client.options.checkUpdate) {
-    checkUpdate(client);
-  }
+  checkUpdate(client);
 
   if (client.options.patchVoice) {
     /* eslint-disable */
