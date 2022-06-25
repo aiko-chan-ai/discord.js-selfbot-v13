@@ -490,23 +490,22 @@ class GuildMemberManager extends CachedManager {
             x += 200;
           }
         }
-        Promise.all(
-          list.map(l => {
-            this.guild.shard.send({
-              op: type,
-              d: {
-                guild_id: this.guild.id,
-                typing: true,
-                threads: false,
-                activities: true,
-                channels: {
-                  [channel.id]: l,
-                },
+        for (const l of list) {
+          this.guild.shard.send({
+            op: type,
+            d: {
+              guild_id: this.guild.id,
+              typing: true,
+              threads: false,
+              activities: true,
+              channels: {
+                [channel.id]: l,
               },
-            });
-            return true;
-          }),
-        );
+              thread_member_lists: [],
+              members: [],
+            },
+          });
+        }
       }
       const fetchedMembers = new Collection();
       let i = 0;
