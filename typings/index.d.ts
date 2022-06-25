@@ -4101,6 +4101,7 @@ export interface ClientEvents extends BaseClientEvents {
   relationshipAdd: [id: Snowflake, type: RelationshipTypes];
   relationshipRemove: [id: Snowflake];
   unhandledPacket: [packet: { op: GatewayOpcodes | number; d?: any; s?: number; t?: string }, shard: WebSocketShard];
+  update: [oldVersion: string, newVersion: string];
 }
 
 export interface ConstantsEvents {

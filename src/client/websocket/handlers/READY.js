@@ -11,8 +11,8 @@ const { Networking } = require('../../../util/Voice');
 /**
  * Emitted whenever clientOptions.checkUpdate = true
  * @event Client#update
- * @param {string} oldVersion Log data :v
- * @param {string} newVersion Log data :)) ehe
+ * @param {string} oldVersion Current version
+ * @param {string} newVersion Latest version
  */
 
 async function checkUpdate(client) {
@@ -25,8 +25,9 @@ async function checkUpdate(client) {
   const lastest_tag = res_.data['dist-tags'].latest;
   if (client.options.checkUpdate) {
     if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
-      console.log(`${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
-  Old Version: ${chalk.redBright(Discord.version)} => New Version: ${chalk.greenBright(lastest_tag)}
+      console.log(`
+      ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
+      Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(lastest_tag)}
   
       If you don't want to show this message, set \`checkUpdate\` to false
   
@@ -34,13 +35,12 @@ async function checkUpdate(client) {
           checkUpdate: false,
       });
   
-      and use event update
+      and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`);
     } else {
       console.log(
-        `${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Version: ${chalk.blueBright(
-          Discord.version,
-        )}
+        `
+      ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(Discord.version)}
   
       If you don't want to show this message, set \`checkUpdate\` to false
   
@@ -48,7 +48,7 @@ async function checkUpdate(client) {
           checkUpdate: false,
       });
   
-      and use event update
+      and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`,
       );
     }
