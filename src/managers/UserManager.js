@@ -5,6 +5,7 @@ const { GuildMember } = require('../structures/GuildMember');
 const { Message } = require('../structures/Message');
 const ThreadMember = require('../structures/ThreadMember');
 const User = require('../structures/User');
+const { Opcodes } = require('../util/Constants');
 
 /**
  * Manages API methods for users and stores their cache.
@@ -57,10 +58,20 @@ class UserManager extends CachedManager {
 
     const data = await this.client.api.users(this.client.user.id).channels.post({
       data: {
-        recipient_id: id,
+        recipients: [id],
+      },
+      headers: {
+        'X-Context-Properties': 'e30=', // {}
       },
     });
-    return this.client.channels._add(data, null, { cache });
+    const dm_channel = await this.client.channels._add(data, null, { cache });
+    await this.client.ws.broadcast({
+      op: Opcodes.DM_UPDATE,
+      d: {
+        channel_id: dm_channel.id,
+      },
+    });
+    return dm_channel;
   }
 
   /**
