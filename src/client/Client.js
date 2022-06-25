@@ -315,6 +315,15 @@ class Client extends BaseClient {
     this.token = token = token.replace(/^(Bot|Bearer)\s*/i, '');
     this.emit(
       Events.DEBUG,
+      `
+      Logging on with a user token is unfortunately against the Discord
+      \`Terms of Service\` <https://support.discord.com/hc/en-us/articles/115002192352>
+      and doing so might potentially get your account banned.
+      Use this at your own risk.
+`,
+    );
+    this.emit(
+      Events.DEBUG,
       `Provided token: ${token
         .split('.')
         .map((val, i) => (i > 1 ? val.replace(/./g, '*') : val))
