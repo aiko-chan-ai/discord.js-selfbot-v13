@@ -68,7 +68,7 @@ class User extends Base {
      */
     this.mutualGuilds = new Collection();
     /**
-     * [Bot] Interaction command manager
+     * [Bot] Application
      * @type {?ClientApplication}
      * @readonly
      */

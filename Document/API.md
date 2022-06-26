@@ -13,6 +13,31 @@ URL example:
 'https://discord.com/api/v9/users/@me'
 const url = client.api.users['@me'];
 /* Method: GET | POST | PUT | PATCH | DELETE */
+Option: 
+#1
+query: Object
+
+- example: https://discord.com/api/v9/users/@me?abc=123&xyz=ok (GET)
+
+client.api.users['@me'].get({ 
+  query: {
+    abc: 123,
+    xyz: 'ok',
+  }
+});
+
+#2
+
+body + files: Object + Array
+-> 'content-type': FormData (POST)
+
+#3
+
+data: Object
+-> 'content-type': 'application/json'
+
+...
+
 ```
 
 

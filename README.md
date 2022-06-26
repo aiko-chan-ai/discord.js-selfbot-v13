@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.3`, based on `discord.js@13.8.0`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.3`, based on `discord.js@13.8.1`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -95,7 +95,7 @@ console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
 
 Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt="." width="16" height="16"/> [<strong>hxr404</strong>](https://github.com/hxr404/Discord-Console-hacks)
 
-## Links Discord.js
+## Links (Discord.js)
 
 - [Website](https://discord.js.org/) ([source](https://github.com/discordjs/website))
 - [Documentation](https://discord.js.org/#/docs)
@@ -107,7 +107,7 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 - [npm](https://www.npmjs.com/package/discord.js)
 - [Related libraries](https://discord.com/developers/docs/topics/community-resources#libraries)
 
-## Contributing Discord.js
+## Contributing
 
 - Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
 [documentation](https://discord.js.org/#/docs).  
