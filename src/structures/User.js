@@ -94,7 +94,8 @@ class User extends Base {
        */
       this.bot = Boolean(data.bot);
       if (this.bot === true) {
-        this.application = new ClientApplication(this.client, { id: this.id });
+        this.application = new ClientApplication(this.client, { id: this.id }, this);
+        this.botInGuildsCount = null;
       }
     } else if (!this.partial && typeof this.bot !== 'boolean') {
       this.bot = false;
@@ -158,6 +159,14 @@ class User extends Base {
        * @type {?UserFlags}
        */
       this.flags = new UserFlags(data.public_flags);
+    }
+
+    if ('approximate_guild_count' in data) {
+      /**
+       * Check how many guilds the bot is in (Probably only approximate) (application.fetch() first)
+       * @type {?number}
+       */
+      this.botInGuildsCount = data.approximate_guild_count;
     }
   }
 
@@ -485,18 +494,6 @@ class User extends Base {
       }),
     );
     return data;
-  }
-
-  async fetchBotInfo() {
-    if (this.client.user.bot) throw new Error('INVALID_BOT_METHOD');
-    if (!this.bot) throw new Error('BOT_ONLY');
-    const result = await this.client.api.oauth2.authorize.get({
-      query: {
-        client_id: this.id,
-        scope: 'bot',
-      },
-    });
-    console.log(result);
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel

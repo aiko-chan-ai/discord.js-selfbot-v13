@@ -618,6 +618,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public ws: WebSocketManager;
   public password: string | null;
   public destroy(): void;
+  public logout(): Promise<void>;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
   public fetchGuildTemplate(template: GuildTemplateResolvable): Promise<GuildTemplate>;
@@ -1140,6 +1141,7 @@ export class GuildAuditLogsEntry<
     : Role | GuildEmoji | { id: Snowflake } | null;
   public targetType: TTargetType;
   public toJSON(): unknown;
+  public addIntegration(applicationId: Snowflake): Promise<void>;
 }
 
 export class GuildBan extends Base {
@@ -2681,7 +2683,7 @@ export class Typing extends Base {
 export class User extends PartialTextBasedChannel(Base) {
   protected constructor(client: Client, data: RawUserData);
   private _equals(user: APIUser): boolean;
-  public applications: ApplicationCommandManager;
+  public application: ClientApplication;
   public accentColor: number | null | undefined;
   public avatar: string | null;
   public banner: string | null | undefined;
@@ -2693,6 +2695,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly defaultAvatarURL: string;
   public readonly dmChannel: DMChannel | null;
   public flags: Readonly<UserFlags> | null;
+  public botInGuildsCount: number | null | undefined;
   public readonly hexAccentColor: HexColorString | null | undefined;
   public id: Snowflake;
   public readonly partial: false;

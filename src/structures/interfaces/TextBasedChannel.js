@@ -402,7 +402,7 @@ class TextBasedChannel {
     if (!botId) throw new Error('Bot ID is required');
     // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});
-    if (!user || !user.bot || !user.applications) {
+    if (!user || !user.bot || !user.application) {
       throw new Error('botId is not a bot or does not have an application slash command');
     }
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
@@ -425,7 +425,7 @@ class TextBasedChannel {
         if (command.name == commandName) commandTarget = c;
       } else {
         const tempUser = this.client.users.cache.get(command.application_id);
-        if (tempUser && tempUser.bot && tempUser.applications) {
+        if (tempUser && tempUser.bot && tempUser.application) {
           tempUser.application?.commands?._add(command, true);
         }
       }

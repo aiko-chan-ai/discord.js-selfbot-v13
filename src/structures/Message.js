@@ -1081,7 +1081,7 @@ class Message extends Base {
   async contextMenu(botId, commandName) {
     if (!botId) throw new Error('Bot ID is required');
     const user = await this.client.users.fetch(botId).catch(() => {});
-    if (!user || !user.bot || !user.applications) {
+    if (!user || !user.bot || !user.application) {
       throw new Error('BotID is not a bot or does not have an application slash command');
     }
     if (!commandName || typeof commandName !== 'string') {

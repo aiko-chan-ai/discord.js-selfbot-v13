@@ -2,7 +2,6 @@
 
 const Team = require('./Team');
 const Application = require('./interfaces/Application');
-const { Error } = require('../errors/DJSError');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const ApplicationFlags = require('../util/ApplicationFlags');
 const Permissions = require('../util/Permissions');
@@ -18,14 +17,14 @@ const Permissions = require('../util/Permissions');
  * @extends {Application}
  */
 class ClientApplication extends Application {
-  constructor(client, data) {
+  constructor(client, data, user) {
     super(client, data);
 
     /**
      * The application command manager for this application
      * @type {ApplicationCommandManager}
      */
-    this.commands = new ApplicationCommandManager(this.client);
+    this.commands = new ApplicationCommandManager(this.client, undefined, user);
   }
 
   _patch(data) {
@@ -133,10 +132,14 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    // if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
-    const app = await this.client.api.oauth2.applications(this.id).get();
-    console.log(app);
-    this._patch(app);
+    const app = await this.client.api.oauth2.authorize.get({
+      query: {
+        client_id: this.id,
+        scope: 'bot',
+      },
+    });
+    this.client.users._add(app.bot);
+    this._patch(app.application);
     return this;
   }
 }

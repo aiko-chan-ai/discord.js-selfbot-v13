@@ -659,7 +659,7 @@ class Guild extends AnonymousGuild {
         resolve(
           this.client.users.cache
             .get(botId)
-            ?.applications?.cache?.find(
+            ?.application?.commands?.cache?.find(
               c => (c.name === query && c.type == type) || c.type == ApplicationCommandTypes[type],
             ),
         );
@@ -1508,6 +1508,37 @@ class Guild extends AnonymousGuild {
         reason,
       );
     }
+  }
+
+  /**
+   * Add Integrations to the guild
+   * @param {Snowflake} applicationId Application (ID) target
+   * @returns {Promise<void>}
+   */
+  async addIntegration(applicationId) {
+    if (!this.me.permissions.has('MANAGE_WEBHOOKS')) {
+      throw new Error('MISSING_PERMISSIONS', 'MANAGE_WEBHOOKS');
+    }
+    if (!this.me.permissions.has('MANAGE_GUILD')) {
+      throw new Error('MISSING_PERMISSIONS', 'MANAGE_GUILD');
+    }
+    if (!applicationId || typeof applicationId !== 'string') throw new TypeError('INVALID_APPLICATION_ID');
+    // Check permission
+    await this.client.api.oauth2.authorize.post({
+      query: {
+        client_id: applicationId,
+        scope: 'applications.commands',
+      },
+      data: {
+        guild_id: this.id,
+        permissions: '0',
+        authorize: true,
+      },
+    });
+  }
+
+  addBot() {
+    console.log('Test only (Addbot)');
   }
 
   toJSON() {

@@ -389,6 +389,20 @@ class Client extends BaseClient {
   }
 
   /**
+   * Logs out, terminates the connection to Discord, destroys the client and destroys the token.
+   * @returns {Promise<void>}
+   */
+  async logout() {
+    await this.api.auth.logout.post({
+      data: {
+        provider: null,
+        voip_provider: null,
+      },
+    });
+    this.destroy();
+  }
+
+  /**
    * Options used when fetching an invite from Discord.
    * @typedef {Object} ClientFetchInviteOptions
    * @property {Snowflake} [guildScheduledEventId] The id of the guild scheduled event to include with
