@@ -576,12 +576,6 @@ class ApplicationCommand extends Base {
    * @param {Message} message Discord Message
    * @param {Array<string>} options The options to Slash Command
    * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
-   * @example
-   * const botID = '12345678987654321'
-   * const user = await client.users.fetch(botID);
-   * const application = await user.applications.fetch();
-   * const command = application.commands.first();
-   * await command.sendSlashCommand(messsage, ['option1', 'option2']);
    */
   async sendSlashCommand(message, options = []) {
     // Check Options
@@ -739,12 +733,6 @@ class ApplicationCommand extends Base {
    * @param {Message} message Discord Message
    * @param {boolean} sendFromMessage nothing .-. not used
    * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
-   * @example
-   * const botID = '12345678987654321'
-   * const user = await client.users.fetch(botID);
-   * const application = await user.applications.fetch();
-   * const command = application.commands.first();
-   * await command.sendContextMenu(messsage);
    */
   async sendContextMenu(message, sendFromMessage = false) {
     if (!sendFromMessage && !(message instanceof Message())) {

@@ -5,31 +5,6 @@
 
 ## Interaction
 <details open>
-<summary>Fetch Commands data</summary>
-
-```js
-/* Save to cache */
-// In guild (Opcode 24)
-const res = await guild.searchInteraction(
-	{
-		limit: 100, // default: 1
-		query: 'ping', // optional
-		type: 'CHAT_INPUT', // default: 'CHAT_INPUT'
-		offset: 0, // default: 0
-		botId: 'botid1'
-	}
-);
-// With `type` && `BotId`: Return ApplicationCommand; else return undefined
-// Fetch all commands (1 bot) Shouldn't be used
-await bot.applications.fetch(
-	{
-		guildId: 'guild id to search', // optional
-		force: false, // Using cache or createDMs to bot
-	}
-);
-```
-</details>
-<details open>
 <summary>Button Click</summary>
 
 ```js

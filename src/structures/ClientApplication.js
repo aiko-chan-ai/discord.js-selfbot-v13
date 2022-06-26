@@ -133,8 +133,9 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
-    const app = await this.client.api.oauth2.applications('@me').get();
+    // if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
+    const app = await this.client.api.oauth2.applications(this.id).get();
+    console.log(app);
     this._patch(app);
     return this;
   }

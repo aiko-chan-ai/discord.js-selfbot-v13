@@ -1100,13 +1100,13 @@ class Message extends Base {
       },
     });
     for (const command of data.application_commands) {
-      user.applications._add(command, true);
+      user.application?.commands?._add(command, true);
     }
-    contextCMD = user.applications.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
+    contextCMD = user.application?.commands?.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
     if (!contextCMD) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
-        `Command ${commandName} is not found (with search)\nList command avalible: ${user.applications.cache
+        `Command ${commandName} is not found (with search)\nList command avalible: ${user.application?.commands?.cache
           .filter(a => a.type == 'MESSAGE')
           .map(a => a.name)
           .join(', ')}`,

@@ -2,9 +2,9 @@
 
 const { default: Collection } = require('@discordjs/collection');
 const Base = require('./Base');
+const ClientApplication = require('./ClientApplication');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
-const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const { RelationshipTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
@@ -17,7 +17,6 @@ const UserFlags = require('../util/UserFlags');
 class User extends Base {
   constructor(client, data) {
     super(client);
-
     /**
      * The user's id
      * @type {Snowflake}
@@ -70,10 +69,10 @@ class User extends Base {
     this.mutualGuilds = new Collection();
     /**
      * [Bot] Interaction command manager
-     * @type {?ApplicationCommandManager}
+     * @type {?ClientApplication}
      * @readonly
      */
-    this.applications = null;
+    this.application = null;
     this._patch(data);
   }
 
@@ -95,7 +94,7 @@ class User extends Base {
        */
       this.bot = Boolean(data.bot);
       if (this.bot === true) {
-        this.applications = new ApplicationCommandManager(this.client, undefined, this);
+        this.application = new ClientApplication(this.client, { id: this.id });
       }
     } else if (!this.partial && typeof this.bot !== 'boolean') {
       this.bot = false;
@@ -486,6 +485,18 @@ class User extends Base {
       }),
     );
     return data;
+  }
+
+  async fetchBotInfo() {
+    if (this.client.user.bot) throw new Error('INVALID_BOT_METHOD');
+    if (!this.bot) throw new Error('BOT_ONLY');
+    const result = await this.client.api.oauth2.authorize.get({
+      query: {
+        client_id: this.id,
+        scope: 'bot',
+      },
+    });
+    console.log(result);
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel

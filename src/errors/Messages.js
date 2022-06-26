@@ -165,6 +165,8 @@ const Messages = {
 
   INVALID_BOT_METHOD: 'Bot accounts cannot use this method',
   INVALID_USER_METHOD: 'User accounts cannot use this method',
+  BOT_ONLY: 'This method only for bots',
+  USER_ONLY: 'This method only for users',
 
   INTERACTION_SEND_FAILURE: msg => `${msg}`,
 

@@ -421,18 +421,18 @@ class TextBasedChannel {
     });
     for (const command of data.application_commands) {
       if (user.id == command.application_id) {
-        const c = user.applications._add(command, true);
+        const c = user.application?.commands?._add(command, true);
         if (command.name == commandName) commandTarget = c;
       } else {
         const tempUser = this.client.users.cache.get(command.application_id);
         if (tempUser && tempUser.bot && tempUser.applications) {
-          tempUser.applications._add(command, true);
+          tempUser.application?.commands?._add(command, true);
         }
       }
     }
     // Remove
     commandTarget =
-      commandTarget || user.applications.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
+      commandTarget || user.application?.commands?.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
     if (!commandTarget) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
