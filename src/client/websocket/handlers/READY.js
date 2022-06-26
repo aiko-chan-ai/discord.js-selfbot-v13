@@ -63,30 +63,28 @@ module.exports = (client, { d: data }, shard) => {
     /* eslint-disable */
     VoiceConnection.prototype.configureNetworking = function () {
       const { server, state } = this.packets;
-      if (!server || !state || this.state.status === VoiceConnectionStatus.Destroyed || !server.endpoint) return;
-      const networking = new Networking(
-        {
-          endpoint: server.endpoint,
-          serverId: server.guild_id ?? server.channel_id,
-          token: server.token,
-          sessionId: state.session_id,
-          userId: state.user_id,
-        },
-        Boolean(this.debug),
-      );
-      networking.once('close', this.onNetworkingClose);
-      networking.on('stateChange', this.onNetworkingStateChange);
-      networking.on('error', this.onNetworkingError);
-      networking.on('debug', this.onNetworkingDebug);
+      if (!server || !state || this.state.status === VoiceConnectionStatus.Destroyed /* Destroyed */ || !server.endpoint)
+        return;
+      const networking = new Networking({
+        endpoint: server.endpoint,
+        serverId: server.guild_id ?? server.channel_id,
+        token: server.token,
+        sessionId: state.session_id,
+        userId: state.user_id
+      }, Boolean(this.debug));
+      networking.once("close", this.onNetworkingClose);
+      networking.on("stateChange", this.onNetworkingStateChange);
+      networking.on("error", this.onNetworkingError);
+      networking.on("debug", this.onNetworkingDebug);
       this.state = {
         ...this.state,
-        status: VoiceConnectionStatus.Connecting,
-        networking,
+        status: VoiceConnectionStatus.Connecting /* Connecting */,
+        networking
       };
     };
     client.emit(
       Events.DEBUG,
-      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice]`,
+      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice - v0.10.0]`,
     );
     /* eslint-enable */
   }
@@ -128,11 +126,11 @@ module.exports = (client, { d: data }, shard) => {
    */
 
   /*
-	for (const object of data.read_state) {
-		if (object.mention_count == 0) continue;
-		client.user.messageMentions.set(object.id, object);
-	}
-	*/
+  for (const object of data.read_state) {
+    if (object.mention_count == 0) continue;
+    client.user.messageMentions.set(object.id, object);
+  }
+  */
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;

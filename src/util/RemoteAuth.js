@@ -77,7 +77,7 @@ class DiscordAuthWebsocket {
       if (this.debug) console.log(`[WebSocket] Packet receive`, data);
       let op = data.op;
       if (op == Messages.HELLO) {
-        console.log('[WebSocket] Attempting server handshake...');
+        if (this.debug) console.log('[WebSocket] Attempting server handshake...');
         this.heartbeat_interval = setInterval(() => {
           this.heartbeat_sender();
         }, data.heartbeat_interval);
