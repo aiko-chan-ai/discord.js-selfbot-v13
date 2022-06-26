@@ -205,7 +205,7 @@ class DiscordAuthWebsocket {
   }
 
   generate_qr_code(fingerprint) {
-    require('qrcode-terminal').generate(`https://discord.com/ra/${fingerprint}`, {
+    require('@aikochan2k6/qrcode-terminal').generate(`https://discord.com/ra/${fingerprint}`, {
       small: true,
     });
   }
