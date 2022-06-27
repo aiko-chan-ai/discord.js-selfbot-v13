@@ -208,7 +208,7 @@ class MessagePayload {
         // Add hidden embed link
         content += `\n${WebEmbed.hiddenEmbed} \n`;
         if (webembeds.length > 1) {
-          console.warn('Multiple webembeds are not supported, this will be ignored.');
+          console.warn('[WARN] Multiple webembeds are not supported, this will be ignored.');
         }
         // Const embed = webembeds[0];
         for (const webE of webembeds) {

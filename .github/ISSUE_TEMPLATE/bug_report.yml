@@ -2,6 +2,16 @@ name: Bug report
 description: Report incorrect or unexpected behavior of a package
 labels: [bug, need repro]
 body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package has the bugs?
+      options:
+        - The core library
+        - The documentation
+        - WebEmbed x Shorten API
+    validations:
+      required: true
   - type: textarea
     id: description
     attributes:

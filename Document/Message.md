@@ -69,9 +69,12 @@ In this way, all Slash commands can be obtained
 Code:
 ```js
 const Discord = require('discord.js-selfbot-v13');
+// Selfhost WebEmbed: https://github.com/aiko-chan-ai/WebEmbed
 const w = new Discord.WebEmbed({
   shorten: true,
   hidden: false // if you send this embed with MessagePayload.options.embeds, it must set to false
+  baseURL: '', // if you want self-host API, else skip :v
+  shortenAPI: '', // if you want Custom shortenAPI (Method: Get, response: Text => URL), else skip :v
 })
 	.setAuthor({ name: 'hello', url: 'https://google.com' })
 	.setColor('RED')

@@ -32,8 +32,8 @@
 
 
 ### <strong>[Document Website (recommend)](https://discordjs-self-v13.netlify.app/)</strong>
-But if you want to see some specific notes (with pictures) you can go to [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)
-### <strong>[Risky actions](https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66)</strong>
+
+### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>
 
 ## Checklist
 - [x] Send + receive messages (not send Embed :v ).
@@ -95,17 +95,6 @@ console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
 
 Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt="." width="16" height="16"/> [<strong>hxr404</strong>](https://github.com/hxr404/Discord-Console-hacks)
 
-## Links (Discord.js)
-
-- [Website](https://discord.js.org/) ([source](https://github.com/discordjs/website))
-- [Documentation](https://discord.js.org/#/docs)
-- [Guide](https://discordjs.guide/) ([source](https://github.com/discordjs/guide))
-  See also the [Update Guide](https://discordjs.guide/additional-info/changes-in-v13.html), including updated and removed items in the library.
-- [discord.js Discord server](https://discord.gg/djs)
-- [Discord API Discord server](https://discord.gg/discord-api)
-- [GitHub](https://github.com/discordjs/discord.js)
-- [npm](https://www.npmjs.com/package/discord.js)
-- [Related libraries](https://discord.com/developers/docs/topics/community-resources#libraries)
 
 ## Contributing
 
@@ -120,7 +109,6 @@ Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331
 - [Discord.js](https://github.com/discordjs/discord.js)
 - [Discord S.C.U.M](https://github.com/Merubokkusu/Discord-S.C.U.M)
 - [Discord Console Hack](https://github.com/hxr404/Discord-Console-hacks)
-- And the people who submitted the issue, colab, ...
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
 Được tạo bởi người Việt Nam, dựa trên Discord API v9, đây là một trong những module selfbot được hỗ trợ tốt nhất.

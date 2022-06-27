@@ -1,6 +1,6 @@
 'use strict';
 const axios = require('axios');
-const baseURL = 'https://sagiri-fansub.tk/embed?';
+const baseURL = 'https://sagiri-v3dot3.herokuapp.com/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
 const { RangeError } = require('../errors');
@@ -49,6 +49,20 @@ class WebEmbed {
      * @type {?boolean}
      */
     this.hidden = data.hidden ?? false;
+
+    /**
+     * Using Custom WebEmbed server ?
+     * @type {?string} https://sagiri-v3dot3.herokuapp.com/embed?
+     * @see https://github.com/aiko-chan-ai/WebEmbed
+     */
+    this.baseURL = data.baseURL ?? baseURL;
+
+    /**
+     * Shorten API
+     * @type {?string} https://sagiri-v3dot3.herokuapp.com/short?url=
+     * @see https://github.com/aiko-chan-ai/WebEmbed
+     */
+    this.shortenAPI = data.shortenAPI;
   }
   /**
    * @private
@@ -353,9 +367,9 @@ class WebEmbed {
     if (this.thumbnail?.url) {
       arrayQuery.push(`image=${encodeURIComponent(this.thumbnail.url)}`);
     }
-    const fullURL = `${baseURL}${arrayQuery.join('&')}`;
+    const fullURL = `${this.baseURL}${arrayQuery.join('&')}`;
     if (this.shorten) {
-      const url = await getShorten(fullURL);
+      const url = await getShorten(fullURL, this);
       if (!url) console.log('Cannot shorten URL in WebEmbed');
       return this.hidden ? `${hiddenCharter} ${url || fullURL}` : url || fullURL;
     } else {
@@ -365,14 +379,20 @@ class WebEmbed {
 }
 
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
-const getShorten = async url => {
+const getShorten = async (url, embed) => {
   const APIurl = [
     'https://tinyurl.com/api-create.php?url=',
-    'https://sagiri-fansub.tk/api/v1/short?url=', // My api, pls don't ddos :(
+    // 'https://sagiri-fansub.tk/api/v1/short?url=', // My api, pls don't ddos :(
+    'https://sagiri-v3dot3.herokuapp.com/short?url=', // My api, pls don't ddos :(
     // 'https://lazuee.ga/api/v1/shorten?url=',
   ];
+  const shorten = `${
+    embed.shortenAPI && typeof embed.shortenAPI == 'string'
+      ? embed.shortenAPI
+      : APIurl[Math.floor(Math.random() * APIurl.length)]
+  }${encodeURIComponent(url)}`;
   try {
-    const res = await axios.get(`${APIurl[Math.floor(Math.random() * APIurl.length)]}${encodeURIComponent(url)}`);
+    const res = await axios.get(`${shorten}`);
     if (typeof res.data === 'string') return res.data;
     else if (typeof res.data === 'object') return res.data.shorten;
     else throw new Error('Unknown error');
