@@ -152,7 +152,8 @@ __export(src_exports, {
   getVoiceConnection: () => getVoiceConnection,
   getVoiceConnections: () => getVoiceConnections,
   joinVoiceChannel: () => joinVoiceChannel,
-  validateDiscordOpusHead: () => validateDiscordOpusHead
+  validateDiscordOpusHead: () => validateDiscordOpusHead,
+  Networking: () => Networking
 });
 module.exports = __toCommonJS(src_exports);
 
