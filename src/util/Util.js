@@ -430,11 +430,11 @@ class Util extends null {
   }
 
   /**
-* Can be a number, hex string, a {@link Color}, or an RGB array like:
+   * Can be a number, hex string, a {@link Color}, or an RGB array like:
    * ```js
    * [255, 0, 255] // purple
    * ```
-* @typedef {string|Color|number|number[]} ColorResolvable
+   * @typedef {string|Color|number|number[]} ColorResolvable
    */
 
   /**
