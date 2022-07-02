@@ -175,6 +175,7 @@ exports.Endpoints = {
   invite: (root, code, eventId) => (eventId ? `${root}/${code}?event=${eventId}` : `${root}/${code}`),
   scheduledEvent: (root, guildId, eventId) => `${root}/${guildId}/${eventId}`,
   botGateway: '/gateway/bot',
+  userGateway: '/gateway',
 };
 
 /**

@@ -3066,6 +3066,7 @@ export const Constants: {
   };
   Endpoints: {
     botGateway: string;
+    userGateway: string;
     invite: (root: string, code: string, eventId?: Snowflake) => string;
     scheduledEvent: (root: string, guildId: Snowflake, eventId: Snowflake) => string;
     CDN: (root: string) => {

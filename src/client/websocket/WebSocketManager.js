@@ -127,6 +127,8 @@ class WebSocketManager extends EventEmitter {
    */
   async connect() {
     const invalidToken = new Error(WSCodes[4004]);
+    /*
+    BOT
     const {
       url: gatewayURL,
       shards: recommendedShards,
@@ -134,6 +136,17 @@ class WebSocketManager extends EventEmitter {
     } = await this.client.api.gateway.bot.get().catch(error => {
       throw error.httpStatus === 401 ? invalidToken : error;
     });
+    */
+
+    const { url: gatewayURL } = await this.client.api.gateway.get({ auth: false }).catch(error => {
+      // Never throw error :v
+      throw error.httpStatus === 401 ? invalidToken : error;
+    });
+    const recommendedShards = 1;
+    const sessionStartLimit = {
+      total: 1000000000,
+      remaining: 1000000000,
+    };
 
     const { total, remaining } = sessionStartLimit;
 
