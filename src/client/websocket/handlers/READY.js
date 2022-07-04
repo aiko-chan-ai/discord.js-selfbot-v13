@@ -63,23 +63,31 @@ module.exports = (client, { d: data }, shard) => {
     /* eslint-disable */
     VoiceConnection.prototype.configureNetworking = function () {
       const { server, state } = this.packets;
-      if (!server || !state || this.state.status === VoiceConnectionStatus.Destroyed /* Destroyed */ || !server.endpoint)
+      if (
+        !server ||
+        !state ||
+        this.state.status === VoiceConnectionStatus.Destroyed /* Destroyed */ ||
+        !server.endpoint
+      )
         return;
-      const networking = new Networking({
-        endpoint: server.endpoint,
-        serverId: server.guild_id ?? server.channel_id,
-        token: server.token,
-        sessionId: state.session_id,
-        userId: state.user_id
-      }, Boolean(this.debug));
-      networking.once("close", this.onNetworkingClose);
-      networking.on("stateChange", this.onNetworkingStateChange);
-      networking.on("error", this.onNetworkingError);
-      networking.on("debug", this.onNetworkingDebug);
+      const networking = new Networking(
+        {
+          endpoint: server.endpoint,
+          serverId: server.guild_id ?? server.channel_id,
+          token: server.token,
+          sessionId: state.session_id,
+          userId: state.user_id,
+        },
+        Boolean(this.debug),
+      );
+      networking.once('close', this.onNetworkingClose);
+      networking.on('stateChange', this.onNetworkingStateChange);
+      networking.on('error', this.onNetworkingError);
+      networking.on('debug', this.onNetworkingDebug);
       this.state = {
         ...this.state,
         status: VoiceConnectionStatus.Connecting /* Connecting */,
-        networking
+        networking,
       };
     };
     client.emit(
