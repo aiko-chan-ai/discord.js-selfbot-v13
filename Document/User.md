@@ -156,6 +156,7 @@ client.user.setActivity(custom);
 ```
 
 Rich Presence [Custom]
+Usage: see this module https://www.npmjs.com/package/discordrpcgenerator
 ```js
 const RPC = require('discord-rpc-contructor');
 const r = new RPC.Rpc()
