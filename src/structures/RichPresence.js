@@ -448,6 +448,11 @@ class SpotifyRPC extends RichPresence {
       match: crypto.randomBytes(20).toString('hex'),
     };
   }
+  /**
+   * Set the large image of this activity
+   * @param {?string} image Spotify song's image ID
+   * @returns {SpotifyRPC}
+   */
   setAssetsLargeImage(image) {
     if (image.startsWith('spotify:')) image = image.replace('spotify:', '');
     if (!(this.assets instanceof Object)) {
@@ -459,6 +464,11 @@ class SpotifyRPC extends RichPresence {
     }
     return this;
   }
+  /**
+   * Set the small image of this activity
+   * @param {?string} image Spotify song's image ID
+   * @returns {RichPresence}
+   */
   setAssetsSmallImage(image) {
     if (image.startsWith('spotify:')) image = image.replace('spotify:', '');
     if (!(this.assets instanceof Object)) {
@@ -480,6 +490,10 @@ class SpotifyRPC extends RichPresence {
     return this;
   }
 
+  /**
+   * Convert the rich presence to a JSON object
+   * @returns {SpotifyRPC}
+   */
   toJSON() {
     if (!this.sync_id) throw new Error('Song id is required');
     return {
