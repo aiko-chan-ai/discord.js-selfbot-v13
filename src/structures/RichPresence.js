@@ -396,6 +396,9 @@ class RichPresence {
   }
 }
 
+/**
+ * @extends {RichPresence}
+ */
 class SpotifyRPC extends RichPresence {
   /**
    * Create a new RichPresence (Spotify style)
