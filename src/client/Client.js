@@ -4,7 +4,6 @@ const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const { getVoiceConnection } = require('@discordjs/voice');
-const RichPresence = require('discord-rpc-contructor');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -22,6 +21,7 @@ const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
 const GuildTemplate = require('../structures/GuildTemplate');
 const Invite = require('../structures/Invite');
+const { CustomStatus } = require('../structures/RichPresence');
 const { Sticker } = require('../structures/Sticker');
 const StickerPack = require('../structures/StickerPack');
 const VoiceRegion = require('../structures/VoiceRegion');
@@ -669,21 +669,18 @@ class Client extends BaseClient {
     return eval(script);
   }
 
-  async customStatusAuto(client) {
+  customStatusAuto(client) {
     client = client ?? this;
-    let custom_status;
+    const custom_status = new CustomStatus();
     if (client.setting.rawSetting.custom_status?.text || client.setting.rawSetting.custom_status?.emoji_name) {
-      custom_status = new RichPresence.CustomStatus();
-      if (client.setting.rawSetting.custom_status.emoji_id) {
-        const emoji = await client.emojis.resolve(client.setting.rawSetting.custom_status.emoji_id);
-        if (emoji) custom_status.setDiscordEmoji(emoji);
-      } else {
-        custom_status.setUnicodeEmoji(client.setting.rawSetting.custom_status.emoji_name);
-      }
+      custom_status.setEmoji({
+        name: client.setting.rawSetting.custom_status?.emoji_name,
+        id: client.setting.rawSetting.custom_status?.emoji_id,
+      });
       custom_status.setState(client.setting.rawSetting.custom_status?.text);
       client.user.setPresence({
         activities: custom_status
-          ? [custom_status.toDiscord(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')]
+          ? [custom_status.toJSON(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')]
           : this.presence.activities.filter(a => a.type !== 'CUSTOM'),
         status: client.setting.rawSetting.status,
       });

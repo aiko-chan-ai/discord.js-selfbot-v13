@@ -142,18 +142,13 @@ User {
 Custom Status
 
 ```js
-const RichPresence = require('discord-rpc-contructor'); // My module :))
-const custom = new RichPresence.CustomStatus()
-    .setUnicodeEmoji('🎮') // Set Unicode Emoji [Using one]
-    .setDiscordEmoji({ // Set Custom Emoji (Nitro Classic / Boost) [Using one]
-        name: 'nom',
-        id: '737373737373737373',
-        animated: false,
-    })
-    .setState('Testing') // Name of presence
-    .toDiscord();
-client.user.setActivity(custom);
+const r = new Discord.CustomStatus()
+	.setState('Discord')
+	.setEmoji('💬')
+client.user.setActivity(r.toJSON());
 ```
+
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/994318117243203758/unknown.png'>
 
 Rich Presence [Custom]
 ```js
