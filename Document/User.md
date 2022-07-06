@@ -156,38 +156,44 @@ client.user.setActivity(custom);
 ```
 
 Rich Presence [Custom]
-Usage: see this module https://www.npmjs.com/package/discordrpcgenerator
 ```js
-const RPC = require('discord-rpc-contructor');
-const r = new RPC.Rpc()
+const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
-	.setType(0)
+	.setType('STREAMING')
+	.setURL('https://youtube.com/watch?v=dQw4w9WgXcQ')
 	.setState('State')
 	.setName('Name')
 	.setDetails('Details')
 	.setParty({
-		size: [1, 2],
-		id: RPC.uuid(),
+		max: 9,
+		current: 1,
+		id: Discord.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
 	.setAssetsLargeImage('929325841350000660')
 	.setAssetsLargeText('Youtube')
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
-client.user.setActivity(r.toDiscord().game);
-// Button not working
+	.addButton('name', 'https://link.com/')
+client.user.setActivity(r.toJSON());
 ```
-<img src='https://cdn.discordapp.com/attachments/820557032016969751/955767445220646922/unknown.png'>
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/994300662378676264/unknown.png'>
 
-Rich Presence with Twitch / Spotify
+Rich Presence with Spotify
 ```js
-Update soon ~
+const r = new Discord.SpotifyRPC(client)
+	.setAssetsLargeImage("spotify:ab67616d00001e02768629f8bc5b39b68797d1bb") // Image ID
+	.setAssetsSmallImage("spotify:ab67616d00001e02768629f8bc5b39b68797d1bb")
+	.setState('state')
+	.setDetails('details')
+	.setSongId('667eE4CFfNtJloC6Lvmgrx'); // Song ID
+client.user.setActivity(r.toJSON());
 ```
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/994308354535075980/unknown.png'>
+
 
 <strong>New: You can now add custom images for RPC !</strong>
 > Tutorial:
-	
-<strong>Method 1</strong>
 
 + Step 1: Send photos by embed.thumbnail
 
@@ -203,67 +209,27 @@ const proxyURL = msg.embeds[0].thumbnail.proxyURL;
 + Step 3: Put the URL in the constructor
 
 ```js
-const RPC = require('discord-rpc-contructor');
-const r = new RPC.Rpc()
+const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
-	.setType(0)
+	.setType('STREAMING')
+	.setURL('https://youtube.com/watch?v=dQw4w9WgXcQ')
 	.setState('State')
 	.setName('Name')
 	.setDetails('Details')
-	.setAssetsLargeImage(proxyURL) // Custom image
+	.setParty({
+		max: 9,
+		current: 1,
+		id: Discord.getUUID(),
+	})
+	.setStartTimestamp(Date.now())
+	.setAssetsLargeImage(proxyURL)
 	.setAssetsLargeText('Youtube')
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
+	.addButton('name', 'https://link.com/')
 client.user.setActivity(r.toDiscord().game);
 ```
 
-<strong>Method 2 - require ver 1.1.1 - latest</strong>
-
-```
-Note: If you use time-varying RPC, or if it takes too long to place images, use the 2nd method because it spams me too much .-.
-```
-
-![image](https://user-images.githubusercontent.com/71698422/164040950-9679cec3-b47e-4521-b5f6-ee83a79a1978.png)
-
-	
-```js
-const RPC = require('discord-rpc-contructor');
-const r = new RPC.Rpc()
-	.setApplicationId('817229550684471297')
-	.setType(0)
-	.setState('State')
-	.setName('Name')
-	.setDetails('Details')
-	.setAssetsLargeImage(await RPC.getImageCustom(imageURL1)) // Custom image
-	.setAssetsLargeText('Youtube')
-	.setAssetsSmallImage(await RPC.getImageCustom(imageURL2)) // Custom image
-	.setAssetsSmallText('Bot')
-client.user.setActivity(r.toDiscord().game);
-```
-
-
-<strong>How to get AssetID ?</strong>
-
-Code
-
-```js
-const RPC = require('discord-rpc-contructor');
-// Bot ID
-RPC.getRpcImages('817229550684471297').then(console.log);
-```
-Return
-```js
-// ID is AssetID
-[
-  { id: '838629816881381376', type: 1, name: 'honkai' },
-  { id: '853533658250084352', type: 1, name: 'vscode' },
-  { id: '895316294222635008', type: 1, name: 'botsagiri' },
-  { id: '929324633063292929', type: 1, name: 'soundcloud' },
-  { id: '929324634858479666', type: 1, name: 'spotify' },
-  { id: '929325841350000660', type: 1, name: 'youtube' }
-]
-```
-You can cache to use these files, do not run this function too much because it will be rate limit
 And you can change the status 5 times every 20 seconds!
 </details>
 

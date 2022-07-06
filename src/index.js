@@ -135,6 +135,12 @@ exports.ReactionCollector = require('./structures/ReactionCollector');
 exports.ReactionEmoji = require('./structures/ReactionEmoji');
 exports.RichPresenceAssets = require('./structures/Presence').RichPresenceAssets;
 exports.Role = require('./structures/Role').Role;
+// RPC
+exports.getUUID = require('./structures/RichPresence').getUUID;
+exports.CustomStatus = require('./structures/RichPresence').CustomStatus;
+exports.RichPresence = require('./structures/RichPresence').RichPresence;
+exports.SpotifyRPC = require('./structures/RichPresence').SpotifyRPC;
+//
 exports.SelectMenuInteraction = require('./structures/SelectMenuInteraction');
 exports.StageChannel = require('./structures/StageChannel');
 exports.StageInstance = require('./structures/StageInstance').StageInstance;

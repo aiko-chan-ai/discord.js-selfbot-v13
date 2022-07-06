@@ -165,6 +165,91 @@ import DiscordAuthWebsocket from '../src/util/RemoteAuth.js';
 
 //#region Classes
 
+// RPC by aiko-chan-ai
+export interface RichButton {
+  name: string;
+  url: string;
+}
+
+export abstract class RichPresence {
+  public constructor(client?: Client, data?: object);
+  public application_id: Snowflake | null;
+  public assets: RichPresenceAssets | null;
+  public buttons: string[];
+  public details: string | null;
+  public name: string;
+  public party: {
+    id: string | null;
+    size: [number, number];
+  } | null;
+  public state: string | null;
+  public timestamps: {
+    start: Date | null;
+    end: Date | null;
+  } | null;
+  public type: ActivityType;
+  public url: string | null;
+  public setAssetsLargeImage(image?: Snowflake): this;
+  public setAssetsLargeText(text?: string): this;
+  public setAssetsSmallImage(image?: Snowflake): this;
+  public setAssetsSmallText(text?: string): this;
+  public setName(name?: string): this;
+  public setURL(url?: string): this;
+  public setType(type?: ActivityType): this;
+  public setApplicationId(id?: Snowflake): this;
+  public setDetails(details?: string): this;
+  public setState(state?: string): this;
+  public setParty(party?: { max: number; current: number; id?: string }): this;
+  public setStartTimestamp(timestamp?: Date): this;
+  public setEndTimestamp(timestamp?: Date): this;
+  public setButtons(...button: RichButton[]): this;
+  public addButton(name: string, url: string): this;
+  public toJSON(): object;
+}
+
+export abstract class SpotifyRPC extends RichPresence {
+  public constructor(client: Client, data?: object);
+  public application_id: Snowflake | null;
+  public client: Client;
+  public assets: RichPresenceAssets | null;
+  public buttons: string[];
+  public details: string | null;
+  public name: string;
+  public sync_id: string;
+  public id: string;
+  public created_at: Date;
+  public flags: number;
+  public secrets: {
+    join: string;
+    spectate: string;
+    match: string;
+  };
+  public session_id: string;
+  public party: {
+    id: string | null;
+    size: [number, number];
+  } | null;
+  public state: string | null;
+  public timestamps: {
+    start: Date | null;
+    end: Date | null;
+  } | null;
+  public type: ActivityType;
+  public url: string | null;
+  public setAssetsLargeImage(image?: string): this;
+  public setAssetsSmallImage(image?: string): this;
+  public setSongId(id: string): this;
+}
+
+export abstract class CustomStatus {
+  public constructor(data?: object);
+  public emoji: EmojiIdentifierResolvable;
+  public state: string;
+  public setEmoji(emoji?: EmojiIdentifierResolvable): this;
+  public setState(state: string): this;
+  public toJSON(): object;
+}
+
 export class Activity {
   private constructor(presence: Presence, data?: RawActivityData);
   public applicationId: Snowflake | null;
