@@ -75,15 +75,14 @@ UserFlags.FLAGS = {
   EARLY_VERIFIED_BOT_DEVELOPER: 1 << 17,
   DISCORD_CERTIFIED_MODERATOR: 1 << 18,
   BOT_HTTP_INTERACTIONS: 1 << 19,
-  SPAMMER: 1 << 20, // [Undocumented] User is marked as a spammer.
-  DISABLE_PREMIUM: 1 << 21, // [Undocumented] Forcefully disables Nitro features.
-  PREMIUM_DISCRIMINATOR: 1 << 37, // [Undocumented] User has a premium discriminator.
-  /* Presence Flags */
-  USED_DESKTOP_CLIENT: 1 << 38, // [Undocumented] User has used the desktop client.
-  USED_WEB_CLIENT: 1 << 39, // [Undocumented] User has used the web client.
-  USED_MOBILE_CLIENT: 1 << 40, // [Undocumented] User has used the mobile client.
-  DISABLED: 1 << 41, // [Undocumented] User is currently temporarily or permanently disabled.
-  VERIFIED_EMAIL: 1 << 43, // [Undocumented] User has a verified email on their account.
+  SPAMMER: Math.pow(2, 20), // [Undocumented] User is marked as a spammer.
+  DISABLE_PREMIUM: Math.pow(2, 21), // [Undocumented] Forcefully disables Nitro features.
+  PREMIUM_DISCRIMINATOR: Math.pow(2, 37), // [Undocumented] User has a premium discriminator.
+  USED_DESKTOP_CLIENT: Math.pow(2, 38), // [Undocumented] User has used the desktop client.
+  USED_WEB_CLIENT: Math.pow(2, 39), // [Undocumented] User has used the web client.
+  USED_MOBILE_CLIENT: Math.pow(2, 40), // [Undocumented] User has used the mobile client.
+  DISABLED: Math.pow(2, 41), // [Undocumented] User is currently temporarily or permanently disabled.
+  VERIFIED_EMAIL: Math.pow(2, 43), // [Undocumented] User has a verified email on their account.
 };
 
 module.exports = UserFlags;
