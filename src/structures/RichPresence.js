@@ -66,7 +66,6 @@ class CustomStatus {
   /**
    * Returns an object that can be used to set the status
    * @returns {CustomStatus}
-   * @example
    */
   toJSON() {
     if (!this.emoji & !this.state) throw new Error('CustomStatus must have at least one of emoji or state');
@@ -434,7 +433,7 @@ class SpotifyRPC extends RichPresence {
     this.created_at = Date.now();
     /**
      * Flags that describe the activity
-     * @type {Readonly<ActivityFlags>}
+     * @type {ActivityFlags}
      */
     this.flags = 48; // Sync + Play (ActivityFlags)
     /**
