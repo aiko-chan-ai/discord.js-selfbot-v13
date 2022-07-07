@@ -15,6 +15,7 @@ const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
 const { Error } = require('../errors');
 const ReactionManager = require('../managers/ReactionManager');
+const ActivityFlags = require('../util/ActivityFlags');
 const { InteractionTypes, MessageTypes, SystemMessageTypes } = require('../util/Constants');
 const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
@@ -269,7 +270,7 @@ class Message extends Base {
        */
       this.activity = {
         partyId: data.activity.party_id,
-        type: data.activity.type,
+        type: new ActivityFlags(data.activity.type),
       };
     } else {
       this.activity ??= null;
@@ -1037,8 +1038,15 @@ class Message extends Base {
         );
       }),
     );
-    if (!button) throw new TypeError('BUTTON_NOT_FOUND');
-    else button.click(this);
+    if (!button) {
+      throw new TypeError('BUTTON_NOT_FOUND');
+    } else {
+      // eslint-disable-next-line no-async-promise-executor
+      return new Promise(async (resolve, reject) => {
+        const res = await button.click(this).catch(reject);
+        if (res) resolve(res);
+      });
+    }
   }
   /**
    * Select specific menu or First Menu
@@ -1070,7 +1078,11 @@ class Message extends Base {
       else if (typeof menuID !== 'string') throw new TypeError('MENU_ID_NOT_STRING');
       else throw new TypeError('MENU_ID_NOT_FOUND');
     }
-    menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      const res = await menuCorrect.select(this, Array.isArray(menuID) ? menuID : options).catch(reject);
+      if (res) resolve(res);
+    });
   }
   //
   /**

@@ -1771,9 +1771,9 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public inGuild(): this is Message<true> & this;
   // Added
   public markUnread(): Promise<boolean>;
-  public clickButton(buttonID: string): Promise<void>;
-  public selectMenu(menuID: string, options: string[]): Promise<void>;
-  public selectMenu(options: string[]): Promise<void>;
+  public clickButton(buttonID: string): Promise<Snowflake>;
+  public selectMenu(menuID: string, options: string[]): Promise<Snowflake>;
+  public selectMenu(options: string[]): Promise<Snowflake>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<Snowflake>;
 }
 
@@ -1832,7 +1832,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
-  public click(message: Message): Promise<boolean>;
+  public click(message: Message): Promise<Snowflake>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 
@@ -2070,7 +2070,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values: string[]): Promise<boolean>;
+  public select(message: Message, values: string[]): Promise<Snowflake>;
 }
 
 // Todo
@@ -4477,7 +4477,7 @@ export interface ApplicationCommandChoicesData extends Omit<BaseApplicationComma
 }
 
 export interface ApplicationCommandChoicesOption extends Omit<BaseApplicationCommandOptionsData, 'autocomplete'> {
-  type: Exclude<CommandOptionChoiceResolvableType, ApplicationCommandOptionTypes>;
+  type: CommandOptionChoiceResolvableType;
   choices?: ApplicationCommandOptionChoiceData[];
   autocomplete?: false;
 }
@@ -4490,10 +4490,24 @@ export interface ApplicationCommandNumericOptionData extends ApplicationCommandC
   max_value?: number;
 }
 
+export interface ApplicationCommandStringOptionData extends ApplicationCommandChoicesData {
+  type: ApplicationCommandOptionTypes.STRING;
+  minLength?: number;
+  min_length?: number;
+  maxLength?: number;
+  max_length?: number;
+}
+
 export interface ApplicationCommandNumericOption extends ApplicationCommandChoicesOption {
-  type: Exclude<CommandOptionNumericResolvableType, ApplicationCommandOptionTypes>;
+  type: CommandOptionNumericResolvableType;
   minValue?: number;
   maxValue?: number;
+}
+
+export interface ApplicationCommandStringOption extends ApplicationCommandChoicesOption {
+  type: ApplicationCommandOptionTypes.STRING;
+  minLength?: number;
+  maxLength?: number;
 }
 
 export interface ApplicationCommandSubGroupData extends Omit<BaseApplicationCommandOptionsData, 'required'> {
@@ -4514,6 +4528,7 @@ export interface ApplicationCommandSubCommandData extends Omit<BaseApplicationCo
     | ApplicationCommandChannelOptionData
     | ApplicationCommandAutocompleteOption
     | ApplicationCommandNumericOptionData
+    | ApplicationCommandStringOptionData
   )[];
 }
 
@@ -4537,6 +4552,7 @@ export type ApplicationCommandOptionData =
   | ApplicationCommandChoicesData
   | ApplicationCommandAutocompleteOption
   | ApplicationCommandNumericOptionData
+  | ApplicationCommandStringOptionData
   | ApplicationCommandSubCommandData;
 
 export type ApplicationCommandOption =
@@ -4545,6 +4561,7 @@ export type ApplicationCommandOption =
   | ApplicationCommandChannelOption
   | ApplicationCommandChoicesOption
   | ApplicationCommandNumericOption
+  | ApplicationCommandStringOption
   | ApplicationCommandSubCommand;
 
 export interface ApplicationCommandOptionChoiceData {
@@ -5764,7 +5781,7 @@ export interface MessageActionRowOptions<
 
 export interface MessageActivity {
   partyId: string;
-  type: number;
+  type: ActivityFlags;
 }
 
 export interface BaseButtonOptions extends BaseMessageComponentOptions {
@@ -5917,6 +5934,7 @@ export interface MessageMentionOptions {
 export type MessageMentionTypes = 'roles' | 'users' | 'everyone';
 
 export interface MessageOptions {
+  activity?: MessageActivity;
   tts?: boolean;
   nonce?: string | number;
   content?: string | null;

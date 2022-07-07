@@ -166,14 +166,16 @@ class MessageButton extends BaseMessageComponent {
   /**
    * Click the button
    * @param {Message} message Discord Message
-   * @returns {boolean}
+   * @returns {Promise<Snowflake>}
    */
   async click(message) {
+    const nonce = SnowflakeUtil.generate();
     if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
     await message.client.api.interactions.post({
       data: {
         type: 3, // ?
+        nonce,
         guild_id: message.guild?.id ?? null, // In DMs
         channel_id: message.channel.id,
         message_id: message.id,
@@ -184,10 +186,9 @@ class MessageButton extends BaseMessageComponent {
           component_type: 2, // Button
           custom_id: this.customId,
         },
-        nonce: SnowflakeUtil.generate(),
       },
     });
-    return true;
+    return nonce;
   }
 }
 

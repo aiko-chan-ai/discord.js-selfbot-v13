@@ -214,7 +214,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * Mesage select menu
    * @param {Message} message The message this select menu is for
    * @param {Array<string>} values The values of the select menu
-   * @returns {Promise<boolean>}
+   * @returns {Promise<Snowflake>}
    */
   async select(message, values = []) {
     // Github copilot is the best :))
@@ -240,6 +240,7 @@ class MessageSelectMenu extends BaseMessageComponent {
         `[SELECT_MENU_INVALID_VALUE] The value ${check_} is invalid. Please use a valid value ${validValue.join(', ')}`,
       );
     }
+    const nonce = SnowflakeUtil.generate();
     await message.client.api.interactions.post({
       data: {
         type: 3, // ?
@@ -255,10 +256,10 @@ class MessageSelectMenu extends BaseMessageComponent {
           type: 3, // Select Menu
           values,
         },
-        nonce: SnowflakeUtil.generate(),
+        nonce,
       },
     });
-    return true;
+    return nonce;
   }
 }
 

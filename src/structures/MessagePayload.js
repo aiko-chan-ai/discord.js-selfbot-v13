@@ -5,6 +5,7 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
 const WebEmbed = require('./WebEmbed');
 const { RangeError } = require('../errors');
+const ActivityFlags = require('../util/ActivityFlags');
 const DataResolver = require('../util/DataResolver');
 const MessageFlags = require('../util/MessageFlags');
 const Util = require('../util/Util');
@@ -226,7 +227,25 @@ class MessagePayload {
       }
     }
 
+    // Activity
+    let activity;
+    if (
+      this.options.activity instanceof Object &&
+      typeof this.options.activity.partyId == 'string' &&
+      this.options.activity.type
+    ) {
+      const type = ActivityFlags.resolve(this.options.activity.type);
+      const sessionId = this.target.client.session_id;
+      const partyId = this.options.activity.partyId;
+      activity = {
+        type,
+        party_id: partyId,
+        session_id: sessionId,
+      };
+    }
+
     this.data = {
+      activity,
       content,
       tts,
       nonce,

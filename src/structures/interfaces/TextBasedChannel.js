@@ -57,6 +57,7 @@ class TextBasedChannel {
   /**
    * Base options provided when sending.
    * @typedef {Object} BaseMessageOptions
+   * @property {MessageActivity} [activity] Group activity
    * @property {boolean} [tts=false] Whether or not the message should be spoken aloud
    * @property {string} [nonce=''] The nonce for the message
    * @property {string} [content=''] The content for the message

@@ -443,7 +443,7 @@ class SpotifyRPC extends RichPresence {
      * The game's or Spotify session's id
      * @type {?string}
      */
-    this.session_id = this.client.ws.shards.first().sessionId;
+    this.session_id = this.client.session_id;
 
     this.secrets = {
       join: crypto.randomBytes(20).toString('hex'), // SHA1 / SHA128
