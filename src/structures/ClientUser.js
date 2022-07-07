@@ -5,8 +5,9 @@ const Invite = require('./Invite');
 const { Message } = require('./Message');
 const User = require('./User');
 const { Util } = require('..');
-const { HypeSquadOptions, Opcodes, NitroState } = require('../util/Constants');
+const { HypeSquadOptions, Opcodes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const PurchasedFlags = require('../util/PurchasedFlags');
 /**
  * Represents the logged in client's Discord user.
  * @extends {User}
@@ -35,29 +36,42 @@ class ClientUser extends User {
 
     if ('token' in data) this.client.token = data.token;
 
-    // Add (Selfbot)
-    if ('purchased_flags' in data) this.nitro = NitroState[data.purchased_flags] ?? 'NONE';
-    // Key: premium = boolean;
     /**
-     * Nitro state of the client user.
-     * @type {NitroState}
-     * @see https://discord.com/developers/docs/resources/user#user-object-premium-types
-     */
-    if ('phone' in data) this.phoneNumber = data.phone;
-    /**
-     * Phone number of the client user.
-     * @type {?string}
-     */
-    if ('nsfw_allowed' in data) this.nsfwAllowed = data.nsfw_allowed;
-    /**
-     * Whether or not the client user is allowed to send NSFW messages [iOS device].
+     * Nitro state of the user
      * @type {?boolean}
      */
-    if ('email' in data) this.emailAddress = data.email;
-    /**
-     * Email address of the client user.
-     * @type {?string}
-     */
+    this.nitro = Boolean(data.premium || false);
+
+    // Add (Selfbot)
+    if ('purchased_flags' in data) {
+      /**
+       * Purchased state of the client user.
+       * @type {?PurchasedFlags}
+       */
+      this.purchasedFlags = new PurchasedFlags(data.purchased_flags || 0);
+    }
+    // Key: premium = boolean;
+    if ('phone' in data) {
+      /**
+       * Phone number of the client user.
+       * @type {?string}
+       */
+      this.phoneNumber = data.phone;
+    }
+    if ('nsfw_allowed' in data) {
+      /**
+       * Whether or not the client user is allowed to send NSFW messages [iOS device].
+       * @type {?boolean}
+       */
+      this.nsfwAllowed = data.nsfw_allowed;
+    }
+    if ('email' in data) {
+      /**
+       * Email address of the client user.
+       * @type {?string}
+       */
+      this.emailAddress = data.email;
+    }
   }
 
   /**

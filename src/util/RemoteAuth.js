@@ -2,6 +2,7 @@
 // Thanks to https://github.com/raleighrimwell/discord-qr-scam-tool
 const { Buffer } = require('buffer');
 const crypto = require('crypto');
+const EventEmitter = require('node:events');
 const { setInterval, clearInterval, setTimeout, clearTimeout } = require('node:timers');
 const { StringDecoder } = require('string_decoder');
 const { encode: urlsafe_b64encode } = require('safe-base64');
@@ -40,11 +41,22 @@ class DiscordUser_FromPayload {
   }
 }
 
-class DiscordAuthWebsocket {
+/**
+ * Discord Auth QR
+ * @extends {EventEmitter}
+ * @abstract
+ */
+class DiscordAuthWebsocket extends EventEmitter {
+  /**
+   * Creates a new DiscordAuthWebsocket instance.
+   * @param {?Client} client Discord.Client (Login)
+   * @param {boolean} debug Log debug info
+   */
   constructor(client, debug = false) {
+    super();
     this.debug = debug;
     this.client = client;
-    this.ws = new WebSocket(client.options.http.remoteAuth, {
+    this.ws = new WebSocket(client?.options?.http?.remoteAuth || 'wss://remote-auth-gateway.discord.gg/?v=1', {
       headers: {
         Origin: 'https://discord.com',
         'User-Agent': randomUA(),
@@ -65,7 +77,21 @@ class DiscordAuthWebsocket {
     this.connectionDestroy = null;
     this.missQR = null;
     this.login_state = false;
+    /**
+     * User login with QR
+     * @type {?object}
+     */
     this.user = null;
+    /**
+     * Discord Auth URL (QR Code decoded)
+     * @type {?string}
+     */
+    this.authURL = null;
+    /**
+     * Discord Token
+     * @type {?string}
+     */
+    this.token = null;
     this.ws.on('error', error => {
       if (this.debug) console.log(error);
     });
@@ -100,12 +126,17 @@ class DiscordAuthWebsocket {
         if (this.debug) console.log('[WebSocket] Nonce proof decrypted');
       } else if (op == Messages.PENDING_REMOTE_INIT) {
         let fingerprint = data.fingerprint;
+        this.authURL = `https://discord.com/ra/${fingerprint}`;
+        /**
+         * Emitted whenever a url is created.
+         * @event DiscordAuthWebsocket#ready
+         * @param {string} url DiscordAuthWebsocket
+         */
+        this.emit('ready', this.authURL);
         this.generate_qr_code(fingerprint);
         if (this.debug) console.log('[WebSocket] QR Code generated');
         console.log(
-          `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN', {
-            timeZone: 'Asia/Ho_Chi_Minh',
-          })} (UTC+7)`,
+          `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN')}`,
         );
       } else if (op == Messages.PENDING_FINISH) {
         let encrypted_payload = data.encrypted_user_payload;
@@ -121,13 +152,36 @@ class DiscordAuthWebsocket {
         this.login_state = true;
         let encrypted_token = data.encrypted_token;
         let token = this.decrypt_payload(encrypted_token);
-
         const decoder = new StringDecoder('utf-8');
         this.user.token = decoder.write(token);
         if (this.debug) console.log(this.user.pretty_print());
-        this.client.login(this.user.token);
+        this.token = this.user.token;
+        /**
+         * Emitted whenever a token is created.
+         * @event DiscordAuthWebsocket#success
+         * @param {object} user Discord User
+         * @param {string} token Discord Token
+         */
+        this.emit(
+          'success',
+          {
+            id: this.user.id,
+            tag: `${this.user.username}#${this.user.discrim}`,
+          },
+          this.token,
+        );
+        this.client?.login(this.user.token);
         this.destroy();
       } else if (op == Messages.CANCEL) {
+        /**
+         * Emitted whenever a user cancels the login process.
+         * @event DiscordAuthWebsocket#cancel
+         * @param {object} user User
+         */
+        this.emit('cancel', {
+          id: this.user.id,
+          tag: `${this.user.username}#${this.user.discrim}`,
+        });
         this.destroy();
       }
     });
@@ -139,9 +193,12 @@ class DiscordAuthWebsocket {
     if (this.debug) console.log('[WebSocket] Setup passed');
   }
 
+  /**
+   * Destroy WebSocket connection
+   * @returns {void}
+   */
   destroy() {
     this.ws.close();
-    console.clear();
     clearInterval(this.heartbeat_interval);
     clearTimeout(this.connectionDestroy);
     if (this.debug) {
@@ -204,6 +261,10 @@ class DiscordAuthWebsocket {
     return decrypted;
   }
 
+  /**
+   * Generate QR code for user to scan (Terminal)
+   * @param {string} fingerprint Auth URL
+   */
   generate_qr_code(fingerprint) {
     require('@aikochan2k6/qrcode-terminal').generate(`https://discord.com/ra/${fingerprint}`, {
       small: true,

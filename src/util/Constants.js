@@ -29,14 +29,6 @@ const listUserAgent = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 Edg/103.0.1264.37',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 Edg/103.0.1264.37',
 ];
-/**
- * Nitro state
- * * NONE
- * * CLASSIC
- * * BOOST
- * @typedef {string} NitroState
- */
-exports.NitroState = createEnum(['NONE', 'CLASSIC', 'BOOST']);
 
 exports.DMScanLevel = createEnum(['NOT_SCAN', 'NOT_FRIEND', 'EVERYONE']);
 

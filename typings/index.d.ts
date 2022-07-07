@@ -284,6 +284,11 @@ export class ActivityFlags extends BitField<ActivityFlagsString> {
   public static resolve(bit?: BitFieldResolvable<ActivityFlagsString, number>): number;
 }
 
+export class PurchasedFlags extends BitField<PurchasedFlagsString> {
+  public static FLAGS: Record<PurchasedFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<PurchasedFlagsString, number>): number;
+}
+
 export abstract class AnonymousGuild extends BaseGuild {
   protected constructor(client: Client, data: RawAnonymousGuildData, immediatePatch?: boolean);
   public banner: string | null;
@@ -3879,6 +3884,10 @@ export interface WebhookFields extends PartialWebhookFields {
 //#endregion
 
 //#region Typedefs
+export type PurchasedFlagsString =
+  | 'NITRO_CLASSIC'
+  | 'NITRO'
+  | 'GUILD_BOOST';
 
 export type ActivityFlagsString =
   | 'INSTANCE'
