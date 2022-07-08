@@ -152,8 +152,7 @@ class Modal {
    * })
    */
   async reply(guildId, channelId, ...data) {
-    // Test
-    if (this.application) throw new Error('Modal cannot reply (Missing Application)');
+    if (!this.application) throw new Error('Modal cannot reply (Missing Application)');
     const guild = this.client.guilds.cache.get(guildId);
     if (!guild) throw new Error('GUILD_NOT_FOUND', `Guild ${guildId} not found`);
     const channel = guild.channels.cache.get(channelId);
