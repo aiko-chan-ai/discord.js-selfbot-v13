@@ -19,7 +19,7 @@ class MessageCreateAction extends Action {
       channel.lastMessageId = data.id;
 
       if (client.options.autoRedeemNitro) {
-        client.redeemNitro(message, channel);
+        client.autoRedeemNitro(message, channel);
       }
 
       /**

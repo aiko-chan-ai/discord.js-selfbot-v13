@@ -210,6 +210,12 @@ class Client extends BaseClient {
      */
     this.password = null;
 
+    /**
+     * Nitro cache
+     * @type {Array}
+     */
+    this.usedCodes = [];
+
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
         'The message sweeping client options are deprecated, use the global sweepers instead.',
@@ -429,11 +435,11 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get Nitro
+   * Automatically Redeem Nitro from raw message
    * @param {Message} message Discord Message
    * @param {Channel} channel Message Channel
    */
-  async redeemNitro(message, channel) {
+  async autoRedeemNitro(message, channel) {
     if (typeof message !== Message) return;
     const regex = {
       gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
@@ -462,6 +468,44 @@ class Client extends BaseClient {
 
         this.usedCodes.push(code);
       }
+    }
+  }
+
+  /**
+   * Redeem nitro from code or url
+   * @param {string<NitroCode>} nitro Nitro url or code
+   * @param {Channel} channel Channel that the code was sent in
+   */
+  async redeemNitro(nitro, channel) {
+    if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
+    const regex = {
+      gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
+      url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
+    };
+    if (regex.url.test(nitro)) {
+      let codes = nitro.match(regex.gift);
+      for (let code of codes) {
+        code = code.replace(regex.url, '');
+        if (this.usedCodes.indexOf(code) > -1) return;
+
+        await this.api.entitlements['gift-codes'](code).redeem.post({
+          auth: true,
+          data: { channel_id: channel ? channel.id : null, payment_source_id: null },
+        });
+
+        this.usedCodes.push(code);
+      }
+    } else if ([16, 25].includes(nitro.length)) {
+      if (this.usedCodes.indexOf(nitro) > -1) return;
+
+      await this.api.entitlements['gift-codes'](nitro).redeem.post({
+        auth: true,
+        data: { channel_id: channel ? channel.id : null, payment_source_id: null },
+      });
+
+      this.usedCodes.push(nitro);
+    } else {
+      throw new Error('INVALID_NITRO');
     }
   }
 
