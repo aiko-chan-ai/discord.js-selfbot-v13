@@ -689,6 +689,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private presence: ClientPresence;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
+  private autoRedeemNitro(message: Message, channel: Channel): object;
 
   public application: If<Ready, ClientApplication>;
   // Added
@@ -721,7 +722,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public redeemNitro(code: string): Promise<void>;
+  public redeemNitro(code: string, channel?: Channel): object;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
@@ -3885,10 +3886,7 @@ export interface WebhookFields extends PartialWebhookFields {
 //#endregion
 
 //#region Typedefs
-export type PurchasedFlagsString =
-  | 'NITRO_CLASSIC'
-  | 'NITRO'
-  | 'GUILD_BOOST';
+export type PurchasedFlagsString = 'NITRO_CLASSIC' | 'NITRO' | 'GUILD_BOOST';
 
 export type ActivityFlagsString =
   | 'INSTANCE'
@@ -4389,6 +4387,7 @@ export interface ClientOptions {
   checkUpdate?: boolean;
   readyStatus?: boolean;
   autoCookie?: boolean;
+  autoRedeemNitro?: boolean;
   patchVoice?: boolean;
 }
 

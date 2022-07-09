@@ -18,6 +18,10 @@ class MessageCreateAction extends Action {
       const message = channel.messages._add(data);
       channel.lastMessageId = data.id;
 
+      if (client.options.autoRedeemNitro) {
+        client.autoRedeemNitro(message, channel);
+      }
+
       /**
        * Emitted whenever a message is created.
        * @event Client#messageCreate

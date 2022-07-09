@@ -144,6 +144,7 @@ class Options extends null {
       checkUpdate: true,
       readyStatus: true,
       autoCookie: true,
+      autoRedeemNitro: true,
       patchVoice: true,
       waitGuildTimeout: 15_000,
       shardCount: 1,

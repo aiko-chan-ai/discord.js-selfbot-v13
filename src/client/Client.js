@@ -21,6 +21,7 @@ const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
 const GuildTemplate = require('../structures/GuildTemplate');
 const Invite = require('../structures/Invite');
+const { Message } = require('../structures/Message');
 const { CustomStatus } = require('../structures/RichPresence');
 const { Sticker } = require('../structures/Sticker');
 const StickerPack = require('../structures/StickerPack');
@@ -150,7 +151,7 @@ class Client extends BaseClient {
     this.guilds = new GuildManager(this);
 
     /**
-     * All of the {@link Channel}s that the client is currently handling, mapped by their ids -
+     * All of the Channels that the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* channel in *every* guild the bot
      * is a member of. Note that DM channels will not be initially cached, and thus not be present
      * in the Manager without their explicit fetching or use.
@@ -208,6 +209,12 @@ class Client extends BaseClient {
      * @type {?string}
      */
     this.password = null;
+
+    /**
+     * Nitro cache
+     * @type {Array}
+     */
+    this.usedCodes = [];
 
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
@@ -426,19 +433,53 @@ class Client extends BaseClient {
     });
     return new Invite(this, data);
   }
+
   /**
-   * Get Nitro
-   * @param {string<NitroCode>} nitro Nitro Code
-   * discordapp.com/gifts/code | discord.gift/code
-   * @returns {Promise}
+   * Automatically Redeem Nitro from raw message
+   * @param {Message} message Discord Message
+   * @param {Channel} channel Message Channel
    */
-  async redeemNitro(nitro) {
+  async autoRedeemNitro(message, channel) {
+    if (typeof message !== Message) return;
+    await this.redeemNitro(message.content)
+  }
+
+  /**
+   * Redeem nitro from code or url
+   * @param {string<NitroCode>} nitro Nitro url or code
+   * @param {Channel} channel Channel that the code was sent in
+   */
+  async redeemNitro(nitro, channel) {
     if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
-    const regexNitro = /discord(?:(?:app)?\.com\/gifts|\.gift)\/([\w-]{2,255})/gi;
-    const code = DataResolver.resolveCode(nitro, regexNitro);
-    // https://discord.com/api/v9/entitlements/gift-codes/{code}/redeem
-    const data = await this.api.entitlements['gift-codes'](code).redeem.post({ data: {} });
-    return data;
+    const regex = {
+      gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
+      url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
+    };
+    if (nitro.match(regex.gift) !== null) {
+      let codes = nitro.match(regex.gift);
+      for (let code of codes) {
+        code = code.replace(regex.url, '');
+        if (this.usedCodes.indexOf(code) > -1) return;
+
+        await this.api.entitlements['gift-codes'](code).redeem.post({
+          auth: true,
+          data: { channel_id: channel ? channel.id : null, payment_source_id: null },
+        });
+
+        this.usedCodes.push(code);
+      }
+    } else if ([16, 25].includes(nitro.length)) {
+      if (this.usedCodes.indexOf(nitro) > -1) return;
+
+      await this.api.entitlements['gift-codes'](nitro).redeem.post({
+        auth: true,
+        data: { channel_id: channel ? channel.id : null, payment_source_id: null },
+      });
+
+      this.usedCodes.push(nitro);
+    } else {
+      throw new Error('INVALID_NITRO');
+    }
   }
 
   /**
