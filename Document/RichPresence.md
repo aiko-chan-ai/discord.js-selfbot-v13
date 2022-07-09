@@ -100,7 +100,7 @@ const r = new Discord.RichPresence()
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
 	.addButton('name', 'https://link.com/')
-client.user.setActivity(r.toDiscord().game);
+client.user.setActivity(r.toJSON());
 ```
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995301015257616414/unknown.png'>
