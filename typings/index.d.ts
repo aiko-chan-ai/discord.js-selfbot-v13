@@ -50,6 +50,7 @@ import {
   APISelectMenuComponent,
   APITemplateSerializedSourceGuild,
   APIUser,
+  MessageActivityType,
   GatewayOpcodes,
   GatewayVoiceServerUpdateDispatchData,
   GatewayVoiceStateUpdateDispatchData,
@@ -5790,7 +5791,7 @@ export interface MessageActionRowOptions<
 
 export interface MessageActivity {
   partyId: string;
-  type: ActivityFlags;
+  type: MessageActivityType;
 }
 
 export interface BaseButtonOptions extends BaseMessageComponentOptions {

@@ -15,7 +15,6 @@ const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
 const { Error } = require('../errors');
 const ReactionManager = require('../managers/ReactionManager');
-const ActivityFlags = require('../util/ActivityFlags');
 const { InteractionTypes, MessageTypes, SystemMessageTypes } = require('../util/Constants');
 const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
@@ -270,7 +269,7 @@ class Message extends Base {
        */
       this.activity = {
         partyId: data.activity.party_id,
-        type: new ActivityFlags(data.activity.type),
+        type: data.activity.type,
       };
     } else {
       this.activity ??= null;

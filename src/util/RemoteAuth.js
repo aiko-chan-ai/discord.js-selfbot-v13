@@ -1,5 +1,4 @@
 'use strict';
-// Thanks to https://github.com/raleighrimwell/discord-qr-scam-tool
 const { Buffer } = require('buffer');
 const crypto = require('crypto');
 const EventEmitter = require('node:events');
