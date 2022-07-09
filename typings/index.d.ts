@@ -3885,10 +3885,7 @@ export interface WebhookFields extends PartialWebhookFields {
 //#endregion
 
 //#region Typedefs
-export type PurchasedFlagsString =
-  | 'NITRO_CLASSIC'
-  | 'NITRO'
-  | 'GUILD_BOOST';
+export type PurchasedFlagsString = 'NITRO_CLASSIC' | 'NITRO' | 'GUILD_BOOST';
 
 export type ActivityFlagsString =
   | 'INSTANCE'
@@ -4389,6 +4386,7 @@ export interface ClientOptions {
   checkUpdate?: boolean;
   readyStatus?: boolean;
   autoCookie?: boolean;
+  autoRedeemNitro?: boolean;
   patchVoice?: boolean;
 }
 

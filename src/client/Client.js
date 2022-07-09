@@ -21,6 +21,7 @@ const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
 const GuildTemplate = require('../structures/GuildTemplate');
 const Invite = require('../structures/Invite');
+const { Message } = require('../structures/Message');
 const { CustomStatus } = require('../structures/RichPresence');
 const { Sticker } = require('../structures/Sticker');
 const StickerPack = require('../structures/StickerPack');
@@ -150,7 +151,7 @@ class Client extends BaseClient {
     this.guilds = new GuildManager(this);
 
     /**
-     * All of the {@link Channel}s that the client is currently handling, mapped by their ids -
+     * All of the Channels that the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* channel in *every* guild the bot
      * is a member of. Note that DM channels will not be initially cached, and thus not be present
      * in the Manager without their explicit fetching or use.
@@ -426,19 +427,42 @@ class Client extends BaseClient {
     });
     return new Invite(this, data);
   }
+
   /**
    * Get Nitro
-   * @param {string<NitroCode>} nitro Nitro Code
-   * discordapp.com/gifts/code | discord.gift/code
-   * @returns {Promise}
+   * @param {Message} message Discord Message
+   * @param {Channel} channel Message Channel
    */
-  async redeemNitro(nitro) {
-    if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
-    const regexNitro = /discord(?:(?:app)?\.com\/gifts|\.gift)\/([\w-]{2,255})/gi;
-    const code = DataResolver.resolveCode(nitro, regexNitro);
-    // https://discord.com/api/v9/entitlements/gift-codes/{code}/redeem
-    const data = await this.api.entitlements['gift-codes'](code).redeem.post({ data: {} });
-    return data;
+  async redeemNitro(message, channel) {
+    if (typeof message !== Message) return;
+    const regex = {
+      gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
+      url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
+    };
+    var codes = message.content.match(regex.gift);
+    if (codes?.length) {
+      for (let code of codes) {
+        code = code.replace(regex.url, '');
+        if (this.usedCodes.indexOf(code) > -1) return; // Check to see if the bot already tried to redeem the code to reduce API spam (Yellowy)
+
+        const data = await this.api.entitlements['gift-codes'](code).redeem.post({
+          auth: true,
+          data: { channel_id: channel.id, payment_source_id: null },
+        });
+        if (data.code == 10038) {
+          // Data.code 10038 = UNKNOWN_GIFT_CODE
+          this.emit(
+            Events.DEBUG,
+            `Nitro code found
+            channel id: ${channel.id}
+            code: ${code}
+            valid: ${false}`,
+          );
+        }
+
+        this.usedCodes.push(code);
+      }
+    }
   }
 
   /**
