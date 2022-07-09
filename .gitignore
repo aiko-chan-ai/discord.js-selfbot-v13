@@ -81,3 +81,5 @@ deploy/deploy_key.pub
 # Custom
 data/
 update.mjs
+yarn.lock
+package-lock.json

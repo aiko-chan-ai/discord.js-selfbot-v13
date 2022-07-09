@@ -151,7 +151,7 @@ class Client extends BaseClient {
     this.guilds = new GuildManager(this);
 
     /**
-     * All of the Channels that the client is currently handling, mapped by their ids -
+     * All of the {@link Channel}s that the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* channel in *every* guild the bot
      * is a member of. Note that DM channels will not be initially cached, and thus not be present
      * in the Manager without their explicit fetching or use.
@@ -437,49 +437,43 @@ class Client extends BaseClient {
   /**
    * Automatically Redeem Nitro from raw message
    * @param {Message} message Discord Message
-   * @param {Channel} channel Message Channel
    */
-  async autoRedeemNitro(message, channel) {
+  async autoRedeemNitro(message) {
     if (typeof message !== Message) return;
-    await this.redeemNitro(message.content)
+    await this.redeemNitro(message.content, message.channel, false);
   }
 
   /**
    * Redeem nitro from code or url
-   * @param {string<NitroCode>} nitro Nitro url or code
-   * @param {Channel} channel Channel that the code was sent in
+   * @param {string} nitro Nitro url or code
+   * @param {TextChannelResolvable} channel Channel that the code was sent in
+   * @param {boolean} failIfNotExists Whether to fail if the code doesn't exist
+   * @returns {Promise<boolean>}
    */
-  async redeemNitro(nitro, channel) {
+  redeemNitro(nitro, channel, failIfNotExists = true) {
     if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
+    channel = this.channels.resolveId(channel);
     const regex = {
       gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
       url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
     };
-    if (nitro.match(regex.gift) !== null) {
-      let codes = nitro.match(regex.gift);
-      for (let code of codes) {
-        code = code.replace(regex.url, '');
-        if (this.usedCodes.indexOf(code) > -1) return;
-
-        await this.api.entitlements['gift-codes'](code).redeem.post({
+    const code = DataResolver.resolveCode(nitro, regex.gift);
+    if (this.usedCodes.indexOf(code) > -1) return false;
+    return new Promise((resolve, reject) => {
+      this.api.entitlements['gift-codes'](code)
+        .redeem.post({
           auth: true,
-          data: { channel_id: channel ? channel.id : null, payment_source_id: null },
+          data: { channel_id: channel || null, payment_source_id: null },
+        })
+        .then(() => {
+          this.usedCodes.push(code);
+          resolve(true);
+        })
+        .catch(e => {
+          if (failIfNotExists) reject(e);
+          else resolve(false);
         });
-
-        this.usedCodes.push(code);
-      }
-    } else if ([16, 25].includes(nitro.length)) {
-      if (this.usedCodes.indexOf(nitro) > -1) return;
-
-      await this.api.entitlements['gift-codes'](nitro).redeem.post({
-        auth: true,
-        data: { channel_id: channel ? channel.id : null, payment_source_id: null },
-      });
-
-      this.usedCodes.push(nitro);
-    } else {
-      throw new Error('INVALID_NITRO');
-    }
+    });
   }
 
   /**

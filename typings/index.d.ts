@@ -689,7 +689,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private presence: ClientPresence;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
-  private autoRedeemNitro(message: Message, channel: Channel): object;
+  private autoRedeemNitro(message: Message): object;
 
   public application: If<Ready, ClientApplication>;
   // Added
@@ -722,7 +722,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public redeemNitro(code: string, channel?: Channel): object;
+  public redeemNitro(code: string, channel?: TextChannelResolvable, failIfNotExists?: boolean): object;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
@@ -4050,6 +4050,7 @@ export interface APIErrors {
   INVALID_API_VERSION: 50041;
   FILE_UPLOADED_EXCEEDS_MAXIMUM_SIZE: 50045;
   INVALID_FILE_UPLOADED: 50046;
+  GIFT_CODE_CLAIMED: 50050;
   CANNOT_SELF_REDEEM_GIFT: 50054;
   INVALID_GUILD: 50055;
   PAYMENT_SOURCE_REQUIRED: 50070;

@@ -346,11 +346,6 @@ class RequestHandler {
       } catch (err) {
         throw new HTTPError(err.message, err.constructor.name, err.status, request);
       }
-      /**
-       * If the response code is 10038 or UNKNOWN_GIFT_CODE then return the data object instead of throwing the error. *continues on next line*
-       * [].includes() adds better scaleability instead of stacking if statements (Yellowy)
-       */
-      if ([10038].includes(data.code)) return data;
       throw new DiscordAPIError(data, res.status, request);
     }
 

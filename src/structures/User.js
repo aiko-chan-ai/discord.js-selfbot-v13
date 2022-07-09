@@ -472,8 +472,8 @@ class User extends Base {
 
   /**
    * Set note to user
-   * @param {string<User.note>} note Note to set
-   * @returns {Promise<User.note>}
+   * @param {string} note Note to set
+   * @returns {Promise<User>}
    */
   async setNote(note = null) {
     await this.client.api.users['@me'].notes(this.id).put({ data: { note } });

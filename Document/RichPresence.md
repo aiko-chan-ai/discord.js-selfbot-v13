@@ -1,8 +1,6 @@
 ## Custom Status and RPC
 
-<details open>
-<summary><strong>Click to show</strong></summary>
-Custom Status
+<strong>Custom Status</strong>
 
 ```js
 const r = new Discord.CustomStatus()
@@ -54,27 +52,39 @@ client.user.setActivity(r.toJSON());
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/994512258128420944/unknown.png'>
 
 
+<strong>You can now add custom images for RPC !</strong>
 
-<strong>New: You can now add custom images for RPC !</strong>
 > Tutorial:
 
-+ Step 1: Send photos by embed.thumbnail
++ Step 1: Send image to Discord
 
-```js
-const embed = new MessageEmbed().setThumbnail('image url');
-const msg = await channel.send({ embeds: [embed] });
-```
-+ Step 2: Get proxyURL from message.embeds[0].thumbnail.proxyURL
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/995297572732284968/unknown.png'>
 
-```js
-const proxyURL = msg.embeds[0].thumbnail.proxyURL;
++ Step 2: Get Image URL
+
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/995298082474426418/unknown.png'>
+
+```sh
+Demo URL: https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png
 ```
-+ Step 3: Put the URL in the constructor
+
++ Step 3: Replace `https://cdn.discordapp.com/` or `https://media.discordapp.net/` with `mp:`
+
+```diff
+- https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png
+
+- https://media.discordapp.net/attachments/820557032016969751/991172011483218010/unknown.png
+
++ mp:attachments/820557032016969751/991172011483218010/unknown.png
+
+```
+
++ Step 4:
 
 ```js
 const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
-	.setType('STREAMING')
+	.setType('PLAYING')
 	.setURL('https://youtube.com/watch?v=dQw4w9WgXcQ')
 	.setState('State')
 	.setName('Name')
@@ -85,7 +95,7 @@ const r = new Discord.RichPresence()
 		id: Discord.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
-	.setAssetsLargeImage(proxyURL)
+	.setAssetsLargeImage('mp:attachments/820557032016969751/991172011483218010/unknown.png')
 	.setAssetsLargeText('Youtube')
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
@@ -93,5 +103,22 @@ const r = new Discord.RichPresence()
 client.user.setActivity(r.toDiscord().game);
 ```
 
-And you can change the status 5 times every 20 seconds!
-</details>
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/995301015257616414/unknown.png'>
+
+<strong>How to get the Assets ID and Name of the bot (application) ?</strong>
+
+- Bot:
+```js
+const bot = await client.users.fetch('BotId');
+const asset = await bot.application.fetchAssets();
+// asset: Array<ApplicationAsset>
+// Document: https://discordjs-self-v13.netlify.app/#/docs/docs/main/typedef/ApplicationAsset
+```
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/995307830028550204/unknown.png'>
+
+- Application
+> Using Browser (Chrome) with URL: `https://discord.com/api/v9/oauth2/applications/{applicationId}/assets`
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/995307606115618926/unknown.png'>
+
+- More: 
+  - You can change the status 5 times every 20 seconds!

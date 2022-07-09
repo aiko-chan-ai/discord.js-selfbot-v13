@@ -163,15 +163,6 @@ class RichPresence {
    * @returns {RichPresence}
    */
   setAssetsLargeImage(image) {
-    // Gif support
-    if (
-      typeof image == 'string' &&
-      (image.startsWith('https://') || image.startsWith('http://')) &&
-      image.includes('external') &&
-      image.includes('discord')
-    ) {
-      image = `mp:external${image.split('external')[1]}`;
-    }
     if (!(this.assets instanceof Object)) this.assets = {};
     this.assets.large_image = image;
     return this;
@@ -182,15 +173,6 @@ class RichPresence {
    * @returns {RichPresence}
    */
   setAssetsSmallImage(image) {
-    // Gif support
-    if (
-      typeof image == 'string' &&
-      (image.startsWith('https://') || image.startsWith('http://')) &&
-      image.includes('external') &&
-      image.includes('discord')
-    ) {
-      image = `mp:external${image.split('external')[1]}`;
-    }
     if (!(this.assets instanceof Object)) this.assets = {};
     this.assets.small_image = image;
     return this;
@@ -458,13 +440,7 @@ class SpotifyRPC extends RichPresence {
    */
   setAssetsLargeImage(image) {
     if (image.startsWith('spotify:')) image = image.replace('spotify:', '');
-    if (!(this.assets instanceof Object)) {
-      this.assets = {
-        large_image: `spotify:${image}`,
-      };
-    } else {
-      this.assets.large_image = `spotify:${image}`;
-    }
+    super.setAssetsLargeImage(`spotify:${image}`);
     return this;
   }
   /**
@@ -474,13 +450,7 @@ class SpotifyRPC extends RichPresence {
    */
   setAssetsSmallImage(image) {
     if (image.startsWith('spotify:')) image = image.replace('spotify:', '');
-    if (!(this.assets instanceof Object)) {
-      this.assets = {
-        small_image: `spotify:${image}`,
-      };
-    } else {
-      this.assets.small_image = `spotify:${image}`;
-    }
+    super.setAssetsSmallImage(`spotify:${image}`);
     return this;
   }
   /**
