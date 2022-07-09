@@ -110,6 +110,14 @@ class Presence extends Base {
       this.clientStatus ??= null;
     }
 
+    if ('last_modified' in data) {
+      /**
+       * The timestamp this presence was last updated
+       * @type {number}
+       */
+      this.lastModified = data.last_modified;
+    }
+
     return this;
   }
 
