@@ -441,34 +441,7 @@ class Client extends BaseClient {
    */
   async autoRedeemNitro(message, channel) {
     if (typeof message !== Message) return;
-    const regex = {
-      gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
-      url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
-    };
-    var codes = message.content.match(regex.gift);
-    if (codes?.length) {
-      for (let code of codes) {
-        code = code.replace(regex.url, '');
-        if (this.usedCodes.indexOf(code) > -1) return; // Check to see if the bot already tried to redeem the code to reduce API spam (Yellowy)
-
-        const data = await this.api.entitlements['gift-codes'](code).redeem.post({
-          auth: true,
-          data: { channel_id: channel.id, payment_source_id: null },
-        });
-        if (data.code == 10038) {
-          // Data.code 10038 = UNKNOWN_GIFT_CODE
-          this.emit(
-            Events.DEBUG,
-            `Nitro code found
-            channel id: ${channel.id}
-            code: ${code}
-            valid: ${false}`,
-          );
-        }
-
-        this.usedCodes.push(code);
-      }
-    }
+    await this.redeemNitro(message.content)
   }
 
   /**
@@ -482,7 +455,7 @@ class Client extends BaseClient {
       gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
       url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
     };
-    if (regex.url.test(nitro)) {
+    if (nitro.match(regex.gift) !== null) {
       let codes = nitro.match(regex.gift);
       for (let code of codes) {
         code = code.replace(regex.url, '');
