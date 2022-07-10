@@ -267,6 +267,10 @@ class Client extends BaseClient {
   }
 
   /**
+   * @external VoiceConnection
+   * @see {@link https://discord.js.org/#/docs/voice/main/class/VoiceConnection}
+   */
+  /**
    * Get connection to current call
    * @type {?VoiceConnection}
    * @readonly

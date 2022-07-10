@@ -9,6 +9,10 @@ const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 const AssetTypes = Object.keys(ClientApplicationAssetTypes);
 
+/**
+ * Represents an OAuth2 Application.
+ * @abstract
+ */
 class DeveloperPortalApplication extends Base {
   constructor(client, data) {
     super(client);
