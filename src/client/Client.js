@@ -12,6 +12,7 @@ const { Error, TypeError, RangeError } = require('../errors');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const ChannelManager = require('../managers/ChannelManager');
 const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
+const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
 const RelationshipsManager = require('../managers/RelationshipsManager');
 const UserManager = require('../managers/UserManager');
@@ -164,6 +165,12 @@ class Client extends BaseClient {
      * @type {Sweepers}
      */
     this.sweepers = new Sweepers(this, this.options.sweepers);
+
+    /**
+     * The developer portal manager of the client
+     * @type {DeveloperPortalManager}
+     */
+    this.developerPortal = new DeveloperPortalManager(this);
 
     /**
      * The presence of the Client

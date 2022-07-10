@@ -2,15 +2,16 @@
 
 const { default: Collection } = require('@discordjs/collection');
 // Not used: const { remove } = require('lodash');
+const BaseManager = require('./BaseManager');
 const { Error, TypeError } = require('../errors/DJSError');
 const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants');
 /**
  * Manages API methods for users and stores their cache.
- * @extends {CachedManager}
+ * @extends {BaseManager}
  */
-class ClientUserSettingManager {
+class ClientUserSettingManager extends BaseManager {
   constructor(client) {
-    this.client = client;
+    super(client);
     // Raw data
     this.rawSetting = {};
     // Language
@@ -209,7 +210,7 @@ class ClientUserSettingManager {
    * @typedef {Object} CustomStatusOption
    * @property {string | null} text Text to set
    * @property {string | null} status The status to set: 'online', 'idle', 'dnd', 'invisible' or null.
-   * @property {any} emoji UnicodeEmoji, DiscordEmoji, or null.
+   * @property {EmojiResolvable | null} emoji UnicodeEmoji, DiscordEmoji, or null.
    * @property {number | null} expires The number of seconds until the status expires, or null.
    */
 

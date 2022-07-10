@@ -319,6 +319,77 @@ export abstract class Application extends Base {
   public toString(): string | null;
 }
 
+export interface Tester {
+  state: number;
+  user: User;
+}
+
+export interface ApplicationEditData {
+  name?: string;
+  description?: string;
+  icon?: BufferResolvable | Base64Resolvable;
+  cover?: BufferResolvable | Base64Resolvable;
+  botPublic?: boolean;
+  botRequireCodeGrant?: boolean;
+  TermsOfService?: string;
+  PrivacyPolicy?: string;
+  flags?: number;
+  redirectURIs?: string[];
+  tags?: string[];
+}
+export class DeveloperPortalApplication extends Base {
+  private constructor(client: Client, data: object);
+  public botPublic: boolean | null;
+  public botRequireCodeGrant: boolean | null;
+  public commands: ApplicationCommandManager;
+  public cover: string | null;
+  public flags: Readonly<ApplicationFlags>;
+  public tags: string[];
+  public installParams: ClientApplicationInstallParams | null;
+  public customInstallURL: string | null;
+  public owner: User | Team | null;
+  public readonly partial: boolean;
+  public rpcOrigins: string[];
+  public readonly createdAt: Date;
+  public readonly createdTimestamp: number;
+  public description: string | null;
+  public icon: string | null;
+  public id: Snowflake;
+  public name: string | null;
+  public redirectURIs: string[];
+  public interactionEndpointURL: string | null;
+  public publicKey: string;
+  public testers: Collection<Snowflake, Tester>;
+  public TermsOfService: string | null;
+  public PrivacyPolicy: string | null;
+  public fetch(): Promise<ClientApplication>;
+  public coverURL(options?: StaticImageURLOptions): string | null;
+  /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
+  public fetchAssets(): Promise<ApplicationAsset[]>;
+  public iconURL(options?: StaticImageURLOptions): string | null;
+  public toJSON(): unknown;
+  public toString(): string | null;
+  public fetchTesters(): Promise<this>;
+  public addTester(username: string, discriminator: string): Promise<DeveloperPortalApplication>;
+  public deleteTester(user: UserResolvable): Promise<DeveloperPortalApplication>;
+  public edit(data: ApplicationEditData): Promise<DeveloperPortalApplication>;
+  public createBot(): Promise<DeveloperPortalApplication>;
+  public resetClientSecret(MFACode?: number): Promise<string>;
+  public resetBotToken(MFACode?: number): Promise<string>;
+  public delete(MFACode?: number): Promise<undefined>;
+  public addAsset(image: BufferResolvable | Base64Resolvable, name: string): Promise<ApplicationAsset>;
+  public deleteAsset(id: string): Promise<undefined>;
+}
+
+export class DeveloperPortalManager extends BaseManager {
+  constructor(client: Client);
+  public applications: Collection<Snowflake, DeveloperPortalApplication>;
+  public teams: Collection<Snowflake, Team>;
+  public fetch(): Promise<DeveloperPortalManager>;
+  public createApplication(name: string, teamId?: Team | Snowflake): Promise<DeveloperPortalApplication>;
+  public deleteApplication(id: Snowflake, MFACode?: number): Promise<undefined>;
+}
+
 export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private constructor(client: Client, data: RawApplicationCommandData, guild?: Guild, guildId?: Snowflake);
   public applicationId: Snowflake;
@@ -3416,7 +3487,7 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
 
 export type FetchGuildApplicationCommandFetchOptions = Omit<FetchApplicationCommandOptions, 'guildId'>;
 
-export class ClientUserSettingManager {
+export class ClientUserSettingManager extends BaseManager {
   private constructor(client: Client);
   public rawSetting: RawUserSettingsData | object;
   public locale: localeSetting | null;
@@ -3993,6 +4064,7 @@ export interface APIErrors {
   MAXIMUM_PINS: 30003;
   MAXIMUM_RECIPIENTS: 30004;
   MAXIMUM_ROLES: 30005;
+  MAXIMUM_USERNAMES: 30006;
   MAXIMUM_WEBHOOKS: 30007;
   MAXIMUM_EMOJIS: 30008;
   MAXIMUM_REACTIONS: 30010;
@@ -4064,6 +4136,7 @@ export interface APIErrors {
   INSUFFICIENT_BOOSTS: 50101;
   INVALID_JSON: 50109;
   TWO_FACTOR_REQUIRED: 60003;
+  INVALID_TWO_FACTOR_CODE: 60008;
   NO_USERS_WITH_DISCORDTAG_EXIST: 80004;
   REACTION_BLOCKED: 90001;
   RESOURCE_OVERLOADED: 130000;
