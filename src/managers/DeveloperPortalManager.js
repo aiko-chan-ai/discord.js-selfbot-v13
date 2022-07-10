@@ -49,7 +49,7 @@ class DeveloperPortalManager extends BaseManager {
   /**
    * Creates a new application.
    * @param {string} name Name of the application
-   * @param {?Snowflake} teamId The team to create the application in
+   * @param {?Snowflake | Team} teamId The team to create the application in
    * @returns {Promise<DeveloperPortalApplication>}
    */
   async createApplication(name, teamId = null) {
