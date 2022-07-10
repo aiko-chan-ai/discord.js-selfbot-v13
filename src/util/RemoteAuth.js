@@ -41,7 +41,7 @@ class DiscordUser_FromPayload {
 }
 
 /**
- * Discord Auth QR
+ * Discord Auth QR (Discord.RemoteAuth will be removed in the future, v13.9.0 release)
  * @extends {EventEmitter}
  * @abstract
  */

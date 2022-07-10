@@ -32,6 +32,7 @@ exports.ThreadMemberFlags = require('./util/ThreadMemberFlags');
 exports.UserFlags = require('./util/UserFlags');
 exports.Util = require('./util/Util');
 exports.version = require('../package.json').version;
+exports.DiscordAuthWebsocket = require('./util/RemoteAuth');
 exports.RemoteAuth = require('./util/RemoteAuth');
 exports.PurchasedFlags = require('./util/PurchasedFlags');
 
