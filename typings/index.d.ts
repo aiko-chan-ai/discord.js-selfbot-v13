@@ -172,8 +172,7 @@ export abstract class DiscordAuthWebsocket extends EventEmitter {
   public generate_qr_code(fingerprint: string): void;
   public on(event: 'ready', listener: (authURL: string) => void): this;
   public on(event: 'success', listener: (user: RawUserData, token: string) => void): this;
-  public on(event: 'cancel', listener: (user: RawUserData) => void): this;
-  public on(event: 'pending', listener: (user: RawUserData) => void): this;
+  public on(event: 'cancel' | 'pending', listener: (user: RawUserData) => void): this;
   public on(event: 'closed', listener: (loginState: boolean) => void): this;
   public on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
 }
