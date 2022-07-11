@@ -162,10 +162,21 @@ import {
   RawWidgetMemberData,
 } from './rawDataTypes';
 // @ts-ignore
-import DiscordAuthWebsocket from '../src/util/RemoteAuth.js';
-
 //#region Classes
-
+export abstract class DiscordAuthWebsocket extends EventEmitter {
+  constructor(client?: Client, debug?: boolean, hideLog?: boolean);
+  public authURL?: string;
+  public token?: string;
+  public user?: RawUserData;
+  public destroy(): void;
+  public generate_qr_code(fingerprint: string): void;
+  public on(event: 'ready', listener: (authURL: string) => void): this;
+  public on(event: 'success', listener: (user: RawUserData, token: string) => void): this;
+  public on(event: 'cancel', listener: (user: RawUserData) => void): this;
+  public on(event: 'pending', listener: (user: RawUserData) => void): this;
+  public on(event: 'closed', listener: (loginState: boolean) => void): this;
+  public on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
+}
 // RPC by aiko-chan-ai
 export interface RichButton {
   name: string;
@@ -754,6 +765,11 @@ export abstract class Channel extends Base {
 
 export type If<T extends boolean, A, B = null> = T extends true ? A : T extends false ? B : A | B;
 
+export interface remoteAuthConfrim {
+  yes(): Promise<undefined>;
+  no(): Promise<undefined>;
+}
+
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions); /* Bug report by Mavri#0001 [721347809667973141] */
   private actions: unknown;
@@ -797,6 +813,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
+  public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
+  public createToken(): Promise<string>;
   public readonly callVoice: VoiceConnection | undefined;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */

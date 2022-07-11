@@ -381,6 +381,68 @@ class Client extends BaseClient {
   }
 
   /**
+   * @typedef {Object} remoteAuthConfrim
+   * @property {function} yes Yes
+   * @property {function} no No
+   */
+
+  /**
+   * Implement `remoteAuth`, like using your phone to scan a QR code
+   * @param {string} url URL from QR code
+   * @param {boolean} forceAccept Whether to force confirm `yes`
+   * @returns {Promise<remoteAuthConfrim | void>}
+   */
+  async remoteAuth(url, forceAccept = false) {
+    if (!this.isReady()) throw new Error('CLIENT_NOT_READY', 'Remote Auth');
+    // Step 1: Parse URL
+    url = new URL(url);
+    if (
+      !['discordapp.com', 'discord.com'].includes(url.hostname) ||
+      !url.pathname.startsWith('/ra/') ||
+      url.pathname.length <= 4
+    ) {
+      throw new Error('INVALID_REMOTE_AUTH_URL');
+    }
+    const hash = url.pathname.replace('/ra/', '');
+    // Step 2: Post > Get handshake_token
+    const res = await this.api.users['@me']['remote-auth'].post({
+      data: {
+        fingerprint: hash,
+      },
+    });
+    const handshake_token = res.handshake_token;
+    // Step 3: Post
+    const yes = () =>
+      this.api.users['@me']['remote-auth'].finish.post({ data: { handshake_token, temporary_token: false } });
+    const no = () => this.api.users['@me']['remote-auth'].cancel.post({ data: { handshake_token } });
+    if (forceAccept) {
+      return yes();
+    } else {
+      return {
+        yes,
+        no,
+      };
+    }
+  }
+
+  /**
+   * Create a new token based on the current token
+   * @returns {Promise<string>} Discord Token
+   */
+  createToken() {
+    return new Promise(resolve => {
+      // Step 1: Create DiscordAuthWebsocket
+      const QR = new DiscordAuthWebsocket(undefined, false, true);
+      // Step 2: Add event
+      QR.on('ready', async url => {
+        await this.remoteAuth(url, true);
+      }).on('success', (user, token) => {
+        resolve(token);
+      });
+    });
+  }
+
+  /**
    * Returns whether the client has logged in, indicative of being able to access
    * properties such as `user` and `application`.
    * @returns {boolean}
@@ -461,30 +523,34 @@ class Client extends BaseClient {
    * @param {boolean} failIfNotExists Whether to fail if the code doesn't exist
    * @returns {Promise<boolean>}
    */
-  redeemNitro(nitro, channel, failIfNotExists = true) {
+  async redeemNitro(nitro, channel, failIfNotExists = true) {
     if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
     channel = this.channels.resolveId(channel);
     const regex = {
       gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
       url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
     };
-    const code = DataResolver.resolveCode(nitro, regex.gift);
-    if (this.usedCodes.indexOf(code) > -1) return false;
-    return new Promise((resolve, reject) => {
-      this.api.entitlements['gift-codes'](code)
+    const nitroArray = nitro.match(regex.gift);
+    if (!nitroArray) return false;
+    const codeArray = nitroArray.map(code => code.replace(regex.url, ''));
+    let redeem = false;
+    for await (const code of codeArray) {
+      if (this.usedCodes.indexOf(code) > -1) continue;
+      await this.api.entitlements['gift-codes'](code)
         .redeem.post({
           auth: true,
           data: { channel_id: channel || null, payment_source_id: null },
         })
         .then(() => {
           this.usedCodes.push(code);
-          resolve(true);
+          redeem = true;
         })
         .catch(e => {
-          if (failIfNotExists) reject(e);
-          else resolve(false);
+          this.usedCodes.push(code);
+          if (failIfNotExists) throw e;
         });
-    });
+    }
+    return redeem;
   }
 
   /**

@@ -192,6 +192,8 @@ const Messages = {
   MODAL_SUBMIT_INTERACTION_FIELD_NOT_FOUND: customId => `Required field with custom id "${customId}" not found.`,
   MODAL_SUBMIT_INTERACTION_FIELD_TYPE: (customId, type, expected) =>
     `Field with custom id "${customId}" is of type: ${type}; expected ${expected}.`,
+
+  INVALID_REMOTE_AUTH_URL: 'Invalid remote auth URL (https://discord.com/ra/{hash})',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

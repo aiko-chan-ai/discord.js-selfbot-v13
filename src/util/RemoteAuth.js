@@ -24,17 +24,19 @@ class DiscordUser_FromPayload {
     let values = payload.split(':');
     this.id = values[0];
     this.username = values[3];
-    this.discrim = values[1];
-    this.avatar_hash = values[2];
+    this.discriminator = values[1];
+    this.avatar = values[2];
+    this.tag = `${this.username}#${this.discriminator}`;
+    this.avatarURL = `https://cdn.discordapp.com/avatars/${this.id}/${this.avatar}.${
+      this.avatar.startsWith('a_') ? 'gif' : 'png'
+    }`;
     this.debug = debug;
     return this;
   }
   pretty_print() {
     let out = '';
-    out += `User:            ${this.username}#${this.discrim} (${this.id})\n`;
-    out += `Avatar URL:      https://cdn.discordapp.com/avatars/${this.id}/${this.avatar_hash}.${
-      this.avatar_hash.startsWith('a_') ? 'gif' : 'png'
-    }\n`;
+    out += `User:            ${this.tag} (${this.id})\n`;
+    out += `Avatar URL:      ${this.avatarURL}\n`;
     if (this.debug) out += `Token:           ${this.token}\n`;
     return out;
   }
@@ -49,12 +51,14 @@ class DiscordAuthWebsocket extends EventEmitter {
   /**
    * Creates a new DiscordAuthWebsocket instance.
    * @param {?Client} client Discord.Client (Login)
-   * @param {boolean} debug Log debug info
+   * @param {?boolean} debug Log debug info
+   * @param {?boolean} hideLog Hide log ?
    */
-  constructor(client, debug = false) {
+  constructor(client, debug = false, hideLog = false) {
     super();
     this.debug = debug;
     this.client = client;
+    this.hideLog = hideLog;
     this.ws = new WebSocket(client?.options?.http?.remoteAuth || 'wss://remote-auth-gateway.discord.gg/?v=1', {
       headers: {
         Origin: 'https://discord.com',
@@ -132,7 +136,7 @@ class DiscordAuthWebsocket extends EventEmitter {
          * @param {string} url DiscordAuthWebsocket
          */
         this.emit('ready', this.authURL);
-        this.generate_qr_code(fingerprint);
+        if (!this.hideLog) this.generate_qr_code(fingerprint);
         if (this.debug) console.log('[WebSocket] QR Code generated');
         console.log(
           `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN')}`,
@@ -142,11 +146,17 @@ class DiscordAuthWebsocket extends EventEmitter {
         let payload = this.decrypt_payload(encrypted_payload);
         const decoder = new StringDecoder('utf-8');
         this.user = new DiscordUser_FromPayload(decoder.write(payload), this.debug);
-        console.log('\n');
-        console.log(this.user.pretty_print());
+        if (!this.hideLog) console.log('\n');
+        if (!this.hideLog) console.log(this.user.pretty_print());
+        /**
+         * Emitted whenever a user is scan QR Code.
+         * @event DiscordAuthWebsocket#pending
+         * @param {object} user Discord User Raw
+         */
+        this.emit('pending', this.user);
         if (this.debug) console.log('[WebSocket] Waiting for user to finish login...');
-        console.log('\n');
-        console.log('Please check your phone again to confirm login.');
+        if (!this.hideLog) console.log('\n');
+        if (!this.hideLog) console.log('Please check your phone again to confirm login.');
       } else if (op == Messages.FINISH) {
         this.login_state = true;
         let encrypted_token = data.encrypted_token;
@@ -158,29 +168,19 @@ class DiscordAuthWebsocket extends EventEmitter {
         /**
          * Emitted whenever a token is created.
          * @event DiscordAuthWebsocket#success
-         * @param {object} user Discord User
+         * @param {object} user Discord User (Raw)
          * @param {string} token Discord Token
          */
-        this.emit(
-          'success',
-          {
-            id: this.user.id,
-            tag: `${this.user.username}#${this.user.discrim}`,
-          },
-          this.token,
-        );
+        this.emit('success', this.user, this.token);
         this.client?.login(this.user.token);
         this.destroy();
       } else if (op == Messages.CANCEL) {
         /**
          * Emitted whenever a user cancels the login process.
          * @event DiscordAuthWebsocket#cancel
-         * @param {object} user User
+         * @param {object} user User (Raw)
          */
-        this.emit('cancel', {
-          id: this.user.id,
-          tag: `${this.user.username}#${this.user.discrim}`,
-        });
+        this.emit('cancel', this.user);
         this.destroy();
       }
     });
@@ -200,10 +200,16 @@ class DiscordAuthWebsocket extends EventEmitter {
     this.ws.close();
     clearInterval(this.heartbeat_interval);
     clearTimeout(this.connectionDestroy);
+    /**
+     * Emitted whenever a connection is closed.
+     * @event DiscordAuthWebsocket#closed
+     * @param {boolean} loginState Login state
+     */
+    this.emit('closed', this.login_state);
     if (this.debug) {
       console.log(`[WebSocket] Connection Destroyed, User login state: ${this.login_state ? 'success' : 'failure'}`);
     }
-    if (!this.login_state) throw new Error('Login failed');
+    if (!this.login_state && this.client) throw new Error('Login failed');
   }
 
   public_key() {
