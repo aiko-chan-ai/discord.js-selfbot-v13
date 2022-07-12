@@ -194,18 +194,18 @@ class MessageButton extends BaseMessageComponent {
         timeout.refresh();
         if (data.metadata.nonce !== nonce) return;
         clearTimeout(timeout);
-        this.message.client.removeListener('interactionResponse', handler);
-        this.message.client.decrementMaxListeners();
+        message.client.removeListener('interactionResponse', handler);
+        message.client.decrementMaxListeners();
         if (data.status) resolve(data.metadata);
         else reject(data.metadata);
       };
       const timeout = setTimeout(() => {
-        this.message.client.removeListener('interactionResponse', handler);
-        this.message.client.decrementMaxListeners();
+        message.client.removeListener('interactionResponse', handler);
+        message.client.decrementMaxListeners();
         reject(new Error('INTERACTION_TIMEOUT'));
       }, 15_000).unref();
-      this.message.client.incrementMaxListeners();
-      this.message.client.on('interactionResponse', handler);
+      message.client.incrementMaxListeners();
+      message.client.on('interactionResponse', handler);
     });
   }
 }
