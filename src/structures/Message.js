@@ -1017,7 +1017,7 @@ class Message extends Base {
   /**
    * Click specific button [Suggestion: Dux#2925]
    * @param {string<Button.customId>} buttonID Button ID
-   * @returns {Promise<pending>}
+   * @returns {Promise<InteractionResponseBody>}
    */
   async clickButton(buttonID) {
     if (typeof buttonID !== 'string') {
@@ -1040,17 +1040,14 @@ class Message extends Base {
     if (!button) {
       throw new TypeError('BUTTON_NOT_FOUND');
     } else {
-      // eslint-disable-next-line no-async-promise-executor
-      return new Promise(async (resolve, reject) => {
-        const res = await button.click(this).catch(reject);
-        if (res) resolve(res);
-      });
+      return button.click(this);
     }
   }
   /**
    * Select specific menu or First Menu
    * @param {string|Array<string>} menuID Select Menu specific id or auto select first Menu
    * @param {Array<string>} options Menu Options
+   * @returns {Promise<InteractionResponseBody>}
    */
   async selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
@@ -1077,18 +1074,14 @@ class Message extends Base {
       else if (typeof menuID !== 'string') throw new TypeError('MENU_ID_NOT_STRING');
       else throw new TypeError('MENU_ID_NOT_FOUND');
     }
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const res = await menuCorrect.select(this, Array.isArray(menuID) ? menuID : options).catch(reject);
-      if (res) resolve(res);
-    });
+    return menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
   }
   //
   /**
    * Send context Menu v2
    * @param {Snowflake} botId Bot id
    * @param {string} commandName Command name in Context Menu
-   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
+   * @returns {Promise<InteractionResponseBody>}
    */
   async contextMenu(botId, commandName) {
     if (!botId) throw new Error('Bot ID is required');
@@ -1124,8 +1117,7 @@ class Message extends Base {
           .join(', ')}`,
       );
     }
-    const nonce = await contextCMD.sendContextMenu(this, true);
-    return nonce;
+    return contextCMD.sendContextMenu(this, true);
   }
 }
 

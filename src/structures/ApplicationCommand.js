@@ -1,9 +1,10 @@
 'use strict';
 
+const { setTimeout } = require('node:timers');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const MessageAttachment = require('../structures/MessageAttachment');
-const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes } = require('../util/Constants');
+const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes, Events } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -589,7 +590,7 @@ class ApplicationCommand extends Base {
    * Send Slash command to channel
    * @param {Message} message Discord Message
    * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
+   * @returns {Promise<InteractionResponseBody>}
    */
   async sendSlashCommand(message, options = []) {
     // Check Options
@@ -632,6 +633,66 @@ class ApplicationCommand extends Base {
     } else {
       option_ = optionFormat;
     }
+    // Autoresponse
+    const getAutoResponse = async (options_, type, name, value) => {
+      const op = Array.from(options_);
+      op.push({
+        type,
+        name,
+        value,
+        focused: true,
+      });
+      let nonce = SnowflakeUtil.generate();
+      const data = {
+        type: 4, // Auto-complete
+        application_id: this.applicationId,
+        guild_id: message.guildId,
+        channel_id: message.channelId,
+        session_id: this.client.session_id,
+        data: {
+          // ApplicationCommandData
+          version: this.version,
+          id: this.id,
+          name: this.name,
+          type: ApplicationCommandTypes[this.type],
+          options: op,
+          attachments: attachments,
+        },
+        nonce,
+      };
+      await this.client.api.interactions
+        .post({
+          data,
+          files: attachmentsBuffer,
+        })
+        .catch(async () => {
+          nonce = SnowflakeUtil.generate();
+          data.data.guild_id = message.guildId;
+          data.nonce = nonce;
+          await this.client.api.interactions.post({
+            data,
+            files: attachmentsBuffer,
+          });
+        });
+      return new Promise(resolve => {
+        const handler = data => {
+          timeout.refresh();
+          if (data.nonce !== nonce) return;
+          clearTimeout(timeout);
+          this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
+          this.client.decrementMaxListeners();
+          if (data.choices.length > 1) resolve(data.choices[0].value);
+          else resolve(value);
+        };
+        const timeout = setTimeout(() => {
+          this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
+          this.client.decrementMaxListeners();
+          resolve(value);
+        }, 15_000).unref();
+        this.client.incrementMaxListeners();
+        this.client.on(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
+      });
+    };
     for (i; i < options.length; i++) {
       const value = options[i];
       if (!subCommandCheck && !this?.options[i]) continue;
@@ -663,6 +724,13 @@ class ApplicationCommand extends Base {
               ? Number(value)
               : this.options[i].type == 'BOOLEAN'
               ? Boolean(value)
+              : this.options[i].autocomplete
+              ? await getAutoResponse(
+                  optionFormat,
+                  ApplicationCommandOptionTypes[this.options[i].type],
+                  this.options[i].name,
+                  value,
+                )
               : value),
         };
         optionFormat.push(data);
@@ -696,6 +764,13 @@ class ApplicationCommand extends Base {
               ? Number(value)
               : subCommand.options[i].type == 'BOOLEAN'
               ? Boolean(value)
+              : this.options[i].autocomplete
+              ? await getAutoResponse(
+                  optionFormat,
+                  ApplicationCommandOptionTypes[subCommand.options[i].type],
+                  subCommand.options[i].name,
+                  value,
+                )
               : value),
         };
         optionFormat.push(data);
@@ -740,13 +815,30 @@ class ApplicationCommand extends Base {
           files: attachmentsBuffer,
         });
       });
-    return nonce;
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        if (data.status) resolve(data.metadata);
+        else reject(data.metadata);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_TIMEOUT'));
+      }, 15_000).unref();
+      this.client.incrementMaxListeners();
+      this.client.on('interactionResponse', handler);
+    });
   }
   /**
    * Message Context Menu
    * @param {Message} message Discord Message
    * @param {boolean} sendFromMessage nothing .-. not used
-   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
+   * @returns {Promise<InteractionResponseBody>}
    */
   async sendContextMenu(message, sendFromMessage = false) {
     if (!sendFromMessage && !(message instanceof Message())) {
@@ -772,7 +864,24 @@ class ApplicationCommand extends Base {
         nonce,
       },
     });
-    return nonce;
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        if (data.status) resolve(data.metadata);
+        else reject(data.metadata);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_TIMEOUT'));
+      }, 15_000).unref();
+      this.client.incrementMaxListeners();
+      this.client.on('interactionResponse', handler);
+    });
   }
 }
 

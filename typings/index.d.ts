@@ -1866,10 +1866,10 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public inGuild(): this is Message<true> & this;
   // Added
   public markUnread(): Promise<boolean>;
-  public clickButton(buttonID: string): Promise<Snowflake>;
-  public selectMenu(menuID: string, options: string[]): Promise<Snowflake>;
-  public selectMenu(options: string[]): Promise<Snowflake>;
-  public contextMenu(botID: Snowflake, commandName: string): Promise<Snowflake>;
+  public clickButton(buttonID: string): Promise<InteractionResponseBody>;
+  public selectMenu(menuID: string, options: string[]): Promise<InteractionResponseBody>;
+  public selectMenu(options: string[]): Promise<InteractionResponseBody>;
+  public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponseBody>;
 }
 
 export class MessageActionRow<
@@ -1911,6 +1911,11 @@ export class MessageAttachment {
   public toJSON(): unknown;
 }
 
+export interface InteractionResponseBody {
+  id: Snowflake;
+  nonce: Snowflake;
+}
+
 export class MessageButton extends BaseMessageComponent {
   public constructor(data?: MessageButton | MessageButtonOptions | APIButtonComponent);
   public customId: string | null;
@@ -1927,7 +1932,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
-  public click(message: Message): Promise<Snowflake>;
+  public click(message: Message): Promise<InteractionResponseBody>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 
@@ -2165,7 +2170,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values: string[]): Promise<Snowflake>;
+  public select(message: Message, values: string[]): Promise<InteractionResponseBody>;
 }
 
 // Todo
@@ -4307,6 +4312,7 @@ export interface ConstantsEvents {
   API_RESPONSE: 'apiResponse';
   API_REQUEST: 'apiRequest';
   CLIENT_READY: 'ready';
+  APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE: 'applicationCommandAutocompleteResponse';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_CREATE: 'applicationCommandCreate';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
@@ -5026,6 +5032,7 @@ export interface ConstantsEvents {
   API_RESPONSE: 'apiResponse';
   API_REQUEST: 'apiRequest';
   CLIENT_READY: 'ready';
+  APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE: 'applicationCommandAutocompleteResponse';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_CREATE: 'applicationCommandCreate';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
@@ -6674,6 +6681,7 @@ export interface WelcomeScreenEditData {
 export type WSEventType =
   | 'READY'
   | 'RESUMED'
+  | 'APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE'
   | 'APPLICATION_COMMAND_CREATE'
   | 'APPLICATION_COMMAND_DELETE'
   | 'APPLICATION_COMMAND_UPDATE'

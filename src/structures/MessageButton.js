@@ -1,5 +1,6 @@
 'use strict';
 
+const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
 const { RangeError } = require('../errors');
@@ -166,7 +167,7 @@ class MessageButton extends BaseMessageComponent {
   /**
    * Click the button
    * @param {Message} message Discord Message
-   * @returns {Promise<Snowflake>}
+   * @returns {Promise<InteractionResponseBody>}
    */
   async click(message) {
     const nonce = SnowflakeUtil.generate();
@@ -188,7 +189,24 @@ class MessageButton extends BaseMessageComponent {
         },
       },
     });
-    return nonce;
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.message.client.removeListener('interactionResponse', handler);
+        this.message.client.decrementMaxListeners();
+        if (data.status) resolve(data.metadata);
+        else reject(data.metadata);
+      };
+      const timeout = setTimeout(() => {
+        this.message.client.removeListener('interactionResponse', handler);
+        this.message.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_TIMEOUT'));
+      }, 15_000).unref();
+      this.message.client.incrementMaxListeners();
+      this.message.client.on('interactionResponse', handler);
+    });
   }
 }
 

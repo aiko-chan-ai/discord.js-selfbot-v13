@@ -8,4 +8,8 @@ module.exports = (client, { d: data }) => {
    * @param {InteractionResponseBody} data data
    */
   client.emit(Events.INTERACTION_SUCCESS, data);
+  client.emit('interactionResponse', {
+    status: true,
+    metadata: data,
+  });
 };

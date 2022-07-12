@@ -19,5 +19,5 @@ module.exports = (client, { d: data }) => {
    * @param {AutocompleteResponse} data Data
    * @deprecated Test only
    */
-  client.emit(Events.DEBUG, data);
+  client.emit(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, data);
 };

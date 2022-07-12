@@ -258,6 +258,7 @@ exports.Opcodes = {
  * * API_RESPONSE: apiResponse
  * * API_REQUEST: apiRequest
  * * CLIENT_READY: ready
+ * * APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE: applicationCommandAutocompleteResponse
  * * APPLICATION_COMMAND_CREATE: applicationCommandCreate (deprecated)
  * * APPLICATION_COMMAND_DELETE: applicationCommandDelete (deprecated)
  * * APPLICATION_COMMAND_UPDATE: applicationCommandUpdate (deprecated)
@@ -336,6 +337,7 @@ exports.Events = {
   API_RESPONSE: 'apiResponse',
   API_REQUEST: 'apiRequest',
   CLIENT_READY: 'ready',
+  APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE: 'applicationCommandAutocompleteResponse',
   APPLICATION_COMMAND_CREATE: 'applicationCommandCreate',
   APPLICATION_COMMAND_DELETE: 'applicationCommandDelete',
   APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate',
@@ -454,6 +456,7 @@ exports.PartialTypes = keyMirror(['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 
  * The type of a WebSocket message event, e.g. `MESSAGE_CREATE`. Here are the available events:
  * * READY
  * * RESUMED
+ * * APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE
  * * APPLICATION_COMMAND_CREATE (deprecated)
  * * APPLICATION_COMMAND_DELETE (deprecated)
  * * APPLICATION_COMMAND_UPDATE (deprecated)
@@ -513,6 +516,7 @@ exports.PartialTypes = keyMirror(['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 
 exports.WSEvents = keyMirror([
   'READY',
   'RESUMED',
+  'APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE',
   'APPLICATION_COMMAND_CREATE',
   'APPLICATION_COMMAND_DELETE',
   'APPLICATION_COMMAND_UPDATE',

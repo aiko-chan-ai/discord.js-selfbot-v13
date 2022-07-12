@@ -1,5 +1,6 @@
 'use strict';
 
+const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
 const { MessageComponentTypes } = require('../util/Constants');
@@ -214,7 +215,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * Mesage select menu
    * @param {Message} message The message this select menu is for
    * @param {Array<string>} values The values of the select menu
-   * @returns {Promise<Snowflake>}
+   * @returns {Promise<InteractionResponseBody>}
    */
   async select(message, values = []) {
     // Github copilot is the best :))
@@ -259,7 +260,24 @@ class MessageSelectMenu extends BaseMessageComponent {
         nonce,
       },
     });
-    return nonce;
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.message.client.removeListener('interactionResponse', handler);
+        this.message.client.decrementMaxListeners();
+        if (data.status) resolve(data.metadata);
+        else reject(data.metadata);
+      };
+      const timeout = setTimeout(() => {
+        this.message.client.removeListener('interactionResponse', handler);
+        this.message.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_TIMEOUT'));
+      }, 15_000).unref();
+      this.message.client.incrementMaxListeners();
+      this.message.client.on('interactionResponse', handler);
+    });
   }
 }
 
