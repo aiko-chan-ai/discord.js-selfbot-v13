@@ -22,7 +22,6 @@ const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
 const GuildTemplate = require('../structures/GuildTemplate');
 const Invite = require('../structures/Invite');
-const { Message } = require('../structures/Message');
 const { CustomStatus } = require('../structures/RichPresence');
 const { Sticker } = require('../structures/Sticker');
 const StickerPack = require('../structures/StickerPack');
@@ -36,6 +35,8 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
+const { lazy } = require('../util/Util');
+const Message = lazy(() => require('../structures/Message').Message);
 // Patch
 
 /**
@@ -512,7 +513,7 @@ class Client extends BaseClient {
    * @param {Message} message Discord Message
    */
   async autoRedeemNitro(message) {
-    if (typeof message !== Message) return;
+    if (!(message instanceof Message())) return;
     await this.redeemNitro(message.content, message.channel, false);
   }
 
