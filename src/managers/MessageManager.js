@@ -1,6 +1,7 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const BigNumber = require('bignumber.js');
 const CachedManager = require('./CachedManager');
 const { TypeError, Error } = require('../errors');
 const { Message } = require('../structures/Message');
@@ -222,7 +223,7 @@ class MessageManager extends CachedManager {
     // Const data = await this.client.api.channels[this.channel.id].messages[messageId].get(); // Discord Block
     // https://canary.discord.com/api/v9/guilds/809133733591384155/messages/search?channel_id=840225732902518825&max_id=957254525360697375&min_id=957254525360697373
     const data = (
-      await this.client.api.channels[this.channel.id].messages.get({ query: { limit: 1, around: messageId } })
+      await this.client.api.channels[this.channel.id].messages.get({ query: { limit: 1, around: messageId }})
     ).messages[0];
     if (data) return this._add(data[0], cache);
     else throw new Error('MESSAGE_ID_NOT_FOUND');
