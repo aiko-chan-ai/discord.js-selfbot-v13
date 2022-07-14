@@ -223,13 +223,7 @@ class MessageManager extends CachedManager {
     // Const data = await this.client.api.channels[this.channel.id].messages[messageId].get(); // Discord Block
     // https://canary.discord.com/api/v9/guilds/809133733591384155/messages/search?channel_id=840225732902518825&max_id=957254525360697375&min_id=957254525360697373
     const data = (
-      await this.client.api.guilds[this.channel.guild.id].messages.search.get({
-        query: {
-          channel_id: this.channel.id,
-          max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-          min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
-        },
-      })
+      await this.client.api.channels[this.channel.id].messages.get({ query: { limit: 1, around: messageId }})
     ).messages[0];
     if (data) return this._add(data[0], cache);
     else throw new Error('MESSAGE_ID_NOT_FOUND');
