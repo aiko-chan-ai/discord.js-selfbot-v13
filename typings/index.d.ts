@@ -4222,6 +4222,9 @@ export interface ClientEvents extends BaseClientEvents {
   emojiDelete: [emoji: GuildEmoji];
   emojiUpdate: [oldEmoji: GuildEmoji, newEmoji: GuildEmoji];
   error: [error: Error];
+  callCreate: [channelId: Snowflake, region: string, ringing?: Snowflake[]];
+  callDelete: [channelId: Snowflake];
+  callUpdate: [channelId: Snowflake, region: string, ringing?: Snowflake[]];
   guildBanAdd: [ban: GuildBan];
   guildBanRemove: [ban: GuildBan];
   guildCreate: [guild: Guild];
@@ -4319,6 +4322,9 @@ export interface ConstantsEvents {
   APPLICATION_COMMAND_DELETE: 'applicationCommandDelete';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate';
+  CALL_CREATE: 'callCreate';
+  CALL_DELETE: 'callDelete';
+  CALL_UPDATE: 'callUpdate';
   GUILD_CREATE: 'guildCreate';
   GUILD_DELETE: 'guildDelete';
   GUILD_UPDATE: 'guildUpdate';

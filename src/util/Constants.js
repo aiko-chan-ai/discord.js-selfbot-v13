@@ -262,6 +262,9 @@ exports.Opcodes = {
  * * APPLICATION_COMMAND_CREATE: applicationCommandCreate (deprecated)
  * * APPLICATION_COMMAND_DELETE: applicationCommandDelete (deprecated)
  * * APPLICATION_COMMAND_UPDATE: applicationCommandUpdate (deprecated)
+ * * CALL_CREATE: callCreate
+ * * CALL_DELETE: callDelete
+ * * CALL_UPDATE: callUpdate
  * * GUILD_CREATE: guildCreate
  * * GUILD_DELETE: guildDelete
  * * GUILD_UPDATE: guildUpdate
@@ -341,6 +344,9 @@ exports.Events = {
   APPLICATION_COMMAND_CREATE: 'applicationCommandCreate',
   APPLICATION_COMMAND_DELETE: 'applicationCommandDelete',
   APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate',
+  CALL_CREATE: 'callCreate',
+  CALL_DELETE: 'callDelete',
+  CALL_UPDATE: 'callUpdate',
   GUILD_CREATE: 'guildCreate',
   GUILD_DELETE: 'guildDelete',
   GUILD_UPDATE: 'guildUpdate',

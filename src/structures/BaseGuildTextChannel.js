@@ -177,6 +177,7 @@ class BaseGuildTextChannel extends GuildChannel {
   createWebhook() {}
   setRateLimitPerUser() {}
   setNSFW() {}
+  sendSlash() {}
 }
 
 TextBasedChannel.applyToClass(BaseGuildTextChannel, true);

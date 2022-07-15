@@ -3,6 +3,7 @@
 const { default: Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const ClientApplication = require('./ClientApplication');
+const VoiceState = require('./VoiceState');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const { RelationshipTypes } = require('../util/Constants');
@@ -189,6 +190,15 @@ class User extends Base {
     return this.client.user.notes.get(this.id);
   }
 
+  /**
+   * The voice state of this member
+   * @type {VoiceState}
+   * @readonly
+   */
+  get voice() {
+    return this.client.voiceStates.cache.get(this.id) ?? new VoiceState({ client: this.client }, { user_id: this.id });
+  }
+
   _ProfilePatch(data) {
     if (!data) return;
 
@@ -349,6 +359,26 @@ class User extends Base {
     }
     if (!this.banner) return null;
     return this.client.rest.cdn.Banner(this.id, this.banner, format, size, dynamic);
+  }
+
+  ring() {
+    if (!this.dmChannel?.id) return Promise.reject(new Error('USER_NO_DM_CHANNEL'));
+    if (!this.client.user.voice?.channelId || !this.client.callVoice) {
+      return Promise.reject(new Error('CLIENT_NO_CALL'));
+    }
+    return new Promise((resolve, reject) => {
+      this.client.api
+        .channels(this.dmChannel.id)
+        .call.ring.post({
+          data: {
+            recipients: [this.id],
+          },
+        })
+        .then(() => resolve(true))
+        .catch(e => {
+          reject(e);
+        });
+    });
   }
 
   /**

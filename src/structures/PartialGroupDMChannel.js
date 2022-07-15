@@ -4,7 +4,6 @@ const { Collection } = require('@discordjs/collection');
 const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
 const { Channel } = require('./Channel');
 const Invite = require('./Invite');
-const User = require('./User');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const MessageManager = require('../managers/MessageManager');
@@ -128,41 +127,67 @@ class PartialGroupDMChannel extends Channel {
     return this.icon && this.client.rest.cdn.GDMIcon(this.id, this.icon, format, size);
   }
 
+  /**
+   * Adds a user to this Group DM Channel.
+   * @param {UserResolvable} user User to add to the group
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
   async addMember(user) {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
     }
-    if (!(user instanceof User)) {
-      return Promise.reject(new TypeError('User is not an instance of Discord.User'));
+    user = this.client.users.resolveId(user);
+    if (!user) {
+      return Promise.reject(new TypeError('User is not a User or User ID'));
     }
-    if (this.recipients.get(user.id)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL'));
+    if (this.recipients.get(user)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL'));
     //
-    await this.client.api.channels[this.id].recipients[user.id].put();
-    this.recipients.set(user.id, user);
+    await this.client.api.channels[this.id].recipients[user].put();
+    this.recipients.set(user, this.client.users.cache.get(user));
     return this;
   }
 
+  /**
+   * Removes a user from this Group DM Channel.
+   * @param {UserResolvable} user User to remove from the group
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
   async removeMember(user) {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
     }
-    if (!(user instanceof User)) {
-      return Promise.reject(new TypeError('User is not an instance of Discord.User'));
+    user = this.client.users.resolveId(user);
+    if (!user) {
+      return Promise.reject(new TypeError('User is not a User or User ID'));
     }
-    if (!this.recipients.get(user.id)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
-    await this.client.api.channels[this.id].recipients[user.id].delete();
-    this.recipients.delete(user.id);
+    if (!this.recipients.get(user)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
+    await this.client.api.channels[this.id].recipients[user].delete();
+    this.recipients.delete(user);
     return this;
   }
 
+  /**
+   * Renames this Group DM Channel.
+   * @param {?string} name Name of the channel
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
   setName(name) {
     return this.edit({ name });
   }
 
+  /**
+   * Sets the icon of this Group DM Channel.
+   * @param {?(Base64Resolvable|BufferResolvable)} icon Icon of the channel
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
   setIcon(icon) {
     return this.edit({ icon });
   }
 
+  /**
+   * Gets the invite for this Group DM Channel.
+   * @returns {Promise<Invite>}
+   */
   async getInvite() {
     const inviteCode = await this.client.api.channels(this.id).invites.post({
       data: {
@@ -174,6 +199,11 @@ class PartialGroupDMChannel extends Channel {
     return invite;
   }
 
+  /**
+   * Get all the invites for this Group DM Channel.
+   * @param {boolean} force Using API to fetch invites or cache
+   * @returns {Promise<Collection<string, Invite>>}
+   */
   async fetchInvite(force = false) {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
@@ -184,6 +214,11 @@ class PartialGroupDMChannel extends Channel {
     return this.invites;
   }
 
+  /**
+   * Delete invites from this Group DM Channel.
+   * @param {Invite} invite Invite to add to the channel
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
   async removeInvite(invite) {
     if (this.ownerId !== this.client.user.id) {
       return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
@@ -203,11 +238,16 @@ class PartialGroupDMChannel extends Channel {
   send() {}
   sendTyping() {}
 
+  /**
+   * @typedef {Object} CallOptions
+   * @property {boolean} [selfDeaf] Whether to deafen yourself
+   * @property {boolean} [selfMute] Whether to mute yourself
+   */
   // Testing feature: Call
   // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
   /**
    * Call this Group DMChannel. Return discordjs/voice VoiceConnection
-   * @param {Object} options Options for the call (selfDeaf, selfMute: Boolean)
+   * @param {CallOptions} options Options for the call
    * @returns {Promise<VoiceConnection>}
    */
   call(options = {}) {

@@ -115,7 +115,13 @@ module.exports = (client, { d: data }, shard) => {
   client.user._patchNote(data.notes);
 
   for (const private_channel of data.private_channels) {
-    client.channels._add(private_channel);
+    const PrivateChannel = client.channels._add(private_channel);
+    client.ws.broadcast({
+      op: Opcodes.DM_UPDATE,
+      d: {
+        channel_id: PrivateChannel.id,
+      },
+    });
   }
   // Remove event because memory leak
 

@@ -396,10 +396,11 @@ class TextBasedChannel {
    * Send Slash to this channel
    * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
    * @param {string} commandName Command name
-   * @param {...?string} args Command arguments
+   * @param {...?string|string[]} args Command arguments
    * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
    */
   async sendSlash(botId, commandName, ...args) {
+    args = args.flat(2);
     if (!botId) throw new Error('Bot ID is required');
     // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});

@@ -95,6 +95,7 @@ class DMChannel extends Channel {
   awaitMessages() {}
   createMessageComponentCollector() {}
   awaitMessageComponent() {}
+  sendSlash() {}
   // Doesn't work on DM channels; bulkDelete() {}
   // Doesn't work on DM channels; setRateLimitPerUser() {}
   // Doesn't work on DM channels; setNSFW() {}
@@ -102,7 +103,7 @@ class DMChannel extends Channel {
   // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
   /**
    * Call this DMChannel. Return discordjs/voice VoiceConnection
-   * @param {Object} options Options for the call (selfDeaf, selfMute: Boolean)
+   * @param {CallOptions} options Options for the call
    * @returns {Promise<VoiceConnection>}
    */
   call(options = {}) {

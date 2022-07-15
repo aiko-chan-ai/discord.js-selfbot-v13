@@ -67,6 +67,7 @@ const Messages = {
 
   USER_BANNER_NOT_FETCHED: "You must fetch this user's banner before trying to generate its URL!",
   USER_NO_DM_CHANNEL: 'No DM Channel exists!',
+  CLIENT_NO_CALL: 'No call exists!',
 
   VOICE_NOT_STAGE_CHANNEL: 'You are only allowed to do this in stage channels.',
 
