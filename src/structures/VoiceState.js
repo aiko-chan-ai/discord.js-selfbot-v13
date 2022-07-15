@@ -137,6 +137,15 @@ class VoiceState extends Base {
   }
 
   /**
+   * The user that this voice state belongs to
+   * @type {?User}
+   * @readonly
+   */
+  get user() {
+    return this.guild.client.users.cache.get(this.id) ?? null;
+  }
+
+  /**
    * The channel that the member is connected to
    * @type {?(VoiceChannel|StageChannel)}
    * @readonly

@@ -3041,7 +3041,7 @@ export class VoiceState extends Base {
   public selfVideo: boolean | null;
   public suppress: boolean;
   public requestToSpeakTimestamp: number | null;
-
+  public readonly user: User | null;
   public setDeaf(deaf?: boolean, reason?: string): Promise<GuildMember>;
   public setMute(mute?: boolean, reason?: string): Promise<GuildMember>;
   public disconnect(reason?: string): Promise<GuildMember>;
