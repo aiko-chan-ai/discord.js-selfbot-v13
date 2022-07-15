@@ -460,8 +460,8 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private static transformCommand(command: ApplicationCommandData): RESTPostAPIApplicationCommandsJSONBody;
   private static isAPICommandData(command: object): command is RESTPostAPIApplicationCommandsJSONBody;
   // Add
-  public static sendSlashCommand(message: Message, options?: string[]): Promise<Snowflake>;
-  public static sendContextMenu(message: Message): Promise<Snowflake>;
+  public static sendSlashCommand(message: Message, options?: string[]): Promise<InteractionResponseBody>;
+  public static sendContextMenu(message: Message): Promise<InteractionResponseBody>;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -3946,7 +3946,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
-  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<Snowflake>;
+  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<InteractionResponseBody>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;

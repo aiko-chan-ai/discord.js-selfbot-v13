@@ -397,7 +397,7 @@ class TextBasedChannel {
    * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
    * @param {string} commandName Command name
    * @param {...?string|string[]} args Command arguments
-   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
+   * @returns {Promise<InteractionResponseBody>}
    */
   async sendSlash(botId, commandName, ...args) {
     args = args.flat(2);
@@ -443,7 +443,7 @@ class TextBasedChannel {
         )}`,
       );
     }
-    const nonce = await commandTarget.sendSlashCommand(
+    return commandTarget.sendSlashCommand(
       new (Message())(this.client, {
         channel_id: this.id,
         guild_id: this.guild?.id || null,
@@ -453,7 +453,6 @@ class TextBasedChannel {
       }),
       args && args.length ? args : [],
     );
-    return nonce;
   }
 
   static applyToClass(structure, full = false, ignore = []) {
