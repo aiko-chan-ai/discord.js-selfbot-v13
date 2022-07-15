@@ -138,9 +138,11 @@ class DiscordAuthWebsocket extends EventEmitter {
         this.emit('ready', this.authURL);
         if (!this.hideLog) this.generate_qr_code(fingerprint);
         if (this.debug) console.log('[WebSocket] QR Code generated');
-        console.log(
-          `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN')}`,
-        );
+        if (!this.hideLog) {
+          console.log(
+            `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN')}`,
+          );
+        }
       } else if (op == Messages.PENDING_FINISH) {
         let encrypted_payload = data.encrypted_user_payload;
         let payload = this.decrypt_payload(encrypted_payload);
