@@ -3781,6 +3781,7 @@ export interface MessageSearchOptions {
   minId: Snowflake;
   channelId: Snowflake[];
   pinned: boolean;
+  nsfw: boolean;
 }
 
 export interface MessageSearchResult {

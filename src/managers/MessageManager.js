@@ -228,6 +228,7 @@ class MessageManager extends CachedManager {
           channel_id: this.channel.id,
           max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
           min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+          include_nsfw: true,
         },
       })
     ).messages[0];
@@ -252,6 +253,7 @@ class MessageManager extends CachedManager {
    * @property {Array<Snowflake>} [channel] An array of channel IDs to filter by
    * @property {boolean} [pinned] Whether to filter by pinned messages
    * @property {Array<string>} [has] Message has: `link`, `embed`, `file`, `video`, `image`, or `sound`
+   * @property {boolean} [nsfw=false] Whether to filter by NSFW channels
    */
 
   /**
@@ -266,7 +268,7 @@ class MessageManager extends CachedManager {
    * @returns {MessageSearchResult}
    */
   async search(options = {}) {
-    let { author, content, mentions, has, maxId, minId, channelId, pinned } = Object.assign(
+    let { author, content, mentions, has, maxId, minId, channelId, pinned, nsfw } = Object.assign(
       {
         author: [],
         content: '',
@@ -276,6 +278,7 @@ class MessageManager extends CachedManager {
         minId: null,
         channelId: [],
         pinned: false,
+        nsfw: false,
       },
       options,
     );
@@ -289,6 +292,7 @@ class MessageManager extends CachedManager {
     if (has.length > 0) stringQuery.push(has.map(v => `has=${v}`).join('&'));
     if (maxId) stringQuery.push(`max_id=${maxId}`);
     if (minId) stringQuery.push(`min_id=${minId}`);
+    if (nsfw) stringQuery.push('include_nsfw=true');
     if (this.channel.guildId && channelId.length > 0) {
       stringQuery.push(channelId.map(id => `channel_id=${id}`).join('&'));
     }
