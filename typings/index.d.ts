@@ -2899,6 +2899,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly premiumGuildSince: Date;
   public readonly bio: string | null;
   public readonly mutualGuilds: Collection<Snowflake, object>;
+  public readonly voice: VoiceState;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -2915,6 +2916,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public setNote(note?: any): Promise<string>;
   public getProfile(): Promise<User>;
   public toString(): UserMention;
+  public ring(): Promise<boolean>;
 }
 
 export class UserContextMenuInteraction<Cached extends CacheType = CacheType> extends ContextMenuInteraction<Cached> {

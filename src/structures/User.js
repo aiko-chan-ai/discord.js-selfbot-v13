@@ -361,6 +361,10 @@ class User extends Base {
     return this.client.rest.cdn.Banner(this.id, this.banner, format, size, dynamic);
   }
 
+  /**
+   * Ring the user's phone / PC (call)
+   * @returns {Promise<boolean>}
+   */
   ring() {
     if (!this.dmChannel?.id) return Promise.reject(new Error('USER_NO_DM_CHANNEL'));
     if (!this.client.user.voice?.channelId || !this.client.callVoice) {
