@@ -7,7 +7,7 @@ const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
 const { Networking } = require('../../../util/Voice');
-
+let running = false;
 /**
  * Emitted whenever clientOptions.checkUpdate = true
  * @event Client#update
@@ -25,7 +25,8 @@ async function checkUpdate(client) {
   const lastest_tag = res_.data['dist-tags'].latest;
   if (client.options.checkUpdate) {
     if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
-      console.log(`
+      if (!running) {
+        console.log(`
       ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
       Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(lastest_tag)}
   
@@ -37,7 +38,8 @@ async function checkUpdate(client) {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`);
-    } else {
+      }
+    } else if (!running) {
       console.log(
         `
       ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(Discord.version)}
@@ -59,7 +61,7 @@ async function checkUpdate(client) {
 module.exports = (client, { d: data }, shard) => {
   checkUpdate(client);
 
-  if (client.options.patchVoice) {
+  if (client.options.patchVoice && !running) {
     /* eslint-disable */
     VoiceConnection.prototype.configureNetworking = function () {
       const { server, state } = this.packets;
@@ -125,7 +127,7 @@ module.exports = (client, { d: data }, shard) => {
   }
   // Remove event because memory leak
 
-  if (client.options.readyStatus) {
+  if (client.options.readyStatus && !running) {
     client.customStatusAuto(client);
   }
 
@@ -173,4 +175,6 @@ module.exports = (client, { d: data }, shard) => {
   client.relationships._setup(data.relationships);
 
   shard.checkReady();
+
+  running = true;
 };
