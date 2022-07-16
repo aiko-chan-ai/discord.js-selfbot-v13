@@ -41,6 +41,7 @@ const JSONBig = require('json-bigint');
  * @property {boolean} [autoCookie=true] Automatically add Cookies to Request on startup
  * @property {boolean} [patchVoice=true] Automatically patch @discordjs/voice module (support for call)
  * @property {boolean} [autoRedeemNitro=false] Automaticlly redeems nitro codes <NOTE: there is no cooldown on the auto redeem>
+ * @property {boolean} [DMSync=false] Automatically synchronize call status (DM and group) at startup (event synchronization) [Warning: May cause rate limit to gateway)
  * @property {number} [shardCount=1] The total amount of shards used by all processes of this bot
  * (e.g. recommended shard count, shard count of the ShardingManager)
  * @property {CacheFactory} [makeCache] Function to create a cache.
@@ -146,6 +147,7 @@ class Options extends null {
       readyStatus: true,
       autoCookie: true,
       autoRedeemNitro: false,
+      DMSync: false,
       patchVoice: true,
       waitGuildTimeout: 15_000,
       shardCount: 1,

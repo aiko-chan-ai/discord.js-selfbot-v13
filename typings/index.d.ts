@@ -4507,6 +4507,7 @@ export interface ClientOptions {
   autoCookie?: boolean;
   autoRedeemNitro?: boolean;
   patchVoice?: boolean;
+  DMSync?: boolean;
 }
 
 // end copy

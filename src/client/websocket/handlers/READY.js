@@ -117,14 +117,23 @@ module.exports = (client, { d: data }, shard) => {
 
   client.user._patchNote(data.notes);
 
+  const syncTime = Date.now();
   for (const private_channel of data.private_channels) {
-    const PrivateChannel = client.channels._add(private_channel);
-    client.ws.broadcast({
-      op: Opcodes.DM_UPDATE,
-      d: {
-        channel_id: PrivateChannel.id,
-      },
-    });
+    const channel = client.channels._add(private_channel);
+    // Rate limit warning
+    if (client.options.DMSync) {
+      client.ws.broadcast({
+        op: Opcodes.DM_UPDATE,
+        d: {
+          channel_id: channel.id,
+        },
+      });
+    }
+  }
+  if (client.options.DMSync) {
+    console.warn(
+      `Gateway Rate Limit Warning: Sending ${data.private_channels.length} Requests / ${Date.now() - syncTime || 1} ms`,
+    );
   }
   // Remove event because memory leak
 

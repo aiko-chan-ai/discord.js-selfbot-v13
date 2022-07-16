@@ -814,6 +814,24 @@ class Client extends BaseClient {
     } else {
       options.intents = Intents.resolve(options.intents);
     }
+    if (options && typeof options.checkUpdate !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'checkUpdate', 'a boolean');
+    }
+    if (options && typeof options.readyStatus !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'readyStatus', 'a boolean');
+    }
+    if (options && typeof options.autoCookie !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'autoCookie', 'a boolean');
+    }
+    if (options && typeof options.autoRedeemNitro !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
+    }
+    if (options && typeof options.DMSync !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');
+    }
+    if (options && typeof options.patchVoice !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'patchVoice', 'a boolean');
+    }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');
     }

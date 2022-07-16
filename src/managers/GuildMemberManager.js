@@ -490,6 +490,7 @@ class GuildMemberManager extends CachedManager {
             x += 200;
           }
         }
+        const sendTime = Date.now();
         for (const l of list) {
           this.guild.shard.send({
             op: type,
@@ -506,6 +507,7 @@ class GuildMemberManager extends CachedManager {
             },
           });
         }
+        console.warn(`Gateway Rate Limit Warning: Sending ${list.length} Requests / ${Date.now() - sendTime || 1} ms`);
       }
       const fetchedMembers = new Collection();
       let i = 0;
