@@ -44,7 +44,6 @@ class ClientUser extends User {
        */
       this.nitroType = data.premium_type;
     }
-    
     if ('purchased_flags' in data) {
       /**
        * Purchased state of the client user.
