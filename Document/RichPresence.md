@@ -56,6 +56,8 @@ client.user.setActivity(r.toJSON());
 
 > Tutorial:
 
+## Method 1:
+
 + Step 1: Send image to Discord
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995297572732284968/unknown.png'>
@@ -103,7 +105,49 @@ const r = new Discord.RichPresence()
 client.user.setActivity(r.toJSON());
 ```
 
+## Method 2: (Discord URL, 2.3.78+)
+
+```js
+const r = new Discord.RichPresence()
+	.setApplicationId('817229550684471297')
+	.setType('PLAYING')
+	.setURL('https://youtube.com/watch?v=dQw4w9WgXcQ')
+	.setState('State')
+	.setName('Name')
+	.setDetails('Details')
+	.setParty({
+		max: 9,
+		current: 1,
+		id: Discord.getUUID(),
+	})
+	.setStartTimestamp(Date.now())
+	.setAssetsLargeImage('https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png')
+	.setAssetsLargeText('Youtube')
+	.setAssetsSmallImage('895316294222635008')
+	.setAssetsSmallText('Bot')
+	.addButton('name', 'https://link.com/')
+client.user.setActivity(r.toJSON());
+```
+
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995301015257616414/unknown.png'>
+
+## Method 3 (Custom URL, 2.3.78+)
+
+```js
+const rpc_ = new Discord.RichPresence();
+const imageSet = await rpc.getExternal(client, '820344593357996092', 'https://musedash.moe/covers/papipupipupipa_cover.hash.93ae31d41.png', 'https://musedash.moe/covers/lights_of_muse_cover.hash.1c18e1e22.png')
+rpc_
+	.setApplicationId('820344593357996092')
+	.setType('PLAYING')
+	.setState('pa pi pu pi pu pi pa - ころねぽち With 立秋')
+	.setName('Muse Dash')
+	.setDetails('Hard - Lvl.8')
+	.setAssetsLargeImage(imageSet[0].external_asset_path)
+	.setAssetsSmallImage(imageSet[1].external_asset_path)
+client.user.setActivity(rpc_.toJSON());
+```
+
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/997781209998434355/unknown.png'>
 
 <strong>How to get the Assets ID and Name of the bot (application) ?</strong>
 
