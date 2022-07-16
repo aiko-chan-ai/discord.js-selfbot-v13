@@ -55,6 +55,7 @@ async function checkUpdate(client) {
       );
     }
   }
+  running = true;
   return client.emit('update', Discord.version, lastest_tag);
 }
 
@@ -175,6 +176,4 @@ module.exports = (client, { d: data }, shard) => {
   client.relationships._setup(data.relationships);
 
   shard.checkReady();
-
-  running = true;
 };
