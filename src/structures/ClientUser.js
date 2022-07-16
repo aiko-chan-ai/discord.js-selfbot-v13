@@ -36,13 +36,14 @@ class ClientUser extends User {
 
     if ('token' in data) this.client.token = data.token;
 
-    /**
-     * Nitro state of the user
-     * @type {?boolean}
-     */
-    this.nitro = Boolean(data.premium || false);
-
     // Add (Selfbot)
+    if ('premium_type' in data) {
+      /**
+       * Nitro type of the user.
+       * @type {?number}
+       */
+      this.nitroType = data.premium_type;
+    }
     if ('purchased_flags' in data) {
       /**
        * Purchased state of the client user.
