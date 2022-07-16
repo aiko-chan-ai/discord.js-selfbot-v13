@@ -159,21 +159,75 @@ class RichPresence {
   }
   /**
    * Set the large image of this activity
-   * @param {?Snowflake} image The large image asset's id
+   * @param {?any} image The large image asset's id
    * @returns {RichPresence}
    */
   setAssetsLargeImage(image) {
     if (!(this.assets instanceof Object)) this.assets = {};
+    if (typeof image != 'string') {
+      image = null;
+    } else if (checkUrl(image)) {
+      // Discord URL:
+      image = image
+        .replace('https://cdn.discordapp.com/', 'mp:')
+        .replace('http://cdn.discordapp.com/', 'mp:')
+        .replace('https://media.discordapp.net/', 'mp:')
+        .replace('http://media.discordapp.net/', 'mp:');
+      //
+      if (!image.startsWith('mp:')) {
+        throw new Error(
+          'INVALID_URL',
+          `
+If you want to set the URL directly, it should be the Discord URL (cdn.discordapp.com | media.discordapp.net)
+Or follow these instructions:
+https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichPresence.md#method-3-custom-url-2378
+`,
+        );
+      }
+    } else if (/^[0-9]{17,19}$/.test(image)) {
+      // ID Assets
+    } else if (image.startsWith('mp:') || image.startsWith('youtube:') || image.startsWith('spotify:')) {
+      // Image
+    } else if (image.startsWith('external/')) {
+      image = `mp:${image}`;
+    }
     this.assets.large_image = image;
     return this;
   }
   /**
    * Set the small image of this activity
-   * @param {?Snowflake} image The small image asset's id
+   * @param {?any} image The small image asset's id
    * @returns {RichPresence}
    */
   setAssetsSmallImage(image) {
     if (!(this.assets instanceof Object)) this.assets = {};
+    if (typeof image != 'string') {
+      image = null;
+    } else if (checkUrl(image)) {
+      // Discord URL:
+      image = image
+        .replace('https://cdn.discordapp.com/', 'mp:')
+        .replace('http://cdn.discordapp.com/', 'mp:')
+        .replace('https://media.discordapp.net/', 'mp:')
+        .replace('http://media.discordapp.net/', 'mp:');
+      //
+      if (!image.startsWith('mp:')) {
+        throw new Error(
+          'INVALID_URL',
+          `
+If you want to set the URL directly, it should be the Discord URL (cdn.discordapp.com | media.discordapp.net)
+Or follow these instructions:
+https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichPresence.md#method-3-custom-url-2378
+`,
+        );
+      }
+    } else if (/^[0-9]{17,19}$/.test(image)) {
+      // ID Assets
+    } else if (image.startsWith('mp:') || image.startsWith('youtube:') || image.startsWith('spotify:')) {
+      // Image
+    } else if (image.startsWith('external/')) {
+      image = `mp:${image}`;
+    }
     this.assets.small_image = image;
     return this;
   }
@@ -361,20 +415,74 @@ class RichPresence {
    * @returns {RichPresence}
    */
   toJSON() {
-    return {
+    const obj = {
       name: this.name,
-      type: this.type,
+      type: this.type || 0, // PLAYING
       application_id: this.application_id,
       url: this.url,
       state: this.state,
       details: this.details,
       party: this.party,
-      timestamps: this.timestamps,
+      timestamps: this.timestamps || {},
       secrets: this.secrets,
-      assets: this.assets,
+      assets: this.assets || {},
       buttons: this.buttons,
       metadata: this.metadata,
     };
+    Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
+    return obj;
+  }
+
+  /**
+   * Get random UUID string (Util)
+   * @returns {string}
+   */
+  getUUID() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a =>
+      (a ^ ((Math.random() * 16) >> (a / 4))).toString(16),
+    );
+  }
+
+  /**
+   * Get Assets from a RichPresence (Util)
+   * @param {Client} client Discord Client
+   * @param {Snowflake} applicationId Application id
+   * @param {string} image1 URL image 1 (not from Discord)
+   * @param {string} image2 URL image 2 (not from Discord)
+   * @returns {ExternalAssets[]}
+   */
+  async getExternal(client, applicationId, image1 = '', image2 = '') {
+    const checkURL = url => {
+      try {
+        // eslint-disable-next-line no-new
+        new URL(url);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    if (!client || !client.token || !client.api) throw new Error('Client must be set');
+    // Check if applicationId is discord snowflake (17 , 18, 19 numbers)
+    if (!/^[0-9]{17,19}$/.test(applicationId)) {
+      throw new Error('Application id must be a Discord Snowflake');
+    }
+    // Check if large_image is a valid url
+    if (image1 && image1.length > 0 && !checkURL(image1)) {
+      throw new Error('Image 1 must be a valid url');
+    }
+    // Check if small_image is a valid url
+    if (image2 && image2.length > 0 && !checkURL(image2)) {
+      throw new Error('Image 2 must be a valid url');
+    }
+    const data_ = [];
+    if (image1) data_.push(image1);
+    if (image2) data_.push(image2);
+    const res = await client.api.applications[applicationId]['external-assets'].post({
+      data: {
+        urls: data_,
+      },
+    });
+    return res;
   }
 }
 
@@ -469,7 +577,7 @@ class SpotifyRPC extends RichPresence {
    */
   toJSON() {
     if (!this.sync_id) throw new Error('Song id is required');
-    return {
+    const obj = {
       name: 'Spotify',
       type: ActivityTypes.LISTENING,
       application_id: this.application_id,
@@ -477,9 +585,9 @@ class SpotifyRPC extends RichPresence {
       state: this.state,
       details: this.details,
       party: this.party,
-      timestamps: this.timestamps,
+      timestamps: this.timestamps || {},
       secrets: this.secrets,
-      assets: this.assets,
+      assets: this.assets || {},
       session_id: this.session_id,
       sync_id: this.sync_id,
       flags: this.flags,
@@ -487,8 +595,16 @@ class SpotifyRPC extends RichPresence {
       created_at: this.created_at,
       metadata: this.metadata,
     };
+    Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
+    return obj;
   }
 }
+
+/**
+ * @typedef {Object} ExternalAssets
+ * @property {?string} url Orginal url of the image
+ * @property {?string} external_asset_path Proxy url of the image (Using to RPC)
+ */
 
 module.exports = {
   CustomStatus,

@@ -134,9 +134,9 @@ client.user.setActivity(r.toJSON());
 ## Method 3 (Custom URL, 2.3.78+)
 
 ```js
-const rpc_ = new Discord.RichPresence();
+const rpc = new Discord.RichPresence();
 const imageSet = await rpc.getExternal(client, '820344593357996092', 'https://musedash.moe/covers/papipupipupipa_cover.hash.93ae31d41.png', 'https://musedash.moe/covers/lights_of_muse_cover.hash.1c18e1e22.png')
-rpc_
+rpc
 	.setApplicationId('820344593357996092')
 	.setType('PLAYING')
 	.setState('pa pi pu pi pu pi pa - ころねぽち With 立秋')
@@ -144,7 +144,7 @@ rpc_
 	.setDetails('Hard - Lvl.8')
 	.setAssetsLargeImage(imageSet[0].external_asset_path)
 	.setAssetsSmallImage(imageSet[1].external_asset_path)
-client.user.setActivity(rpc_.toJSON());
+client.user.setActivity(rpc.toJSON());
 ```
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/997781209998434355/unknown.png'>

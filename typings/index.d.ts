@@ -200,9 +200,9 @@ export abstract class RichPresence {
   } | null;
   public type: ActivityType;
   public url: string | null;
-  public setAssetsLargeImage(image?: Snowflake): this;
+  public setAssetsLargeImage(image?: any): this;
   public setAssetsLargeText(text?: string): this;
-  public setAssetsSmallImage(image?: Snowflake): this;
+  public setAssetsSmallImage(image?: any): this;
   public setAssetsSmallText(text?: string): this;
   public setName(name?: string): this;
   public setURL(url?: string): this;
@@ -215,7 +215,19 @@ export abstract class RichPresence {
   public setEndTimestamp(timestamp?: Date): this;
   public setButtons(...button: RichButton[]): this;
   public addButton(name: string, url: string): this;
+  public getExternal(
+    client: Client,
+    applicationId: Snowflake,
+    image1: string,
+    image2: string,
+  ): Promise<ExternalAssets[]>;
+  public getUUID(): string;
   public toJSON(): object;
+}
+
+export interface ExternalAssets {
+  url: string;
+  external_asset_path: string;
 }
 
 export abstract class SpotifyRPC extends RichPresence {
