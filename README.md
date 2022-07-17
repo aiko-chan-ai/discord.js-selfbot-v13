@@ -30,8 +30,6 @@
 ### <strong>I don't take any responsibility for blocked Discord accounts that used this module.</strong>
 ### <strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.</strong>
 
-### Finally the package got 100 stars (GitHub), thank you all 💖
-
 ### <strong>[Document Website (recommend)](https://discordjs-self-v13.netlify.app/)</strong>
 
 ### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>

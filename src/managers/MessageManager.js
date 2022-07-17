@@ -254,6 +254,8 @@ class MessageManager extends CachedManager {
    * @property {boolean} [pinned] Whether to filter by pinned messages
    * @property {Array<string>} [has] Message has: `link`, `embed`, `file`, `video`, `image`, or `sound`
    * @property {boolean} [nsfw=false] Whether to filter by NSFW channels
+   * @property {number} [offset=0] The number of messages to skip (for pagination, 25 results per page)
+   * @property {number} [limit=25] The number of messages to fetch
    */
 
   /**
@@ -268,7 +270,7 @@ class MessageManager extends CachedManager {
    * @returns {MessageSearchResult}
    */
   async search(options = {}) {
-    let { author, content, mentions, has, maxId, minId, channelId, pinned, nsfw } = Object.assign(
+    let { author, content, mentions, has, maxId, minId, channelId, pinned, nsfw, offset, limit } = Object.assign(
       {
         author: [],
         content: '',
@@ -279,6 +281,8 @@ class MessageManager extends CachedManager {
         channelId: [],
         pinned: false,
         nsfw: false,
+        offset: 0,
+        limit: 25,
       },
       options,
     );
@@ -293,6 +297,8 @@ class MessageManager extends CachedManager {
     if (maxId) stringQuery.push(`max_id=${maxId}`);
     if (minId) stringQuery.push(`min_id=${minId}`);
     if (nsfw) stringQuery.push('include_nsfw=true');
+    if (offset !== 0) stringQuery.push(`offset=${offset}`);
+    if (limit !== 25) stringQuery.push(`limit=${limit}`);
     if (this.channel.guildId && channelId.length > 0) {
       stringQuery.push(channelId.map(id => `channel_id=${id}`).join('&'));
     }

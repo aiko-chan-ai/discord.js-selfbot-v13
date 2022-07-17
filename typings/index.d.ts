@@ -3802,6 +3802,8 @@ export interface MessageSearchOptions {
   channelId: Snowflake[];
   pinned: boolean;
   nsfw: boolean;
+  offset: number;
+  limit: number;
 }
 
 export interface MessageSearchResult {
