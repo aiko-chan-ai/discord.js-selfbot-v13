@@ -30,13 +30,34 @@ const listUserAgent = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 Edg/103.0.1264.37',
 ];
 
+/**
+ * Automatically scan and delete direct messages you receive that contain explicit media content.
+ * * `NOT_SCAN` - Direct messages will not be scanned for explicit content.
+ * * `NOT_FRIEND` - Scan direct messages from everyone unless they are a friend.
+ * * `EVERYONE` - Scan direct messages from everyone.
+ * @typedef {string} DMScanLevel
+ */
 exports.DMScanLevel = createEnum(['NOT_SCAN', 'NOT_FRIEND', 'EVERYONE']);
 
-exports.stickerAnimationMode = {
-  0: 'ALWAYS',
-  1: 'INTERACTION',
-  2: 'NEVER',
-};
+/**
+ * This controls when stickers animate:
+ * * `ALWAYS` - Always animate.
+ * * `INTERACTION` - On the desktop client, stickers will animate on hover or focus. On mobile clients, stickers will animate on long-press.
+ * * `NEVER` - Never animate.
+ * @typedef {string} stickerAnimationMode
+ */
+exports.stickerAnimationMode = createEnum(['ALWAYS', 'INTERACTION', 'NEVER']);
+
+/**
+ * All available nitro types:
+ * * `NONE` - None
+ * * `CLASSIC` - Nitro Classic
+ * * `NITRO_BOOST` - Nitro
+ * * `UNKNOWN` - New nitro (maybe Nitro Lite / Basic ???)
+ * @typedef {string} NitroType
+ * @see {@link https://discord.com/developers/docs/resources/user#user-object-premium-types}
+ */
+exports.NitroType = createEnum(['NONE', 'NITRO_CLASSIC', 'NITRO_BOOST']);
 
 exports.localeObject = {
   da: 'DANISH',

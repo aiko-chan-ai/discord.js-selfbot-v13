@@ -22,13 +22,13 @@ async function checkUpdate(client) {
   if (!res_) {
     return client.emit('update', `${chalk.redBright('[Fail]')} Check Update error`);
   }
-  const lastest_tag = res_.data['dist-tags'].latest;
+  const latest_tag = res_.data['dist-tags'].latest;
   if (client.options.checkUpdate) {
-    if (lastest_tag !== Discord.version && Discord.version.includes('-') == false) {
+    if (latest_tag !== Discord.version && Discord.version.includes('-') == false) {
       if (!running) {
         console.log(`
       ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
-      Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(lastest_tag)}
+      Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(latest_tag)}
   
       If you don't want to show this message, set \`checkUpdate\` to false
   
@@ -56,7 +56,7 @@ async function checkUpdate(client) {
     }
   }
   running = true;
-  return client.emit('update', Discord.version, lastest_tag);
+  return client.emit('update', Discord.version, latest_tag);
 }
 
 module.exports = (client, { d: data }, shard) => {

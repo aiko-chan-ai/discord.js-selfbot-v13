@@ -22,6 +22,12 @@ export const enum stickerAnimationMode {
   NEVER = 2,
 }
 
+export const enum NitroType {
+  NONE = 0,
+  NITRO_CLASSIC = 1,
+  NITRO_BOOST = 2,
+}
+
 export const enum RelationshipTypes {
   FRIEND = 1,
   BLOCKED = 2,

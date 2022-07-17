@@ -8,57 +8,135 @@ const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Con
 /**
  * Manages API methods for users and stores their cache.
  * @extends {BaseManager}
+ * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
  */
 class ClientUserSettingManager extends BaseManager {
   constructor(client) {
     super(client);
-    // Raw data
+    /**
+     * Raw data
+     * @type {Object}
+     */
     this.rawSetting = {};
-    // Language
+    /**
+     * Language
+     * @type {?string}
+     */
     this.locale = null;
-    // Setting => ACTIVITY SETTINGS => Activity Status => Display current activity as a status message
+    /**
+     * From: Setting => ACTIVITY SETTINGS => Activity Status => Display current activity as a status message
+     * @type {?boolean}
+     */
     this.activityDisplay = null;
-    //
+    /**
+     * Disable Direct Message from servers
+     * @type {Collection<Snowflake, boolean>}
+     */
     this.disableDMfromServer = new Collection();
-    // Allow direct messages from server members
+    /**
+     * Allow direct messages from server members
+     * @type {?boolean}
+     */
     this.DMfromServerMode = null;
-    //
+    /**
+     * Display images
+     * @type {?boolean}
+     */
     this.displayImage = null;
-    //
+    /**
+     * Display linked images
+     * @type {?boolean}
+     */
     this.linkedImageDisplay = null;
-    // Setting => APP SETTINGS => Accessibility => Automatically play GIFs when Discord is focused.
+    /**
+     * From: Setting => APP SETTINGS => Accessibility => Automatically play GIFs when Discord is focused.
+     * @type {?boolean}
+     */
     this.autoplayGIF = null;
-    // Show embeds and preview website links pasted into chat
+    /**
+     * Show embeds and preview website links pasted into chat
+     * @type {?boolean}
+     */
     this.previewLink = null;
-    // Setting => APP SETTINGS => Accessibility => Play Animated Emojis
+    /**
+     * From: Setting => APP SETTINGS => Accessibility => Play Animated Emojis
+     * @type {?boolean}
+     */
     this.animatedEmojis = null;
-    // Setting => APP SETTINGS => Accessibility => Text-to-speech => Allow playback
+    /**
+     * From: Setting => APP SETTINGS => Accessibility => Text-to-speech => Allow playback
+     * @type {?boolean}
+     */
     this.allowTTS = null;
-    // Setting => APP SETTINGS => Appearance => Message Display => Compact Mode [OK]
+    /**
+     * From: Setting => APP SETTINGS => Appearance => Message Display => Compact Mode
+     * @type {?boolean}
+     */
     this.compactMode = null;
-    // Setting => APP SETTINGS => Text & Images => Emoji => Convert Emoticons
+    /**
+     * From: Setting => APP SETTINGS => Text & Images => Emoji => Convert Emoticons
+     * @type {?boolean}
+     */
     this.convertEmoticons = null;
-    // SAFE DIRECT MESSAGING
+    /**
+     * SAFE DIRECT MESSAGING
+     * @type {?DMScanLevel}
+     */
     this.DMScanLevel = null;
-    // Setting => APP SETTINGS => Appearance => Theme [OK]
+    /**
+     * From: Setting => APP SETTINGS => Appearance => Theme
+     * @type {'dark' | 'light' | null}
+     */
     this.theme = '';
-    //
+    /**
+     * Developer Mode (Copy ID, etc.)
+     * @type {?boolean}
+     */
     this.developerMode = null;
-    //
+    /**
+     * AFK timeout (receives notifications)
+     * @type {?number}
+     */
     this.afkTimeout = null;
-    //
+    /**
+     * Sticker animation mode
+     * @type {?stickerAnimationMode}
+     */
     this.stickerAnimationMode = null;
-    // WHO CAN ADD YOU AS A FRIEND ?
+    /**
+     * WHO CAN ADD YOU AS A FRIEND ?
+     * @type {?object}
+     * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html#friend-source-flags-structure}
+     */
     this.addFriendFrom = {
       all: null,
       mutual_friends: null,
       mutual_guilds: null,
     };
-    // Setting => APP SETTINGS => Text & Images => Emoji => Show emoji reactions
+    /**
+     * From: Setting => APP SETTINGS => Text & Images => Emoji => Show emoji reactions
+     * @type {?boolean}
+     */
     this.showEmojiReactions = null;
-    // Custom Stauts [It's not working now]
+    /**
+     * Custom Stauts
+     * @type {?object}
+     * @see {@link https://luna.gitlab.io/discord-unofficial-docs/custom_status.html#customstatus-structure}
+     */
     this.customStatus = null;
-    // Guild folder and position
+    /**
+     * @typedef {object} guildFolderData
+     * @property {Snowflake} guildId Guild ID
+     * @property {number | string} folderId ID of the folder
+     * @property {number} folderIndex Index of the folder
+     * @property {string} folderName Name of the folder
+     * @property {any} folderColor Color of the folder
+     * @property {Snowflake[]} folderGuilds Array of guild IDs in the folder
+     */
+    /**
+     * Guild folder and position
+     * @type {Collection<Snowflake, guildFolderData>}
+     */
     this.guildMetadata = new Collection();
     // Todo: add new method from Discum
   }

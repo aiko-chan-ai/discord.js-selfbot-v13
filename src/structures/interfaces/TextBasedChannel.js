@@ -417,7 +417,6 @@ class TextBasedChannel {
         include_applications: false,
         query: commandName,
         limit: 25, // Max
-        // Shet
         // application_id: botId,
       },
     });

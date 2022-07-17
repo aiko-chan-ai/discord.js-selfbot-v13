@@ -5,7 +5,7 @@ const Invite = require('./Invite');
 const { Message } = require('./Message');
 const User = require('./User');
 const { Util } = require('..');
-const { HypeSquadOptions, Opcodes } = require('../util/Constants');
+const { HypeSquadOptions, Opcodes, NitroType } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const PurchasedFlags = require('../util/PurchasedFlags');
 /**
@@ -36,13 +36,14 @@ class ClientUser extends User {
 
     if ('token' in data) this.client.token = data.token;
 
-    // Add (Selfbot)
+    // Todo: Add (Selfbot)
     if ('premium_type' in data) {
+      const nitro = NitroType[data.premium_type];
       /**
        * Nitro type of the client user.
-       * @type {?number}
+       * @type {NitroType}
        */
-      this.nitroType = data.premium_type;
+      this.nitroType = nitro ?? `UNKNOWN`;
     }
     if ('purchased_flags' in data) {
       /**

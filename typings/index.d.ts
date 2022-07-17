@@ -3523,6 +3523,14 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
 
 export type FetchGuildApplicationCommandFetchOptions = Omit<FetchApplicationCommandOptions, 'guildId'>;
 
+export interface guildFolderData {
+  guildId: Snowflake;
+  folderId: number | string;
+  folderIndex: number;
+  folderName: string;
+  folderColor: any;
+  folderGuilds: Snowflake[];
+}
 export class ClientUserSettingManager extends BaseManager {
   private constructor(client: Client);
   public rawSetting: RawUserSettingsData | object;
@@ -3553,7 +3561,7 @@ export class ClientUserSettingManager extends BaseManager {
       }
     | object;
   public addFriendFrom: { all?: boolean; mutual_friends?: boolean; mututal_guilds?: boolean } | object;
-  public guildMetadata: Collection<Snowflake, object>;
+  public guildMetadata: Collection<Snowflake, guildFolderData>;
   public disableDMfromServer: Collection<Snowflake, boolean>;
   public fetch(): Promise<RawUserSettingsData>;
   public setDisplayCompactMode(value?: boolean): Promise<this>;
