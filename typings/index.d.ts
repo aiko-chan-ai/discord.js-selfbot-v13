@@ -921,7 +921,7 @@ export class ClientUser extends User {
   public readonly nsfwAllowed: boolean;
   public readonly emailAddress: string;
 }
-type NitroType = 'NONE' | 'CLASSIC' | 'BOOST';
+type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST';
 export class Options extends null {
   private constructor();
   public static defaultMakeCacheSettings: CacheWithLimitsOptions;
