@@ -63,7 +63,7 @@ class RelationshipsManager {
    * Obtains a user from Discord, or the user cache if it's already available.
    * @param {UserResolvable} user The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @returns {Promise<User>}
+   * @returns {Promise<RelationshipTypes>} Enums
    */
   async fetch(user, { force = false } = {}) {
     const id = this.resolveId(user);
@@ -81,28 +81,26 @@ class RelationshipsManager {
 
   /**
    * Deletes a friend relationship with a client user.
-   * @param {User} user Target
+   * @param {UserResolvable} user Target
    * @returns {Promise<boolean>}
    */
-  async deleteFriend(user) {
+  deleteFriend(user) {
     const id = this.resolveId(user);
     // Check if already friends
     if (this.cache.get(id) !== RelationshipTypes.FRIEND) return false;
-    await this.client.api.users['@me'].relationships[id].delete(); // 204 status and no data
-    return true;
+    return this.__cancel(id);
   }
 
   /**
    * Deletes a blocked relationship with a client user.
-   * @param {User} user Target
+   * @param {UserResolvable} user Target
    * @returns {Promise<boolean>}
    */
-  async deleteBlocked(user) {
+  deleteBlocked(user) {
     const id = this.resolveId(user);
     // Check if already blocked
     if (this.cache.get(id) !== RelationshipTypes.BLOCKED) return false;
-    await this.client.api.users['@me'].relationships[id].delete(); // 204 status and no data
-    return true;
+    return this.__cancel(id);
   }
 
   /**
@@ -123,10 +121,16 @@ class RelationshipsManager {
 
   /**
    * Cancels a friend request.
-   * @param {Snowflake} snowflake Snowflake of the user you want to delete
+   * @param {UserResolvable} user  the user you want to delete
    * @returns {Promise<boolean>}
    */
-   async cancelFriendRequest(id) {
+  cancelFriendRequest(user) {
+    const id = this.resolveId(user);
+    if (this.cache.get(id) !== RelationshipTypes.OUTGOING_REQUEST) return false;
+    return this.__cancel(id);
+  }
+
+  async __cancel(id) {
     await this.client.api.users['@me'].relationships[id].delete();
     return true;
   }

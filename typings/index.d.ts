@@ -3916,12 +3916,14 @@ export class RelationshipsManager {
   private constructor(client: Client, users?: object[]);
   public cache: Collection<Snowflake, RelationshipTypes>;
   public client: Client;
-  public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<User>;
-  public deleteFriend(user: UserResolvable): Promise<User>;
-  public deleteBlocked(user: UserResolvable): Promise<User>;
-  public sendFriendRequest(username: string, discriminator: number): Promise<User>;
-  public addFriend(user: UserResolvable): Promise<User>;
-  public addBlocked(user: UserResolvable): Promise<User>;
+  public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes>;
+  public deleteFriend(user: UserResolvable): Promise<boolean>;
+  public deleteBlocked(user: UserResolvable): Promise<boolean>;
+  public sendFriendRequest(username: string, discriminator: number): Promise<boolean>;
+  public cancelFriendRequest(user: UserResolvable): Promise<boolean>;
+  public addFriend(user: UserResolvable): Promise<boolean>;
+  public addBlocked(user: UserResolvable): Promise<boolean>;
+  private __cancel(id: Snowflake): Promise<boolean>;
 }
 
 export class VoiceStateManager extends CachedManager<Snowflake, VoiceState, typeof VoiceState> {
