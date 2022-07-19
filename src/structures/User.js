@@ -1,6 +1,6 @@
 'use strict';
 
-const { default: Collection } = require('@discordjs/collection');
+const { Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const ClientApplication = require('./ClientApplication');
 const VoiceState = require('./VoiceState');

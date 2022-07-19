@@ -1,6 +1,6 @@
 'use strict';
 
-const { default: Collection } = require('@discordjs/collection');
+const { Collection } = require('@discordjs/collection');
 // Not used: const { remove } = require('lodash');
 const BaseManager = require('./BaseManager');
 const { Error, TypeError } = require('../errors/DJSError');
