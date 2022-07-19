@@ -122,6 +122,16 @@ class RelationshipsManager {
   }
 
   /**
+   * Cancels a friend request.
+   * @param {Snowflake} snowflake Snowflake of the user you want to delete
+   * @returns {Promise<boolean>}
+   */
+   async cancelFriendRequest(id) {
+    await this.client.api.users['@me'].relationships[id].delete();
+    return true;
+  }
+
+  /**
    * Accepts a friend request.
    * @param {UserResolvable} user The user to add as a friend
    * @returns {Promise<boolean>}
