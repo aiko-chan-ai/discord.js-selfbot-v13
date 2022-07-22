@@ -51,7 +51,7 @@
   },
   "homepage": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13#readme",
   "dependencies": {
-    "@aikochan2k6/qrcode-terminal": "^0.12.0",
+    "@aikochan2k6/qrcode-terminal": "^0.12.1",
     "@discordjs/builders": "^1.0.0",
     "@discordjs/collection": "^1.0.0",
     "@discordjs/voice": "^0.11.0",
@@ -61,7 +61,7 @@
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.2",
     "chalk": "^4.1.2",
-    "discord-api-types": "^0.36.2",
+    "discord-api-types": "^0.36.3",
     "form-data": "^4.0.0",
     "json-bigint": "^1.0.0",
     "node-fetch": "^2.6.1",
