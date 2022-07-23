@@ -460,7 +460,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       obj.type = 0;
       let buttonData = [];
       if (obj.buttons) {
-        buttonData = obj.buttons.map((b, i) => ({ name: b, url: obj.metadata.button_urls[i] }));
+        buttonData = obj.buttons.map((b, i) => ({ label: b, url: obj.metadata.button_urls[i] }));
         delete obj.metadata;
         obj.buttons = buttonData;
       }
