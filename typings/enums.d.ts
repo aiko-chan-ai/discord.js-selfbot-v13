@@ -29,10 +29,12 @@ export const enum NitroType {
 }
 
 export const enum RelationshipTypes {
+  NONE = 0,
   FRIEND = 1,
   BLOCKED = 2,
-  INCOMING_REQUEST = 3,
-  OUTGOING_REQUEST = 4,
+  PENDING_INCOMING = 3,
+  PENDING_OUTGOING = 4,
+  IMPLICIT = 5,
 }
 
 export const enum localeSetting {

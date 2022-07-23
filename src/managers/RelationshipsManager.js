@@ -126,7 +126,7 @@ class RelationshipsManager {
    */
   cancelFriendRequest(user) {
     const id = this.resolveId(user);
-    if (this.cache.get(id) !== RelationshipTypes.OUTGOING_REQUEST) return false;
+    if (this.cache.get(id) !== RelationshipTypes.PENDING_OUTGOING) return false;
     return this.__cancel(id);
   }
 
@@ -145,7 +145,7 @@ class RelationshipsManager {
     // Check if already friends
     if (this.cache.get(id) === RelationshipTypes.FRIEND) return false;
     // Check if outgoing request
-    if (this.cache.get(id) === RelationshipTypes.OUTGOING_REQUEST) return false;
+    if (this.cache.get(id) === RelationshipTypes.PENDING_OUTGOING) return false;
     await this.client.api.users['@me'].relationships[id].put({
       data: {
         type: RelationshipTypes.FRIEND,

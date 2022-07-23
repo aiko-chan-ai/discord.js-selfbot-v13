@@ -1481,13 +1481,21 @@ exports.GuildScheduledEventPrivacyLevels = createEnum([null, null, 'GUILD_ONLY']
  * * 0: NONE
  * * 1: FRIEND
  * * 2: BLOCKED
- * * 3: INCOMING_REQUEST
- * * 4: OUTGOING_REQUEST
+ * * 3: PENDING_INCOMING
+ * * 4: PENDING_OUTGOING
+ * * 5: IMPLICIT
  * @typedef {string} RelationshipTypes
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/relationships.html}
  */
 
-exports.RelationshipTypes = createEnum(['NONE', 'FRIEND', 'BLOCKED', 'INCOMING_REQUEST', 'OUTGOING_REQUEST']);
+exports.RelationshipTypes = createEnum([
+  'NONE',
+  'FRIEND',
+  'BLOCKED',
+  'PENDING_INCOMING',
+  'PENDING_OUTGOING',
+  'IMPLICIT',
+]);
 
 /**
  * The premium tier (Server Boost level) of a guild:
