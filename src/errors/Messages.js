@@ -195,6 +195,8 @@ const Messages = {
     `Field with custom id "${customId}" is of type: ${type}; expected ${expected}.`,
 
   INVALID_REMOTE_AUTH_URL: 'Invalid remote auth URL (https://discord.com/ra/{hash})',
+  INVALID_URL: url =>
+    `Invalid URL: ${url}.\nMake sure you are using a valid URL (https://discord.com/oauth2/authorize?...)`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

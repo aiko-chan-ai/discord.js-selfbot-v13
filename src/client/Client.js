@@ -782,6 +782,10 @@ class Client extends BaseClient {
     return eval(script);
   }
 
+  /**
+   * Sets the client's presence. (Sync Setting)
+   * @param {Client} client Discord Client
+   */
   customStatusAuto(client) {
     client = client ?? this;
     const custom_status = new CustomStatus();
@@ -798,6 +802,38 @@ class Client extends BaseClient {
         status: client.setting.rawSetting.status,
       });
     }
+  }
+
+  /**
+   * Authorize URL
+   * @param {string} url Discord Auth URL
+   * @param {Object} options Oauth2 options
+   * @returns {Promise<boolean>}
+   */
+  async authorizeURL(url, options = {}) {
+    const checkURL = () => {
+      try {
+        // eslint-disable-next-line no-new
+        new URL(url);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    options = Object.assign(
+      {
+        authorize: true,
+        permissions: '0',
+      },
+      options,
+    );
+    if (!url || !checkURL() || !url.startsWith('https://discord.com/oauth2/authorize?')) {
+      throw new Error('INVALID_URL', url);
+    }
+    await this.client.api.oauth2.authorize[`?${url.replace('https://discord.com/oauth2/authorize?', '')}`].post({
+      data: options,
+    });
+    return true;
   }
 
   sleep(miliseconds) {
