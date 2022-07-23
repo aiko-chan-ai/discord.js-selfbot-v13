@@ -8,12 +8,7 @@ const getUUID = () =>
   ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a => (a ^ ((Math.random() * 16) >> (a / 4))).toString(16));
 // Function check url valid (ok copilot)
 // eslint-disable-next-line
-const checkUrl = (url, ipc = false) => {
-  // eslint-disable-next-line no-useless-escape
-  const res = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(url);
-  if (!res && !ipc) return false;
-  return true;
-};
+const checkUrl = url=> /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(url);
 
 class CustomStatus {
   /**
@@ -175,7 +170,7 @@ class RichPresence {
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image, this.ipc)) {
+    } else if (checkUrl(image)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')
@@ -183,7 +178,7 @@ class RichPresence {
         .replace('https://media.discordapp.net/', 'mp:')
         .replace('http://media.discordapp.net/', 'mp:');
       //
-      if (!image.startsWith('mp:')) {
+      if (!image.startsWith('mp:') && !this.ipc) {
         throw new Error(
           'INVALID_URL',
           `
@@ -212,7 +207,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image, this.ipc)) {
+    } else if (checkUrl(image)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')
@@ -220,7 +215,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
         .replace('https://media.discordapp.net/', 'mp:')
         .replace('http://media.discordapp.net/', 'mp:');
       //
-      if (!image.startsWith('mp:')) {
+      if (!image.startsWith('mp:') && !this.ipc) {
         throw new Error(
           'INVALID_URL',
           `
