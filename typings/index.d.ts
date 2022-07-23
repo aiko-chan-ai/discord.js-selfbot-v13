@@ -183,7 +183,7 @@ export interface RichButton {
 }
 
 export abstract class RichPresence {
-  public constructor(client?: Client, data?: object);
+  public constructor(client?: Client, data?: object, IPC?: boolean);
   public application_id: Snowflake | null;
   public assets: RichPresenceAssets | null;
   public buttons: string[];
@@ -200,6 +200,7 @@ export abstract class RichPresence {
   } | null;
   public type: ActivityType;
   public url: string | null;
+  public ipc: boolean;
   public setAssetsLargeImage(image?: any): this;
   public setAssetsLargeText(text?: string): this;
   public setAssetsSmallImage(image?: any): this;
