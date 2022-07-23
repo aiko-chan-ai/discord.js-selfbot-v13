@@ -8,7 +8,12 @@ const getUUID = () =>
   ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a => (a ^ ((Math.random() * 16) >> (a / 4))).toString(16));
 // Function check url valid (ok copilot)
 // eslint-disable-next-line
-const checkUrl = url => /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(url);
+const checkUrl = (url, ipc = false) => {
+  // eslint-disable-next-line no-useless-escape
+  const res = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(url);
+  if (!res && !ipc) return false;
+  return true;
+};
 
 class CustomStatus {
   /**
@@ -82,8 +87,9 @@ class RichPresence {
   /**
    * @param {Client} client Discord client
    * @param {RichPresence} [data={}] RichPresence to clone or raw data
+   * @param {boolean} [IPC=false] Whether to use IPC (RPC for Discord Apps)
    */
-  constructor(client, data = {}) {
+  constructor(client, data = {}, IPC = false) {
     Object.defineProperty(this, 'client', { value: client });
     /**
      * The activity's name
@@ -135,6 +141,9 @@ class RichPresence {
      * @type {string[]}
      */
     this.buttons = null;
+
+    this.ipc = IPC;
+
     this.setup(data);
   }
   /**
@@ -166,7 +175,7 @@ class RichPresence {
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image)) {
+    } else if (checkUrl(image, this.ipc)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')
@@ -203,7 +212,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image)) {
+    } else if (checkUrl(image, this.ipc)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')
@@ -412,9 +421,26 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
   }
   /**
    * Convert the rich presence to a JSON object
-   * @returns {RichPresence}
+   * @returns {Object}
    */
   toJSON() {
+    /**
+     * * Verify Timestamps
+     */
+    if (this.timestamps?.start || this.timestamps?.end) {
+      if (this.timestamps?.start instanceof Date) {
+        this.timestamps.start = Math.round(this.timestamps?.start.getTime());
+      }
+      if (this.timestamps.end instanceof Date) {
+        this.timestamps.end = Math.round(this.timestamps.end.getTime());
+      }
+      if (this.timestamps.start > 2147483647000) {
+        throw new RangeError('timestamps.start must fit into a unix timestamp');
+      }
+      if (this.timestamps.end > 2147483647000) {
+        throw new RangeError('timestamps.end must fit into a unix timestamp');
+      }
+    }
     const obj = {
       name: this.name,
       type: this.type || 0, // PLAYING
@@ -430,7 +456,21 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       metadata: this.metadata,
     };
     Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
-    return obj;
+    if (!this.ipc) {
+      return obj;
+    } else {
+      delete obj.application_id;
+      delete obj.name;
+      delete obj.url;
+      obj.type = 0;
+      let buttonData = [];
+      if (obj.buttons) {
+        buttonData = obj.buttons.map((b, i) => ({ name: b, url: obj.metadata.button_urls[i] }));
+        delete obj.metadata;
+        obj.buttons = buttonData;
+      }
+      return obj;
+    }
   }
 
   /**
