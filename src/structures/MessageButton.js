@@ -180,7 +180,7 @@ class MessageButton extends BaseMessageComponent {
         guild_id: message.guild?.id ?? null, // In DMs
         channel_id: message.channel.id,
         message_id: message.id,
-        application_id: message.author.id,
+        application_id: message.applicationId ?? message.author.id,
         session_id: message.client.session_id,
         message_flags: message.flags.bitfield,
         data: {

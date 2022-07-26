@@ -224,6 +224,12 @@ class Client extends BaseClient {
      */
     this.usedCodes = [];
 
+    /**
+     * Session ID
+     * @type {?string}
+     */
+    this.session_id = null;
+
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
         'The message sweeping client options are deprecated, use the global sweepers instead.',

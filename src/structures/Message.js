@@ -1016,7 +1016,7 @@ class Message extends Base {
   }
   /**
    * Click specific button [Suggestion: Dux#2925]
-   * @param {string<Button.customId>} buttonID Button ID
+   * @param {string} buttonID Button ID
    * @returns {Promise<InteractionResponseBody>}
    */
   async clickButton(buttonID) {
