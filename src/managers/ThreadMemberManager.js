@@ -1,8 +1,9 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { Routes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
+const { TypeError, ErrorCodes } = require('../errors');
 const ThreadMember = require('../structures/ThreadMember');
 
 /**
@@ -34,6 +35,24 @@ class ThreadMemberManager extends CachedManager {
     const member = new ThreadMember(this.thread, data);
     if (cache) this.cache.set(data.user_id, member);
     return member;
+  }
+
+  /**
+   * Fetches the client user as a ThreadMember of the thread.
+   * @param {BaseFetchOptions} [options] The options for fetching the member
+   * @returns {Promise<ThreadMember>}
+   */
+  fetchMe(options) {
+    return this.fetch({ ...options, member: this.client.user.id });
+  }
+
+  /**
+   * The client user as a ThreadMember of this ThreadChannel
+   * @type {?ThreadMember}
+   * @readonly
+   */
+  get me() {
+    return this.resolve(this.client.user.id);
   }
 
   /**
@@ -76,8 +95,8 @@ class ThreadMemberManager extends CachedManager {
    */
   async add(member, reason) {
     const id = member === '@me' ? member : this.client.users.resolveId(member);
-    if (!id) throw new TypeError('INVALID_TYPE', 'member', 'UserResolvable');
-    await this.client.api.channels(this.thread.id, 'thread-members', id).put({ reason });
+    if (!id) throw new TypeError(ErrorCodes.InvalidType, 'member', 'UserResolvable');
+    await this.client.rest.put(Routes.threadMembers(this.thread.id, id), { reason });
     return id;
   }
 
@@ -88,36 +107,48 @@ class ThreadMemberManager extends CachedManager {
    * @returns {Promise<Snowflake>}
    */
   async remove(id, reason) {
-    await this.client.api.channels(this.thread.id, 'thread-members', id).delete({ reason });
+    await this.client.rest.delete(Routes.threadMembers(this.thread.id, id), { reason });
     return id;
   }
 
-  async _fetchOne(memberId, cache, force) {
+  /**
+   * @typedef {BaseFetchOptions} FetchThreadMemberOptions
+   * @property {ThreadMemberResolvable} member The thread member to fetch
+   */
+
+  /**
+   * @typedef {Object} FetchThreadMembersOptions
+   * @property {boolean} [cache] Whether to cache the fetched thread members
+   */
+
+  /**
+   * Fetches thread member(s) from Discord.
+   * <info>This method requires the {@link GatewayIntentBits.GuildMembers} privileged gateway intent.</info>
+   * @param {ThreadMemberResolvable|FetchThreadMemberOptions|FetchThreadMembersOptions} [options]
+   * Options for fetching thread member(s)
+   * @returns {Promise<ThreadMember|Collection<Snowflake, ThreadMember>>}
+   */
+  fetch(options) {
+    if (!options) return this._fetchMany();
+    const { member, cache, force } = options;
+    const resolvedMember = this.resolveId(member ?? options);
+    if (resolvedMember) return this._fetchSingle({ member: resolvedMember, cache, force });
+    return this._fetchMany(options);
+  }
+
+  async _fetchSingle({ member, cache, force = false }) {
     if (!force) {
-      const existing = this.cache.get(memberId);
+      const existing = this.cache.get(member);
       if (existing) return existing;
     }
 
-    const data = await this.client.api.channels(this.thread.id, 'thread-members', memberId).get();
+    const data = await this.client.rest.get(Routes.threadMembers(this.thread.id, member));
     return this._add(data, cache);
   }
 
-  async _fetchMany(cache) {
-    const raw = await this.client.api.channels(this.thread.id, 'thread-members').get();
-    return raw.reduce((col, member) => col.set(member.user_id, this._add(member, cache)), new Collection());
-  }
-
-  /**
-   * Fetches member(s) for the thread from Discord, requires access to the `GUILD_MEMBERS` gateway intent.
-   * @param {UserResolvable|boolean} [member] The member to fetch. If `undefined`, all members
-   * in the thread are fetched, and will be cached based on `options.cache`. If boolean, this serves
-   * the purpose of `options.cache`.
-   * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @returns {Promise<ThreadMember|Collection<Snowflake, ThreadMember>>}
-   */
-  fetch(member, { cache = true, force = false } = {}) {
-    const id = this.resolveId(member);
-    return id ? this._fetchOne(id, cache, force) : this._fetchMany(member ?? cache);
+  async _fetchMany(options = {}) {
+    const data = await this.client.rest.get(Routes.threadMembers(this.thread.id));
+    return data.reduce((col, member) => col.set(member.user_id, this._add(member, options.cache)), new Collection());
   }
 }
 

@@ -1,14 +1,9 @@
 'use strict';
 
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { GuildScheduledEventStatus, GuildScheduledEventEntityType, RouteBases } = require('discord-api-types/v10');
 const Base = require('./Base');
-const { Error } = require('../errors');
-const {
-  GuildScheduledEventEntityTypes,
-  GuildScheduledEventStatuses,
-  GuildScheduledEventPrivacyLevels,
-  Endpoints,
-} = require('../util/Constants');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
+const { Error, ErrorCodes } = require('../errors');
 
 /**
  * Represents a scheduled event in a {@link Guild}.
@@ -36,7 +31,8 @@ class GuildScheduledEvent extends Base {
   _patch(data) {
     if ('channel_id' in data) {
       /**
-       * The channel id in which the scheduled event will be hosted, or `null` if entity type is `EXTERNAL`
+       * The channel id in which the scheduled event will be hosted,
+       * or `null` if entity type is {@link GuildScheduledEventEntityType.External}
        * @type {?Snowflake}
        */
       this.channelId = data.channel_id;
@@ -86,21 +82,21 @@ class GuildScheduledEvent extends Base {
 
     /**
      * The privacy level of the guild scheduled event
-     * @type {PrivacyLevel}
+     * @type {GuildScheduledEventPrivacyLevel}
      */
-    this.privacyLevel = GuildScheduledEventPrivacyLevels[data.privacy_level];
+    this.privacyLevel = data.privacy_level;
 
     /**
      * The status of the guild scheduled event
      * @type {GuildScheduledEventStatus}
      */
-    this.status = GuildScheduledEventStatuses[data.status];
+    this.status = data.status;
 
     /**
      * The type of hosting entity associated with the scheduled event
      * @type {GuildScheduledEventEntityType}
      */
-    this.entityType = GuildScheduledEventEntityTypes[data.entity_type];
+    this.entityType = data.entity_type;
 
     if ('entity_id' in data) {
       /**
@@ -170,11 +166,11 @@ class GuildScheduledEvent extends Base {
 
   /**
    * The URL of this scheduled event's cover image
-   * @param {StaticImageURLOptions} [options={}] Options for image URL
+   * @param {BaseImageURLOptions} [options={}] Options for image URL
    * @returns {?string}
    */
-  coverImageURL({ format, size } = {}) {
-    return this.image && this.client.rest.cdn.guildScheduledEventCover(this.id, this.image, format, size);
+  coverImageURL(options = {}) {
+    return this.image && this.client.rest.cdn.guildScheduledEventCover(this.id, this.image, options);
   }
 
   /**
@@ -183,7 +179,7 @@ class GuildScheduledEvent extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -197,11 +193,12 @@ class GuildScheduledEvent extends Base {
 
   /**
    * The time the guild scheduled event will start at
-   * @type {Date}
+   * <info>This can be potentially `null` only when it's an {@link AuditLogEntryTarget}</info>
+   * @type {?Date}
    * @readonly
    */
   get scheduledStartAt() {
-    return new Date(this.scheduledStartTimestamp);
+    return this.scheduledStartTimestamp && new Date(this.scheduledStartTimestamp);
   }
 
   /**
@@ -238,14 +235,15 @@ class GuildScheduledEvent extends Base {
    * @readonly
    */
   get url() {
-    return Endpoints.scheduledEvent(this.client.options.http.scheduledEvent, this.guildId, this.id);
+    return `${RouteBases.scheduledEvent}/${this.guildId}/${this.id}`;
   }
 
   /**
    * Options used to create an invite URL to a {@link GuildScheduledEvent}
    * @typedef {CreateInviteOptions} CreateGuildScheduledEventInviteURLOptions
    * @property {GuildInvitableChannelResolvable} [channel] The channel to create the invite in.
-   * <warn>This is required when the `entityType` of `GuildScheduledEvent` is `EXTERNAL`, gets ignored otherwise</warn>
+   * <warn>This is required when the `entityType` of `GuildScheduledEvent` is
+   * {@link GuildScheduledEventEntityType.External}, gets ignored otherwise</warn>
    */
 
   /**
@@ -255,13 +253,13 @@ class GuildScheduledEvent extends Base {
    */
   async createInviteURL(options) {
     let channelId = this.channelId;
-    if (this.entityType === 'EXTERNAL') {
-      if (!options?.channel) throw new Error('INVITE_OPTIONS_MISSING_CHANNEL');
+    if (this.entityType === GuildScheduledEventEntityType.External) {
+      if (!options?.channel) throw new Error(ErrorCodes.InviteOptionsMissingChannel);
       channelId = this.guild.channels.resolveId(options.channel);
-      if (!channelId) throw new Error('GUILD_CHANNEL_RESOLVE');
+      if (!channelId) throw new Error(ErrorCodes.GuildChannelResolve);
     }
     const invite = await this.guild.invites.create(channelId, options);
-    return Endpoints.invite(this.client.options.http.invite, invite.code, this.id);
+    return `${RouteBases.invite}/${invite.code}?event=${this.id}`;
   }
 
   /**
@@ -357,12 +355,12 @@ class GuildScheduledEvent extends Base {
    * Sets the new status of the guild scheduled event.
    * <info>If you're working with TypeScript, use this method in conjunction with status type-guards
    * like {@link GuildScheduledEvent#isScheduled} to get only valid status as suggestion</info>
-   * @param {GuildScheduledEventStatus|number} status The status of the guild scheduled event
+   * @param {GuildScheduledEventStatus} status The status of the guild scheduled event
    * @param {string} [reason] The reason for changing the status
    * @returns {Promise<GuildScheduledEvent>}
    * @example
    * // Set status of a guild scheduled event
-   * guildScheduledEvent.setStatus('ACTIVE')
+   * guildScheduledEvent.setStatus(GuildScheduledEventStatus.Active)
    *  .then(guildScheduledEvent => console.log(`Set the status to: ${guildScheduledEvent.status}`))
    *  .catch(console.error);
    */
@@ -406,35 +404,35 @@ class GuildScheduledEvent extends Base {
   }
 
   /**
-   * Indicates whether this guild scheduled event has an `ACTIVE` status.
+   * Indicates whether this guild scheduled event has an {@link GuildScheduledEventStatus.Active} status.
    * @returns {boolean}
    */
   isActive() {
-    return GuildScheduledEventStatuses[this.status] === GuildScheduledEventStatuses.ACTIVE;
+    return this.status === GuildScheduledEventStatus.Active;
   }
 
   /**
-   * Indicates whether this guild scheduled event has a `CANCELED` status.
+   * Indicates whether this guild scheduled event has a {@link GuildScheduledEventStatus.Canceled} status.
    * @returns {boolean}
    */
   isCanceled() {
-    return GuildScheduledEventStatuses[this.status] === GuildScheduledEventStatuses.CANCELED;
+    return this.status === GuildScheduledEventStatus.Canceled;
   }
 
   /**
-   * Indicates whether this guild scheduled event has a `COMPLETED` status.
+   * Indicates whether this guild scheduled event has a {@link GuildScheduledEventStatus.Completed} status.
    * @returns {boolean}
    */
   isCompleted() {
-    return GuildScheduledEventStatuses[this.status] === GuildScheduledEventStatuses.COMPLETED;
+    return this.status === GuildScheduledEventStatus.Completed;
   }
 
   /**
-   * Indicates whether this guild scheduled event has a `SCHEDULED` status.
+   * Indicates whether this guild scheduled event has a {@link GuildScheduledEventStatus.Scheduled} status.
    * @returns {boolean}
    */
   isScheduled() {
-    return GuildScheduledEventStatuses[this.status] === GuildScheduledEventStatuses.SCHEDULED;
+    return this.status === GuildScheduledEventStatus.Scheduled;
   }
 }
 

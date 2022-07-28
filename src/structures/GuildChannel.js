@@ -1,10 +1,11 @@
 'use strict';
 
-const { Channel } = require('./Channel');
-const { Error } = require('../errors');
+const { PermissionFlagsBits } = require('discord-api-types/v10');
+const { BaseChannel } = require('./BaseChannel');
+const { Error, ErrorCodes } = require('../errors');
 const PermissionOverwriteManager = require('../managers/PermissionOverwriteManager');
 const { VoiceBasedChannelTypes } = require('../util/Constants');
-const Permissions = require('../util/Permissions');
+const PermissionsBitField = require('../util/PermissionsBitField');
 
 /**
  * Represents a guild channel from any of the following:
@@ -12,12 +13,11 @@ const Permissions = require('../util/Permissions');
  * - {@link VoiceChannel}
  * - {@link CategoryChannel}
  * - {@link NewsChannel}
- * - {@link StoreChannel}
  * - {@link StageChannel}
- * @extends {Channel}
+ * @extends {BaseChannel}
  * @abstract
  */
-class GuildChannel extends Channel {
+class GuildChannel extends BaseChannel {
   constructor(guild, data, client, immediatePatch = true) {
     super(guild?.client ?? client, data, false);
 
@@ -119,11 +119,11 @@ class GuildChannel extends Channel {
       // Handle empty overwrite
       if (
         (!channelVal &&
-          parentVal.deny.bitfield === Permissions.defaultBit &&
-          parentVal.allow.bitfield === Permissions.defaultBit) ||
+          parentVal.deny.bitfield === PermissionsBitField.DefaultBit &&
+          parentVal.allow.bitfield === PermissionsBitField.DefaultBit) ||
         (!parentVal &&
-          channelVal.deny.bitfield === Permissions.defaultBit &&
-          channelVal.allow.bitfield === Permissions.defaultBit)
+          channelVal.deny.bitfield === PermissionsBitField.DefaultBit &&
+          channelVal.allow.bitfield === PermissionsBitField.DefaultBit)
       ) {
         return true;
       }
@@ -151,8 +151,9 @@ class GuildChannel extends Channel {
   /**
    * Gets the overall set of permissions for a member or role in this channel, taking into account channel overwrites.
    * @param {GuildMemberResolvable|RoleResolvable} memberOrRole The member or role to obtain the overall permissions for
-   * @param {boolean} [checkAdmin=true] Whether having `ADMINISTRATOR` will return all permissions
-   * @returns {?Readonly<Permissions>}
+   * @param {boolean} [checkAdmin=true] Whether having the {@link PermissionFlagsBits.Administrator} permission
+   * will return all permissions
+   * @returns {?Readonly<PermissionsBitField>}
    */
   permissionsFor(memberOrRole, checkAdmin = true) {
     const member = this.guild.members.resolve(memberOrRole);
@@ -190,52 +191,56 @@ class GuildChannel extends Channel {
   /**
    * Gets the overall set of permissions for a member in this channel, taking into account channel overwrites.
    * @param {GuildMember} member The member to obtain the overall permissions for
-   * @param {boolean} checkAdmin=true Whether having `ADMINISTRATOR` will return all permissions
-   * @returns {Readonly<Permissions>}
+   * @param {boolean} checkAdmin Whether having the {@link PermissionFlagsBits.Administrator} permission
+   * will return all permissions
+   * @returns {Readonly<PermissionsBitField>}
    * @private
    */
   memberPermissions(member, checkAdmin) {
-    if (checkAdmin && member.id === this.guild.ownerId) return new Permissions(Permissions.ALL).freeze();
+    if (checkAdmin && member.id === this.guild.ownerId) {
+      return new PermissionsBitField(PermissionsBitField.All).freeze();
+    }
 
     const roles = member.roles.cache;
-    const permissions = new Permissions(roles.map(role => role.permissions));
+    const permissions = new PermissionsBitField(roles.map(role => role.permissions));
 
-    if (checkAdmin && permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-      return new Permissions(Permissions.ALL).freeze();
+    if (checkAdmin && permissions.has(PermissionFlagsBits.Administrator)) {
+      return new PermissionsBitField(PermissionsBitField.All).freeze();
     }
 
     const overwrites = this.overwritesFor(member, true, roles);
 
     return permissions
-      .remove(overwrites.everyone?.deny ?? Permissions.defaultBit)
-      .add(overwrites.everyone?.allow ?? Permissions.defaultBit)
-      .remove(overwrites.roles.length > 0 ? overwrites.roles.map(role => role.deny) : Permissions.defaultBit)
-      .add(overwrites.roles.length > 0 ? overwrites.roles.map(role => role.allow) : Permissions.defaultBit)
-      .remove(overwrites.member?.deny ?? Permissions.defaultBit)
-      .add(overwrites.member?.allow ?? Permissions.defaultBit)
+      .remove(overwrites.everyone?.deny ?? PermissionsBitField.DefaultBit)
+      .add(overwrites.everyone?.allow ?? PermissionsBitField.DefaultBit)
+      .remove(overwrites.roles.length > 0 ? overwrites.roles.map(role => role.deny) : PermissionsBitField.DefaultBit)
+      .add(overwrites.roles.length > 0 ? overwrites.roles.map(role => role.allow) : PermissionsBitField.DefaultBit)
+      .remove(overwrites.member?.deny ?? PermissionsBitField.DefaultBit)
+      .add(overwrites.member?.allow ?? PermissionsBitField.DefaultBit)
       .freeze();
   }
 
   /**
    * Gets the overall set of permissions for a role in this channel, taking into account channel overwrites.
    * @param {Role} role The role to obtain the overall permissions for
-   * @param {boolean} checkAdmin Whether having `ADMINISTRATOR` will return all permissions
-   * @returns {Readonly<Permissions>}
+   * @param {boolean} checkAdmin Whether having the {@link PermissionFlagsBits.Administrator} permission
+   * will return all permissions
+   * @returns {Readonly<PermissionsBitField>}
    * @private
    */
   rolePermissions(role, checkAdmin) {
-    if (checkAdmin && role.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-      return new Permissions(Permissions.ALL).freeze();
+    if (checkAdmin && role.permissions.has(PermissionFlagsBits.Administrator)) {
+      return new PermissionsBitField(PermissionsBitField.All).freeze();
     }
 
     const everyoneOverwrites = this.permissionOverwrites.cache.get(this.guild.id);
     const roleOverwrites = this.permissionOverwrites.cache.get(role.id);
 
     return role.permissions
-      .remove(everyoneOverwrites?.deny ?? Permissions.defaultBit)
-      .add(everyoneOverwrites?.allow ?? Permissions.defaultBit)
-      .remove(roleOverwrites?.deny ?? Permissions.defaultBit)
-      .add(roleOverwrites?.allow ?? Permissions.defaultBit)
+      .remove(everyoneOverwrites?.deny ?? PermissionsBitField.DefaultBit)
+      .add(everyoneOverwrites?.allow ?? PermissionsBitField.DefaultBit)
+      .remove(roleOverwrites?.deny ?? PermissionsBitField.DefaultBit)
+      .add(roleOverwrites?.allow ?? PermissionsBitField.DefaultBit)
       .freeze();
   }
 
@@ -244,7 +249,7 @@ class GuildChannel extends Channel {
    * @returns {Promise<GuildChannel>}
    */
   lockPermissions() {
-    if (!this.parent) return Promise.reject(new Error('GUILD_CHANNEL_ORPHAN'));
+    if (!this.parent) return Promise.reject(new Error(ErrorCodes.GuildChannelOrphan));
     const permissionOverwrites = this.parent.permissionOverwrites.cache.map(overwrite => overwrite.toJSON());
     return this.edit({ permissionOverwrites });
   }
@@ -257,13 +262,12 @@ class GuildChannel extends Channel {
    * @readonly
    */
   get members() {
-    return this.guild.members.cache.filter(m => this.permissionsFor(m).has(Permissions.FLAGS.VIEW_CHANNEL, false));
+    return this.guild.members.cache.filter(m => this.permissionsFor(m).has(PermissionFlagsBits.ViewChannel, false));
   }
 
   /**
    * Edits the channel.
-   * @param {ChannelData} data The new data for the channel
-   * @param {string} [reason] Reason for editing this channel
+   * @param {GuildChannelEditOptions} data The new data for the channel
    * @returns {Promise<GuildChannel>}
    * @example
    * // Edit a channel
@@ -271,8 +275,8 @@ class GuildChannel extends Channel {
    *   .then(console.log)
    *   .catch(console.error);
    */
-  edit(data, reason) {
-    return this.guild.channels.edit(this, data, reason);
+  edit(data) {
+    return this.guild.channels.edit(this, data);
   }
 
   /**
@@ -287,7 +291,7 @@ class GuildChannel extends Channel {
    *   .catch(console.error);
    */
   setName(name, reason) {
-    return this.edit({ name }, reason);
+    return this.edit({ name, reason });
   }
 
   /**
@@ -309,13 +313,11 @@ class GuildChannel extends Channel {
    *   .catch(console.error);
    */
   setParent(channel, { lockPermissions = true, reason } = {}) {
-    return this.edit(
-      {
-        parent: channel ?? null,
-        lockPermissions,
-      },
+    return this.edit({
+      parent: channel ?? null,
+      lockPermissions,
       reason,
-    );
+    });
   }
 
   /**
@@ -352,7 +354,8 @@ class GuildChannel extends Channel {
    * @returns {Promise<GuildChannel>}
    */
   clone(options = {}) {
-    return this.guild.channels.create(options.name ?? this.name, {
+    return this.guild.channels.create({
+      name: options.name ?? this.name,
       permissionOverwrites: this.permissionOverwrites.cache,
       topic: this.topic,
       type: this.type,
@@ -413,12 +416,12 @@ class GuildChannel extends Channel {
     if (!permissions) return false;
 
     // This flag allows managing even if timed out
-    if (permissions.has(Permissions.FLAGS.ADMINISTRATOR, false)) return true;
-    if (this.guild.me.communicationDisabledUntilTimestamp > Date.now()) return false;
+    if (permissions.has(PermissionFlagsBits.Administrator, false)) return true;
+    if (this.guild.members.me.communicationDisabledUntilTimestamp > Date.now()) return false;
 
     const bitfield = VoiceBasedChannelTypes.includes(this.type)
-      ? Permissions.FLAGS.MANAGE_CHANNELS | Permissions.FLAGS.CONNECT
-      : Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.MANAGE_CHANNELS;
+      ? PermissionFlagsBits.ManageChannels | PermissionFlagsBits.Connect
+      : PermissionFlagsBits.ViewChannel | PermissionFlagsBits.ManageChannels;
     return permissions.has(bitfield, false);
   }
 
@@ -431,7 +434,7 @@ class GuildChannel extends Channel {
     if (this.client.user.id === this.guild.ownerId) return true;
     const permissions = this.permissionsFor(this.client.user);
     if (!permissions) return false;
-    return permissions.has(Permissions.FLAGS.VIEW_CHANNEL, false);
+    return permissions.has(PermissionFlagsBits.ViewChannel, false);
   }
 
   /**

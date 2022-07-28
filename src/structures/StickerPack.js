@@ -1,9 +1,9 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
 const { Sticker } = require('./Sticker');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * Represents a pack of standard stickers.
@@ -61,7 +61,7 @@ class StickerPack extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -84,11 +84,11 @@ class StickerPack extends Base {
 
   /**
    * The URL to this sticker pack's banner.
-   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  bannerURL({ format, size } = {}) {
-    return this.bannerId && this.client.rest.cdn.StickerPackBanner(this.bannerId, format, size);
+  bannerURL(options = {}) {
+    return this.bannerId && this.client.rest.cdn.stickerPackBanner(this.bannerId, options);
   }
 }
 

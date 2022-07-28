@@ -1,10 +1,11 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { Routes } = require('discord-api-types/v10');
 const Base = require('./Base');
 const GuildPreviewEmoji = require('./GuildPreviewEmoji');
 const { Sticker } = require('./Sticker');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * Represents the data about the guild any bot can preview, connected to the specified guild.
@@ -61,7 +62,7 @@ class GuildPreview extends Base {
     if ('features' in data) {
       /**
        * An array of enabled guild features
-       * @type {Features[]}
+       * @type {GuildFeature[]}
        */
       this.features = data.features;
     }
@@ -114,13 +115,14 @@ class GuildPreview extends Base {
       new Collection(),
     );
   }
+
   /**
    * The timestamp this guild was created at
    * @type {number}
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -134,29 +136,29 @@ class GuildPreview extends Base {
 
   /**
    * The URL to this guild's splash.
-   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  splashURL({ format, size } = {}) {
-    return this.splash && this.client.rest.cdn.Splash(this.id, this.splash, format, size);
+  splashURL(options = {}) {
+    return this.splash && this.client.rest.cdn.splash(this.id, this.splash, options);
   }
 
   /**
    * The URL to this guild's discovery splash.
-   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  discoverySplashURL({ format, size } = {}) {
-    return this.discoverySplash && this.client.rest.cdn.DiscoverySplash(this.id, this.discoverySplash, format, size);
+  discoverySplashURL(options = {}) {
+    return this.discoverySplash && this.client.rest.cdn.discoverySplash(this.id, this.discoverySplash, options);
   }
 
   /**
    * The URL to this guild's icon.
-   * @param {ImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  iconURL({ format, size, dynamic } = {}) {
-    return this.icon && this.client.rest.cdn.Icon(this.id, this.icon, format, size, dynamic);
+  iconURL(options = {}) {
+    return this.icon && this.client.rest.cdn.icon(this.id, this.icon, options);
   }
 
   /**
@@ -164,7 +166,7 @@ class GuildPreview extends Base {
    * @returns {Promise<GuildPreview>}
    */
   async fetch() {
-    const data = await this.client.api.guilds(this.id).preview.get();
+    const data = await this.client.rest.get(Routes.guildPreview(this.id));
     this._patch(data);
     return this;
   }

@@ -1,12 +1,13 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const BigNumber = require('bignumber.js');
+const { makeURLSearchParams } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { TypeError, Error } = require('../errors');
+const { TypeError, ErrorCodes } = require('../errors');
 const { Message } = require('../structures/Message');
 const MessagePayload = require('../structures/MessagePayload');
-const Util = require('../util/Util');
+const { resolvePartialEmoji } = require('../util/Util');
 
 /**
  * Manages API methods for Messages and holds their cache.
@@ -34,40 +35,79 @@ class MessageManager extends CachedManager {
   }
 
   /**
-   * The parameters to pass in when requesting previous messages from a channel. `around`, `before` and
-   * `after` are mutually exclusive. All the parameters are optional.
-   * @typedef {Object} ChannelLogsQueryOptions
-   * @property {number} [limit=50] Number of messages to acquire
-   * @property {Snowflake} [before] The message's id to get the messages that were posted before it
-   * @property {Snowflake} [after] The message's id to get the messages that were posted after it
-   * @property {Snowflake} [around] The message's id to get the messages that were posted around it
+   * Data that can be resolved to a Message object. This can be:
+   * * A Message
+   * * A Snowflake
+   * @typedef {Message|Snowflake} MessageResolvable
    */
 
   /**
-   * Gets a message, or messages, from this channel.
+   * Options used to fetch a message.
+   * @typedef {BaseFetchOptions} FetchMessageOptions
+   * @property {MessageResolvable} message The message to fetch
+   */
+
+  /**
+   * Options used to fetch multiple messages.
+   * @typedef {Object} FetchMessagesOptions
+   * @property {number} [limit] The maximum number of messages to return
+   * @property {Snowflake} [before] Consider only messages before this id
+   * @property {Snowflake} [after] Consider only messages after this id
+   * @property {Snowflake} [around] Consider only messages around this id
+   * @property {boolean} [cache] Whether to cache the fetched messages
+   */
+
+  /**
+   * Fetches message(s) from a channel.
    * <info>The returned Collection does not contain reaction users of the messages if they were not cached.
    * Those need to be fetched separately in such a case.</info>
-   * @param {Snowflake|ChannelLogsQueryOptions} [message] The id of the message to fetch, or query parameters.
-   * @param {BaseFetchOptions} [options] Additional options for this fetch
+   * @param {MessageResolvable|FetchMessageOptions|FetchMessagesOptions} [options] Options for fetching message(s)
    * @returns {Promise<Message|Collection<Snowflake, Message>>}
    * @example
-   * // Get message
+   * // Fetch a message
    * channel.messages.fetch('99539446449315840')
    *   .then(message => console.log(message.content))
    *   .catch(console.error);
    * @example
-   * // Get messages
-   * channel.messages.fetch({ limit: 10 })
+   * // Fetch a maximum of 10 messages without caching
+   * channel.messages.fetch({ limit: 10, cache: false })
    *   .then(messages => console.log(`Received ${messages.size} messages`))
    *   .catch(console.error);
    * @example
-   * // Get messages and filter by user id
+   * // Fetch a maximum of 10 messages without caching around a message id
+   * channel.messages.fetch({ limit: 10, cache: false, around: '99539446449315840' })
+   *   .then(messages => console.log(`Received ${messages.size} messages`))
+   *   .catch(console.error);
+   * @example
+   * // Fetch messages and filter by a user id
    * channel.messages.fetch()
    *   .then(messages => console.log(`${messages.filter(m => m.author.id === '84484653687267328').size} messages`))
    *   .catch(console.error);
    */
-  fetch(message, { cache = true, force = false } = {}) {
-    return typeof message === 'string' ? this._fetchId(message, cache, force) : this._fetchMany(message, cache);
+  fetch(options) {
+    if (!options) return this._fetchMany();
+    const { message, cache, force } = options;
+    const resolvedMessage = this.resolveId(message ?? options);
+    if (resolvedMessage) return this._fetchSingle({ message: resolvedMessage, cache, force });
+    return this._fetchMany(options);
+  }
+
+  async _fetchSingle({ message, cache, force = false }) {
+    if (!force) {
+      const existing = this.cache.get(message);
+      if (existing && !existing.partial) return existing;
+    }
+
+    const data = await this.client.rest.get(Routes.channelMessage(this.channel.id, message));
+    return this._add(data, cache);
+  }
+
+  async _fetchMany(options = {}) {
+    const data = await this.client.rest.get(Routes.channelMessages(this.channel.id), {
+      query: makeURLSearchParams(options),
+    });
+
+    return data.reduce((_data, message) => _data.set(message.id, this._add(message, options.cache)), new Collection());
   }
 
   /**
@@ -83,18 +123,11 @@ class MessageManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetchPinned(cache = true) {
-    const data = await this.client.api.channels[this.channel.id].pins.get();
+    const data = await this.client.rest.get(Routes.channelPins(this.channel.id));
     const messages = new Collection();
     for (const message of data) messages.set(message.id, this._add(message, cache));
     return messages;
   }
-
-  /**
-   * Data that can be resolved to a Message object. This can be:
-   * * A Message
-   * * A Snowflake
-   * @typedef {Message|Snowflake} MessageResolvable
-   */
 
   /**
    * Resolves a {@link MessageResolvable} to a {@link Message} object.
@@ -122,16 +155,15 @@ class MessageManager extends CachedManager {
    */
   async edit(message, options) {
     const messageId = this.resolveId(message);
-    if (!messageId) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!messageId) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    let messagePayload;
-    if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
-    } else {
-      messagePayload = await MessagePayload.create(message instanceof Message ? message : this, options).resolveData();
-    }
-    const { data, files } = await messagePayload.resolveFiles();
-    const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data, files });
+    const { body, files } = await (options instanceof MessagePayload
+      ? options
+      : MessagePayload.create(message instanceof Message ? message : this, options)
+    )
+      .resolveBody()
+      .resolveFiles();
+    const d = await this.client.rest.patch(Routes.channelMessage(this.channel.id, messageId), { body, files });
 
     const existing = this.cache.get(messageId);
     if (existing) {
@@ -149,9 +181,9 @@ class MessageManager extends CachedManager {
    */
   async crosspost(message) {
     message = this.resolveId(message);
-    if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!message) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    const data = await this.client.api.channels(this.channel.id).messages(message).crosspost.post();
+    const data = await this.client.rest.post(Routes.channelMessageCrosspost(this.channel.id, message));
     return this.cache.get(data.id) ?? this._add(data);
   }
 
@@ -163,9 +195,9 @@ class MessageManager extends CachedManager {
    */
   async pin(message, reason) {
     message = this.resolveId(message);
-    if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!message) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    await this.client.api.channels(this.channel.id).pins(message).put({ reason });
+    await this.client.rest.put(Routes.channelPin(this.channel.id, message), { reason });
   }
 
   /**
@@ -176,9 +208,9 @@ class MessageManager extends CachedManager {
    */
   async unpin(message, reason) {
     message = this.resolveId(message);
-    if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!message) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    await this.client.api.channels(this.channel.id).pins(message).delete({ reason });
+    await this.client.rest.delete(Routes.channelPin(this.channel.id, message), { reason });
   }
 
   /**
@@ -189,17 +221,16 @@ class MessageManager extends CachedManager {
    */
   async react(message, emoji) {
     message = this.resolveId(message);
-    if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!message) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    emoji = Util.resolvePartialEmoji(emoji);
-    if (!emoji) throw new TypeError('EMOJI_TYPE', 'emoji', 'EmojiIdentifierResolvable');
+    emoji = resolvePartialEmoji(emoji);
+    if (!emoji) throw new TypeError(ErrorCodes.EmojiType, 'emoji', 'EmojiIdentifierResolvable');
 
     const emojiId = emoji.id
       ? `${emoji.animated ? 'a:' : ''}${emoji.name}:${emoji.id}`
       : encodeURIComponent(emoji.name);
 
-    // eslint-disable-next-line newline-per-chained-call
-    await this.client.api.channels(this.channel.id).messages(message).reactions(emojiId, '@me').put();
+    await this.client.rest.put(Routes.channelMessageOwnReaction(this.channel.id, message, emojiId));
   }
 
   /**
@@ -209,117 +240,9 @@ class MessageManager extends CachedManager {
    */
   async delete(message) {
     message = this.resolveId(message);
-    if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
+    if (!message) throw new TypeError(ErrorCodes.InvalidType, 'message', 'MessageResolvable');
 
-    await this.client.api.channels(this.channel.id).messages(message).delete();
-  }
-
-  async _fetchId(messageId, cache, force) {
-    if (!force) {
-      const existing = this.cache.get(messageId);
-      if (existing && !existing.partial) return existing;
-    }
-
-    // Const data = await this.client.api.channels[this.channel.id].messages[messageId].get(); // Discord Block
-    // https://canary.discord.com/api/v9/guilds/809133733591384155/messages/search?channel_id=840225732902518825&max_id=957254525360697375&min_id=957254525360697373
-    const data = (
-      await this.client.api.guilds[this.channel.guild.id].messages.search.get({
-        query: {
-          channel_id: this.channel.id,
-          max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-          min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
-          include_nsfw: true,
-        },
-      })
-    ).messages[0];
-    if (data) return this._add(data[0], cache);
-    else throw new Error('MESSAGE_ID_NOT_FOUND');
-  }
-
-  async _fetchMany(options = {}, cache) {
-    const data = await this.client.api.channels[this.channel.id].messages.get({ query: options });
-    const messages = new Collection();
-    for (const message of data) messages.set(message.id, this._add(message, cache));
-    return messages;
-  }
-
-  /**
-   * @typedef {object} MessageSearchOptions
-   * @property {Array<Snowflake>} [author] An array of author IDs to filter by
-   * @property {Array<Snowflake>} [mentions] An array of user IDs (mentioned) to filter by
-   * @property {string} [content] A messageContent to filter by
-   * @property {Snowflake} [maxId] The maximum Message ID to filter by
-   * @property {Snowflake} [minId] The minimum Message ID to filter by
-   * @property {Array<Snowflake>} [channel] An array of channel IDs to filter by
-   * @property {boolean} [pinned] Whether to filter by pinned messages
-   * @property {Array<string>} [has] Message has: `link`, `embed`, `file`, `video`, `image`, or `sound`
-   * @property {boolean} [nsfw=false] Whether to filter by NSFW channels
-   * @property {number} [offset=0] The number of messages to skip (for pagination, 25 results per page)
-   * @property {number} [limit=25] The number of messages to fetch
-   */
-
-  /**
-   * @typedef {object} MessageSearchResult
-   * @property {Collection<Snowflake, Message>} messages A collection of found messages
-   * @property {number} total The total number of messages that match the search criteria
-   */
-
-  /**
-   * Search Messages in the channel.
-   * @param {MessageSearchOptions} options Performs a search within the channel.
-   * @returns {MessageSearchResult}
-   */
-  async search(options = {}) {
-    let { author, content, mentions, has, maxId, minId, channelId, pinned, nsfw, offset, limit } = Object.assign(
-      {
-        author: [],
-        content: '',
-        mentions: [],
-        has: [],
-        maxId: null,
-        minId: null,
-        channelId: [],
-        pinned: false,
-        nsfw: false,
-        offset: 0,
-        limit: 25,
-      },
-      options,
-    );
-    const stringQuery = [];
-    const result = new Collection();
-    let data;
-    if (author.length > 0) stringQuery.push(author.map(id => `author_id=${id}`).join('&'));
-    if (content && content.length) stringQuery.push(`content=${encodeURIComponent(content)}`);
-    if (mentions.length > 0) stringQuery.push(mentions.map(id => `mentions=${id}`).join('&'));
-    has = has.filter(v => ['link', 'embed', 'file', 'video', 'image', 'sound', 'sticker'].includes(v));
-    if (has.length > 0) stringQuery.push(has.map(v => `has=${v}`).join('&'));
-    if (maxId) stringQuery.push(`max_id=${maxId}`);
-    if (minId) stringQuery.push(`min_id=${minId}`);
-    if (nsfw) stringQuery.push('include_nsfw=true');
-    if (offset !== 0) stringQuery.push(`offset=${offset}`);
-    if (limit !== 25) stringQuery.push(`limit=${limit}`);
-    if (this.channel.guildId && channelId.length > 0) {
-      stringQuery.push(channelId.map(id => `channel_id=${id}`).join('&'));
-    }
-    if (typeof pinned == 'boolean') stringQuery.push(`pinned=${pinned}`);
-    // Main
-    if (!stringQuery.length) {
-      return {
-        messages: result,
-        total: 0,
-      };
-    }
-    if (this.channel.guildId) {
-      data = await this.client.api.guilds[this.channel.guildId].messages[`search?${stringQuery.join('&')}`].get();
-    } else {
-      data = await this.client.api.channels[this.channel.id].messages[`search?${stringQuery.join('&')}`].get();
-    }
-    for await (const message of data.messages) result.set(message[0].id, new Message(this.client, message[0]));
-    return {
-      messages: result,
-      total: data.total_results,
-    };
+    await this.client.rest.delete(Routes.channelMessage(this.channel.id, message));
   }
 }
 

@@ -1,9 +1,10 @@
 'use strict';
 
+const { Routes } = require('discord-api-types/v10');
 const GuildEmoji = require('./GuildEmoji');
 const ReactionEmoji = require('./ReactionEmoji');
 const ReactionUserManager = require('../managers/ReactionUserManager');
-const Util = require('../util/Util');
+const { flatten } = require('../util/Util');
 
 /**
  * Represents a reaction to a message.
@@ -52,15 +53,21 @@ class MessageReaction {
   }
 
   /**
+   * Makes the client user react with this reaction
+   * @returns {Promise<MessageReaction>}
+   */
+  react() {
+    return this.message.react(this.emoji);
+  }
+
+  /**
    * Removes all users from this reaction.
    * @returns {Promise<MessageReaction>}
    */
   async remove() {
-    await this.client.api
-      .channels(this.message.channelId)
-      .messages(this.message.id)
-      .reactions(this._emoji.identifier)
-      .delete();
+    await this.client.rest.delete(
+      Routes.channelMessageReaction(this.message.channelId, this.message.id, this._emoji.identifier),
+    );
     return this;
   }
 
@@ -107,7 +114,7 @@ class MessageReaction {
   }
 
   toJSON() {
-    return Util.flatten(this, { emoji: 'emojiId', message: 'messageId' });
+    return flatten(this, { emoji: 'emojiId', message: 'messageId' });
   }
 
   _add(user) {

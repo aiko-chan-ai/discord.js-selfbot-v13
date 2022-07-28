@@ -1,9 +1,9 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
 const TeamMember = require('./TeamMember');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * Represents a Client OAuth2 Application Team.
@@ -76,7 +76,7 @@ class Team extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -90,12 +90,11 @@ class Team extends Base {
 
   /**
    * A link to the team's icon.
-   * @param {StaticImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  iconURL({ format, size } = {}) {
-    if (!this.icon) return null;
-    return this.client.rest.cdn.TeamIcon(this.id, this.icon, { format, size });
+  iconURL(options = {}) {
+    return this.icon && this.client.rest.cdn.teamIcon(this.id, this.icon, options);
   }
 
   /**

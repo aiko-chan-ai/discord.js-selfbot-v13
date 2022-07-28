@@ -1,15 +1,12 @@
 'use strict';
 
-const { setTimeout } = require('node:timers');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { ApplicationCommandOptionType } = require('discord-api-types/v10');
+const isEqual = require('fast-deep-equal');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
-const MessageAttachment = require('../structures/MessageAttachment');
-const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes, Events } = require('../util/Constants');
-const DataResolver = require('../util/DataResolver');
-const Permissions = require('../util/Permissions');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
-const { lazy } = require('../util/Util');
-const Message = lazy(() => require('../structures/Message').Message);
+const PermissionsBitField = require('../util/PermissionsBitField');
+
 /**
  * Represents an application command.
  * @extends {Base}
@@ -47,15 +44,13 @@ class ApplicationCommand extends Base {
      * The manager for permissions of this command on its guild or arbitrary guilds when the command is global
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this, this.applicationId);
+    this.permissions = new ApplicationCommandPermissionsManager(this);
 
     /**
      * The type of this application command
      * @type {ApplicationCommandType}
      */
-    this.type = ApplicationCommandTypes[data.type];
-
-    this.user = client.users.cache.get(this.applicationId);
+    this.type = data.type;
 
     this._patch(data);
   }
@@ -127,25 +122,13 @@ class ApplicationCommand extends Base {
       this.options ??= [];
     }
 
-    /* eslint-disable max-len */
-    if ('default_permission' in data) {
-      /**
-       * Whether the command is enabled by default when the app is added to a guild
-       * @type {boolean}
-       * @deprecated Use {@link ApplicationCommand.defaultMemberPermissions} and {@link ApplicationCommand.dmPermission} instead.
-       */
-      this.defaultPermission = data.default_permission;
-    }
-
-    /* eslint-disable max-len */
-
     if ('default_member_permissions' in data) {
       /**
        * The default bitfield used to determine whether this command be used in a guild
-       * @type {?Readonly<Permissions>}
+       * @type {?Readonly<PermissionsBitField>}
        */
       this.defaultMemberPermissions = data.default_member_permissions
-        ? new Permissions(BigInt(data.default_member_permissions)).freeze()
+        ? new PermissionsBitField(BigInt(data.default_member_permissions)).freeze()
         : null;
     } else {
       this.defaultMemberPermissions ??= null;
@@ -155,7 +138,7 @@ class ApplicationCommand extends Base {
       /**
        * Whether the command can be used in DMs
        * <info>This property is always `null` on guild commands</info>
-       * @type {?boolean}
+       * @type {boolean|null}
        */
       this.dmPermission = data.dm_permission;
     } else {
@@ -177,7 +160,7 @@ class ApplicationCommand extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -201,13 +184,14 @@ class ApplicationCommand extends Base {
   /**
    * Data for creating or editing an application command.
    * @typedef {Object} ApplicationCommandData
-   * @property {string} name The name of the command
+   * @property {string} name The name of the command, must be in all lowercase if type is
+   * {@link ApplicationCommandType.ChatInput}
    * @property {Object<Locale, string>} [nameLocalizations] The localizations for the command name
-   * @property {string} description The description of the command
-   * @property {Object<Locale, string>} [descriptionLocalizations] The localizations for the command description
-   * @property {ApplicationCommandType} [type] The type of the command
+   * @property {string} description The description of the command, if type is {@link ApplicationCommandType.ChatInput}
+   * @property {Object<Locale, string>} [descriptionLocalizations] The localizations for the command description,
+   * if type is {@link ApplicationCommandType.ChatInput}
+   * @property {ApplicationCommandType} [type=ApplicationCommandType.ChatInput] The type of the command
    * @property {ApplicationCommandOptionData[]} [options] Options for the command
-   * @property {boolean} [defaultPermission] Whether the command is enabled by default when the app is added to a guild
    * @property {?PermissionResolvable} [defaultMemberPermissions] The bitfield used to determine the default permissions
    * a member needs in order to run the command
    * @property {boolean} [dmPermission] Whether the command is enabled in DMs
@@ -220,22 +204,26 @@ class ApplicationCommand extends Base {
    * <warn>Note that providing a value for the `camelCase` counterpart for any `snake_case` property
    * will discard the provided `snake_case` property.</warn>
    * @typedef {Object} ApplicationCommandOptionData
-   * @property {ApplicationCommandOptionType|number} type The type of the option
+   * @property {ApplicationCommandOptionType} type The type of the option
    * @property {string} name The name of the option
    * @property {Object<Locale, string>} [nameLocalizations] The name localizations for the option
    * @property {string} description The description of the option
    * @property {Object<Locale, string>} [descriptionLocalizations] The description localizations for the option
-   * @property {boolean} [autocomplete] Whether the option is an autocomplete option
+   * @property {boolean} [autocomplete] Whether the autocomplete interaction is enabled for a
+   * {@link ApplicationCommandOptionType.String}, {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
    * @property {boolean} [required] Whether the option is required
    * @property {ApplicationCommandOptionChoiceData[]} [choices] The choices of the option for the user to pick from
    * @property {ApplicationCommandOptionData[]} [options] Additional options if this option is a subcommand (group)
-   * @property {ChannelType[]|number[]} [channelTypes] When the option type is channel,
+   * @property {ChannelType[]} [channelTypes] When the option type is channel,
    * the allowed types of channels that can be selected
-   * @property {number} [minValue] The minimum value for an `INTEGER` or `NUMBER` option
-   * @property {number} [maxValue] The maximum value for an `INTEGER` or `NUMBER` option
-   * @property {number} [minLength] The minimum length for a `STRING` option
+   * @property {number} [minValue] The minimum value for an {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [maxValue] The maximum value for an {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [minLength] The minimum length for an {@link ApplicationCommandOptionType.String} option
    * (maximum of `6000`)
-   * @property {number} [maxLength] The maximum length for a `STRING` option
+   * @property {number} [maxLength] The maximum length for an {@link ApplicationCommandOptionType.String} option
    * (maximum of `6000`)
    */
 
@@ -303,7 +291,7 @@ class ApplicationCommand extends Base {
    * @returns {Promise<ApplicationCommand>}
    * @example
    * // Edit the description localizations of this command
-   * command.setLocalizedDescriptions({
+   * command.setDescriptionLocalizations({
    *   'en-GB': 'A test command',
    *   'pt-BR': 'Um comando de teste',
    * })
@@ -313,19 +301,6 @@ class ApplicationCommand extends Base {
   setDescriptionLocalizations(descriptionLocalizations) {
     return this.edit({ descriptionLocalizations });
   }
-
-  /* eslint-disable max-len */
-  /**
-   * Edits the default permission of this ApplicationCommand
-   * @param {boolean} [defaultPermission=true] The default permission for this command
-   * @returns {Promise<ApplicationCommand>}
-   * @deprecated Use {@link ApplicationCommand#setDefaultMemberPermissions} and {@link ApplicationCommand#setDMPermission} instead.
-   */
-  setDefaultPermission(defaultPermission = true) {
-    return this.edit({ defaultPermission });
-  }
-
-  /* eslint-enable max-len */
 
   /**
    * Edits the default member permissions of this ApplicationCommand
@@ -379,33 +354,39 @@ class ApplicationCommand extends Base {
   equals(command, enforceOptionOrder = false) {
     // If given an id, check if the id matches
     if (command.id && this.id !== command.id) return false;
+
     let defaultMemberPermissions = null;
     let dmPermission = command.dmPermission ?? command.dm_permission;
 
     if ('default_member_permissions' in command) {
       defaultMemberPermissions = command.default_member_permissions
-        ? new Permissions(BigInt(command.default_member_permissions)).bitfield
+        ? new PermissionsBitField(BigInt(command.default_member_permissions)).bitfield
         : null;
     }
 
     if ('defaultMemberPermissions' in command) {
       defaultMemberPermissions =
-        command.defaultMemberPermissions !== null ? new Permissions(command.defaultMemberPermissions).bitfield : null;
+        command.defaultMemberPermissions !== null
+          ? new PermissionsBitField(command.defaultMemberPermissions).bitfield
+          : null;
     }
+
     // Check top level parameters
-    const commandType = typeof command.type === 'string' ? command.type : ApplicationCommandTypes[command.type];
     if (
       command.name !== this.name ||
       ('description' in command && command.description !== this.description) ||
       ('version' in command && command.version !== this.version) ||
-      ('autocomplete' in command && command.autocomplete !== this.autocomplete) ||
-      (commandType && commandType !== this.type) ||
-      defaultMemberPermissions !== (this.defaultMemberPermissions?.bitfield ?? null) ||
-      (typeof dmPermission !== 'undefined' && dmPermission !== this.dmPermission) ||
+      (command.type && command.type !== this.type) ||
       // Future proof for options being nullable
       // TODO: remove ?? 0 on each when nullable
       (command.options?.length ?? 0) !== (this.options?.length ?? 0) ||
-      (command.defaultPermission ?? command.default_permission ?? true) !== this.defaultPermission
+      defaultMemberPermissions !== (this.defaultMemberPermissions?.bitfield ?? null) ||
+      (typeof dmPermission !== 'undefined' && dmPermission !== this.dmPermission) ||
+      !isEqual(command.nameLocalizations ?? command.name_localizations ?? {}, this.nameLocalizations ?? {}) ||
+      !isEqual(
+        command.descriptionLocalizations ?? command.description_localizations ?? {},
+        this.descriptionLocalizations ?? {},
+      )
     ) {
       return false;
     }
@@ -434,9 +415,7 @@ class ApplicationCommand extends Base {
     const newOptions = new Map(options.map(option => [option.name, option]));
     for (const option of existing) {
       const foundOption = newOptions.get(option.name);
-      if (!foundOption || !this._optionEquals(option, foundOption)) {
-        return false;
-      }
+      if (!foundOption || !this._optionEquals(option, foundOption)) return false;
     }
     return true;
   }
@@ -453,21 +432,27 @@ class ApplicationCommand extends Base {
    * @private
    */
   static _optionEquals(existing, option, enforceOptionOrder = false) {
-    const optionType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
     if (
       option.name !== existing.name ||
-      optionType !== existing.type ||
+      option.type !== existing.type ||
       option.description !== existing.description ||
       option.autocomplete !== existing.autocomplete ||
-      (option.required ?? (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(optionType) ? undefined : false)) !==
-        existing.required ||
+      (option.required ??
+        ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)
+          ? undefined
+          : false)) !== existing.required ||
       option.choices?.length !== existing.choices?.length ||
       option.options?.length !== existing.options?.length ||
       (option.channelTypes ?? option.channel_types)?.length !== existing.channelTypes?.length ||
       (option.minValue ?? option.min_value) !== existing.minValue ||
       (option.maxValue ?? option.max_value) !== existing.maxValue ||
       (option.minLength ?? option.min_length) !== existing.minLength ||
-      (option.maxLength ?? option.max_length) !== existing.maxLength
+      (option.maxLength ?? option.max_length) !== existing.maxLength ||
+      !isEqual(option.nameLocalizations ?? option.name_localizations ?? {}, existing.nameLocalizations ?? {}) ||
+      !isEqual(
+        option.descriptionLocalizations ?? option.description_localizations ?? {},
+        existing.descriptionLocalizations ?? {},
+      )
     ) {
       return false;
     }
@@ -476,7 +461,13 @@ class ApplicationCommand extends Base {
       if (
         enforceOptionOrder &&
         !existing.choices.every(
-          (choice, index) => choice.name === option.choices[index].name && choice.value === option.choices[index].value,
+          (choice, index) =>
+            choice.name === option.choices[index].name &&
+            choice.value === option.choices[index].value &&
+            isEqual(
+              choice.nameLocalizations ?? {},
+              option.choices[index].nameLocalizations ?? option.choices[index].name_localizations ?? {},
+            ),
         )
       ) {
         return false;
@@ -491,9 +482,7 @@ class ApplicationCommand extends Base {
     }
 
     if (existing.channelTypes) {
-      const newTypes = (option.channelTypes ?? option.channel_types).map(type =>
-        typeof type === 'number' ? ChannelTypes[type] : type,
-      );
+      const newTypes = option.channelTypes ?? option.channel_types;
       for (const type of existing.channelTypes) {
         if (!newTypes.includes(type)) return false;
       }
@@ -510,22 +499,26 @@ class ApplicationCommand extends Base {
    * @typedef {Object} ApplicationCommandOption
    * @property {ApplicationCommandOptionType} type The type of the option
    * @property {string} name The name of the option
-   * @property {Object<string, string>} [nameLocalizations] The localizations for the option name
+   * @property {Object<Locale, string>} [nameLocalizations] The localizations for the option name
    * @property {string} [nameLocalized] The localized name for this option
    * @property {string} description The description of the option
-   * @property {Object<string, string>} [descriptionLocalizations] The localizations for the option description
+   * @property {Object<Locale, string>} [descriptionLocalizations] The localizations for the option description
    * @property {string} [descriptionLocalized] The localized description for this option
    * @property {boolean} [required] Whether the option is required
-   * @property {boolean} [autocomplete] Whether the option is an autocomplete option
+   * @property {boolean} [autocomplete] Whether the autocomplete interaction is enabled for a
+   * {@link ApplicationCommandOptionType.String}, {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
    * @property {ApplicationCommandOptionChoice[]} [choices] The choices of the option for the user to pick from
    * @property {ApplicationCommandOption[]} [options] Additional options if this option is a subcommand (group)
    * @property {ChannelType[]} [channelTypes] When the option type is channel,
    * the allowed types of channels that can be selected
-   * @property {number} [minValue] The minimum value for an `INTEGER` or `NUMBER` option
-   * @property {number} [maxValue] The maximum value for an `INTEGER` or `NUMBER` option
-   * @property {number} [minLength] The minimum length for a `STRING` option
+   * @property {number} [minValue] The minimum value for an {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [maxValue] The maximum value for an {@link ApplicationCommandOptionType.Integer} or
+   * {@link ApplicationCommandOptionType.Number} option
+   * @property {number} [minLength] The minimum length for an {@link ApplicationCommandOptionType.String} option
    * (maximum of `6000`)
-   * @property {number} [maxLength] The maximum length for a `STRING` option
+   * @property {number} [maxLength] The maximum length for an {@link ApplicationCommandOptionType.String} option
    * (maximum of `6000`)
    */
 
@@ -546,7 +539,6 @@ class ApplicationCommand extends Base {
    * @private
    */
   static transformOption(option, received) {
-    const stringType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
     const channelTypesKey = received ? 'channelTypes' : 'channel_types';
     const minValueKey = received ? 'minValue' : 'min_value';
     const maxValueKey = received ? 'maxValue' : 'max_value';
@@ -557,7 +549,7 @@ class ApplicationCommand extends Base {
     const descriptionLocalizationsKey = received ? 'descriptionLocalizations' : 'description_localizations';
     const descriptionLocalizedKey = received ? 'descriptionLocalized' : 'description_localized';
     return {
-      type: typeof option.type === 'number' && !received ? option.type : ApplicationCommandOptionTypes[option.type],
+      type: option.type,
       name: option.name,
       [nameLocalizationsKey]: option.nameLocalizations ?? option.name_localizations,
       [nameLocalizedKey]: option.nameLocalized ?? option.name_localized,
@@ -565,7 +557,11 @@ class ApplicationCommand extends Base {
       [descriptionLocalizationsKey]: option.descriptionLocalizations ?? option.description_localizations,
       [descriptionLocalizedKey]: option.descriptionLocalized ?? option.description_localized,
       required:
-        option.required ?? (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP' ? undefined : false),
+        option.required ??
+        (option.type === ApplicationCommandOptionType.Subcommand ||
+        option.type === ApplicationCommandOptionType.SubcommandGroup
+          ? undefined
+          : false),
       autocomplete: option.autocomplete,
       choices: option.choices?.map(choice => ({
         name: choice.name,
@@ -574,313 +570,12 @@ class ApplicationCommand extends Base {
         value: choice.value,
       })),
       options: option.options?.map(o => this.transformOption(o, received)),
-      [channelTypesKey]: received
-        ? option.channel_types?.map(type => ChannelTypes[type])
-        : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
-          // When transforming to API data, accept API data
-          option.channel_types,
+      [channelTypesKey]: option.channelTypes ?? option.channel_types,
       [minValueKey]: option.minValue ?? option.min_value,
       [maxValueKey]: option.maxValue ?? option.max_value,
       [minLengthKey]: option.minLength ?? option.min_length,
       [maxLengthKey]: option.maxLength ?? option.max_length,
     };
-  }
-  /**
-   * Send Slash command to channel
-   * @param {Message} message Discord Message
-   * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<InteractionResponseBody>}
-   */
-  async sendSlashCommand(message, options = []) {
-    // Check Options
-    if (!(message instanceof Message())) {
-      throw new TypeError('The message must be a Discord.Message');
-    }
-    if (!Array.isArray(options)) {
-      throw new TypeError('The options must be an array of strings');
-    }
-    if (this.type !== 'CHAT_INPUT') return false;
-    const optionFormat = [];
-    const attachments = [];
-    const attachmentsBuffer = [];
-    async function addDataFromAttachment(data) {
-      if (!(data instanceof MessageAttachment)) {
-        throw new TypeError('The attachment data must be a Discord.MessageAttachment');
-      }
-      const id = attachments.length;
-      attachments.push({
-        id: id,
-        filename: data.name,
-      });
-      const resource = await DataResolver.resolveFile(data.attachment);
-      attachmentsBuffer.push({ attachment: data.attachment, name: data.name, file: resource });
-      return id;
-    }
-    let option_ = [];
-    let i = 0;
-    // Check Command type is Sub group ?
-    const subCommandCheck = this.options.some(option => ['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type));
-    let subCommand;
-    if (subCommandCheck) {
-      subCommand = this.options.find(option => option.name == options[0]);
-      options.shift();
-      option_[0] = {
-        type: ApplicationCommandOptionTypes[subCommand.type],
-        name: subCommand.name,
-        options: optionFormat,
-      };
-    } else {
-      option_ = optionFormat;
-    }
-    // Autoresponse
-    const getAutoResponse = async (options_, type, name, value) => {
-      const op = Array.from(options_);
-      op.push({
-        type,
-        name,
-        value,
-        focused: true,
-      });
-      let nonce = SnowflakeUtil.generate();
-      const data = {
-        type: 4, // Auto-complete
-        application_id: this.applicationId,
-        guild_id: message.guildId,
-        channel_id: message.channelId,
-        session_id: this.client.session_id,
-        data: {
-          // ApplicationCommandData
-          version: this.version,
-          id: this.id,
-          name: this.name,
-          type: ApplicationCommandTypes[this.type],
-          options: op,
-          attachments: attachments,
-        },
-        nonce,
-      };
-      await this.client.api.interactions
-        .post({
-          data,
-          files: attachmentsBuffer,
-        })
-        .catch(async () => {
-          nonce = SnowflakeUtil.generate();
-          data.data.guild_id = message.guildId;
-          data.nonce = nonce;
-          await this.client.api.interactions.post({
-            data,
-            files: attachmentsBuffer,
-          });
-        });
-      return new Promise(resolve => {
-        const handler = data => {
-          timeout.refresh();
-          if (data.nonce !== nonce) return;
-          clearTimeout(timeout);
-          this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
-          this.client.decrementMaxListeners();
-          if (data.choices.length > 1) resolve(data.choices[0].value);
-          else resolve(value);
-        };
-        const timeout = setTimeout(() => {
-          this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
-          this.client.decrementMaxListeners();
-          resolve(value);
-        }, 15_000).unref();
-        this.client.incrementMaxListeners();
-        this.client.on(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
-      });
-    };
-    for (i; i < options.length; i++) {
-      const value = options[i];
-      if (!subCommandCheck && !this?.options[i]) continue;
-      if (subCommandCheck && subCommand?.options && !subCommand?.options[i]) continue;
-      if (!subCommandCheck) {
-        // Check value is invalid
-        let choice;
-        if (this.options[i].choices && this.options[i].choices.length > 0) {
-          choice =
-            this.options[i].choices.find(c => c.name == value) || this.options[i].choices.find(c => c.value == value);
-          if (!choice) {
-            throw new Error(
-              `Invalid option: ${value} is not a valid choice for this option\nList of choices:\n${this.options[
-                i
-              ].choices
-                .map((c, i) => `  #${i + 1} Name: ${c.name} Value: ${c.value}`)
-                .join('\n')}`,
-            );
-          }
-        }
-        const data = {
-          type: ApplicationCommandOptionTypes[this.options[i].type],
-          name: this.options[i].name,
-          value:
-            choice?.value ||
-            (this.options[i].type == 'ATTACHMENT'
-              ? await addDataFromAttachment(value)
-              : this.options[i].type == 'INTEGER'
-              ? Number(value)
-              : this.options[i].type == 'BOOLEAN'
-              ? Boolean(value)
-              : this.options[i].autocomplete
-              ? await getAutoResponse(
-                  optionFormat,
-                  ApplicationCommandOptionTypes[this.options[i].type],
-                  this.options[i].name,
-                  value,
-                )
-              : value),
-        };
-        optionFormat.push(data);
-      } else {
-        // First element is sub command and removed
-        if (!value) continue;
-        // Check value is invalid
-        let choice;
-        if (subCommand?.options && subCommand.options[i].choices && subCommand.options[i].choices.length > 0) {
-          choice =
-            subCommand.options[i].choices.find(c => c.name == value) ||
-            subCommand.options[i].choices.find(c => c.value == value);
-          if (!choice) {
-            throw new Error(
-              `Invalid option: ${value} is not a valid choice for this option\nList of choices: \n${subCommand.options[
-                i
-              ].choices
-                .map((c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`)
-                .join('')}`,
-            );
-          }
-        }
-        const data = {
-          type: ApplicationCommandOptionTypes[subCommand.options[i].type],
-          name: subCommand.options[i].name,
-          value:
-            choice?.value ||
-            (subCommand.options[i].type == 'ATTACHMENT'
-              ? await addDataFromAttachment(value)
-              : subCommand.options[i].type == 'INTEGER'
-              ? Number(value)
-              : subCommand.options[i].type == 'BOOLEAN'
-              ? Boolean(value)
-              : this.options[i].autocomplete
-              ? await getAutoResponse(
-                  optionFormat,
-                  ApplicationCommandOptionTypes[subCommand.options[i].type],
-                  subCommand.options[i].name,
-                  value,
-                )
-              : value),
-        };
-        optionFormat.push(data);
-      }
-    }
-    if (!subCommandCheck && this.options[i]?.required) {
-      throw new Error('Value required missing');
-    }
-    if (subCommandCheck && subCommand?.options && subCommand?.options[i]?.required) {
-      throw new Error('Value required missing');
-    }
-    let nonce = SnowflakeUtil.generate();
-    const data = {
-      type: 2, // Slash command, context menu
-      // Type: 4: Auto-complete
-      application_id: this.applicationId,
-      guild_id: message.guildId,
-      channel_id: message.channelId,
-      session_id: this.client.session_id,
-      data: {
-        // ApplicationCommandData
-        version: this.version,
-        id: this.id,
-        name: this.name,
-        type: ApplicationCommandTypes[this.type],
-        options: option_,
-        attachments: attachments,
-      },
-      nonce,
-    };
-    await this.client.api.interactions
-      .post({
-        body: data,
-        files: attachmentsBuffer,
-      })
-      .catch(async () => {
-        nonce = SnowflakeUtil.generate();
-        data.data.guild_id = message.guildId;
-        data.nonce = nonce;
-        await this.client.api.interactions.post({
-          body: data,
-          files: attachmentsBuffer,
-        });
-      });
-    return new Promise((resolve, reject) => {
-      const handler = data => {
-        timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
-      this.client.incrementMaxListeners();
-      this.client.on('interactionResponse', handler);
-    });
-  }
-  /**
-   * Message Context Menu
-   * @param {Message} message Discord Message
-   * @param {boolean} sendFromMessage nothing .-. not used
-   * @returns {Promise<InteractionResponseBody>}
-   */
-  async sendContextMenu(message, sendFromMessage = false) {
-    if (!sendFromMessage && !(message instanceof Message())) {
-      throw new TypeError('The message must be a Discord.Message');
-    }
-    if (this.type == 'CHAT_INPUT') return false;
-    const nonce = SnowflakeUtil.generate();
-    await this.client.api.interactions.post({
-      body: {
-        type: 2, // Slash command, context menu
-        application_id: this.applicationId,
-        guild_id: message.guildId,
-        channel_id: message.channelId,
-        session_id: this.client.session_id,
-        data: {
-          // ApplicationCommandData
-          version: this.version,
-          id: this.id,
-          name: this.name,
-          type: ApplicationCommandTypes[this.type],
-          target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
-        },
-        nonce,
-      },
-    });
-    return new Promise((resolve, reject) => {
-      const handler = data => {
-        timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
-      this.client.incrementMaxListeners();
-      this.client.on('interactionResponse', handler);
-    });
   }
 }
 

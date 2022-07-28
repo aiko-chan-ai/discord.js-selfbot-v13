@@ -1,15 +1,16 @@
 'use strict';
 
+const { Routes } = require('discord-api-types/v10');
 const Team = require('./Team');
 const Application = require('./interfaces/Application');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
-const ApplicationFlags = require('../util/ApplicationFlags');
-const Permissions = require('../util/Permissions');
+const ApplicationFlagsBitField = require('../util/ApplicationFlagsBitField');
+const PermissionsBitField = require('../util/PermissionsBitField');
 
 /**
  * @typedef {Object} ClientApplicationInstallParams
- * @property {InviteScope[]} scopes The scopes to add the application to the server with
- * @property {Readonly<Permissions>} permissions The permissions this bot will request upon joining
+ * @property {OAuth2Scopes[]} scopes The scopes to add the application to the server with
+ * @property {Readonly<PermissionsBitField>} permissions The permissions this bot will request upon joining
  */
 
 /**
@@ -17,14 +18,14 @@ const Permissions = require('../util/Permissions');
  * @extends {Application}
  */
 class ClientApplication extends Application {
-  constructor(client, data, user) {
+  constructor(client, data) {
     super(client, data);
 
     /**
      * The application command manager for this application
      * @type {ApplicationCommandManager}
      */
-    this.commands = new ApplicationCommandManager(this.client, undefined, user);
+    this.commands = new ApplicationCommandManager(this.client);
   }
 
   _patch(data) {
@@ -43,7 +44,7 @@ class ClientApplication extends Application {
        */
       this.installParams = {
         scopes: data.install_params.scopes,
-        permissions: new Permissions(data.install_params.permissions).freeze(),
+        permissions: new PermissionsBitField(data.install_params.permissions).freeze(),
       };
     } else {
       this.installParams ??= null;
@@ -62,9 +63,9 @@ class ClientApplication extends Application {
     if ('flags' in data) {
       /**
        * The flags this application has
-       * @type {ApplicationFlags}
+       * @type {ApplicationFlagsBitField}
        */
-      this.flags = new ApplicationFlags(data.flags).freeze();
+      this.flags = new ApplicationFlagsBitField(data.flags).freeze();
     }
 
     if ('cover_image' in data) {
@@ -132,14 +133,8 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    const app = await this.client.api.oauth2.authorize.get({
-      query: {
-        client_id: this.id,
-        scope: 'bot',
-      },
-    });
-    this.client.users._add(app.bot);
-    this._patch(app.application);
+    const app = await this.client.rest.get(Routes.oauth2CurrentApplication());
+    this._patch(app);
     return this;
   }
 }

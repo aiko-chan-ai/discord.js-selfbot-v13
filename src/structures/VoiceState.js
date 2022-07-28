@@ -1,10 +1,12 @@
 'use strict';
 
+const { ChannelType, Routes } = require('discord-api-types/v10');
 const Base = require('./Base');
-const { Error, TypeError } = require('../errors');
+const { Error, TypeError, ErrorCodes } = require('../errors');
 
 /**
  * Represents the voice state for a Guild Member.
+ * @extends {Base}
  */
 class VoiceState extends Base {
   constructor(guild, data) {
@@ -88,7 +90,7 @@ class VoiceState extends Base {
     if ('self_video' in data) {
       /**
        * Whether this member is streaming using "Screen Share"
-       * @type {boolean}
+       * @type {?boolean}
        */
       this.streaming = data.self_stream ?? false;
     } else {
@@ -108,9 +110,11 @@ class VoiceState extends Base {
     if ('suppress' in data) {
       /**
        * Whether this member is suppressed from speaking. This property is specific to stage channels only.
-       * @type {boolean}
+       * @type {?boolean}
        */
       this.suppress = data.suppress;
+    } else {
+      this.suppress ??= null;
     }
 
     if ('request_to_speak_timestamp' in data) {
@@ -132,17 +136,7 @@ class VoiceState extends Base {
    * @readonly
    */
   get member() {
-    if (!this.guild?.id) return null;
     return this.guild.members.cache.get(this.id) ?? null;
-  }
-
-  /**
-   * The user that this voice state belongs to
-   * @type {?User}
-   * @readonly
-   */
-  get user() {
-    return this.guild.client.users.cache.get(this.id) ?? null;
   }
 
   /**
@@ -151,7 +145,6 @@ class VoiceState extends Base {
    * @readonly
    */
   get channel() {
-    if (!this.guild?.id) return this.guild.client.channels.cache.get(this.channelId) ?? null;
     return this.guild.channels.cache.get(this.channelId) ?? null;
   }
 
@@ -180,8 +173,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setMute(mute = true, reason) {
-    if (!this.guild?.id) return null;
-    return this.guild.members.edit(this.id, { mute }, reason);
+    return this.guild.members.edit(this.id, { mute, reason });
   }
 
   /**
@@ -191,8 +183,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setDeaf(deaf = true, reason) {
-    if (!this.guild?.id) return null;
-    return this.guild.members.edit(this.id, { deaf }, reason);
+    return this.guild.members.edit(this.id, { deaf, reason });
   }
 
   /**
@@ -201,7 +192,6 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   disconnect(reason) {
-    if (!this.guild?.id) return this.callVoice?.disconnect();
     return this.setChannel(null, reason);
   }
 
@@ -213,35 +203,67 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setChannel(channel, reason) {
-    if (!this.guild?.id) return null;
-    return this.guild.members.edit(this.id, { channel }, reason);
+    return this.guild.members.edit(this.id, { channel, reason });
+  }
+
+  /**
+   * Data to edit the logged in user's own voice state with, when in a stage channel
+   * @typedef {Object} VoiceStateEditData
+   * @property {boolean} [requestToSpeak] Whether or not the client is requesting to become a speaker.
+   * <info>Only available to the logged in user's own voice state.</info>
+   * @property {boolean} [suppressed] Whether or not the user should be suppressed.
+   */
+
+  /**
+   * Edits this voice state. Currently only available when in a stage channel
+   * @param {VoiceStateEditData} data The data to edit the voice state with
+   * @returns {Promise<VoiceState>}
+   */
+  async edit(data) {
+    if (this.channel?.type !== ChannelType.GuildStageVoice) throw new Error(ErrorCodes.VoiceNotStageChannel);
+
+    const target = this.client.user.id === this.id ? '@me' : this.id;
+
+    if (target !== '@me' && typeof data.requestToSpeak !== 'undefined') {
+      throw new Error(ErrorCodes.VoiceStateNotOwn);
+    }
+
+    if (!['boolean', 'undefined'].includes(typeof data.requestToSpeak)) {
+      throw new TypeError(ErrorCodes.VoiceStateInvalidType, 'requestToSpeak');
+    }
+
+    if (!['boolean', 'undefined'].includes(typeof data.suppressed)) {
+      throw new TypeError(ErrorCodes.VoiceStateInvalidType, 'suppressed');
+    }
+
+    await this.client.rest.patch(Routes.guildVoiceState(this.guild.id, target), {
+      body: {
+        channel_id: this.channelId,
+        request_to_speak_timestamp: data.requestToSpeak
+          ? new Date().toISOString()
+          : data.requestToSpeak === false
+          ? null
+          : undefined,
+        suppress: data.suppressed,
+      },
+    });
+    return this;
   }
 
   /**
    * Toggles the request to speak in the channel.
    * Only applicable for stage channels and for the client's own voice state.
-   * @param {boolean} [request=true] Whether or not the client is requesting to become a speaker.
+   * @param {boolean} [requestToSpeak=true] Whether or not the client is requesting to become a speaker.
    * @example
    * // Making the client request to speak in a stage channel (raise its hand)
-   * guild.me.voice.setRequestToSpeak(true);
+   * guild.members.me.voice.setRequestToSpeak(true);
    * @example
    * // Making the client cancel a request to speak
-   * guild.me.voice.setRequestToSpeak(false);
-   * @returns {Promise<void>}
+   * guild.members.me.voice.setRequestToSpeak(false);
+   * @returns {Promise<VoiceState>}
    */
-  async setRequestToSpeak(request = true) {
-    if (this.guild?.id) {
-      if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
-
-      if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
-
-      await this.client.api.guilds(this.guild.id, 'voice-states', '@me').patch({
-        data: {
-          channel_id: this.channelId,
-          request_to_speak_timestamp: request ? new Date().toISOString() : null,
-        },
-      });
-    }
+  setRequestToSpeak(requestToSpeak = true) {
+    return this.edit({ requestToSpeak });
   }
 
   /**
@@ -249,48 +271,20 @@ class VoiceState extends Base {
    * @param {boolean} [suppressed=true] Whether or not the user should be suppressed.
    * @example
    * // Making the client a speaker
-   * guild.me.voice.setSuppressed(false);
+   * guild.members.me.voice.setSuppressed(false);
    * @example
    * // Making the client an audience member
-   * guild.me.voice.setSuppressed(true);
+   * guild.members.me.voice.setSuppressed(true);
    * @example
    * // Inviting another user to speak
    * voiceState.setSuppressed(false);
    * @example
    * // Moving another user to the audience, or cancelling their invite to speak
    * voiceState.setSuppressed(true);
-   * @returns {Promise<void>}
+   * @returns {Promise<VoiceState>}
    */
-  async setSuppressed(suppressed = true) {
-    if (this.guild?.id) {
-      if (typeof suppressed !== 'boolean') throw new TypeError('VOICE_STATE_INVALID_TYPE', 'suppressed');
-
-      if (this.channel?.type !== 'GUILD_STAGE_VOICE') throw new Error('VOICE_NOT_STAGE_CHANNEL');
-
-      const target = this.client.user.id === this.id ? '@me' : this.id;
-
-      await this.client.api.guilds(this.guild.id, 'voice-states', target).patch({
-        data: {
-          channel_id: this.channelId,
-          suppress: suppressed,
-        },
-      });
-    }
-  }
-
-  /**
-   * Get URL Image of the user's streaming video (NOT STREAMING !!!)
-   * @returns {string} URL Image of the user's streaming video
-   */
-  async getPreview() {
-    if (!this.guild?.id) return null;
-
-    if (!this.streaming) throw new Error('USER_NOT_STREAMING');
-    // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
-    const data = await this.client.api.streams[
-      `guild%3A${this.guild.id}%3A${this.channelId}%3A${this.id}`
-    ].preview.get();
-    return data.url;
+  setSuppressed(suppressed = true) {
+    return this.edit({ suppressed });
   }
 
   toJSON() {

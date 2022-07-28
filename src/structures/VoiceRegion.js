@@ -1,6 +1,6 @@
 'use strict';
 
-const Util = require('../util/Util');
+const { flatten } = require('../util/Util');
 
 /**
  * Represents a Discord voice region for guilds.
@@ -18,13 +18,6 @@ class VoiceRegion {
      * @type {string}
      */
     this.name = data.name;
-
-    /**
-     * Whether the region is VIP-only
-     * @type {boolean}
-     * @deprecated This property is no longer being sent by the API.
-     */
-    this.vip = data.vip;
 
     /**
      * Whether the region is deprecated
@@ -46,7 +39,7 @@ class VoiceRegion {
   }
 
   toJSON() {
-    return Util.flatten(this);
+    return flatten(this);
   }
 }
 

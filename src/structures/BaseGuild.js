@@ -1,7 +1,9 @@
 'use strict';
 
+const { makeURLSearchParams } = require('@discordjs/rest');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { Routes, GuildFeature } = require('discord-api-types/v10');
 const Base = require('./Base');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
  * The base class for {@link Guild}, {@link OAuth2Guild} and {@link InviteGuild}.
@@ -32,7 +34,7 @@ class BaseGuild extends Base {
 
     /**
      * An array of features available to this guild
-     * @type {Features[]}
+     * @type {GuildFeature[]}
      */
     this.features = data.features;
   }
@@ -43,7 +45,7 @@ class BaseGuild extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -73,7 +75,7 @@ class BaseGuild extends Base {
    * @readonly
    */
   get partnered() {
-    return this.features.includes('PARTNERED');
+    return this.features.includes(GuildFeature.Partnered);
   }
 
   /**
@@ -82,17 +84,16 @@ class BaseGuild extends Base {
    * @readonly
    */
   get verified() {
-    return this.features.includes('VERIFIED');
+    return this.features.includes(GuildFeature.Verified);
   }
 
   /**
    * The URL to this guild's icon.
-   * @param {ImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  iconURL({ format, size, dynamic } = {}) {
-    if (!this.icon) return null;
-    return this.client.rest.cdn.Icon(this.id, this.icon, format, size, dynamic);
+  iconURL(options = {}) {
+    return this.icon && this.client.rest.cdn.icon(this.id, this.icon, options);
   }
 
   /**
@@ -100,7 +101,9 @@ class BaseGuild extends Base {
    * @returns {Promise<Guild>}
    */
   async fetch() {
-    const data = await this.client.api.guilds(this.id).get({ query: { with_counts: true } });
+    const data = await this.client.rest.get(Routes.guild(this.id), {
+      query: makeURLSearchParams({ with_counts: true }),
+    });
     return this.client.guilds._add(data);
   }
 

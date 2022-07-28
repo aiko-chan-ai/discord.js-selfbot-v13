@@ -63,13 +63,13 @@ class BaseGuildTextChannel extends GuildChannel {
        * The timestamp when the last pinned message was pinned, if there was one
        * @type {?number}
        */
-      this.lastPinTimestamp = data.last_pin_timestamp ? new Date(data.last_pin_timestamp).getTime() : null;
+      this.lastPinTimestamp = data.last_pin_timestamp ? Date.parse(data.last_pin_timestamp) : null;
     }
 
     if ('default_auto_archive_duration' in data) {
       /**
        * The default auto archive duration for newly created threads in this channel
-       * @type {?number}
+       * @type {?ThreadAutoArchiveDuration}
        */
       this.defaultAutoArchiveDuration = data.default_auto_archive_duration;
     }
@@ -86,17 +86,18 @@ class BaseGuildTextChannel extends GuildChannel {
    * @returns {Promise<TextChannel>}
    */
   setDefaultAutoArchiveDuration(defaultAutoArchiveDuration, reason) {
-    return this.edit({ defaultAutoArchiveDuration }, reason);
+    return this.edit({ defaultAutoArchiveDuration, reason });
   }
 
   /**
-   * Sets the type of this channel (only conversion between text and news is supported)
-   * @param {string} type The new channel type
+   * Sets the type of this channel.
+   * <info>Only conversion between {@link TextChannel} and {@link NewsChannel} is supported.</info>
+   * @param {ChannelType.GuildText|ChannelType.GuildNews} type The new channel type
    * @param {string} [reason] Reason for changing the channel's type
    * @returns {Promise<GuildChannel>}
    */
   setType(type, reason) {
-    return this.edit({ type }, reason);
+    return this.edit({ type, reason });
   }
 
   /**
@@ -111,7 +112,7 @@ class BaseGuildTextChannel extends GuildChannel {
    *   .catch(console.error);
    */
   setTopic(topic, reason) {
-    return this.edit({ topic }, reason);
+    return this.edit({ topic, reason });
   }
 
   /**
@@ -125,16 +126,17 @@ class BaseGuildTextChannel extends GuildChannel {
   /**
    * Options used to create an invite to a guild channel.
    * @typedef {Object} CreateInviteOptions
-   * @property {boolean} [temporary=false] Whether members that joined via the invite should be automatically
+   * @property {boolean} [temporary] Whether members that joined via the invite should be automatically
    * kicked after 24 hours if they have not yet received a role
-   * @property {number} [maxAge=86400] How long the invite should last (in seconds, 0 for forever)
-   * @property {number} [maxUses=0] Maximum number of uses
-   * @property {boolean} [unique=false] Create a unique invite, or use an existing one with similar settings
+   * @property {number} [maxAge] How long the invite should last (in seconds, 0 for forever)
+   * @property {number} [maxUses] Maximum number of uses
+   * @property {boolean} [unique] Create a unique invite, or use an existing one with similar settings
    * @property {UserResolvable} [targetUser] The user whose stream to display for this invite,
-   * required if `targetType` is 1, the user must be streaming in the channel
+   * required if `targetType` is {@link InviteTargetType.Stream}, the user must be streaming in the channel
    * @property {ApplicationResolvable} [targetApplication] The embedded application to open for this invite,
-   * required if `targetType` is 2, the application must have the `EMBEDDED` flag
-   * @property {TargetType} [targetType] The type of the target for this voice channel invite
+   * required if `targetType` is {@link InviteTargetType.Stream}, the application must have the
+   * {@link InviteTargetType.EmbeddedApplication} flag
+   * @property {InviteTargetType} [targetType] The type of the target for this voice channel invite
    * @property {string} [reason] The reason for creating the invite
    */
 
@@ -177,7 +179,6 @@ class BaseGuildTextChannel extends GuildChannel {
   createWebhook() {}
   setRateLimitPerUser() {}
   setNSFW() {}
-  sendSlash() {}
 }
 
 TextBasedChannel.applyToClass(BaseGuildTextChannel, true);

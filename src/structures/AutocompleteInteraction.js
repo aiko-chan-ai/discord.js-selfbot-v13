@@ -1,14 +1,15 @@
 'use strict';
 
+const { InteractionResponseType, Routes } = require('discord-api-types/v10');
+const BaseInteraction = require('./BaseInteraction');
 const CommandInteractionOptionResolver = require('./CommandInteractionOptionResolver');
-const Interaction = require('./Interaction');
-const { InteractionResponseTypes, ApplicationCommandOptionTypes } = require('../util/Constants');
+const { ErrorCodes } = require('../errors');
 
 /**
  * Represents an autocomplete interaction.
- * @extends {Interaction}
+ * @extends {BaseInteraction}
  */
-class AutocompleteInteraction extends Interaction {
+class AutocompleteInteraction extends BaseInteraction {
   constructor(client, data) {
     super(client, data);
 
@@ -31,6 +32,18 @@ class AutocompleteInteraction extends Interaction {
     this.commandName = data.data.name;
 
     /**
+     * The invoked application command's type
+     * @type {ApplicationCommandType}
+     */
+    this.commandType = data.data.type;
+
+    /**
+     * The id of the guild the invoked application command is registered to
+     * @type {?Snowflake}
+     */
+    this.commandGuildId = data.data.guild_id ?? null;
+
+    /**
      * Whether this interaction has already received a response
      * @type {boolean}
      */
@@ -40,10 +53,7 @@ class AutocompleteInteraction extends Interaction {
      * The options passed to the command
      * @type {CommandInteractionOptionResolver}
      */
-    this.options = new CommandInteractionOptionResolver(
-      this.client,
-      data.data.options?.map(option => this.transformOption(option, data.data.resolved)) ?? [],
-    );
+    this.options = new CommandInteractionOptionResolver(this.client, data.data.options ?? []);
   }
 
   /**
@@ -53,25 +63,6 @@ class AutocompleteInteraction extends Interaction {
   get command() {
     const id = this.commandId;
     return this.guild?.commands.cache.get(id) ?? this.client.application.commands.cache.get(id) ?? null;
-  }
-
-  /**
-   * Transforms an option received from the API.
-   * @param {APIApplicationCommandOption} option The received option
-   * @returns {CommandInteractionOption}
-   * @private
-   */
-  transformOption(option) {
-    const result = {
-      name: option.name,
-      type: ApplicationCommandOptionTypes[option.type],
-    };
-
-    if ('value' in option) result.value = option.value;
-    if ('options' in option) result.options = option.options.map(opt => this.transformOption(opt));
-    if ('focused' in option) result.focused = option.focused;
-
-    return result;
   }
 
   /**
@@ -86,15 +77,15 @@ class AutocompleteInteraction extends Interaction {
    *    value: 'option1',
    *  },
    * ])
-   *  .then(console.log)
+   *  .then(() => console.log('Successfully responded to the autocomplete interaction'))
    *  .catch(console.error);
    */
   async respond(options) {
-    if (this.responded) throw new Error('INTERACTION_ALREADY_REPLIED');
+    if (this.responded) throw new Error(ErrorCodes.InteractionAlreadyReplied);
 
-    await this.client.api.interactions(this.id, this.token).callback.post({
-      data: {
-        type: InteractionResponseTypes.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+      body: {
+        type: InteractionResponseType.ApplicationCommandAutocompleteResult,
         data: {
           choices: options,
         },

@@ -1,5 +1,6 @@
 'use strict';
 
+const { Routes } = require('discord-api-types/v10');
 const Base = require('./Base');
 const IntegrationApplication = require('./IntegrationApplication');
 
@@ -19,7 +20,8 @@ const IntegrationApplication = require('./IntegrationApplication');
  */
 
 /**
- *  Represents a guild integration.
+ * Represents a guild integration.
+ * @extends {Base}
  */
 class Integration extends Base {
   constructor(client, data, guild) {
@@ -51,21 +53,25 @@ class Integration extends Base {
 
     /**
      * Whether this integration is enabled
-     * @type {boolean}
-     */
-    this.enabled = data.enabled;
-
-    /**
-     * Whether this integration is syncing
      * @type {?boolean}
      */
-    this.syncing = data.syncing;
+    this.enabled = data.enabled ?? null;
+
+    if ('syncing' in data) {
+      /**
+       * Whether this integration is syncing
+       * @type {?boolean}
+       */
+      this.syncing = data.syncing;
+    } else {
+      this.syncing ??= null;
+    }
 
     /**
      * The role that this integration uses for subscribers
      * @type {?Role}
      */
-    this.role = this.guild.roles.cache.get(data.role_id);
+    this.role = this.guild.roles.resolve(data.role_id);
 
     if ('enable_emoticons' in data) {
       /**
@@ -84,7 +90,7 @@ class Integration extends Base {
        */
       this.user = this.client.users._add(data.user);
     } else {
-      this.user = null;
+      this.user ??= null;
     }
 
     /**
@@ -93,11 +99,15 @@ class Integration extends Base {
      */
     this.account = data.account;
 
-    /**
-     * The last time this integration was last synced
-     * @type {?number}
-     */
-    this.syncedAt = data.synced_at;
+    if ('synced_at' in data) {
+      /**
+       * The timestamp at which this integration was last synced at
+       * @type {?number}
+       */
+      this.syncedTimestamp = Date.parse(data.synced_at);
+    } else {
+      this.syncedTimestamp ??= null;
+    }
 
     if ('subscriber_count' in data) {
       /**
@@ -123,6 +133,15 @@ class Integration extends Base {
   }
 
   /**
+   * The date at which this integration was last synced at
+   * @type {?Date}
+   * @readonly
+   */
+  get syncedAt() {
+    return this.syncedTimestamp && new Date(this.syncedTimestamp);
+  }
+
+  /**
    * All roles that are managed by this integration
    * @type {Collection<Snowflake, Role>}
    * @readonly
@@ -136,17 +155,21 @@ class Integration extends Base {
     if ('expire_behavior' in data) {
       /**
        * The behavior of expiring subscribers
-       * @type {?number}
+       * @type {?IntegrationExpireBehavior}
        */
       this.expireBehavior = data.expire_behavior;
+    } else {
+      this.expireBehavior ??= null;
     }
 
     if ('expire_grace_period' in data) {
       /**
-       * The grace period before expiring subscribers
+       * The grace period (in days) before expiring subscribers
        * @type {?number}
        */
       this.expireGracePeriod = data.expire_grace_period;
+    } else {
+      this.expireGracePeriod ??= null;
     }
 
     if ('application' in data) {
@@ -170,7 +193,7 @@ class Integration extends Base {
    * @param {string} [reason] Reason for deleting this integration
    */
   async delete(reason) {
-    await this.client.api.guilds(this.guild.id).integrations(this.id).delete({ reason });
+    await this.client.rest.delete(Routes.guildIntegration(this.guild.id, this.id), { reason });
     return this;
   }
 

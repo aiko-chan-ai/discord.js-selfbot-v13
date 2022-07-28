@@ -1,8 +1,10 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { makeURLSearchParams } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { TypeError, Error } = require('../errors');
+const { TypeError, Error, ErrorCodes } = require('../errors');
 const GuildBan = require('../structures/GuildBan');
 const { GuildMember } = require('../structures/GuildMember');
 
@@ -99,7 +101,7 @@ class GuildBanManager extends CachedManager {
     if (resolvedUser) return this._fetchSingle({ user: resolvedUser, cache, force });
 
     if (!before && !after && !limit && typeof cache === 'undefined') {
-      return Promise.reject(new Error('FETCH_BAN_RESOLVE_ID'));
+      return Promise.reject(new Error(ErrorCodes.FetchBanResolveId));
     }
 
     return this._fetchMany(options);
@@ -111,21 +113,22 @@ class GuildBanManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    const data = await this.client.api.guilds(this.guild.id).bans(user).get();
+    const data = await this.client.rest.get(Routes.guildBan(this.guild.id, user));
     return this._add(data, cache);
   }
 
   async _fetchMany(options = {}) {
-    const data = await this.client.api.guilds(this.guild.id).bans.get({
-      query: options,
+    const data = await this.client.rest.get(Routes.guildBans(this.guild.id), {
+      query: makeURLSearchParams(options),
     });
 
     return data.reduce((col, ban) => col.set(ban.user.id, this._add(ban, options.cache)), new Collection());
   }
+
   /**
    * Options used to ban a user from a guild.
    * @typedef {Object} BanOptions
-   * @property {number} [days=0] Number of days of messages to delete, must be between 0 and 7, inclusive
+   * @property {number} [deleteMessageDays] Number of days of messages to delete, must be between 0 and 7, inclusive
    * @property {string} [reason] The reason for the ban
    */
 
@@ -142,17 +145,14 @@ class GuildBanManager extends CachedManager {
    *   .then(banInfo => console.log(`Banned ${banInfo.user?.tag ?? banInfo.tag ?? banInfo}`))
    *   .catch(console.error);
    */
-  async create(user, options = { days: 0 }) {
-    if (typeof options !== 'object') throw new TypeError('INVALID_TYPE', 'options', 'object', true);
+  async create(user, options = {}) {
+    if (typeof options !== 'object') throw new TypeError(ErrorCodes.InvalidType, 'options', 'object', true);
     const id = this.client.users.resolveId(user);
-    if (!id) throw new Error('BAN_RESOLVE_ID', true);
-    await this.client.api
-      .guilds(this.guild.id)
-      .bans(id)
-      .put({
-        data: { delete_message_days: options.days },
-        reason: options.reason,
-      });
+    if (!id) throw new Error(ErrorCodes.BanResolveId, true);
+    await this.client.rest.put(Routes.guildBan(this.guild.id, id), {
+      body: { delete_message_days: options.deleteMessageDays },
+      reason: options.reason,
+    });
     if (user instanceof GuildMember) return user;
     const _user = this.client.users.resolve(id);
     if (_user) {
@@ -174,8 +174,8 @@ class GuildBanManager extends CachedManager {
    */
   async remove(user, reason) {
     const id = this.client.users.resolveId(user);
-    if (!id) throw new Error('BAN_RESOLVE_ID');
-    await this.client.api.guilds(this.guild.id).bans(id).delete({ reason });
+    if (!id) throw new Error(ErrorCodes.BanResolveId);
+    await this.client.rest.delete(Routes.guildBan(this.guild.id, id), { reason });
     return this.client.users.resolve(user);
   }
 }

@@ -1,3 +1,1 @@
-{
-    "ignorePatterns": ["node_modules/*"],
-}
+/typings/**/*

@@ -1,14 +1,10 @@
 'use strict';
 
-const { Collection } = require('@discordjs/collection');
+const { userMention } = require('@discordjs/builders');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
-const ClientApplication = require('./ClientApplication');
-const VoiceState = require('./VoiceState');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
-const { Error } = require('../errors');
-const { RelationshipTypes } = require('../util/Constants');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
-const UserFlags = require('../util/UserFlags');
+const UserFlagsBitField = require('../util/UserFlagsBitField');
 
 /**
  * Represents a user on Discord.
@@ -18,6 +14,7 @@ const UserFlags = require('../util/UserFlags');
 class User extends Base {
   constructor(client, data) {
     super(client);
+
     /**
      * The user's id
      * @type {Snowflake}
@@ -30,50 +27,6 @@ class User extends Base {
 
     this.flags = null;
 
-    /**
-     * An array of object (connected accounts), containing the following properties:
-     * * type: string
-     * * id: string
-     * * name: string
-     * * verified: boolean
-     * @typedef {Object} ConnectionAccount
-     */
-
-    /**
-     * Accounts connected to this user
-     * @type {?ConnectionAccount[]}
-     */
-    this.connectedAccounts = [];
-    /**
-     * Time that User has nitro (Unix Timestamp)
-     * @type {?number}
-     * @readonly
-     */
-    this.premiumSince = null;
-    /**
-     * Time that User has nitro and boost server (Unix Timestamp)
-     * @type {?number}
-     * @readonly
-     */
-    this.premiumGuildSince = null;
-    /**
-     * About me (User)
-     * @type {?string}
-     * @readonly
-     */
-    this.bio = null;
-    /**
-     * This user is on the same servers as Client User
-     * @type {Collection<Snowflake, Object>}
-     * @readonly
-     */
-    this.mutualGuilds = new Collection();
-    /**
-     * [Bot] Application
-     * @type {?ClientApplication}
-     * @readonly
-     */
-    this.application = null;
     this._patch(data);
   }
 
@@ -94,10 +47,6 @@ class User extends Base {
        * @type {?boolean}
        */
       this.bot = Boolean(data.bot);
-      if (this.bot === true) {
-        this.application = new ClientApplication(this.client, { id: this.id }, this);
-        this.botInGuildsCount = null;
-      }
     } else if (!this.partial && typeof this.bot !== 'boolean') {
       this.bot = false;
     }
@@ -157,126 +106,10 @@ class User extends Base {
     if ('public_flags' in data) {
       /**
        * The flags for this user
-       * @type {?UserFlags}
+       * @type {?UserFlagsBitField}
        */
-      this.flags = new UserFlags(data.public_flags);
+      this.flags = new UserFlagsBitField(data.public_flags);
     }
-
-    if ('approximate_guild_count' in data) {
-      /**
-       * Check how many guilds the bot is in (Probably only approximate) (application.fetch() first)
-       * @type {?number}
-       */
-      this.botInGuildsCount = data.approximate_guild_count;
-    }
-  }
-
-  /**
-   * Check relationship status
-   * @type {RelationshipTypes}
-   * @readonly
-   */
-  get relationships() {
-    const i = this.client.relationships.cache.get(this.id) ?? 0;
-    return RelationshipTypes[parseInt(i)];
-  }
-
-  /**
-   * Check note
-   * @type {?string}
-   * @readonly
-   */
-  get note() {
-    return this.client.user.notes.get(this.id);
-  }
-
-  /**
-   * The voice state of this member
-   * @type {VoiceState}
-   * @readonly
-   */
-  get voice() {
-    return this.client.voiceStates.cache.get(this.id) ?? new VoiceState({ client: this.client }, { user_id: this.id });
-  }
-
-  _ProfilePatch(data) {
-    if (!data) return;
-
-    if (data.connected_accounts.length > 0) {
-      this.connectedAccounts = data.connected_accounts;
-    }
-
-    if ('premium_since' in data) {
-      const date = new Date(data.premium_since);
-      this.premiumSince = date.getTime();
-    }
-
-    if ('premium_guild_since' in data) {
-      const date = new Date(data.premium_guild_since);
-      this.premiumGuildSince = date.getTime();
-    }
-
-    if ('bio' in data.user) {
-      this.bio = data.user.bio;
-    }
-
-    this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
-  }
-
-  /**
-   * Get profile from Discord, if client is in a server with the target.
-   * @type {User}
-   * @returns {Promise<User>}
-   */
-  async getProfile() {
-    if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    const data = await this.client.api.users(this.id).profile.get();
-    this._ProfilePatch(data);
-    return this;
-  }
-
-  /**
-   * Friends the user [If incoming request]
-   * @type {boolean}
-   * @returns {Promise<boolean>}
-   */
-  setFriend() {
-    return this.client.relationships.addFriend(this);
-  }
-
-  /**
-   * Send Friend Request to the user
-   * @type {boolean}
-   * @returns {Promise<boolean>}
-   */
-  sendFriendRequest() {
-    return this.client.relationships.sendFriendRequest(this.username, this.discriminator);
-  }
-  /**
-   * Blocks the user
-   * @type {boolean}
-   * @returns {Promise<boolean>}
-   */
-  setBlock() {
-    return this.client.relationships.addBlocked(this);
-  }
-
-  /**
-   * Removes the user from your blocks list
-   * @type {boolean}
-   * @returns {Promise<boolean>}
-   */
-  unBlock() {
-    return this.client.relationships.deleteBlocked(this);
-  }
-
-  /**
-   * Removes the user from your friends list
-   * @type {boolean}
-   * @returns {Promise<boolean>}
-   */
-  unFriend() {
-    return this.client.relationships.deleteFriend(this);
   }
 
   /**
@@ -294,7 +127,7 @@ class User extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -308,12 +141,11 @@ class User extends Base {
 
   /**
    * A link to the user's avatar.
-   * @param {ImageURLOptions} [options={}] Options for the Image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  avatarURL({ format, size, dynamic } = {}) {
-    if (!this.avatar) return null;
-    return this.client.rest.cdn.Avatar(this.id, this.avatar, format, size, dynamic);
+  avatarURL(options = {}) {
+    return this.avatar && this.client.rest.cdn.avatar(this.id, this.avatar, options);
   }
 
   /**
@@ -322,7 +154,7 @@ class User extends Base {
    * @readonly
    */
   get defaultAvatarURL() {
-    return this.client.rest.cdn.DefaultAvatar(this.discriminator % 5);
+    return this.client.rest.cdn.defaultAvatar(this.discriminator % 5);
   }
 
   /**
@@ -347,42 +179,12 @@ class User extends Base {
   }
 
   /**
-   * A link to the user's banner.
-   * <info>This method will throw an error if called before the user is force fetched.
-   * See {@link User#banner} for more info</info>
-   * @param {ImageURLOptions} [options={}] Options for the Image URL
+   * A link to the user's banner. See {@link User#banner} for more info
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  bannerURL({ format, size, dynamic } = {}) {
-    if (typeof this.banner === 'undefined') {
-      throw new Error('USER_BANNER_NOT_FETCHED');
-    }
-    if (!this.banner) return null;
-    return this.client.rest.cdn.Banner(this.id, this.banner, format, size, dynamic);
-  }
-
-  /**
-   * Ring the user's phone / PC (call)
-   * @returns {Promise<boolean>}
-   */
-  ring() {
-    if (!this.dmChannel?.id) return Promise.reject(new Error('USER_NO_DM_CHANNEL'));
-    if (!this.client.user.voice?.channelId || !this.client.callVoice) {
-      return Promise.reject(new Error('CLIENT_NO_CALL'));
-    }
-    return new Promise((resolve, reject) => {
-      this.client.api
-        .channels(this.dmChannel.id)
-        .call.ring.post({
-          data: {
-            recipients: [this.id],
-          },
-        })
-        .then(() => resolve(true))
-        .catch(e => {
-          reject(e);
-        });
-    });
+  bannerURL(options = {}) {
+    return this.banner && this.client.rest.cdn.banner(this.id, this.banner, options);
   }
 
   /**
@@ -409,7 +211,7 @@ class User extends Base {
    * @returns {Promise<DMChannel>}
    */
   createDM(force = false) {
-    return this.client.users.createDM(this.id, force);
+    return this.client.users.createDM(this.id, { force });
   }
 
   /**
@@ -462,7 +264,7 @@ class User extends Base {
   /**
    * Fetches this user's flags.
    * @param {boolean} [force=false] Whether to skip the cache check and request the API
-   * @returns {Promise<UserFlags>}
+   * @returns {Promise<UserFlagsBitField>}
    */
   fetchFlags(force = false) {
     return this.client.users.fetchFlags(this.id, { force });
@@ -485,7 +287,7 @@ class User extends Base {
    * console.log(`Hello from ${user}!`);
    */
   toString() {
-    return `<@${this.id}>`;
+    return userMention(this.id);
   }
 
   toJSON(...props) {
@@ -502,32 +304,6 @@ class User extends Base {
     json.displayAvatarURL = this.displayAvatarURL();
     json.bannerURL = this.banner ? this.bannerURL() : this.banner;
     return json;
-  }
-
-  /**
-   * Set note to user
-   * @param {string} note Note to set
-   * @returns {Promise<User>}
-   */
-  async setNote(note = null) {
-    await this.client.api.users['@me'].notes(this.id).put({ data: { note } });
-    return this;
-  }
-
-  /**
-   * Get presence (~ v12)
-   * @returns {Promise<Presence | null>}
-   */
-  async presenceFetch() {
-    let data = null;
-    await Promise.all(
-      this.client.guilds.cache.map(async guild => {
-        const res_ = await guild.presences.resolve(this.id);
-        if (res_) return (data = res_);
-        return true;
-      }),
-    );
-    return data;
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel

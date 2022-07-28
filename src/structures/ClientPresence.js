@@ -1,8 +1,8 @@
 'use strict';
 
+const { GatewayOpcodes } = require('discord-api-types/v10');
 const { Presence } = require('./Presence');
-const { TypeError } = require('../errors');
-const { Opcodes } = require('../util/Constants');
+const { TypeError, ErrorCodes } = require('../errors');
 
 /**
  * Represents the client's presence.
@@ -22,13 +22,13 @@ class ClientPresence extends Presence {
     const packet = this._parse(presence);
     this._patch(packet);
     if (typeof presence.shardId === 'undefined') {
-      this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
+      this.client.ws.broadcast({ op: GatewayOpcodes.PresenceUpdate, d: packet });
     } else if (Array.isArray(presence.shardId)) {
       for (const shardId of presence.shardId) {
-        this.client.ws.shards.get(shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
+        this.client.ws.shards.get(shardId).send({ op: GatewayOpcodes.PresenceUpdate, d: packet });
       }
     } else {
-      this.client.ws.shards.get(presence.shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
+      this.client.ws.shards.get(presence.shardId).send({ op: GatewayOpcodes.PresenceUpdate, d: packet });
     }
     return this;
   }
@@ -43,24 +43,29 @@ class ClientPresence extends Presence {
     const data = {
       activities: [],
       afk: typeof afk === 'boolean' ? afk : false,
-      since: 0,
+      since: typeof since === 'number' && !Number.isNaN(since) ? since : null,
       status: status ?? this.status,
     };
     if (activities?.length) {
       for (const [i, activity] of activities.entries()) {
-        if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
+        if (typeof activity.name !== 'string') {
+          throw new TypeError(ErrorCodes.InvalidType, `activities[${i}].name`, 'string');
+        }
         activity.type ??= 0;
-        data.activities.push(activity);
+
+        data.activities.push({
+          type: activity.type,
+          name: activity.name,
+          url: activity.url,
+        });
       }
     } else if (!activities && (status || afk || since) && this.activities.length) {
       data.activities.push(
-        ...this.activities.map(a =>
-          Object.assign(a, {
-            name: a.name,
-            type: a.type,
-            url: a.url ?? undefined,
-          }),
-        ),
+        ...this.activities.map(a => ({
+          name: a.name,
+          type: a.type,
+          url: a.url ?? undefined,
+        })),
       );
     }
 

@@ -1,15 +1,18 @@
 'use strict';
 
 const { Buffer } = require('node:buffer');
-const { setTimeout } = require('node:timers');
+const { setTimeout, clearTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
+const { makeURLSearchParams } = require('@discordjs/rest');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { Routes, GatewayOpcodes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { Error, TypeError, RangeError } = require('../errors');
+const { Error, TypeError, RangeError, ErrorCodes } = require('../errors');
 const BaseGuildVoiceChannel = require('../structures/BaseGuildVoiceChannel');
 const { GuildMember } = require('../structures/GuildMember');
 const { Role } = require('../structures/Role');
-const { Events, Opcodes } = require('../util/Constants');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
+const Events = require('../util/Events');
+const Partials = require('../util/Partials');
 
 /**
  * Manages API methods for GuildMembers and stores their cache.
@@ -71,26 +74,30 @@ class GuildMemberManager extends CachedManager {
   /**
    * Options used to add a user to a guild using OAuth2.
    * @typedef {Object} AddGuildMemberOptions
-   * @property {string} accessToken An OAuth2 access token for the user with the `guilds.join` scope granted to the
-   * bot's application
-   * @property {string} [nick] The nickname to give to the member (requires `MANAGE_NICKNAMES`)
+   * @property {string} accessToken An OAuth2 access token for the user with the {@link OAuth2Scopes.GuildsJoin}
+   * scope granted to the bot's application
+   * @property {string} [nick] The nickname to give to the member
+   * <info>This property requires the {@link PermissionFlagsBits.ManageNicknames} permission.</info>
    * @property {Collection<Snowflake, Role>|RoleResolvable[]} [roles] The roles to add to the member
-   * (requires `MANAGE_ROLES`)
-   * @property {boolean} [mute] Whether the member should be muted (requires `MUTE_MEMBERS`)
-   * @property {boolean} [deaf] Whether the member should be deafened (requires `DEAFEN_MEMBERS`)
-   * @property {boolean} [force] Whether to skip the cache check and call the API directly
+   * <info>This property requires the {@link PermissionFlagsBits.ManageRoles} permission.</info>
+   * @property {boolean} [mute] Whether the member should be muted
+   * <info>This property requires the {@link PermissionFlagsBits.MuteMembers} permission.</info>
+   * @property {boolean} [deaf] Whether the member should be deafened
+   * <info>This property requires the {@link PermissionFlagsBits.MuteMembers} permission.</info>
+   * @property {boolean} [force] Whether to skip the cache check and request the API directly
    * @property {boolean} [fetchWhenExisting=true] Whether to fetch the user if not cached and already a member
    */
 
   /**
-   * Adds a user to the guild using OAuth2. Requires the `CREATE_INSTANT_INVITE` permission.
+   * Adds a user to the guild using OAuth2.
+   * <info>This method requires the {@link PermissionFlagsBits.CreateInstantInvite} permission.
    * @param {UserResolvable} user The user to add to the guild
    * @param {AddGuildMemberOptions} options Options for adding the user to the guild
    * @returns {Promise<GuildMember|null>}
    */
   async add(user, options) {
     const userId = this.client.users.resolveId(user);
-    if (!userId) throw new TypeError('INVALID_TYPE', 'user', 'UserResolvable');
+    if (!userId) throw new TypeError(ErrorCodes.InvalidType, 'user', 'UserResolvable');
     if (!options.force) {
       const cachedUser = this.cache.get(userId);
       if (cachedUser) return cachedUser;
@@ -103,19 +110,40 @@ class GuildMemberManager extends CachedManager {
     };
     if (options.roles) {
       if (!Array.isArray(options.roles) && !(options.roles instanceof Collection)) {
-        throw new TypeError('INVALID_TYPE', 'options.roles', 'Array or Collection of Roles or Snowflakes', true);
+        throw new TypeError(
+          ErrorCodes.InvalidType,
+          'options.roles',
+          'Array or Collection of Roles or Snowflakes',
+          true,
+        );
       }
       const resolvedRoles = [];
       for (const role of options.roles.values()) {
         const resolvedRole = this.guild.roles.resolveId(role);
-        if (!resolvedRole) throw new TypeError('INVALID_ELEMENT', 'Array or Collection', 'options.roles', role);
+        if (!resolvedRole) {
+          throw new TypeError(ErrorCodes.InvalidElement, 'Array or Collection', 'options.roles', role);
+        }
         resolvedRoles.push(resolvedRole);
       }
       resolvedOptions.roles = resolvedRoles;
     }
-    const data = await this.client.api.guilds(this.guild.id).members(userId).put({ data: resolvedOptions });
+    const data = await this.client.rest.put(Routes.guildMember(this.guild.id, userId), { body: resolvedOptions });
     // Data is an empty buffer if the member is already part of the guild.
     return data instanceof Buffer ? (options.fetchWhenExisting === false ? null : this.fetch(userId)) : this._add(data);
+  }
+
+  /**
+   * The client user as a GuildMember of this guild
+   * @type {?GuildMember}
+   * @readonly
+   */
+  get me() {
+    return (
+      this.resolve(this.client.user.id) ??
+      (this.client.options.partials.includes(Partials.GuildMember)
+        ? this._add({ user: { id: this.client.user.id } }, true)
+        : null)
+    );
   }
 
   /**
@@ -190,10 +218,19 @@ class GuildMemberManager extends CachedManager {
   }
 
   /**
+   * Fetches the client user as a GuildMember of the guild.
+   * @param {BaseFetchOptions} [options] The options for fetching the member
+   * @returns {Promise<GuildMember>}
+   */
+  fetchMe(options) {
+    return this.fetch({ ...options, user: this.client.user.id });
+  }
+
+  /**
    * Options used for searching guild members.
    * @typedef {Object} GuildSearchMembersOptions
    * @property {string} query Filter members whose username or nickname start with this query
-   * @property {number} [limit=1] Maximum number of members to search
+   * @property {number} [limit] Maximum number of members to search
    * @property {boolean} [cache=true] Whether or not to cache the fetched member(s)
    */
 
@@ -202,8 +239,10 @@ class GuildMemberManager extends CachedManager {
    * @param {GuildSearchMembersOptions} options Options for searching members
    * @returns {Promise<Collection<Snowflake, GuildMember>>}
    */
-  async search({ query, limit = 1, cache = true } = {}) {
-    const data = await this.client.api.guilds(this.guild.id).members.search.get({ query: { query, limit } });
+  async search({ query, limit, cache = true } = {}) {
+    const data = await this.client.rest.get(Routes.guildMembersSearch(this.guild.id), {
+      query: makeURLSearchParams({ query, limit }),
+    });
     return data.reduce((col, member) => col.set(member.user.id, this._add(member, cache)), new Collection());
   }
 
@@ -211,7 +250,7 @@ class GuildMemberManager extends CachedManager {
    * Options used for listing guild members.
    * @typedef {Object} GuildListMembersOptions
    * @property {Snowflake} [after] Limit fetching members to those with an id greater than the supplied id
-   * @property {number} [limit=1] Maximum number of members to list
+   * @property {number} [limit] Maximum number of members to list
    * @property {boolean} [cache=true] Whether or not to cache the fetched member(s)
    */
 
@@ -220,8 +259,9 @@ class GuildMemberManager extends CachedManager {
    * @param {GuildListMembersOptions} [options] Options for listing members
    * @returns {Promise<Collection<Snowflake, GuildMember>>}
    */
-  async list({ after, limit = 1, cache = true } = {}) {
-    const data = await this.client.api.guilds(this.guild.id).members.get({ query: { after, limit } });
+  async list({ after, limit, cache = true } = {}) {
+    const query = makeURLSearchParams({ limit, after });
+    const data = await this.client.rest.get(Routes.guildMembers(this.guild.id), { query });
     return data.reduce((col, member) => col.set(member.user.id, this._add(member, cache)), new Collection());
   }
 
@@ -236,6 +276,7 @@ class GuildMemberManager extends CachedManager {
    * (if they are connected to voice), or `null` if you want to disconnect them from voice
    * @property {DateResolvable|null} [communicationDisabledUntil] The date or timestamp
    * for the member's communication to be disabled until. Provide `null` to enable communication again.
+   * @property {string} [reason] Reason for editing this user
    */
 
   /**
@@ -243,40 +284,42 @@ class GuildMemberManager extends CachedManager {
    * <info>The user must be a member of the guild</info>
    * @param {UserResolvable} user The member to edit
    * @param {GuildMemberEditData} data The data to edit the member with
-   * @param {string} [reason] Reason for editing this user
    * @returns {Promise<GuildMember>}
    */
-  async edit(user, data, reason) {
+  async edit(user, { reason, ...data }) {
     const id = this.client.users.resolveId(user);
-    if (!id) throw new TypeError('INVALID_TYPE', 'user', 'UserResolvable');
+    if (!id) throw new TypeError(ErrorCodes.InvalidType, 'user', 'UserResolvable');
 
-    // Clone the data object for immutability
-    const _data = { ...data };
-    if (_data.channel) {
-      _data.channel = this.guild.channels.resolve(_data.channel);
-      if (!(_data.channel instanceof BaseGuildVoiceChannel)) {
-        throw new Error('GUILD_VOICE_CHANNEL_RESOLVE');
+    if (data.channel) {
+      data.channel = this.guild.channels.resolve(data.channel);
+      if (!(data.channel instanceof BaseGuildVoiceChannel)) {
+        throw new Error(ErrorCodes.GuildVoiceChannelResolve);
       }
-      _data.channel_id = _data.channel.id;
-      _data.channel = undefined;
-    } else if (_data.channel === null) {
-      _data.channel_id = null;
-      _data.channel = undefined;
+      data.channel_id = data.channel.id;
+      data.channel = undefined;
+    } else if (data.channel === null) {
+      data.channel_id = null;
+      data.channel = undefined;
     }
-    _data.roles &&= _data.roles.map(role => (role instanceof Role ? role.id : role));
+    data.roles &&= data.roles.map(role => (role instanceof Role ? role.id : role));
 
-    _data.communication_disabled_until =
-      _data.communicationDisabledUntil && new Date(_data.communicationDisabledUntil).toISOString();
+    if (typeof data.communicationDisabledUntil !== 'undefined') {
+      data.communication_disabled_until =
+        // eslint-disable-next-line eqeqeq
+        data.communicationDisabledUntil != null
+          ? new Date(data.communicationDisabledUntil).toISOString()
+          : data.communicationDisabledUntil;
+    }
 
-    let endpoint = this.client.api.guilds(this.guild.id);
+    let endpoint;
     if (id === this.client.user.id) {
       const keys = Object.keys(data);
-      if (keys.length === 1 && keys[0] === 'nick') endpoint = endpoint.members('@me');
-      else endpoint = endpoint.members(id);
+      if (keys.length === 1 && keys[0] === 'nick') endpoint = Routes.guildMember(this.guild.id);
+      else endpoint = Routes.guildMember(this.guild.id, id);
     } else {
-      endpoint = endpoint.members(id);
+      endpoint = Routes.guildMember(this.guild.id, id);
     }
-    const d = await endpoint.patch({ data: _data, reason });
+    const d = await this.client.rest.patch(endpoint, { body: data, reason });
 
     const clone = this.cache.get(id)?._clone();
     clone?._patch(d);
@@ -288,9 +331,9 @@ class GuildMemberManager extends CachedManager {
    * <info>It's recommended to set {@link GuildPruneMembersOptions#count options.count}
    * to `false` for large guilds.</info>
    * @typedef {Object} GuildPruneMembersOptions
-   * @property {number} [days=7] Number of days of inactivity required to kick
+   * @property {number} [days] Number of days of inactivity required to kick
    * @property {boolean} [dry=false] Get the number of users that will be kicked, without actually kicking them
-   * @property {boolean} [count=true] Whether or not to return the number of users that have been kicked.
+   * @property {boolean} [count] Whether or not to return the number of users that have been kicked.
    * @property {RoleResolvable[]} [roles] Array of roles to bypass the "...and no roles" constraint when pruning
    * @property {string} [reason] Reason for this prune
    */
@@ -315,8 +358,8 @@ class GuildMemberManager extends CachedManager {
    *    .then(pruned => console.log(`I just pruned ${pruned} people!`))
    *    .catch(console.error);
    */
-  async prune({ days = 7, dry = false, count: compute_prune_count = true, roles = [], reason } = {}) {
-    if (typeof days !== 'number') throw new TypeError('PRUNE_DAYS_TYPE');
+  async prune({ days, dry = false, count: compute_prune_count, roles = [], reason } = {}) {
+    if (typeof days !== 'number') throw new TypeError(ErrorCodes.PruneDaysType);
 
     const query = { days };
     const resolvedRoles = [];
@@ -324,7 +367,7 @@ class GuildMemberManager extends CachedManager {
     for (const role of roles) {
       const resolvedRole = this.guild.roles.resolveId(role);
       if (!resolvedRole) {
-        throw new TypeError('INVALID_ELEMENT', 'Array', 'options.roles', role);
+        throw new TypeError(ErrorCodes.InvalidElement, 'Array', 'options.roles', role);
       }
       resolvedRoles.push(resolvedRole);
     }
@@ -333,11 +376,11 @@ class GuildMemberManager extends CachedManager {
       query.include_roles = dry ? resolvedRoles.join(',') : resolvedRoles;
     }
 
-    const endpoint = this.client.api.guilds(this.guild.id).prune;
+    const endpoint = Routes.guildPrune(this.guild.id);
 
     const { pruned } = await (dry
-      ? endpoint.get({ query, reason })
-      : endpoint.post({ data: { ...query, compute_prune_count }, reason }));
+      ? this.client.rest.get(endpoint, { query: makeURLSearchParams(query), reason })
+      : this.client.rest.post(endpoint, { body: { ...query, compute_prune_count }, reason }));
 
     return pruned;
   }
@@ -358,9 +401,9 @@ class GuildMemberManager extends CachedManager {
    */
   async kick(user, reason) {
     const id = this.client.users.resolveId(user);
-    if (!id) return Promise.reject(new TypeError('INVALID_TYPE', 'user', 'UserResolvable'));
+    if (!id) return Promise.reject(new TypeError(ErrorCodes.InvalidType, 'user', 'UserResolvable'));
 
-    await this.client.api.guilds(this.guild.id).members(id).delete({ reason });
+    await this.client.rest.delete(Routes.guildMember(this.guild.id, id), { reason });
 
     return this.resolve(user) ?? this.client.users.resolve(user) ?? id;
   }
@@ -379,7 +422,7 @@ class GuildMemberManager extends CachedManager {
    *   .then(banInfo => console.log(`Banned ${banInfo.user?.tag ?? banInfo.tag ?? banInfo}`))
    *   .catch(console.error);
    */
-  ban(user, options = { days: 0 }) {
+  ban(user, options) {
     return this.guild.bans.create(user, options);
   }
 
@@ -404,7 +447,7 @@ class GuildMemberManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    const data = await this.client.api.guilds(this.guild.id).members(user).get();
+    const data = await this.client.rest.get(Routes.guildMember(this.guild.id, user));
     return this._add(data, cache);
   }
 
@@ -414,133 +457,47 @@ class GuildMemberManager extends CachedManager {
     user: user_ids,
     query,
     time = 120e3,
-    nonce = SnowflakeUtil.generate(),
-    sleepTime = 2e3, // 2 seconds
+    nonce = DiscordSnowflake.generate().toString(),
   } = {}) {
-    let type;
     return new Promise((resolve, reject) => {
       if (!query && !user_ids) query = '';
-      if (nonce.length > 32) throw new RangeError('MEMBER_FETCH_NONCE_LENGTH');
-      if (
-        this.guild.me.permissions.has('ADMINISTRATOR') ||
-        this.guild.me.permissions.has('KICK_MEMBERS') ||
-        this.guild.me.permissions.has('BAN_MEMBERS') ||
-        this.guild.me.permissions.has('MANAGE_ROLES')
-      ) {
-        type = Opcodes.REQUEST_GUILD_MEMBERS; // This is opcode
-        this.guild.shard.send({
-          op: type,
-          d: {
-            guild_id: this.guild.id,
-            presences,
-            user_ids,
-            query,
-            nonce,
-            limit,
-          },
-        });
-      } else {
-        type = Opcodes.LAZY_REQUEST; // This is opcode
-        let channel;
-        let channels = this.guild.channels.cache.filter(c => c.isText());
-        channels = channels.filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
-        if (!channels.size) {
-          throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
-        }
-        const channels_allowed_everyone = channels.filter(c =>
-          c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
-        );
-        channel = channels_allowed_everyone.random() ?? channels.random();
-        // Create array limit [0, 99]
-        const list = [];
-        const allMember = this.guild.memberCount;
-        if (allMember < 100) {
-          list.push([[0, 99]]);
-        } else if (allMember < 200) {
-          list.push([
-            [0, 99],
-            [100, 199],
-          ]);
-        } else if (allMember < 300) {
-          list.push([
-            [0, 99],
-            [100, 199],
-            [200, 299],
-          ]);
-        } else {
-          if (allMember > 1_000) {
-            console.warn(
-              `[WARN] Guild ${this.guild.id} has ${allMember} > 1000 members. Can't get offline members (Opcode 14)\n> https://discordpy-self.readthedocs.io/en/latest/migrating_from_dpy.html#guild-members`,
-            );
-            if (allMember > 75_000) {
-              console.warn(`[WARN] Can't get enough members because the guild is large (Opcode 14)`);
-            }
-          }
-          let x = 100;
-          for (let i = 0; i < allMember; i++) {
-            if (x > allMember) {
-              i = allMember;
-              continue;
-            }
-            list.push([
-              [0, 99],
-              [x, x + 99],
-              [x + 100, x + 199],
-            ]);
-            x += 200;
-          }
-        }
-        const sendTime = Date.now();
-        for (const l of list) {
-          this.guild.shard.send({
-            op: type,
-            d: {
-              guild_id: this.guild.id,
-              typing: true,
-              threads: false,
-              activities: true,
-              channels: {
-                [channel.id]: l,
-              },
-              thread_member_lists: [],
-              members: [],
-            },
-          });
-        }
-        console.warn(`Gateway Rate Limit Warning: Sending ${list.length} Requests / ${Date.now() - sendTime || 1} ms`);
-      }
+      if (nonce.length > 32) throw new RangeError(ErrorCodes.MemberFetchNonceLength);
+      this.guild.shard.send({
+        op: GatewayOpcodes.RequestGuildMembers,
+        d: {
+          guild_id: this.guild.id,
+          presences,
+          user_ids,
+          query,
+          nonce,
+          limit,
+        },
+      });
       const fetchedMembers = new Collection();
       let i = 0;
       const handler = (members, _, chunk) => {
         timeout.refresh();
-        if (chunk.nonce !== nonce && type === 8) return;
+        if (chunk.nonce !== nonce) return;
         i++;
         for (const member of members.values()) {
           fetchedMembers.set(member.id, member);
         }
         if (members.size < 1_000 || (limit && fetchedMembers.size >= limit) || i === chunk.count) {
           clearTimeout(timeout);
-          this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
-          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+          this.client.removeListener(Events.GuildMembersChunk, handler);
           this.client.decrementMaxListeners();
-          let fetched = fetchedMembers.size < this.guild.members.cache.size ? this.guild.members.cache : fetchedMembers;
+          let fetched = fetchedMembers;
           if (user_ids && !Array.isArray(user_ids) && fetched.size) fetched = fetched.first();
-          if (type == Opcodes.LAZY_REQUEST) {
-            this.guild.client.sleep(sleepTime).then(() => resolve(fetched));
-          } else {
-            resolve(fetched);
-          }
+          resolve(fetched);
         }
       };
       const timeout = setTimeout(() => {
-        this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
-        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+        this.client.removeListener(Events.GuildMembersChunk, handler);
         this.client.decrementMaxListeners();
-        reject(new Error('GUILD_MEMBERS_TIMEOUT'));
+        reject(new Error(ErrorCodes.GuildMembersTimeout));
       }, time).unref();
       this.client.incrementMaxListeners();
-      this.client.on(Events.GUILD_MEMBERS_CHUNK, handler);
-      this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+      this.client.on(Events.GuildMembersChunk, handler);
     });
   }
 }

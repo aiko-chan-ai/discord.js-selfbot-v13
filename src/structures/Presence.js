@@ -2,20 +2,14 @@
 
 const Base = require('./Base');
 const { Emoji } = require('./Emoji');
-const ActivityFlags = require('../util/ActivityFlags');
-const { ActivityTypes } = require('../util/Constants');
-const Util = require('../util/Util');
+const ActivityFlagsBitField = require('../util/ActivityFlagsBitField');
+const { flatten } = require('../util/Util');
 
 /**
  * Activity sent in a message.
  * @typedef {Object} MessageActivity
  * @property {string} [partyId] Id of the party represented in activity
  * @property {MessageActivityType} type Type of activity sent
- */
-
-/**
- * @external MessageActivityType
- * @see {@link https://discord-api-types.dev/api/discord-api-types-v9/enum/MessageActivityType}
  */
 
 /**
@@ -110,14 +104,6 @@ class Presence extends Base {
       this.clientStatus ??= null;
     }
 
-    if ('last_modified' in data) {
-      /**
-       * The timestamp this presence was last updated
-       * @type {number}
-       */
-      this.lastModified = data.last_modified;
-    }
-
     return this;
   }
 
@@ -146,17 +132,9 @@ class Presence extends Base {
   }
 
   toJSON() {
-    return Util.flatten(this);
+    return flatten(this);
   }
 }
-
-/**
- * The platform of this activity:
- * * **`desktop`**
- * * **`samsung`** - playing on Samsung Galaxy
- * * **`xbox`** - playing on Xbox Live
- * @typedef {string} ActivityPlatform
- */
 
 /**
  * Represents an activity that is part of a user's presence.
@@ -164,12 +142,6 @@ class Presence extends Base {
 class Activity {
   constructor(presence, data) {
     Object.defineProperty(this, 'presence', { value: presence });
-
-    /**
-     * The activity's id
-     * @type {string}
-     */
-    this.id = data.id;
 
     /**
      * The activity's name
@@ -181,7 +153,7 @@ class Activity {
      * The activity status's type
      * @type {ActivityType}
      */
-    this.type = typeof data.type === 'number' ? ActivityTypes[data.type] : data.type;
+    this.type = data.type;
 
     /**
      * If the activity is being streamed, a link to the stream
@@ -226,18 +198,6 @@ class Activity {
       : null;
 
     /**
-     * The Spotify song's id
-     * @type {?string}
-     */
-    this.syncId = data.sync_id ?? null;
-
-    /**
-     * The platform the game is being played on
-     * @type {?ActivityPlatform}
-     */
-    this.platform = data.platform ?? null;
-
-    /**
      * Represents a party of an activity
      * @typedef {Object} ActivityParty
      * @property {?string} id The party's id
@@ -258,21 +218,15 @@ class Activity {
 
     /**
      * Flags that describe the activity
-     * @type {Readonly<ActivityFlags>}
+     * @type {Readonly<ActivityFlagsBitField>}
      */
-    this.flags = new ActivityFlags(data.flags).freeze();
+    this.flags = new ActivityFlagsBitField(data.flags).freeze();
 
     /**
      * Emoji for a custom activity
      * @type {?Emoji}
      */
     this.emoji = data.emoji ? new Emoji(presence.client, data.emoji) : null;
-
-    /**
-     * The game's or Spotify session's id
-     * @type {?string}
-     */
-    this.sessionId = data.session_id ?? null;
 
     /**
      * The labels of the buttons of this rich presence
@@ -314,7 +268,7 @@ class Activity {
   }
 
   /**
-   * When concatenated with a string, this automatically returns the activities' name instead of the Activity object.
+   * When concatenated with a string, this automatically returns the activity's name instead of the Activity object.
    * @returns {string}
    */
   toString() {
@@ -360,10 +314,10 @@ class RichPresenceAssets {
 
   /**
    * Gets the URL of the small image asset
-   * @param {StaticImageURLOptions} [options] Options for the image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  smallImageURL({ format, size } = {}) {
+  smallImageURL(options = {}) {
     if (!this.smallImage) return null;
     if (this.smallImage.includes(':')) {
       const [platform, id] = this.smallImage.split(':');
@@ -375,37 +329,27 @@ class RichPresenceAssets {
       }
     }
 
-    return this.activity.presence.client.rest.cdn.AppAsset(this.activity.applicationId, this.smallImage, {
-      format,
-      size,
-    });
+    return this.activity.presence.client.rest.cdn.appAsset(this.activity.applicationId, this.smallImage, options);
   }
 
   /**
    * Gets the URL of the large image asset
-   * @param {StaticImageURLOptions} [options] Options for the image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  largeImageURL({ format, size } = {}) {
+  largeImageURL(options = {}) {
     if (!this.largeImage) return null;
     if (this.largeImage.includes(':')) {
       const [platform, id] = this.largeImage.split(':');
       switch (platform) {
         case 'mp':
           return `https://media.discordapp.net/${id}`;
-        case 'spotify':
-          return `https://i.scdn.co/image/${id}`;
-        case 'twitch':
-          return `https://static-cdn.jtvnw.net/previews-ttv/live_user_${id}.png`;
         default:
           return null;
       }
     }
 
-    return this.activity.presence.client.rest.cdn.AppAsset(this.activity.applicationId, this.largeImage, {
-      format,
-      size,
-    });
+    return this.activity.presence.client.rest.cdn.appAsset(this.activity.applicationId, this.largeImage, options);
   }
 }
 

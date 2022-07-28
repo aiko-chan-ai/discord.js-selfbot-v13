@@ -1,15 +1,12 @@
 'use strict';
 
-/* eslint-disable import/order */
+const { Collection } = require('@discordjs/collection');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { InteractionType, Routes } = require('discord-api-types/v10');
+const { TypeError, Error, ErrorCodes } = require('../../errors');
+const InteractionCollector = require('../InteractionCollector');
 const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
-const SnowflakeUtil = require('../../util/SnowflakeUtil');
-const { Collection } = require('@discordjs/collection');
-const { InteractionTypes } = require('../../util/Constants');
-const { TypeError, Error } = require('../../errors');
-const InteractionCollector = require('../InteractionCollector');
-const { lazy } = require('../../util/Util');
-const Message = lazy(() => require('../Message').Message);
 
 /**
  * Interface for classes that have text-channel-like features.
@@ -51,24 +48,23 @@ class TextBasedChannel {
    * @readonly
    */
   get lastPinAt() {
-    return this.lastPinTimestamp ? new Date(this.lastPinTimestamp) : null;
+    return this.lastPinTimestamp && new Date(this.lastPinTimestamp);
   }
 
   /**
    * Base options provided when sending.
    * @typedef {Object} BaseMessageOptions
-   * @property {MessageActivity} [activity] Group activity
    * @property {boolean} [tts=false] Whether or not the message should be spoken aloud
    * @property {string} [nonce=''] The nonce for the message
    * @property {string} [content=''] The content for the message
-   * @property {WebEmbed[]|MessageEmbed[]|APIEmbed[]} [embeds] The embeds for the message
+   * @property {Embed[]|APIEmbed[]} [embeds] The embeds for the message
    * (see [here](https://discord.com/developers/docs/resources/channel#embed-object) for more details)
    * @property {MessageMentionOptions} [allowedMentions] Which mentions should be parsed from the message content
    * (see [here](https://discord.com/developers/docs/resources/channel#allowed-mentions-object) for more details)
-   * @property {FileOptions[]|BufferResolvable[]|MessageAttachment[]} [files] Files to send with the message
-   * @property {MessageActionRow[]|MessageActionRowOptions[]} [components]
+   * @property {FileOptions[]|BufferResolvable[]|Attachment[]} [files] Files to send with the message
+   * @property {ActionRow[]|ActionRowOptions[]} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
-   * @property {MessageAttachment[]} [attachments] Attachments to send in the message
+   * @property {Array<JSONEncodable<AttachmentPayload>>} [attachments] Attachments to send in the message
    */
 
   /**
@@ -76,7 +72,7 @@ class TextBasedChannel {
    * @typedef {BaseMessageOptions} MessageOptions
    * @property {ReplyOptions} [reply] The options for replying to a message
    * @property {StickerResolvable[]} [stickers=[]] Stickers to send in the message
-   * @property {MessageFlags} [flags] Which flags to set for the message. Only `SUPPRESS_EMBEDS` can be set.
+   * @property {MessageFlags} [flags] Which flags to set for the message. Only `MessageFlags.SuppressEmbeds` can be set.
    */
 
   /**
@@ -107,8 +103,8 @@ class TextBasedChannel {
    * Options for sending a message with a reply.
    * @typedef {Object} ReplyOptions
    * @property {MessageResolvable} messageReference The message to reply to (must be in the same channel and not system)
-   * @property {boolean} [failIfNotExists=true] Whether to error if the referenced message
-   * does not exist (creates a standard message in this case when false)
+   * @property {boolean} [failIfNotExists=this.client.options.failIfNotExists] Whether to error if the referenced
+   * message does not exist (creates a standard message in this case when false)
    */
 
   /**
@@ -151,7 +147,7 @@ class TextBasedChannel {
    *   ],
    *   files: [{
    *     attachment: 'entire/path/to/file.jpg',
-   *     name: 'file.jpg'
+   *     name: 'file.jpg',
    *     description: 'A description of the file'
    *   }]
    * })
@@ -170,13 +166,13 @@ class TextBasedChannel {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
+      messagePayload = options.resolveBody();
     } else {
-      messagePayload = await MessagePayload.create(this, options).resolveData();
+      messagePayload = MessagePayload.create(this, options).resolveBody();
     }
 
-    const { data, files } = await messagePayload.resolveFiles();
-    const d = await this.client.api.channels[this.id].messages.post({ data, files });
+    const { body, files } = await messagePayload.resolveFiles();
+    const d = await this.client.rest.post(Routes.channelMessages(this.id), { body, files });
 
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
@@ -189,7 +185,7 @@ class TextBasedChannel {
    * channel.sendTyping();
    */
   async sendTyping() {
-    await this.client.api.channels(this.id).typing.post();
+    await this.client.rest.post(Routes.channelTyping(this.id));
   }
 
   /**
@@ -253,7 +249,7 @@ class TextBasedChannel {
   createMessageComponentCollector(options = {}) {
     return new InteractionCollector(this.client, {
       ...options,
-      interactionType: InteractionTypes.MESSAGE_COMPONENT,
+      interactionType: InteractionType.MessageComponent,
       channel: this,
     });
   }
@@ -277,7 +273,7 @@ class TextBasedChannel {
       collector.once('end', (interactions, reason) => {
         const interaction = interactions.first();
         if (interaction) resolve(interaction);
-        else reject(new Error('INTERACTION_COLLECTOR_ERROR', reason));
+        else reject(new Error(ErrorCodes.InteractionCollectorError, reason));
       });
     });
   }
@@ -295,24 +291,23 @@ class TextBasedChannel {
    *   .catch(console.error);
    */
   async bulkDelete(messages, filterOld = false) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     if (Array.isArray(messages) || messages instanceof Collection) {
       let messageIds = messages instanceof Collection ? [...messages.keys()] : messages.map(m => m.id ?? m);
       if (filterOld) {
-        messageIds = messageIds.filter(id => Date.now() - SnowflakeUtil.timestampFrom(id) < 1_209_600_000);
+        messageIds = messageIds.filter(id => Date.now() - DiscordSnowflake.timestampFrom(id) < 1_209_600_000);
       }
       if (messageIds.length === 0) return new Collection();
       if (messageIds.length === 1) {
-        await this.client.api.channels(this.id).messages(messageIds[0]).delete();
         const message = this.client.actions.MessageDelete.getMessage(
           {
             message_id: messageIds[0],
           },
           this,
         );
+        await this.client.rest.delete(Routes.channelMessage(this.id, messageIds[0]));
         return message ? new Collection([[message.id, message]]) : new Collection();
       }
-      await this.client.api.channels[this.id].messages['bulk-delete'].post({ data: { messages: messageIds } });
+      await this.client.rest.post(Routes.channelBulkDelete(this.id), { body: { messages: messageIds } });
       return messageIds.reduce(
         (col, id) =>
           col.set(
@@ -331,7 +326,7 @@ class TextBasedChannel {
       const msgs = await this.messages.fetch({ limit: messages });
       return this.bulkDelete(msgs, filterOld);
     }
-    throw new TypeError('MESSAGE_BULK_DELETE_TYPE');
+    throw new TypeError(ErrorCodes.MessageBulkDeleteType);
   }
 
   /**
@@ -348,28 +343,29 @@ class TextBasedChannel {
   }
 
   /**
-   * Options used to create a {@link Webhook} in a guild text-based channel.
+   * Options used to create a {@link Webhook} in a {@link TextChannel} or a {@link NewsChannel}.
    * @typedef {Object} ChannelWebhookCreateOptions
+   * @property {string} name The name of the webhook
    * @property {?(BufferResolvable|Base64Resolvable)} [avatar] Avatar for the webhook
    * @property {string} [reason] Reason for creating the webhook
    */
 
   /**
    * Creates a webhook for the channel.
-   * @param {string} name The name of the webhook
    * @param {ChannelWebhookCreateOptions} [options] Options for creating the webhook
    * @returns {Promise<Webhook>} Returns the created Webhook
    * @example
    * // Create a webhook for the current channel
-   * channel.createWebhook('Snek', {
+   * channel.createWebhook({
+   *   name: 'Snek',
    *   avatar: 'https://i.imgur.com/mI8XcpG.jpg',
    *   reason: 'Needed a cool new Webhook'
    * })
    *   .then(console.log)
    *   .catch(console.error)
    */
-  createWebhook(name, options = {}) {
-    return this.guild.channels.createWebhook(this.id, name, options);
+  createWebhook(options) {
+    return this.guild.channels.createWebhook({ channel: this.id, ...options });
   }
 
   /**
@@ -379,7 +375,7 @@ class TextBasedChannel {
    * @returns {Promise<this>}
    */
   setRateLimitPerUser(rateLimitPerUser, reason) {
-    return this.edit({ rateLimitPerUser }, reason);
+    return this.edit({ rateLimitPerUser, reason });
   }
 
   /**
@@ -389,69 +385,7 @@ class TextBasedChannel {
    * @returns {Promise<this>}
    */
   setNSFW(nsfw = true, reason) {
-    return this.edit({ nsfw }, reason);
-  }
-
-  /**
-   * Send Slash to this channel
-   * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
-   * @param {string} commandName Command name
-   * @param {...?string|string[]} args Command arguments
-   * @returns {Promise<InteractionResponseBody>}
-   */
-  async sendSlash(botId, commandName, ...args) {
-    args = args.flat(2);
-    if (!botId) throw new Error('Bot ID is required');
-    // ? maybe ...
-    const user = await this.client.users.fetch(botId).catch(() => {});
-    if (!user || !user.bot || !user.application) {
-      throw new Error('botId is not a bot or does not have an application slash command');
-    }
-    if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    // Using API to search (without opcode ~ehehe)
-    let commandTarget;
-    // https://discord.com/api/v9/channels/id/application-commands/search?type=1&query=aiko&limit=7&include_applications=false&application_id=id
-    const data = await this.client.api.channels[this.id]['application-commands'].search.get({
-      query: {
-        type: 1, // CHAT_INPUT,
-        include_applications: false,
-        query: commandName,
-        limit: 25, // Max
-        // application_id: botId,
-      },
-    });
-    for (const command of data.application_commands) {
-      if (user.id == command.application_id) {
-        const c = user.application?.commands?._add(command, true);
-        if (command.name == commandName) commandTarget = c;
-      } else {
-        const tempUser = this.client.users.cache.get(command.application_id);
-        if (tempUser && tempUser.bot && tempUser.application) {
-          tempUser.application?.commands?._add(command, true);
-        }
-      }
-    }
-    // Remove
-    commandTarget =
-      commandTarget || user.application?.commands?.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
-    if (!commandTarget) {
-      throw new Error(
-        'INTERACTION_SEND_FAILURE',
-        `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(
-          ' | ',
-        )}`,
-      );
-    }
-    return commandTarget.sendSlashCommand(
-      new (Message())(this.client, {
-        channel_id: this.id,
-        guild_id: this.guild?.id || null,
-        author: this.client.user,
-        content: '',
-        id: this.client.user.id,
-      }),
-      args && args.length ? args : [],
-    );
+    return this.edit({ nsfw, reason });
   }
 
   static applyToClass(structure, full = false, ignore = []) {
@@ -470,7 +404,6 @@ class TextBasedChannel {
         'createWebhook',
         'setRateLimitPerUser',
         'setNSFW',
-        'sendSlash',
       );
     }
     for (const prop of props) {
@@ -487,4 +420,5 @@ class TextBasedChannel {
 module.exports = TextBasedChannel;
 
 // Fixes Circular
+// eslint-disable-next-line import/order
 const MessageManager = require('../../managers/MessageManager');

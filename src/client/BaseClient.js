@@ -1,9 +1,10 @@
 'use strict';
 
 const EventEmitter = require('node:events');
-const RESTManager = require('../rest/RESTManager');
+const { REST } = require('@discordjs/rest');
+const { TypeError, ErrorCodes } = require('../errors');
 const Options = require('../util/Options');
-const Util = require('../util/Util');
+const { mergeDefault, flatten } = require('../util/Util');
 
 /**
  * The base class for all clients.
@@ -11,30 +12,23 @@ const Util = require('../util/Util');
  */
 class BaseClient extends EventEmitter {
   constructor(options = {}) {
-    super();
+    super({ captureRejections: true });
+
+    if (typeof options !== 'object' || options === null) {
+      throw new TypeError(ErrorCodes.InvalidType, 'options', 'object', true);
+    }
 
     /**
      * The options the client was instantiated with
      * @type {ClientOptions}
      */
-    this.options = Util.mergeDefault(Options.createDefault(), options);
+    this.options = mergeDefault(Options.createDefault(), options);
 
     /**
      * The REST manager of the client
-     * @type {RESTManager}
-     * @private
+     * @type {REST}
      */
-    this.rest = new RESTManager(this);
-  }
-
-  /**
-   * API shortcut
-   * @type {Object}
-   * @readonly
-   * @private
-   */
-  get api() {
-    return this.rest.api;
+    this.rest = new REST(this.options.rest);
   }
 
   /**
@@ -42,7 +36,8 @@ class BaseClient extends EventEmitter {
    * @returns {void}
    */
   destroy() {
-    if (this.rest.sweepInterval) clearInterval(this.rest.sweepInterval);
+    this.rest.requestManager.clearHashSweeper();
+    this.rest.requestManager.clearHandlerSweeper();
   }
 
   /**
@@ -68,14 +63,13 @@ class BaseClient extends EventEmitter {
   }
 
   toJSON(...props) {
-    return Util.flatten(this, { domain: false }, ...props);
+    return flatten(this, ...props);
   }
 }
 
 module.exports = BaseClient;
 
 /**
- * Emitted for general debugging information.
- * @event BaseClient#debug
- * @param {string} info The debug information
+ * @external REST
+ * @see {@link https://discord.js.org/#/docs/rest/main/class/REST}
  */

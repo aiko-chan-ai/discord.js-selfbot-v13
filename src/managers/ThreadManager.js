@@ -1,11 +1,11 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { makeURLSearchParams } = require('@discordjs/rest');
+const { ChannelType, Routes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
+const { TypeError, ErrorCodes } = require('../errors');
 const ThreadChannel = require('../structures/ThreadChannel');
-const { ChannelTypes } = require('../util/Constants');
-const { resolveAutoArchiveMaxLimit } = require('../util/Util');
 
 /**
  * Manages API methods for {@link ThreadChannel} objects and stores their cache.
@@ -65,12 +65,13 @@ class ThreadManager extends CachedManager {
    * @typedef {StartThreadOptions} ThreadCreateOptions
    * @property {MessageResolvable} [startMessage] The message to start a thread from. <warn>If this is defined then type
    * of thread gets automatically defined and cannot be changed. The provided `type` field will be ignored</warn>
-   * @property {ThreadChannelTypes|number} [type] The type of thread to create. Defaults to `GUILD_PUBLIC_THREAD` if
-   * created in a {@link TextChannel} <warn>When creating threads in a {@link NewsChannel} this is ignored and is always
-   * `GUILD_NEWS_THREAD`</warn>
+   * @property {ChannelType.GuildNewsThread|ChannelType.GuildPublicThread|ChannelType.GuildPrivateThread} [type]
+   * The type of thread to create.
+   * Defaults to {@link ChannelType.GuildPublicThread} if created in a {@link TextChannel}
+   * <warn>When creating threads in a {@link NewsChannel} this is ignored and is always
+   * {@link ChannelType.GuildNewsThread}</warn>
    * @property {boolean} [invitable] Whether non-moderators can add other non-moderators to the thread
-   * <info>Can only be set when type will be `GUILD_PRIVATE_THREAD`</info>
-   * @property {number} [rateLimitPerUser] The rate limit per user (slowmode) for the new channel in seconds
+   * <info>Can only be set when type will be {@link ChannelType.GuildPrivateThread}</info>
    */
 
   /**
@@ -82,7 +83,7 @@ class ThreadManager extends CachedManager {
    * channel.threads
    *   .create({
    *     name: 'food-talk',
-   *     autoArchiveDuration: 60,
+   *     autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
    *     reason: 'Needed a separate thread for food',
    *   })
    *   .then(threadChannel => console.log(threadChannel))
@@ -92,8 +93,8 @@ class ThreadManager extends CachedManager {
    * channel.threads
    *   .create({
    *      name: 'mod-talk',
-   *      autoArchiveDuration: 60,
-   *      type: 'GUILD_PRIVATE_THREAD',
+   *      autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
+   *      type: ChannelType.GuildPrivateThread,
    *      reason: 'Needed a separate thread for moderation',
    *    })
    *   .then(threadChannel => console.log(threadChannel))
@@ -108,28 +109,25 @@ class ThreadManager extends CachedManager {
     reason,
     rateLimitPerUser,
   } = {}) {
-    let path = this.client.api.channels(this.channel.id);
     if (type && typeof type !== 'string' && typeof type !== 'number') {
-      throw new TypeError('INVALID_TYPE', 'type', 'ThreadChannelType or Number');
+      throw new TypeError(ErrorCodes.InvalidType, 'type', 'ThreadChannelType or Number');
     }
     let resolvedType =
-      this.channel.type === 'GUILD_NEWS' ? ChannelTypes.GUILD_NEWS_THREAD : ChannelTypes.GUILD_PUBLIC_THREAD;
+      this.channel.type === ChannelType.GuildNews ? ChannelType.GuildNewsThread : ChannelType.GuildPublicThread;
+    let startMessageId;
     if (startMessage) {
-      const startMessageId = this.channel.messages.resolveId(startMessage);
-      if (!startMessageId) throw new TypeError('INVALID_TYPE', 'startMessage', 'MessageResolvable');
-      path = path.messages(startMessageId);
-    } else if (this.channel.type !== 'GUILD_NEWS') {
-      resolvedType = typeof type === 'string' ? ChannelTypes[type] : type ?? resolvedType;
+      startMessageId = this.channel.messages.resolveId(startMessage);
+      if (!startMessageId) throw new TypeError(ErrorCodes.InvalidType, 'startMessage', 'MessageResolvable');
+    } else if (this.channel.type !== ChannelType.GuildNews) {
+      resolvedType = type ?? resolvedType;
     }
 
-    if (autoArchiveDuration === 'MAX') autoArchiveDuration = resolveAutoArchiveMaxLimit(this.channel.guild);
-
-    const data = await path.threads.post({
-      data: {
+    const data = await this.client.rest.post(Routes.threads(this.channel.id, startMessageId), {
+      body: {
         name,
         auto_archive_duration: autoArchiveDuration,
         type: resolvedType,
-        invitable: resolvedType === ChannelTypes.GUILD_PRIVATE_THREAD ? invitable : undefined,
+        invitable: resolvedType === ChannelType.GuildPrivateThread ? invitable : undefined,
         rate_limit_per_user: rateLimitPerUser,
       },
       reason,
@@ -179,11 +177,12 @@ class ThreadManager extends CachedManager {
   /**
    * The options used to fetch archived threads.
    * @typedef {Object} FetchArchivedThreadOptions
-   * @property {string} [type='public'] The type of threads to fetch, either `public` or `private`
-   * @property {boolean} [fetchAll=false] Whether to fetch **all** archived threads when type is `private`.
-   * Requires `MANAGE_THREADS` if true
+   * @property {string} [type='public'] The type of threads to fetch (`public` or `private`)
+   * @property {boolean} [fetchAll=false] Whether to fetch **all** archived threads when `type` is `private`
+   * <info>This property requires the {@link PermissionFlagsBits.ManageThreads} permission if `true`.</info>
    * @property {DateResolvable|ThreadChannelResolvable} [before] Only return threads that were created before this Date
-   * or Snowflake. <warn>Must be a {@link ThreadChannelResolvable} when type is `private` and fetchAll is `false`</warn>
+   * or Snowflake
+   * <warn>Must be a {@link ThreadChannelResolvable} when `type` is `private` and `fetchAll` is `false`.</warn>
    * @property {number} [limit] Maximum number of threads to return
    */
 
@@ -195,68 +194,54 @@ class ThreadManager extends CachedManager {
    */
 
   /**
-   * Obtains a set of archived threads from Discord, requires `READ_MESSAGE_HISTORY` in the parent channel.
+   * Obtains a set of archived threads from Discord.
+   * <info>This method requires the {@link PermissionFlagsBits.ReadMessageHistory} permission
+   * in the parent channel.</info>
    * @param {FetchArchivedThreadOptions} [options] The options to fetch archived threads
    * @param {boolean} [cache=true] Whether to cache the new thread objects if they aren't already
    * @returns {Promise<FetchedThreads>}
    */
   async fetchArchived({ type = 'public', fetchAll = false, before, limit } = {}, cache = true) {
-    let path = this.client.api.channels(this.channel.id);
+    let path = Routes.channelThreads(this.channel.id, type);
     if (type === 'private' && !fetchAll) {
-      path = path.users('@me');
+      path = Routes.channelJoinedArchivedThreads(this.channel.id);
     }
     let timestamp;
     let id;
+    const query = makeURLSearchParams({ limit });
     if (typeof before !== 'undefined') {
       if (before instanceof ThreadChannel || /^\d{16,19}$/.test(String(before))) {
         id = this.resolveId(before);
         timestamp = this.resolve(before)?.archivedAt?.toISOString();
+        const toUse = type === 'private' && !fetchAll ? id : timestamp;
+        if (toUse) {
+          query.set('before', toUse);
+        }
       } else {
         try {
           timestamp = new Date(before).toISOString();
+          if (type === 'public' || fetchAll) {
+            query.set('before', timestamp);
+          }
         } catch {
-          throw new TypeError('INVALID_TYPE', 'before', 'DateResolvable or ThreadChannelResolvable');
+          throw new TypeError(ErrorCodes.InvalidType, 'before', 'DateResolvable or ThreadChannelResolvable');
         }
       }
     }
-    const raw = await path.threads
-      .archived(type)
-      .get({ query: { before: type === 'private' && !fetchAll ? id : timestamp, limit } });
+
+    const raw = await this.client.rest.get(path, { query });
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 
   /**
-   * Discord.js self-bot specific options field for fetching active threads.
-   * @typedef {Object} FetchChannelThreadsOptions
-   * @property {string} [sortBy] The order in which the threads should be fetched in (default is last_message_time)
-   * @property {string} [sortOrder] How the threads should be ordered (default is desc)
-   * @property {number} [limit] The maximum number of threads to return (default is 25)
-   * @property {number} [offset] The number of threads to offset fetching (useful when making multiple fetches) (default is 0)
-   */
-
-  /**
-   * Obtains the accessible active threads from Discord, requires `READ_MESSAGE_HISTORY` in the parent channel.
+   * Obtains the accessible active threads from Discord.
+   * <info>This method requires the {@link PermissionFlagsBits.ReadMessageHistory} permission
+   * in the parent channel.</info>
    * @param {boolean} [cache=true] Whether to cache the new thread objects if they aren't already
-   * @param {FetchChannelThreadsOptions} [options] Options for self-bots where advanced users can specify further options
    * @returns {Promise<FetchedThreads>}
    */
-  async fetchActive(cache = true, options = null) {
-    if (options && this.client.user.bot) {
-      throw new Error('INVALID_BOT_OPTIONS: Options can only be specified for user accounts.');
-    }
-
-    const raw = this.client.user.bot
-      ? await this.client.api.guilds(this.channel.guild.id).threads.active.get()
-      : await this.client.api.channels(this.channel.id).threads.search.get({
-          query: {
-            archived: false,
-            limit: options?.limit ?? 25,
-            offset: options?.offset ?? 0,
-            sort_by: options?.sortBy ?? 'last_message_time',
-            sort_order: options?.sortOrder ?? 'desc',
-          },
-        });
-
+  async fetchActive(cache = true) {
+    const raw = await this.client.rest.get(Routes.guildActiveThreads(this.channel.guild.id));
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 

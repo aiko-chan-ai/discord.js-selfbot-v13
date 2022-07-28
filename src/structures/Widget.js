@@ -1,11 +1,13 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { Routes } = require('discord-api-types/v10');
 const Base = require('./Base');
 const WidgetMember = require('./WidgetMember');
 
 /**
  * Represents a Widget.
+ * @extends {Base}
  */
 class Widget extends Base {
   constructor(client, data) {
@@ -77,7 +79,7 @@ class Widget extends Base {
    * @returns {Promise<Widget>}
    */
   async fetch() {
-    const data = await this.client.api.guilds(this.id, 'widget.json').get();
+    const data = await this.client.rest.get(Routes.guildWidgetJSON(this.id));
     this._patch(data);
     return this;
   }

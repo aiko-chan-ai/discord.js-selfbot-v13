@@ -1,15 +1,31 @@
 'use strict';
 
-const { RangeError } = require('../errors');
+const { RangeError, ErrorCodes } = require('../errors');
 
 /**
  * Data structure that makes it easy to interact with a bitfield.
  */
 class BitField {
   /**
-   * @param {BitFieldResolvable} [bits=this.constructor.defaultBit] Bit(s) to read from
+   * Numeric bitfield flags.
+   * <info>Defined in extension classes</info>
+   * @type {Object}
+   * @memberof BitField
+   * @abstract
    */
-  constructor(bits = this.constructor.defaultBit) {
+  static Flags = {};
+
+  /**
+   * @type {number|bigint}
+   * @memberof BitField
+   * @private
+   */
+  static DefaultBit = 0;
+
+  /**
+   * @param {BitFieldResolvable} [bits=this.constructor.DefaultBit] Bit(s) to read from
+   */
+  constructor(bits = this.constructor.DefaultBit) {
     /**
      * Bitfield of the packed bits
      * @type {number|bigint}
@@ -23,7 +39,7 @@ class BitField {
    * @returns {boolean}
    */
   any(bit) {
-    return (this.bitfield & this.constructor.resolve(bit)) !== this.constructor.defaultBit;
+    return (this.bitfield & this.constructor.resolve(bit)) !== this.constructor.DefaultBit;
   }
 
   /**
@@ -69,7 +85,7 @@ class BitField {
    * @returns {BitField} These bits or new BitField if the instance is frozen.
    */
   add(...bits) {
-    let total = this.constructor.defaultBit;
+    let total = this.constructor.DefaultBit;
     for (const bit of bits) {
       total |= this.constructor.resolve(bit);
     }
@@ -84,7 +100,7 @@ class BitField {
    * @returns {BitField} These bits or new BitField if the instance is frozen.
    */
   remove(...bits) {
-    let total = this.constructor.defaultBit;
+    let total = this.constructor.DefaultBit;
     for (const bit of bits) {
       total |= this.constructor.resolve(bit);
     }
@@ -101,7 +117,7 @@ class BitField {
    */
   serialize(...hasParams) {
     const serialized = {};
-    for (const [flag, bit] of Object.entries(this.constructor.FLAGS)) serialized[flag] = this.has(bit, ...hasParams);
+    for (const [flag, bit] of Object.entries(this.constructor.Flags)) serialized[flag] = this.has(bit, ...hasParams);
     return serialized;
   }
 
@@ -111,7 +127,7 @@ class BitField {
    * @returns {string[]}
    */
   toArray(...hasParams) {
-    return Object.keys(this.constructor.FLAGS).filter(bit => this.has(bit, ...hasParams));
+    return Object.keys(this.constructor.Flags).filter(bit => this.has(bit, ...hasParams));
   }
 
   toJSON() {
@@ -128,7 +144,7 @@ class BitField {
 
   /**
    * Data that can be resolved to give a bitfield. This can be:
-   * * A bit number (this can be a number literal or a value taken from {@link BitField.FLAGS})
+   * * A bit number (this can be a number literal or a value taken from {@link BitField.Flags})
    * * A string bit number
    * * An instance of BitField
    * * An Array of BitFieldResolvable
@@ -141,30 +157,16 @@ class BitField {
    * @returns {number|bigint}
    */
   static resolve(bit) {
-    const { defaultBit } = this;
-    if (typeof defaultBit === typeof bit && bit >= defaultBit) return bit;
+    const { DefaultBit } = this;
+    if (typeof DefaultBit === typeof bit && bit >= DefaultBit) return bit;
     if (bit instanceof BitField) return bit.bitfield;
-    if (Array.isArray(bit)) return bit.map(p => this.resolve(p)).reduce((prev, p) => prev | p, defaultBit);
+    if (Array.isArray(bit)) return bit.map(p => this.resolve(p)).reduce((prev, p) => prev | p, DefaultBit);
     if (typeof bit === 'string') {
-      if (typeof this.FLAGS[bit] !== 'undefined') return this.FLAGS[bit];
-      if (!isNaN(bit)) return typeof defaultBit === 'bigint' ? BigInt(bit) : Number(bit);
+      if (typeof this.Flags[bit] !== 'undefined') return this.Flags[bit];
+      if (!isNaN(bit)) return typeof DefaultBit === 'bigint' ? BigInt(bit) : Number(bit);
     }
-    throw new RangeError('BITFIELD_INVALID', bit);
+    throw new RangeError(ErrorCodes.BitFieldInvalid, bit);
   }
 }
-
-/**
- * Numeric bitfield flags.
- * <info>Defined in extension classes</info>
- * @type {Object}
- * @abstract
- */
-BitField.FLAGS = {};
-
-/**
- * @type {number|bigint}
- * @private
- */
-BitField.defaultBit = 0;
 
 module.exports = BitField;

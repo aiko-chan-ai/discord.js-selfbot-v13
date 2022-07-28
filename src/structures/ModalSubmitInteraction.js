@@ -1,60 +1,61 @@
 'use strict';
 
-const Interaction = require('./Interaction');
+const BaseInteraction = require('./BaseInteraction');
 const InteractionWebhook = require('./InteractionWebhook');
-const ModalSubmitFieldsResolver = require('./ModalSubmitFieldsResolver');
+const ModalSubmitFields = require('./ModalSubmitFields');
 const InteractionResponses = require('./interfaces/InteractionResponses');
-const { MessageComponentTypes } = require('../util/Constants');
+const { lazy } = require('../util/Util');
+
+const getMessage = lazy(() => require('./Message').Message);
 
 /**
- * Represents a modal submit interaction.
- * @extends {Interaction}
+ * @typedef {Object} ModalData
+ * @property {string} value The value of the field
+ * @property {ComponentType} type The component type of the field
+ * @property {string} customId The custom id of the field
+ */
+
+/**
+ * @typedef {Object} ActionRowModalData
+ * @property {ModalData[]} components The components of this action row
+ * @property {ComponentType} type The component type of the action row
+ */
+
+/**
+ * Represents a modal interaction
+ * @extends {BaseInteraction}
  * @implements {InteractionResponses}
  */
-class ModalSubmitInteraction extends Interaction {
+class ModalSubmitInteraction extends BaseInteraction {
   constructor(client, data) {
     super(client, data);
-
     /**
      * The custom id of the modal.
      * @type {string}
      */
     this.customId = data.data.custom_id;
 
-    /**
-     * @typedef {Object} PartialTextInputData
-     * @property {string} [customId] A unique string to be sent in the interaction when submitted
-     * @property {MessageComponentType} [type] The type of this component
-     * @property {string} [value] Value of this text input component
-     */
+    if ('message' in data) {
+      /**
+       * The message associated with this interaction
+       * @type {?Message}
+       */
+      this.message = this.channel?.messages._add(data.message) ?? new (getMessage())(this.client, data.message);
+    } else {
+      this.message = null;
+    }
 
     /**
-     * @typedef {Object} PartialModalActionRow
-     * @property {MessageComponentType} [type] The type of this component
-     * @property {PartialTextInputData[]} [components] Partial text input components
+     * The components within the modal
+     * @type {ActionRowModalData[]}
      */
-
-    /**
-     * The inputs within the modal
-     * @type {PartialModalActionRow[]}
-     */
-    this.components =
-      data.data.components?.map(c => ({
-        type: MessageComponentTypes[c.type],
-        components: ModalSubmitInteraction.transformComponent(c),
-      })) ?? [];
-
-    /**
-     * The message associated with this interaction
-     * @type {Message|APIMessage|null}
-     */
-    this.message = data.message ? this.channel?.messages._add(data.message) ?? data.message : null;
+    this.components = data.data.components?.map(c => ModalSubmitInteraction.transformComponent(c));
 
     /**
      * The fields within the modal
-     * @type {ModalSubmitFieldsResolver}
+     * @type {ModalSubmitFields}
      */
-    this.fields = new ModalSubmitFieldsResolver(this.components);
+    this.fields = new ModalSubmitFields(this.components);
 
     /**
      * Whether the reply to this interaction has been deferred
@@ -63,16 +64,16 @@ class ModalSubmitInteraction extends Interaction {
     this.deferred = false;
 
     /**
-     * Whether the reply to this interaction is ephemeral
-     * @type {?boolean}
-     */
-    this.ephemeral = null;
-
-    /**
      * Whether this interaction has already been replied to
      * @type {boolean}
      */
     this.replied = false;
+
+    /**
+     * Whether the reply to this interaction is ephemeral
+     * @type {?boolean}
+     */
+    this.ephemeral = null;
 
     /**
      * An associated interaction webhook, can be used to further interact with this interaction
@@ -84,14 +85,15 @@ class ModalSubmitInteraction extends Interaction {
   /**
    * Transforms component data to discord.js-compatible data
    * @param {*} rawComponent The data to transform
-   * @returns {PartialTextInputData[]}
+   * @returns {ModalData[]}
    */
   static transformComponent(rawComponent) {
-    return rawComponent.components.map(c => ({
-      value: c.value,
-      type: MessageComponentTypes[c.type],
-      customId: c.custom_id,
-    }));
+    return {
+      value: rawComponent.value,
+      type: rawComponent.type,
+      customId: rawComponent.custom_id,
+      components: rawComponent.components?.map(c => this.transformComponent(c)),
+    };
   }
 
   /**
@@ -110,10 +112,10 @@ class ModalSubmitInteraction extends Interaction {
   editReply() {}
   deleteReply() {}
   followUp() {}
-  update() {}
   deferUpdate() {}
+  update() {}
 }
 
-InteractionResponses.applyToClass(ModalSubmitInteraction, ['showModal', 'awaitModalSubmit']);
+InteractionResponses.applyToClass(ModalSubmitInteraction, 'showModal');
 
 module.exports = ModalSubmitInteraction;

@@ -1,1 +1,1 @@
-# [View the documentation here.](https://discordjs-self-v13.netlify.app/#/docs)
+## [View the documentation here.](https://discord.js.org/#/docs)

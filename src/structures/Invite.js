@@ -1,21 +1,25 @@
 'use strict';
 
-const Buffer = require('node:buffer').Buffer;
+const { RouteBases, Routes, PermissionFlagsBits } = require('discord-api-types/v10');
 const Base = require('./Base');
 const { GuildScheduledEvent } = require('./GuildScheduledEvent');
 const IntegrationApplication = require('./IntegrationApplication');
 const InviteStageInstance = require('./InviteStageInstance');
-const { Error } = require('../errors');
-const { ChannelTypes, Endpoints } = require('../util/Constants');
-const Permissions = require('../util/Permissions');
-
-// TODO: Convert `inviter` and `channel` in this class to a getter.
+const { Error, ErrorCodes } = require('../errors');
 
 /**
  * Represents an invitation to a guild channel.
  * @extends {Base}
  */
 class Invite extends Base {
+  /**
+   * A regular expression that globally matches Discord invite links.
+   * The `code` group property is present on the `exec()` result of this expression.
+   * @type {RegExp}
+   * @memberof Invite
+   */
+  static InvitesPattern = /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/(?<code>[\w-]{2,255})/i;
+
   constructor(client, data) {
     super(client);
     this._patch(data);
@@ -116,20 +120,13 @@ class Invite extends Base {
        * @type {?Snowflake}
        */
       this.inviterId = data.inviter_id;
-      this.inviter = this.client.users.resolve(data.inviter_id);
     } else {
       this.inviterId ??= null;
     }
 
     if ('inviter' in data) {
-      /**
-       * The user who created this invite
-       * @type {?User}
-       */
-      this.inviter ??= this.client.users._add(data.inviter);
+      this.client.users._add(data.inviter);
       this.inviterId = data.inviter.id;
-    } else {
-      this.inviter ??= null;
     }
 
     if ('target_user' in data) {
@@ -152,18 +149,10 @@ class Invite extends Base {
       this.targetApplication ??= null;
     }
 
-    /**
-     * The type of the invite target:
-     * * 1: STREAM
-     * * 2: EMBEDDED_APPLICATION
-     * @typedef {number} TargetType
-     * @see {@link https://discord.com/developers/docs/resources/invite#invite-object-invite-target-types}
-     */
-
     if ('target_type' in data) {
       /**
        * The target type
-       * @type {?TargetType}
+       * @type {?InviteTargetType}
        */
       this.targetType = data.target_type;
     } else {
@@ -172,19 +161,21 @@ class Invite extends Base {
 
     if ('channel_id' in data) {
       /**
-       * The channel's id this invite is for
-       * @type {Snowflake}
+       * The id of the channel this invite is for
+       * @type {?Snowflake}
        */
       this.channelId = data.channel_id;
-      this.channel = this.client.channels.cache.get(data.channel_id);
     }
 
-    if ('channel' in data && data.channel) {
+    if ('channel' in data) {
       /**
        * The channel this invite is for
-       * @type {Channel}
+       * @type {?BaseChannel}
        */
-      this.channel ??= this.client.channels._add(data.channel, this.guild, { cache: false });
+      this.channel =
+        this.client.channels._add(data.channel, this.guild, { cache: false }) ??
+        this.client.channels.resolve(this.channelId);
+
       this.channelId ??= data.channel.id;
     }
 
@@ -193,7 +184,7 @@ class Invite extends Base {
        * The timestamp this invite was created at
        * @type {?number}
        */
-      this.createdTimestamp = new Date(data.created_at).getTime();
+      this.createdTimestamp = Date.parse(data.created_at);
     } else {
       this.createdTimestamp ??= null;
     }
@@ -208,6 +199,7 @@ class Invite extends Base {
       /**
        * The stage instance data if there is a public {@link StageInstance} in the stage channel this invite is for
        * @type {?InviteStageInstance}
+       * @deprecated
        */
       this.stageInstance = new InviteStageInstance(this.client, data.stage_instance, this.channel.id, this.guild.id);
     } else {
@@ -231,7 +223,7 @@ class Invite extends Base {
    * @readonly
    */
   get createdAt() {
-    return this.createdTimestamp ? new Date(this.createdTimestamp) : null;
+    return this.createdTimestamp && new Date(this.createdTimestamp);
   }
 
   /**
@@ -242,10 +234,10 @@ class Invite extends Base {
   get deletable() {
     const guild = this.guild;
     if (!guild || !this.client.guilds.cache.has(guild.id)) return false;
-    if (!guild.me) throw new Error('GUILD_UNCACHED_ME');
-    return (
-      this.channel.permissionsFor(this.client.user).has(Permissions.FLAGS.MANAGE_CHANNELS, false) ||
-      guild.me.permissions.has(Permissions.FLAGS.MANAGE_GUILD)
+    if (!guild.members.me) throw new Error(ErrorCodes.GuildUncachedMe);
+    return Boolean(
+      this.channel?.permissionsFor(this.client.user).has(PermissionFlagsBits.ManageChannels, false) ||
+        guild.members.me.permissions.has(PermissionFlagsBits.ManageGuild),
     );
   }
 
@@ -267,8 +259,16 @@ class Invite extends Base {
    * @readonly
    */
   get expiresAt() {
-    const { expiresTimestamp } = this;
-    return expiresTimestamp ? new Date(expiresTimestamp) : null;
+    return this.expiresTimestamp && new Date(this.expiresTimestamp);
+  }
+
+  /**
+   * The user who created this invite
+   * @type {?User}
+   * @readonly
+   */
+  get inviter() {
+    return this.inviterId && this.client.users.resolve(this.inviterId);
   }
 
   /**
@@ -277,7 +277,7 @@ class Invite extends Base {
    * @readonly
    */
   get url() {
-    return Endpoints.invite(this.client.options.http.invite, this.code);
+    return `${RouteBases.invite}/${this.code}`;
   }
 
   /**
@@ -286,7 +286,7 @@ class Invite extends Base {
    * @returns {Promise<Invite>}
    */
   async delete(reason) {
-    await this.client.api.invites[this.code].delete({ reason });
+    await this.client.rest.delete(Routes.invite(this.code), { reason });
     return this;
   }
 
@@ -317,55 +317,6 @@ class Invite extends Base {
   valueOf() {
     return this.code;
   }
-
-  /**
-   * Join this Guild using this invite.
-   * @param {boolean} autoVerify Whether to automatically verify member
-   * @param {string} [captcha] The captcha key to add
-   * @returns {Promise<void>}
-   * @example
-   * await client.fetchInvite('code').then(async invite => {
-   *   await invite.acceptInvite();
-   * });
-   */
-  async acceptInvite(autoVerify = true, captcha = null) {
-    if (!this.guild) throw new Error('INVITE_NO_GUILD');
-    const dataHeader = {
-      location: 'Join Guild',
-      location_guild_id: this.guild?.id,
-      location_channel_id: this.channelId,
-      location_channel_type: ChannelTypes[this.channel?.type] ?? 0,
-    };
-    await this.client.api.invites(this.code).post({
-      data: captcha
-        ? {
-            captcha_key: captcha,
-          }
-        : {},
-      // Goodjob discord :) Bypass Phone Verification (not captcha .-.)
-      headers: {
-        'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
-      },
-    });
-    if (autoVerify) {
-      const getForm = await this.client.api
-        .guilds(this.guild.id)
-        ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
-        .catch(() => {});
-      if (!getForm) return undefined;
-      const form = Object.assign(getForm.form_fields[0], { response: true });
-      // Respond to the form
-      // https://discord.com/api/v9/guilds/:id/requests/@me
-      await this.client.api.guilds(this.guild.id).requests['@me'].put({ data: { form_fields: [form] } });
-    }
-    return undefined;
-  }
 }
-
-/**
- * Regular expression that globally matches Discord invite links
- * @type {RegExp}
- */
-Invite.INVITES_PATTERN = /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/([\w-]{2,255})/gi;
 
 module.exports = Invite;

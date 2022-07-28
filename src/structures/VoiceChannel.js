@@ -1,13 +1,9 @@
 'use strict';
 
-const process = require('node:process');
+const { PermissionFlagsBits } = require('discord-api-types/v10');
 const BaseGuildVoiceChannel = require('./BaseGuildVoiceChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const MessageManager = require('../managers/MessageManager');
-const { VideoQualityModes } = require('../util/Constants');
-const Permissions = require('../util/Permissions');
-
-let deprecationEmittedForEditable = false;
 
 /**
  * Represents a guild voice channel on Discord.
@@ -41,7 +37,7 @@ class VoiceChannel extends BaseGuildVoiceChannel {
        * The camera video quality mode of the channel.
        * @type {?VideoQualityMode}
        */
-      this.videoQualityMode = VideoQualityModes[data.video_quality_mode];
+      this.videoQualityMode = data.video_quality_mode;
     } else {
       this.videoQualityMode ??= null;
     }
@@ -67,27 +63,8 @@ class VoiceChannel extends BaseGuildVoiceChannel {
     }
 
     if ('nsfw' in data) {
-      this.nsfw = data.nsfw;
+      this.nsfw = Boolean(data.nsfw);
     }
-  }
-
-  /**
-   * Whether the channel is editable by the client user
-   * @type {boolean}
-   * @readonly
-   * @deprecated Use {@link VoiceChannel#manageable} instead
-   */
-  get editable() {
-    if (!deprecationEmittedForEditable) {
-      process.emitWarning(
-        'The VoiceChannel#editable getter is deprecated. Use VoiceChannel#manageable instead.',
-        'DeprecationWarning',
-      );
-
-      deprecationEmittedForEditable = true;
-    }
-
-    return this.manageable;
   }
 
   /**
@@ -97,7 +74,7 @@ class VoiceChannel extends BaseGuildVoiceChannel {
    */
   get joinable() {
     if (!super.joinable) return false;
-    if (this.full && !this.permissionsFor(this.client.user).has(Permissions.FLAGS.MOVE_MEMBERS, false)) return false;
+    if (this.full && !this.permissionsFor(this.client.user).has(PermissionFlagsBits.MoveMembers, false)) return false;
     return true;
   }
 
@@ -110,10 +87,11 @@ class VoiceChannel extends BaseGuildVoiceChannel {
     const permissions = this.permissionsFor(this.client.user);
     if (!permissions) return false;
     // This flag allows speaking even if timed out
-    if (permissions.has(Permissions.FLAGS.ADMINISTRATOR, false)) return true;
+    if (permissions.has(PermissionFlagsBits.Administrator, false)) return true;
 
     return (
-      this.guild.me.communicationDisabledUntilTimestamp < Date.now() && permissions.has(Permissions.FLAGS.SPEAK, false)
+      this.guild.members.me.communicationDisabledUntilTimestamp < Date.now() &&
+      permissions.has(PermissionFlagsBits.Speak, false)
     );
   }
 
@@ -129,7 +107,7 @@ class VoiceChannel extends BaseGuildVoiceChannel {
    *   .catch(console.error);
    */
   setBitrate(bitrate, reason) {
-    return this.edit({ bitrate }, reason);
+    return this.edit({ bitrate, reason });
   }
 
   /**
@@ -144,17 +122,17 @@ class VoiceChannel extends BaseGuildVoiceChannel {
    *   .catch(console.error);
    */
   setUserLimit(userLimit, reason) {
-    return this.edit({ userLimit }, reason);
+    return this.edit({ userLimit, reason });
   }
 
   /**
    * Sets the camera video quality mode of the channel.
-   * @param {VideoQualityMode|number} videoQualityMode The new camera video quality mode.
+   * @param {VideoQualityMode} videoQualityMode The new camera video quality mode.
    * @param {string} [reason] Reason for changing the camera video quality mode.
    * @returns {Promise<VoiceChannel>}
    */
   setVideoQualityMode(videoQualityMode, reason) {
-    return this.edit({ videoQualityMode }, reason);
+    return this.edit({ videoQualityMode, reason });
   }
 
   // These are here only for documentation purposes - they are implemented by TextBasedChannel

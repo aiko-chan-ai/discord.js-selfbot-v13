@@ -2,7 +2,7 @@
 
 const Action = require('./Action');
 const Invite = require('../../structures/Invite');
-const { Events } = require('../../util/Constants');
+const Events = require('../../util/Events');
 
 class InviteDeleteAction extends Action {
   handle(data) {
@@ -17,12 +17,12 @@ class InviteDeleteAction extends Action {
 
     /**
      * Emitted when an invite is deleted.
-     * <info> This event only triggers if the client has `MANAGE_GUILD` permissions for the guild,
-     * or `MANAGE_CHANNELS` permissions for the channel.</info>
+     * <info>This event requires either the {@link PermissionFlagsBits.ManageGuild} permission or the
+     * {@link PermissionFlagsBits.ManageChannels} permission for the channel.</info>
      * @event Client#inviteDelete
      * @param {Invite} invite The invite that was deleted
      */
-    client.emit(Events.INVITE_DELETE, invite);
+    client.emit(Events.InviteDelete, invite);
     return { invite };
   }
 }

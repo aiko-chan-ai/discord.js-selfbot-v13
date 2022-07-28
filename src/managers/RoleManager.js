@@ -2,13 +2,13 @@
 
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
+const { Routes } = require('discord-api-types/v10');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
+const { TypeError, ErrorCodes } = require('../errors');
 const { Role } = require('../structures/Role');
 const DataResolver = require('../util/DataResolver');
-const Permissions = require('../util/Permissions');
-const { resolveColor } = require('../util/Util');
-const Util = require('../util/Util');
+const PermissionsBitField = require('../util/PermissionsBitField');
+const { setPosition, resolveColor } = require('../util/Util');
 
 let cacheWarningEmitted = false;
 
@@ -67,7 +67,7 @@ class RoleManager extends CachedManager {
     }
 
     // We cannot fetch a single role, as of this commit's date, Discord API throws with 405
-    const data = await this.client.api.guilds(this.guild.id).roles.get();
+    const data = await this.client.rest.get(Routes.guildRoles(this.guild.id));
     const roles = new Collection();
     for (const role of data) roles.set(role.id, this._add(role, cache));
     return id ? roles.get(id) ?? null : roles;
@@ -128,7 +128,7 @@ class RoleManager extends CachedManager {
    * // Create a new role with data and a reason
    * guild.roles.create({
    *   name: 'Super Cool Blue People',
-   *   color: 'BLUE',
+   *   color: Colors.Blue,
    *   reason: 'we needed a role for Super Cool People',
    * })
    *   .then(console.log)
@@ -137,15 +137,15 @@ class RoleManager extends CachedManager {
   async create(options = {}) {
     let { name, color, hoist, permissions, position, mentionable, reason, icon, unicodeEmoji } = options;
     color &&= resolveColor(color);
-    if (typeof permissions !== 'undefined') permissions = new Permissions(permissions);
+    if (typeof permissions !== 'undefined') permissions = new PermissionsBitField(permissions);
     if (icon) {
       const guildEmojiURL = this.guild.emojis.resolve(icon)?.url;
       icon = guildEmojiURL ? await DataResolver.resolveImage(guildEmojiURL) : await DataResolver.resolveImage(icon);
       if (typeof icon !== 'string') icon = undefined;
     }
 
-    const data = await this.client.api.guilds(this.guild.id).roles.post({
-      data: {
+    const data = await this.client.rest.post(Routes.guildRoles(this.guild.id), {
+      body: {
         name,
         color,
         hoist,
@@ -165,10 +165,15 @@ class RoleManager extends CachedManager {
   }
 
   /**
+   * Options for editing a role
+   * @typedef {RoleData} EditRoleOptions
+   * @property {string} [reason] The reason for editing this role
+   */
+
+  /**
    * Edits a role of the guild.
    * @param {RoleResolvable} role The role to edit
-   * @param {RoleData} data The new data for the role
-   * @param {string} [reason] Reason for editing this role
+   * @param {EditRoleOptions} data The new data for the role
    * @returns {Promise<Role>}
    * @example
    * // Edit a role
@@ -176,11 +181,13 @@ class RoleManager extends CachedManager {
    *   .then(updated => console.log(`Edited role name to ${updated.name}`))
    *   .catch(console.error);
    */
-  async edit(role, data, reason) {
+  async edit(role, data) {
     role = this.resolve(role);
-    if (!role) throw new TypeError('INVALID_TYPE', 'role', 'RoleResolvable');
+    if (!role) throw new TypeError(ErrorCodes.InvalidType, 'role', 'RoleResolvable');
 
-    if (typeof data.position === 'number') await this.setPosition(role, data.position, { reason });
+    if (typeof data.position === 'number') {
+      await this.setPosition(role, data.position, { reason: data.reason });
+    }
 
     let icon = data.icon;
     if (icon) {
@@ -189,17 +196,17 @@ class RoleManager extends CachedManager {
       if (typeof icon !== 'string') icon = undefined;
     }
 
-    const _data = {
+    const body = {
       name: data.name,
       color: typeof data.color === 'undefined' ? undefined : resolveColor(data.color),
       hoist: data.hoist,
-      permissions: typeof data.permissions === 'undefined' ? undefined : new Permissions(data.permissions),
+      permissions: typeof data.permissions === 'undefined' ? undefined : new PermissionsBitField(data.permissions),
       mentionable: data.mentionable,
       icon,
       unicode_emoji: data.unicodeEmoji,
     };
 
-    const d = await this.client.api.guilds(this.guild.id).roles(role.id).patch({ data: _data, reason });
+    const d = await this.client.rest.patch(Routes.guildRole(this.guild.id, role.id), { body, reason: data.reason });
 
     const clone = role._clone();
     clone._patch(d);
@@ -214,12 +221,12 @@ class RoleManager extends CachedManager {
    * @example
    * // Delete a role
    * guild.roles.delete('222079219327434752', 'The role needed to go')
-   *   .then(() => console.log('Deleted the role.'))
+   *   .then(() => console.log('Deleted the role'))
    *   .catch(console.error);
    */
   async delete(role, reason) {
     const id = this.resolveId(role);
-    await this.client.api.guilds[this.guild.id].roles[id].delete({ reason });
+    await this.client.rest.delete(Routes.guildRole(this.guild.id, id), { reason });
     this.client.actions.GuildRoleDelete.handle({ guild_id: this.guild.id, role_id: id });
   }
 
@@ -237,13 +244,14 @@ class RoleManager extends CachedManager {
    */
   async setPosition(role, position, { relative, reason } = {}) {
     role = this.resolve(role);
-    if (!role) throw new TypeError('INVALID_TYPE', 'role', 'RoleResolvable');
-    const updatedRoles = await Util.setPosition(
+    if (!role) throw new TypeError(ErrorCodes.InvalidType, 'role', 'RoleResolvable');
+    const updatedRoles = await setPosition(
       role,
       position,
       relative,
       this.guild._sortedRoles(),
-      this.client.api.guilds(this.guild.id).roles,
+      this.client,
+      Routes.guildRoles(this.guild.id),
       reason,
     );
 
@@ -278,9 +286,7 @@ class RoleManager extends CachedManager {
     }));
 
     // Call the API to update role positions
-    await this.client.api.guilds(this.guild.id).roles.patch({
-      data: rolePositions,
-    });
+    await this.client.rest.patch(Routes.guildRoles(this.guild.id), { body: rolePositions });
     return this.client.actions.GuildRolesPositionUpdate.handle({
       guild_id: this.guild.id,
       roles: rolePositions,
@@ -297,7 +303,7 @@ class RoleManager extends CachedManager {
   comparePositions(role1, role2) {
     const resolvedRole1 = this.resolve(role1);
     const resolvedRole2 = this.resolve(role2);
-    if (!resolvedRole1 || !resolvedRole2) throw new TypeError('INVALID_TYPE', 'role', 'Role nor a Snowflake');
+    if (!resolvedRole1 || !resolvedRole2) throw new TypeError(ErrorCodes.InvalidType, 'role', 'Role nor a Snowflake');
 
     if (resolvedRole1.position === resolvedRole2.position) {
       return Number(BigInt(resolvedRole2.id) - BigInt(resolvedRole1.id));

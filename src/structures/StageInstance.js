@@ -1,17 +1,7 @@
 'use strict';
 
-const process = require('node:process');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
-const { PrivacyLevels } = require('../util/Constants');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
-
-/**
- * @type {WeakSet<StageInstance>}
- * @private
- * @internal
- */
-const deletedStageInstances = new WeakSet();
-let deprecationEmittedForDeleted = false;
 
 /**
  * Represents a stage instance.
@@ -58,15 +48,16 @@ class StageInstance extends Base {
     if ('privacy_level' in data) {
       /**
        * The privacy level of the stage instance
-       * @type {PrivacyLevel}
+       * @type {StageInstancePrivacyLevel}
        */
-      this.privacyLevel = PrivacyLevels[data.privacy_level];
+      this.privacyLevel = data.privacy_level;
     }
 
     if ('discoverable_disabled' in data) {
       /**
        * Whether or not stage discovery is disabled
        * @type {?boolean}
+       * @deprecated See https://github.com/discord/discord-api-docs/pull/4296 for more information
        */
       this.discoverableDisabled = data.discoverable_disabled;
     } else {
@@ -94,51 +85,21 @@ class StageInstance extends Base {
   }
 
   /**
-   * The associated guild scheduled event of this stage instance
-   * @type {?GuildScheduledEvent}
-   * @readonly
-   */
-  get guildScheduledEvent() {
-    return this.guild?.scheduledEvents.resolve(this.guildScheduledEventId) ?? null;
-  }
-
-  /**
-   * Whether or not the stage instance has been deleted
-   * @type {boolean}
-   * @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091
-   */
-  get deleted() {
-    if (!deprecationEmittedForDeleted) {
-      deprecationEmittedForDeleted = true;
-      process.emitWarning(
-        'StageInstance#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
-        'DeprecationWarning',
-      );
-    }
-
-    return deletedStageInstances.has(this);
-  }
-
-  set deleted(value) {
-    if (!deprecationEmittedForDeleted) {
-      deprecationEmittedForDeleted = true;
-      process.emitWarning(
-        'StageInstance#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
-        'DeprecationWarning',
-      );
-    }
-
-    if (value) deletedStageInstances.add(this);
-    else deletedStageInstances.delete(this);
-  }
-
-  /**
    * The guild this stage instance belongs to
    * @type {?Guild}
    * @readonly
    */
   get guild() {
     return this.client.guilds.resolve(this.guildId);
+  }
+
+  /**
+   * The associated guild scheduled event of this stage instance
+   * @type {?GuildScheduledEvent}
+   * @readonly
+   */
+  get guildScheduledEvent() {
+    return this.guild?.scheduledEvents.resolve(this.guildScheduledEventId) ?? null;
   }
 
   /**
@@ -167,7 +128,6 @@ class StageInstance extends Base {
   async delete() {
     await this.guild.stageInstances.delete(this.channelId);
     const clone = this._clone();
-    deletedStageInstances.add(clone);
     return clone;
   }
 
@@ -191,7 +151,7 @@ class StageInstance extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -205,4 +165,3 @@ class StageInstance extends Base {
 }
 
 exports.StageInstance = StageInstance;
-exports.deletedStageInstances = deletedStageInstances;

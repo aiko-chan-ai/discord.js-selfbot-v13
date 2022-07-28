@@ -1,5 +1,7 @@
 'use strict';
 
+const { __exportStar } = require('tslib');
+
 // "Root" classes (starting points)
 exports.BaseClient = require('./client/BaseClient');
 exports.Client = require('./client/Client');
@@ -8,32 +10,40 @@ exports.ShardClientUtil = require('./sharding/ShardClientUtil');
 exports.ShardingManager = require('./sharding/ShardingManager');
 exports.WebhookClient = require('./client/WebhookClient');
 
+// Errors
+const { Error, TypeError, RangeError } = require('./errors/DJSError');
+exports.DiscordjsError = Error;
+exports.DiscordjsTypeError = TypeError;
+exports.DiscordjsRangeError = RangeError;
+exports.DiscordjsErrorCodes = require('./errors/ErrorCodes');
+
 // Utilities
-exports.ActivityFlags = require('./util/ActivityFlags');
-exports.ApplicationFlags = require('./util/ApplicationFlags');
+exports.ActivityFlagsBitField = require('./util/ActivityFlagsBitField');
+exports.ApplicationFlagsBitField = require('./util/ApplicationFlagsBitField');
 exports.BaseManager = require('./managers/BaseManager');
 exports.BitField = require('./util/BitField');
 exports.Collection = require('@discordjs/collection').Collection;
 exports.Constants = require('./util/Constants');
+exports.Colors = require('./util/Colors');
 exports.DataResolver = require('./util/DataResolver');
-exports.DiscordAPIError = require('./rest/DiscordAPIError');
+exports.Events = require('./util/Events');
 exports.Formatters = require('./util/Formatters');
-exports.HTTPError = require('./rest/HTTPError');
-exports.Intents = require('./util/Intents');
+exports.IntentsBitField = require('./util/IntentsBitField');
 exports.LimitedCollection = require('./util/LimitedCollection');
-exports.MessageFlags = require('./util/MessageFlags');
+exports.MessageFlagsBitField = require('./util/MessageFlagsBitField');
 exports.Options = require('./util/Options');
-exports.Permissions = require('./util/Permissions');
-exports.RateLimitError = require('./rest/RateLimitError');
-exports.SnowflakeUtil = require('./util/SnowflakeUtil');
+exports.Partials = require('./util/Partials');
+exports.PermissionsBitField = require('./util/PermissionsBitField');
+exports.ShardEvents = require('./util/ShardEvents');
+exports.Status = require('./util/Status');
+exports.SnowflakeUtil = require('@sapphire/snowflake').DiscordSnowflake;
 exports.Sweepers = require('./util/Sweepers');
-exports.SystemChannelFlags = require('./util/SystemChannelFlags');
-exports.ThreadMemberFlags = require('./util/ThreadMemberFlags');
-exports.UserFlags = require('./util/UserFlags');
-exports.Util = require('./util/Util');
+exports.SystemChannelFlagsBitField = require('./util/SystemChannelFlagsBitField');
+exports.ThreadMemberFlagsBitField = require('./util/ThreadMemberFlagsBitField');
+exports.UserFlagsBitField = require('./util/UserFlagsBitField');
+__exportStar(require('./util/Util.js'), exports);
+exports.WebSocketShardEvents = require('./util/WebSocketShardEvents');
 exports.version = require('../package.json').version;
-exports.DiscordAuthWebsocket = require('./util/RemoteAuth');
-exports.PurchasedFlags = require('./util/PurchasedFlags');
 
 // Managers
 exports.ApplicationCommandManager = require('./managers/ApplicationCommandManager');
@@ -67,36 +77,41 @@ exports.UserManager = require('./managers/UserManager');
 exports.VoiceStateManager = require('./managers/VoiceStateManager');
 exports.WebSocketManager = require('./client/websocket/WebSocketManager');
 exports.WebSocketShard = require('./client/websocket/WebSocketShard');
-exports.RelationshipsManager = require('./managers/RelationshipsManager');
 
 // Structures
+exports.ActionRow = require('./structures/ActionRow');
+exports.ActionRowBuilder = require('./structures/ActionRowBuilder');
 exports.Activity = require('./structures/Presence').Activity;
 exports.AnonymousGuild = require('./structures/AnonymousGuild');
 exports.Application = require('./structures/interfaces/Application');
 exports.ApplicationCommand = require('./structures/ApplicationCommand');
 exports.AutocompleteInteraction = require('./structures/AutocompleteInteraction');
 exports.Base = require('./structures/Base');
-exports.BaseCommandInteraction = require('./structures/BaseCommandInteraction');
 exports.BaseGuild = require('./structures/BaseGuild');
 exports.BaseGuildEmoji = require('./structures/BaseGuildEmoji');
 exports.BaseGuildTextChannel = require('./structures/BaseGuildTextChannel');
 exports.BaseGuildVoiceChannel = require('./structures/BaseGuildVoiceChannel');
-exports.BaseMessageComponent = require('./structures/BaseMessageComponent');
+exports.ButtonBuilder = require('./structures/ButtonBuilder');
+exports.ButtonComponent = require('./structures/ButtonComponent');
 exports.ButtonInteraction = require('./structures/ButtonInteraction');
 exports.CategoryChannel = require('./structures/CategoryChannel');
-exports.Channel = require('./structures/Channel').Channel;
+exports.BaseChannel = require('./structures/BaseChannel').BaseChannel;
+exports.ChatInputCommandInteraction = require('./structures/ChatInputCommandInteraction');
 exports.ClientApplication = require('./structures/ClientApplication');
 exports.ClientPresence = require('./structures/ClientPresence');
 exports.ClientUser = require('./structures/ClientUser');
-exports.Collector = require('./structures/interfaces/Collector');
 exports.CommandInteraction = require('./structures/CommandInteraction');
+exports.Collector = require('./structures/interfaces/Collector');
 exports.CommandInteractionOptionResolver = require('./structures/CommandInteractionOptionResolver');
-exports.ContextMenuInteraction = require('./structures/ContextMenuInteraction');
+exports.Component = require('./structures/Component');
+exports.ContextMenuCommandInteraction = require('./structures/ContextMenuCommandInteraction');
 exports.DMChannel = require('./structures/DMChannel');
+exports.Embed = require('./structures/Embed');
+exports.EmbedBuilder = require('./structures/EmbedBuilder');
 exports.Emoji = require('./structures/Emoji').Emoji;
 exports.Guild = require('./structures/Guild').Guild;
 exports.GuildAuditLogs = require('./structures/GuildAuditLogs');
-exports.GuildAuditLogsEntry = require('./structures/GuildAuditLogs').Entry;
+exports.GuildAuditLogsEntry = require('./structures/GuildAuditLogsEntry');
 exports.GuildBan = require('./structures/GuildBan');
 exports.GuildChannel = require('./structures/GuildChannel');
 exports.GuildEmoji = require('./structures/GuildEmoji');
@@ -107,27 +122,25 @@ exports.GuildScheduledEvent = require('./structures/GuildScheduledEvent').GuildS
 exports.GuildTemplate = require('./structures/GuildTemplate');
 exports.Integration = require('./structures/Integration');
 exports.IntegrationApplication = require('./structures/IntegrationApplication');
-exports.Interaction = require('./structures/Interaction');
+exports.BaseInteraction = require('./structures/BaseInteraction');
 exports.InteractionCollector = require('./structures/InteractionCollector');
+exports.InteractionResponse = require('./structures/InteractionResponse');
 exports.InteractionWebhook = require('./structures/InteractionWebhook');
 exports.Invite = require('./structures/Invite');
 exports.InviteStageInstance = require('./structures/InviteStageInstance');
 exports.InviteGuild = require('./structures/InviteGuild');
 exports.Message = require('./structures/Message').Message;
-exports.MessageActionRow = require('./structures/MessageActionRow');
-exports.MessageAttachment = require('./structures/MessageAttachment');
-exports.MessageButton = require('./structures/MessageButton');
+exports.Attachment = require('./structures/Attachment');
+exports.AttachmentBuilder = require('./structures/AttachmentBuilder');
+exports.ModalBuilder = require('./structures/ModalBuilder');
 exports.MessageCollector = require('./structures/MessageCollector');
 exports.MessageComponentInteraction = require('./structures/MessageComponentInteraction');
-exports.MessageContextMenuInteraction = require('./structures/MessageContextMenuInteraction');
-exports.MessageEmbed = require('./structures/MessageEmbed');
-exports.WebEmbed = require('./structures/WebEmbed');
+exports.MessageContextMenuCommandInteraction = require('./structures/MessageContextMenuCommandInteraction');
 exports.MessageMentions = require('./structures/MessageMentions');
 exports.MessagePayload = require('./structures/MessagePayload');
 exports.MessageReaction = require('./structures/MessageReaction');
-exports.MessageSelectMenu = require('./structures/MessageSelectMenu');
-exports.Modal = require('./structures/Modal');
 exports.ModalSubmitInteraction = require('./structures/ModalSubmitInteraction');
+exports.ModalSubmitFields = require('./structures/ModalSubmitFields');
 exports.NewsChannel = require('./structures/NewsChannel');
 exports.OAuth2Guild = require('./structures/OAuth2Guild');
 exports.PartialGroupDMChannel = require('./structures/PartialGroupDMChannel');
@@ -137,27 +150,24 @@ exports.ReactionCollector = require('./structures/ReactionCollector');
 exports.ReactionEmoji = require('./structures/ReactionEmoji');
 exports.RichPresenceAssets = require('./structures/Presence').RichPresenceAssets;
 exports.Role = require('./structures/Role').Role;
-// RPC
-exports.getUUID = require('./structures/RichPresence').getUUID;
-exports.CustomStatus = require('./structures/RichPresence').CustomStatus;
-exports.RichPresence = require('./structures/RichPresence').RichPresence;
-exports.SpotifyRPC = require('./structures/RichPresence').SpotifyRPC;
-//
+exports.SelectMenuBuilder = require('./structures/SelectMenuBuilder');
+exports.SelectMenuComponent = require('./structures/SelectMenuComponent');
 exports.SelectMenuInteraction = require('./structures/SelectMenuInteraction');
+exports.SelectMenuOptionBuilder = require('./structures/SelectMenuOptionBuilder');
 exports.StageChannel = require('./structures/StageChannel');
 exports.StageInstance = require('./structures/StageInstance').StageInstance;
 exports.Sticker = require('./structures/Sticker').Sticker;
 exports.StickerPack = require('./structures/StickerPack');
-exports.StoreChannel = require('./structures/StoreChannel');
 exports.Team = require('./structures/Team');
 exports.TeamMember = require('./structures/TeamMember');
 exports.TextChannel = require('./structures/TextChannel');
+exports.TextInputBuilder = require('./structures/TextInputBuilder');
 exports.TextInputComponent = require('./structures/TextInputComponent');
 exports.ThreadChannel = require('./structures/ThreadChannel');
 exports.ThreadMember = require('./structures/ThreadMember');
 exports.Typing = require('./structures/Typing');
 exports.User = require('./structures/User');
-exports.UserContextMenuInteraction = require('./structures/UserContextMenuInteraction');
+exports.UserContextMenuCommandInteraction = require('./structures/UserContextMenuCommandInteraction');
 exports.VoiceChannel = require('./structures/VoiceChannel');
 exports.VoiceRegion = require('./structures/VoiceRegion');
 exports.VoiceState = require('./structures/VoiceState');
@@ -166,4 +176,13 @@ exports.Widget = require('./structures/Widget');
 exports.WidgetMember = require('./structures/WidgetMember');
 exports.WelcomeChannel = require('./structures/WelcomeChannel');
 exports.WelcomeScreen = require('./structures/WelcomeScreen');
+
 exports.WebSocket = require('./WebSocket');
+
+// External
+exports.DiscordAPIError = require('@discordjs/rest').DiscordAPIError;
+exports.HTTPError = require('@discordjs/rest').HTTPError;
+exports.RateLimitError = require('@discordjs/rest').RateLimitError;
+
+__exportStar(require('discord-api-types/v10'), exports);
+__exportStar(require('@discordjs/builders'), exports);
