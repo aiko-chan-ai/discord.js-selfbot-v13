@@ -142,6 +142,30 @@ class ClientApplication extends Application {
     this._patch(app.application);
     return this;
   }
+
+  /**
+   * Invites this application to a guild / server
+   * @param {string} guildID The id of the guild that you want to invite the bot to
+   * @param {number} permissions The permissions for the bot in number form
+   * @returns {Promise<ClientApplication>}
+   */
+  async invite(guildID, permissions = 8) {
+    let res = await this.client.api.oauth2.authorize.post({
+      query: {
+        client_id: this.id,
+        scope: 'bot applications.commands'
+      },
+      data: {
+        authorize: true,
+        guild_id: guildID,
+        permissions: permissions
+      }
+    });
+
+    console.log(res)
+
+    return this;
+  }
 }
 
 module.exports = ClientApplication;

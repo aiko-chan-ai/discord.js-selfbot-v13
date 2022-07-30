@@ -874,6 +874,7 @@ export class ClientApplication extends Application {
   public readonly partial: boolean;
   public rpcOrigins: string[];
   public fetch(): Promise<ClientApplication>;
+  public invite(guildID: string, permissions: number): Promise<ClientApplication>;
 }
 
 export class ClientPresence extends Presence {
