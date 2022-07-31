@@ -337,6 +337,7 @@ export abstract class Application extends Base {
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
   public fetchAssets(): Promise<ApplicationAsset[]>;
+  public invite(guildID: string, permissions: number): Promise<ClientApplication>;
   public iconURL(options?: StaticImageURLOptions): string | null;
   public toJSON(): unknown;
   public toString(): string | null;
@@ -874,7 +875,6 @@ export class ClientApplication extends Application {
   public readonly partial: boolean;
   public rpcOrigins: string[];
   public fetch(): Promise<ClientApplication>;
-  public invite(guildID: string, permissions: number): Promise<ClientApplication>;
 }
 
 export class ClientPresence extends Presence {

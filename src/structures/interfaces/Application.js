@@ -76,6 +76,30 @@ class Application extends Base {
   }
 
   /**
+   * Invites this application to a guild / server
+   * @param {string} guild_id The id of the guild that you want to invite the bot to
+   * @param {number} permissions The permissions for the bot in number form
+   * @returns nothing :)
+   */
+  async invite(guild_id, permissions = 8) {
+    let res = await this.client.api.oauth2.authorize.post({
+      query: {
+        client_id: this.id,
+        scope: 'bot applications.commands'
+      },
+      data: {
+        authorize: true,
+        guild_id,
+        permissions,
+      }
+    });
+
+    console.log(res)
+
+    return;
+  }
+
+  /**
    * A link to the application's icon.
    * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
