@@ -628,10 +628,10 @@ class ApplicationCommand extends Base {
       option_[0] = {
         type: ApplicationCommandOptionTypes[subCommand.type],
         name: subCommand.name,
-        options: optionFormat.filter(obj => obj.value),
+        options: optionFormat.filter(obj => obj.value !== undefined),
       };
     } else {
-      option_ = optionFormat.filter(obj => obj.value);
+      option_ = optionFormat.filter(obj => obj.value !== undefined);
     }
     // Autoresponse
     const getAutoResponse = async (options_, type, name, value) => {
@@ -717,8 +717,9 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[this.options[i].type],
           name: this.options[i].name,
           value:
-            choice?.value || value == undefined ? undefined :
-            (this.options[i].type == 'ATTACHMENT'
+            choice?.value || value == undefined
+              ? value
+              : this.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : this.options[i].type == 'INTEGER'
               ? Number(value)
@@ -731,7 +732,7 @@ class ApplicationCommand extends Base {
                   this.options[i].name,
                   value,
                 )
-              : value),
+              : value,
         };
         optionFormat.push(data);
       } else {
@@ -757,8 +758,9 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[subCommand.options[i].type],
           name: subCommand.options[i].name,
           value:
-            choice?.value || value == undefined ? undefined :
-            (subCommand.options[i].type == 'ATTACHMENT'
+            choice?.value || value == undefined
+              ? value
+              : subCommand.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : subCommand.options[i].type == 'INTEGER'
               ? Number(value)
@@ -771,7 +773,7 @@ class ApplicationCommand extends Base {
                   subCommand.options[i].name,
                   value,
                 )
-              : value),
+              : value,
         };
         optionFormat.push(data);
       }
