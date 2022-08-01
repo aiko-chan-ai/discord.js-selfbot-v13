@@ -592,6 +592,7 @@ class ApplicationCommand extends Base {
    * @returns {Promise<InteractionResponseBody>}
    */
   async sendSlashCommand(message, options = []) {
+    // Todo: Refactor
     // Check Options
     if (!(message instanceof Message())) {
       throw new TypeError('The message must be a Discord.Message');
@@ -599,7 +600,7 @@ class ApplicationCommand extends Base {
     if (!Array.isArray(options)) {
       throw new TypeError('The options must be an array of strings');
     }
-    if (this.type !== 'CHAT_INPUT') return false;
+    if (this.type !== 'CHAT_INPUT') throw new Error('This command is not a chat input [/]');
     const optionFormat = [];
     const attachments = [];
     const attachmentsBuffer = [];
@@ -627,10 +628,10 @@ class ApplicationCommand extends Base {
       option_[0] = {
         type: ApplicationCommandOptionTypes[subCommand.type],
         name: subCommand.name,
-        options: optionFormat,
+        options: optionFormat.filter(obj => obj.value !== undefined),
       };
     } else {
-      option_ = optionFormat;
+      option_ = optionFormat.filter(obj => obj.value !== undefined);
     }
     // Autoresponse
     const getAutoResponse = async (options_, type, name, value) => {
@@ -702,7 +703,7 @@ class ApplicationCommand extends Base {
         if (this.options[i].choices && this.options[i].choices.length > 0) {
           choice =
             this.options[i].choices.find(c => c.name == value) || this.options[i].choices.find(c => c.value == value);
-          if (!choice) {
+          if (!choice && value) {
             throw new Error(
               `Invalid option: ${value} is not a valid choice for this option\nList of choices:\n${this.options[
                 i
@@ -716,8 +717,9 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[this.options[i].type],
           name: this.options[i].name,
           value:
-            choice?.value ||
-            (this.options[i].type == 'ATTACHMENT'
+            choice?.value || value == undefined
+              ? value
+              : this.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : this.options[i].type == 'INTEGER'
               ? Number(value)
@@ -730,7 +732,7 @@ class ApplicationCommand extends Base {
                   this.options[i].name,
                   value,
                 )
-              : value),
+              : value,
         };
         optionFormat.push(data);
       } else {
@@ -742,7 +744,7 @@ class ApplicationCommand extends Base {
           choice =
             subCommand.options[i].choices.find(c => c.name == value) ||
             subCommand.options[i].choices.find(c => c.value == value);
-          if (!choice) {
+          if (!choice && value) {
             throw new Error(
               `Invalid option: ${value} is not a valid choice for this option\nList of choices: \n${subCommand.options[
                 i
@@ -756,8 +758,9 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[subCommand.options[i].type],
           name: subCommand.options[i].name,
           value:
-            choice?.value ||
-            (subCommand.options[i].type == 'ATTACHMENT'
+            choice?.value || value == undefined
+              ? value
+              : subCommand.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : subCommand.options[i].type == 'INTEGER'
               ? Number(value)
@@ -770,7 +773,7 @@ class ApplicationCommand extends Base {
                   subCommand.options[i].name,
                   value,
                 )
-              : value),
+              : value,
         };
         optionFormat.push(data);
       }

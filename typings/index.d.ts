@@ -98,7 +98,7 @@ import {
   GuildScheduledEventEntityTypes,
   GuildScheduledEventStatuses,
   GuildScheduledEventPrivacyLevels,
-  HypeSquadOptions,
+  HypeSquadType,
   VideoQualityModes,
 } from './enums';
 import {
@@ -897,7 +897,7 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string, password: string): Promise<this>;
-  public setHypeSquad(type: HypeSquadOptions): Promise<void>;
+  public setHypeSquad(type: HypeSquadType): Promise<void>;
   public setAccentColor(color: ColorResolvable): Promise<this>;
   public setDiscriminator(discriminator: string, password: string): Promise<this>;
   public setAboutMe(bio: string): Promise<this>;
@@ -2104,13 +2104,14 @@ export class MessageMentions {
   private _channels: Collection<Snowflake, AnyChannel> | null;
   private readonly _content: string;
   private _members: Collection<Snowflake, GuildMember> | null;
-
+  private _parsedUsers: Collection<Snowflake, User> | null;
   public readonly channels: Collection<Snowflake, AnyChannel>;
   public readonly client: Client;
   public everyone: boolean;
   public readonly guild: Guild;
   public has(data: UserResolvable | RoleResolvable | ChannelResolvable, options?: MessageMentionsHasOptions): boolean;
   public readonly members: Collection<Snowflake, GuildMember> | null;
+  public readonly parsedUsers: Collection<Snowflake, User>;
   public repliedUser: User | null;
   public roles: Collection<Snowflake, Role>;
   public users: Collection<Snowflake, User>;

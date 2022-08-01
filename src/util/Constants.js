@@ -59,6 +59,16 @@ exports.stickerAnimationMode = createEnum(['ALWAYS', 'INTERACTION', 'NEVER']);
  */
 exports.NitroType = createEnum(['NONE', 'NITRO_CLASSIC', 'NITRO_BOOST']);
 
+/**
+ * All available HypeSquad types:
+ * * `LEAVE` - None
+ * * `HOUSE_BRAVERY` - HypeSquad Bravery
+ * * `HOUSE_BRILLIANCE` - HypeSquad Brilliance
+ * * `HOUSE_BALANCE` - HypeSquad Balance
+ * @typedef {string} HypeSquadType
+ */
+exports.HypeSquadType = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
+
 exports.localeObject = {
   da: 'DANISH',
   de: 'GERMAN',
@@ -1583,8 +1593,6 @@ exports.GuildScheduledEventEntityTypes = createEnum([null, 'STAGE_INSTANCE', 'VO
  * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-video-quality-modes}
  */
 exports.VideoQualityModes = createEnum([null, 'AUTO', 'FULL']);
-
-exports.HypeSquadOptions = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
 
 exports._cleanupSymbol = Symbol('djsCleanup');
 
