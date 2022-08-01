@@ -398,6 +398,15 @@ class TextBasedChannel {
    * @param {string} commandName Command name
    * @param {...?string|string[]} args Command arguments
    * @returns {Promise<InteractionResponseBody>}
+   * @example
+   * // Send Slash to this channel
+   * // Demo:
+   * // + BotID: "123456789012345678"
+   * // + CommandName: "embed"
+   * // + Args: "title", "description", "author", 'color' (Optional)
+   * channel.sendSlash('123456789012345678', 'embed', 'title', 'description', 'author', '#00ff00')
+   * // Send embed with Title and Color:
+   * channel.sendSlash('123456789012345678', 'embed', 'title', undefined, undefined, '#00ff00')
    */
   async sendSlash(botId, commandName, ...args) {
     args = args.flat(2);

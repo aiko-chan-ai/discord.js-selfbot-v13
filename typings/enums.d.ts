@@ -166,7 +166,8 @@ export const enum GuildScheduledEventStatuses {
   CANCELED = 4,
 }
 
-export const enum HypeSquadOptions {
+export const enum HypeSquadType {
+  LEAVE = 0,
   HOUSE_BRAVERY = 1,
   HOUSE_BRILLIANCE = 2,
   HOUSE_BALANCE = 3,

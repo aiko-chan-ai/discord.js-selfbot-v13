@@ -98,7 +98,7 @@ import {
   GuildScheduledEventEntityTypes,
   GuildScheduledEventStatuses,
   GuildScheduledEventPrivacyLevels,
-  HypeSquadOptions,
+  HypeSquadType,
   VideoQualityModes,
 } from './enums';
 import {
@@ -896,7 +896,7 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string, password: string): Promise<this>;
-  public setHypeSquad(type: HypeSquadOptions): Promise<void>;
+  public setHypeSquad(type: HypeSquadType): Promise<void>;
   public setAccentColor(color: ColorResolvable): Promise<this>;
   public setDiscriminator(discriminator: string, password: string): Promise<this>;
   public setAboutMe(bio: string): Promise<this>;

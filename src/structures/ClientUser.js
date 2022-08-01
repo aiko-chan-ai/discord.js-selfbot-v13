@@ -5,7 +5,7 @@ const Invite = require('./Invite');
 const { Message } = require('./Message');
 const User = require('./User');
 const { Util } = require('..');
-const { HypeSquadOptions, Opcodes, NitroType } = require('../util/Constants');
+const { Opcodes, NitroType, HypeSquadType } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const PurchasedFlags = require('../util/PurchasedFlags');
 /**
@@ -43,7 +43,7 @@ class ClientUser extends User {
        * Nitro type of the client user.
        * @type {NitroType}
        */
-      this.nitroType = nitro ?? `UNKNOWN`;
+      this.nitroType = nitro ?? `UNKNOWN_${data.premium_type}`;
     }
     if ('purchased_flags' in data) {
       /**
@@ -172,7 +172,7 @@ class ClientUser extends User {
    *   .catch(console.error);
    */
   setBanner(banner) {
-    if (this.nitroType !== 2) {
+    if (this.nitroType !== 'NITRO_BOOST') {
       throw new Error('You must be a Nitro Boosted User to change your banner.');
     }
     return this.edit({ banner });
@@ -180,7 +180,7 @@ class ClientUser extends User {
 
   /**
    * Set HyperSquad House
-   * @param {HypeSquadOptions<number|string>} type
+   * @param {HypeSquadType} type
    * * `LEAVE`: 0
    * * `HOUSE_BRAVERY`: 1
    * * `HOUSE_BRILLIANCE`: 2
@@ -193,7 +193,7 @@ class ClientUser extends User {
    * client.user.setHypeSquad(0);
    */
   async setHypeSquad(type) {
-    const id = typeof type === 'string' ? HypeSquadOptions[type] : type;
+    const id = typeof type === 'string' ? HypeSquadType[type] : type;
     if (!id && id !== 0) throw new Error('Invalid HypeSquad type.');
     if (id !== 0) {
       const data = await this.client.api.hypesquad.online.post({
@@ -222,7 +222,8 @@ class ClientUser extends User {
    * @returns {Promise}
    */
   setDiscriminator(discriminator, password) {
-    if (!this.nitro) throw new Error('You must be a Nitro User to change your discriminator.');
+    if (this.nitroType == 'NONE')
+      throw new Error('You must be a Nitro User to change your discriminator.');
     if (!password && !this.client.password) {
       throw new Error('A password is required to change a discriminator.');
     }
