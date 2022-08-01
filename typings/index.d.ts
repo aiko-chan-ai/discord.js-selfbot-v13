@@ -337,6 +337,7 @@ export abstract class Application extends Base {
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
   public fetchAssets(): Promise<ApplicationAsset[]>;
+  public invite(guildID: string, permissions: bigint, captcha: string): null;
   public iconURL(options?: StaticImageURLOptions): string | null;
   public toJSON(): unknown;
   public toString(): string | null;

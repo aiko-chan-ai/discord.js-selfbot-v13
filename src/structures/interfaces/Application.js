@@ -76,6 +76,37 @@ class Application extends Base {
   }
 
   /**
+   * Invites this application to a guild / server
+   * @param {string} guild_id The id of the guild that you want to invite the bot to
+   * @param {bigint} [permissions] The permissions for the bot in number form (the default is 8 / Administrator)
+   * @param {string} [captcha] The captcha key to add
+   * @returns nothing :)
+   */
+  async invite(guild_id, permissions = 8, captcha = null) {
+    let res = await this.client.api.oauth2.authorize.post({
+      query: {
+        client_id: this.id,
+        scope: 'bot applications.commands'
+      },
+      data: captcha ? {
+        captcha_key: captcha,
+        authorize: true,
+        guild_id,
+        permissions,
+      } : {
+        authorize: true,
+        guild_id,
+        permissions,
+      },
+      headers: {
+        "referer": `https://discord.com/oauth2/authorize?client_id=${this.id}&permissions=${permissions}&scope=bot`
+      }
+    });
+
+    return;
+  }
+
+  /**
    * A link to the application's icon.
    * @param {StaticImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
