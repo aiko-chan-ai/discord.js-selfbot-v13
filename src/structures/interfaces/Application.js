@@ -103,8 +103,6 @@ class Application extends Base {
       }
     });
 
-    console.log(res)
-
     return;
   }
 
