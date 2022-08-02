@@ -1430,6 +1430,17 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * Marks the guild as read
+   * @returns {undefined} nothing :)
+   * @example
+   * const guild = client.guilds.fetch('222078108977594368');
+   * guild.read();
+   */
+  async read() {
+    await this.client.api.guilds(this.id).ack.post();
+  }
+
+  /**
    * Deletes the guild.
    * @returns {Promise<Guild>}
    * @example
