@@ -628,10 +628,10 @@ class ApplicationCommand extends Base {
       option_[0] = {
         type: ApplicationCommandOptionTypes[subCommand.type],
         name: subCommand.name,
-        options: optionFormat.filter(obj => obj.value !== undefined),
+        options: optionFormat,
       };
     } else {
-      option_ = optionFormat.filter(obj => obj.value !== undefined);
+      option_ = optionFormat;
     }
     // Autoresponse
     const getAutoResponse = async (options_, type, name, value) => {
@@ -703,7 +703,7 @@ class ApplicationCommand extends Base {
         if (this.options[i].choices && this.options[i].choices.length > 0) {
           choice =
             this.options[i].choices.find(c => c.name == value) || this.options[i].choices.find(c => c.value == value);
-          if (!choice && value) {
+          if (!choice && value !== undefined) {
             throw new Error(
               `Invalid option: ${value} is not a valid choice for this option\nList of choices:\n${this.options[
                 i
@@ -717,9 +717,7 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[this.options[i].type],
           name: this.options[i].name,
           value:
-            choice?.value || value == undefined
-              ? value
-              : this.options[i].type == 'ATTACHMENT'
+            choice?.value || this.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : this.options[i].type == 'INTEGER'
               ? Number(value)
@@ -734,7 +732,7 @@ class ApplicationCommand extends Base {
                 )
               : value,
         };
-        optionFormat.push(data);
+        if (value !== undefined) optionFormat.push(data);
       } else {
         // First element is sub command and removed
         if (!value) continue;
@@ -744,7 +742,7 @@ class ApplicationCommand extends Base {
           choice =
             subCommand.options[i].choices.find(c => c.name == value) ||
             subCommand.options[i].choices.find(c => c.value == value);
-          if (!choice && value) {
+          if (!choice && value !== undefined) {
             throw new Error(
               `Invalid option: ${value} is not a valid choice for this option\nList of choices: \n${subCommand.options[
                 i
@@ -758,9 +756,7 @@ class ApplicationCommand extends Base {
           type: ApplicationCommandOptionTypes[subCommand.options[i].type],
           name: subCommand.options[i].name,
           value:
-            choice?.value || value == undefined
-              ? value
-              : subCommand.options[i].type == 'ATTACHMENT'
+            choice?.value || subCommand.options[i].type == 'ATTACHMENT'
               ? await addDataFromAttachment(value)
               : subCommand.options[i].type == 'INTEGER'
               ? Number(value)
@@ -775,7 +771,7 @@ class ApplicationCommand extends Base {
                 )
               : value,
         };
-        optionFormat.push(data);
+        if (value !== undefined) optionFormat.push(data);
       }
     }
     if (!subCommandCheck && this.options[i]?.required) {
@@ -785,6 +781,7 @@ class ApplicationCommand extends Base {
       throw new Error('Value required missing');
     }
     let nonce = SnowflakeUtil.generate();
+    console.log(option_);
     const data = {
       type: 2, // Slash command, context menu
       // Type: 4: Auto-complete
