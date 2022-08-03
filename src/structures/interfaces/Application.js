@@ -2,6 +2,7 @@
 
 const process = require('node:process');
 const { ClientApplicationAssetTypes, Endpoints } = require('../../util/Constants');
+const Permissions = require('../../util/Permissions');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const Base = require('../Base');
 
@@ -77,29 +78,30 @@ class Application extends Base {
 
   /**
    * Invites this application to a guild / server
-   * @param {string} guild_id The id of the guild that you want to invite the bot to
-   * @param {bigint} [permissions] The permissions for the bot in number form (the default is 8 / Administrator)
+   * @param {Snowflake} guild_id The id of the guild that you want to invite the bot to
+   * @param {PermissionResolvable} [permissions] The permissions for the bot in number form (the default is 8 / Administrator)
    * @param {string} [captcha] The captcha key to add
-   * @returns {undefined} nothing :)
+   * @returns {Promise<void>} nothing :)
    */
-  async invite(guild_id, permissions = 8, captcha = null) {
+  async invite(guild_id, permissions = 0n, captcha = null) {
+    permissions = Permissions.resolve(permissions);
+    const postData = {
+      authorize: true,
+      guild_id,
+      permissions: '0',
+    };
+    if (permissions) {
+      postData.permissions = permissions;
+    }
+    if (captcha && typeof captcha === 'string' && captcha.length > 0) {
+      postData.captcha = captcha;
+    }
     await this.client.api.oauth2.authorize.post({
       query: {
         client_id: this.id,
         scope: 'bot applications.commands',
       },
-      data: captcha
-        ? {
-            captcha_key: captcha,
-            authorize: true,
-            guild_id,
-            permissions,
-          }
-        : {
-            authorize: true,
-            guild_id,
-            permissions,
-          },
+      data: postData,
       headers: {
         referer: `https://discord.com/oauth2/authorize?client_id=${this.id}&permissions=${permissions}&scope=bot`,
       },

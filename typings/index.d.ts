@@ -337,7 +337,7 @@ export abstract class Application extends Base {
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
   public fetchAssets(): Promise<ApplicationAsset[]>;
-  public invite(guildID: string, permissions: bigint, captcha: string): null;
+  public invite(guildID: Snowflake, permissions?: PermissionResolvable, captcha?: string): Promise<undefined>;
   public iconURL(options?: StaticImageURLOptions): string | null;
   public toJSON(): unknown;
   public toString(): string | null;
@@ -1236,7 +1236,7 @@ export class Guild extends AnonymousGuild {
   public readonly maximumBitrate: number;
   public createTemplate(name: string, description?: string): Promise<GuildTemplate>;
   public delete(): Promise<Guild>;
-  public read(): undefined;
+  public read(): Promise<undefined>;
   public discoverySplashURL(options?: StaticImageURLOptions): string | null;
   public edit(data: GuildEditData, reason?: string): Promise<Guild>;
   public editWelcomeScreen(data: WelcomeScreenEditData): Promise<WelcomeScreen>;
