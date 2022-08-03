@@ -420,14 +420,18 @@ class TextBasedChannel {
     // Using API to search (without opcode ~ehehe)
     let commandTarget;
     // https://discord.com/api/v9/channels/id/application-commands/search?type=1&query=aiko&limit=7&include_applications=false&application_id=id
+    const query = {
+      type: 1, // Slash commands
+      include_applications: false,
+    };
+    if (this.client.channels.cache.get(this.id)?.type == 'DM') {
+      query.application_id = botId;
+    } else {
+      query.limit = 25;
+      query.query = commandName;
+    }
     const data = await this.client.api.channels[this.id]['application-commands'].search.get({
-      query: {
-        type: 1, // CHAT_INPUT,
-        include_applications: false,
-        query: commandName,
-        limit: 25, // Max
-        // application_id: botId,
-      },
+      query,
     });
     for (const command of data.application_commands) {
       if (user.id == command.application_id) {
