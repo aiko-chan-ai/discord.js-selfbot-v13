@@ -4286,7 +4286,7 @@ export interface ClientEvents extends BaseClientEvents {
   inviteDelete: [invite: Invite];
   /** @deprecated Use messageCreate instead */
   message: [message: Message];
-  messageAck: [channel: TextChannel, message_id: Snowflake, isRead: boolean, raw: Object];
+  messageAck: [channel: TextChannel, message_id: Snowflake, isRead: boolean, raw: object];
   messageCreate: [message: Message];
   messageDelete: [message: Message | PartialMessage];
   messageReactionRemoveAll: [
