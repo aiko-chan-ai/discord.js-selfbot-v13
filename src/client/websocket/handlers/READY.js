@@ -95,7 +95,7 @@ module.exports = (client, { d: data }, shard) => {
     };
     client.emit(
       Events.DEBUG,
-      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice - v0.10.0]`,
+      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice - v0.11.0]`,
     );
     /* eslint-enable */
   }

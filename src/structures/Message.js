@@ -997,7 +997,7 @@ class Message extends Base {
   // Added
   /**
    * Marks the message as unread.
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   async markUnread() {
     await this.client.api.channels[this.channelId].messages[this.id].ack.post({
@@ -1017,7 +1017,7 @@ class Message extends Base {
 
   /**
    * Marks the message as read.
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   async markRead() {
     await this.client.api.channels[this.channelId].messages[this.id].ack.post({

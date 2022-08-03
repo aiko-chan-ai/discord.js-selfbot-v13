@@ -83,8 +83,8 @@ class Application extends Base {
    * @param {string} [captcha] The captcha key to add
    * @returns {Promise<void>} nothing :)
    */
-  async invite(guild_id, permissions = 0n, captcha = null) {
-    permissions = Permissions.resolve(permissions);
+  async invite(guild_id, permissions, captcha = null) {
+    permissions = Permissions.resolve(permissions || 0n);
     const postData = {
       authorize: true,
       guild_id,
