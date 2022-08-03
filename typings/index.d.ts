@@ -1883,6 +1883,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public inGuild(): this is Message<true> & this;
   // Added
   public markUnread(): Promise<boolean>;
+  public markRead(): Promise<boolean>;
   public clickButton(buttonID: string): Promise<InteractionResponseBody>;
   public selectMenu(menuID: string, options: string[]): Promise<InteractionResponseBody>;
   public selectMenu(options: string[]): Promise<InteractionResponseBody>;
@@ -4285,6 +4286,7 @@ export interface ClientEvents extends BaseClientEvents {
   inviteDelete: [invite: Invite];
   /** @deprecated Use messageCreate instead */
   message: [message: Message];
+  messageAck: [channel: TextChannel, message_id: Snowflake, isRead: boolean, raw: Object];
   messageCreate: [message: Message];
   messageDelete: [message: Message | PartialMessage];
   messageReactionRemoveAll: [
@@ -4385,6 +4387,7 @@ export interface ConstantsEvents {
   CHANNEL_DELETE: 'channelDelete';
   CHANNEL_UPDATE: 'channelUpdate';
   CHANNEL_PINS_UPDATE: 'channelPinsUpdate';
+  MESSAGE_ACK: 'messageAck';
   MESSAGE_CREATE: 'messageCreate';
   MESSAGE_DELETE: 'messageDelete';
   MESSAGE_UPDATE: 'messageUpdate';
@@ -5066,88 +5069,6 @@ export interface ConstantsColors {
   GREYPLE: 0x99aab5;
   DARK_BUT_NOT_BLACK: 0x2c2f33;
   NOT_QUITE_BLACK: 0x23272a;
-}
-
-export interface ConstantsEvents {
-  RATE_LIMIT: 'rateLimit';
-  INVALID_REQUEST_WARNING: 'invalidRequestWarning';
-  API_RESPONSE: 'apiResponse';
-  API_REQUEST: 'apiRequest';
-  CLIENT_READY: 'ready';
-  APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE: 'applicationCommandAutocompleteResponse';
-  /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
-  APPLICATION_COMMAND_CREATE: 'applicationCommandCreate';
-  /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
-  APPLICATION_COMMAND_DELETE: 'applicationCommandDelete';
-  /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
-  APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate';
-  GUILD_CREATE: 'guildCreate';
-  GUILD_DELETE: 'guildDelete';
-  GUILD_UPDATE: 'guildUpdate';
-  INVITE_CREATE: 'inviteCreate';
-  INVITE_DELETE: 'inviteDelete';
-  GUILD_UNAVAILABLE: 'guildUnavailable';
-  GUILD_MEMBER_ADD: 'guildMemberAdd';
-  GUILD_MEMBER_REMOVE: 'guildMemberRemove';
-  GUILD_MEMBER_UPDATE: 'guildMemberUpdate';
-  GUILD_MEMBER_AVAILABLE: 'guildMemberAvailable';
-  GUILD_MEMBERS_CHUNK: 'guildMembersChunk';
-  GUILD_INTEGRATIONS_UPDATE: 'guildIntegrationsUpdate';
-  GUILD_ROLE_CREATE: 'roleCreate';
-  GUILD_ROLE_DELETE: 'roleDelete';
-  GUILD_ROLE_UPDATE: 'roleUpdate';
-  GUILD_EMOJI_CREATE: 'emojiCreate';
-  GUILD_EMOJI_DELETE: 'emojiDelete';
-  GUILD_EMOJI_UPDATE: 'emojiUpdate';
-  GUILD_BAN_ADD: 'guildBanAdd';
-  GUILD_BAN_REMOVE: 'guildBanRemove';
-  CHANNEL_CREATE: 'channelCreate';
-  CHANNEL_DELETE: 'channelDelete';
-  CHANNEL_UPDATE: 'channelUpdate';
-  CHANNEL_PINS_UPDATE: 'channelPinsUpdate';
-  MESSAGE_CREATE: 'messageCreate';
-  MESSAGE_DELETE: 'messageDelete';
-  MESSAGE_UPDATE: 'messageUpdate';
-  MESSAGE_BULK_DELETE: 'messageDeleteBulk';
-  MESSAGE_REACTION_ADD: 'messageReactionAdd';
-  MESSAGE_REACTION_REMOVE: 'messageReactionRemove';
-  MESSAGE_REACTION_REMOVE_ALL: 'messageReactionRemoveAll';
-  MESSAGE_REACTION_REMOVE_EMOJI: 'messageReactionRemoveEmoji';
-  THREAD_CREATE: 'threadCreate';
-  THREAD_DELETE: 'threadDelete';
-  THREAD_UPDATE: 'threadUpdate';
-  THREAD_LIST_SYNC: 'threadListSync';
-  THREAD_MEMBER_UPDATE: 'threadMemberUpdate';
-  THREAD_MEMBERS_UPDATE: 'threadMembersUpdate';
-  USER_UPDATE: 'userUpdate';
-  PRESENCE_UPDATE: 'presenceUpdate';
-  VOICE_SERVER_UPDATE: 'voiceServerUpdate';
-  VOICE_STATE_UPDATE: 'voiceStateUpdate';
-  TYPING_START: 'typingStart';
-  WEBHOOKS_UPDATE: 'webhookUpdate';
-  INTERACTION_CREATE: 'interactionCreate';
-  ERROR: 'error';
-  WARN: 'warn';
-  DEBUG: 'debug';
-  CACHE_SWEEP: 'cacheSweep';
-  SHARD_DISCONNECT: 'shardDisconnect';
-  SHARD_ERROR: 'shardError';
-  SHARD_RECONNECTING: 'shardReconnecting';
-  SHARD_READY: 'shardReady';
-  SHARD_RESUME: 'shardResume';
-  INVALIDATED: 'invalidated';
-  RAW: 'raw';
-  STAGE_INSTANCE_CREATE: 'stageInstanceCreate';
-  STAGE_INSTANCE_UPDATE: 'stageInstanceUpdate';
-  STAGE_INSTANCE_DELETE: 'stageInstanceDelete';
-  GUILD_STICKER_CREATE: 'stickerCreate';
-  GUILD_STICKER_DELETE: 'stickerDelete';
-  GUILD_STICKER_UPDATE: 'stickerUpdate';
-  GUILD_SCHEDULED_EVENT_CREATE: 'guildScheduledEventCreate';
-  GUILD_SCHEDULED_EVENT_UPDATE: 'guildScheduledEventUpdate';
-  GUILD_SCHEDULED_EVENT_DELETE: 'guildScheduledEventDelete';
-  GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd';
-  GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove';
 }
 
 export interface ConstantsOpcodes {

@@ -1014,6 +1014,20 @@ class Message extends Base {
     });
     return true;
   }
+
+  /**
+   * Marks the message as read.
+   * @returns {boolean}
+   */
+  async markRead() {
+    await this.client.api.channels[this.channelId].messages[this.id].ack.post({
+      data: {
+        token: null,
+      },
+    });
+    return true;
+  }
+
   /**
    * Click specific button [Suggestion: Dux#2925]
    * @param {string} buttonID Button ID

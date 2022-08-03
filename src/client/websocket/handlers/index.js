@@ -34,6 +34,7 @@ const handlers = Object.fromEntries([
   ['CHANNEL_DELETE', require('./CHANNEL_DELETE')],
   ['CHANNEL_UPDATE', require('./CHANNEL_UPDATE')],
   ['CHANNEL_PINS_UPDATE', require('./CHANNEL_PINS_UPDATE')],
+  ['MESSAGE_ACK', require('./MESSAGE_ACK')],
   ['MESSAGE_CREATE', require('./MESSAGE_CREATE')],
   ['MESSAGE_DELETE', require('./MESSAGE_DELETE')],
   ['MESSAGE_UPDATE', require('./MESSAGE_UPDATE')],

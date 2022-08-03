@@ -80,11 +80,11 @@ class CustomStatus {
 
 class RichPresence {
   /**
-   * @param {Client} client Discord client
+   * @param {Client} [client] Discord client
    * @param {RichPresence} [data={}] RichPresence to clone or raw data
    * @param {boolean} [IPC=false] Whether to use IPC (RPC for Discord Apps)
    */
-  constructor(client, data = {}, IPC = false) {
+  constructor(client = {}, data = {}, IPC = false) {
     Object.defineProperty(this, 'client', { value: client });
     /**
      * The activity's name

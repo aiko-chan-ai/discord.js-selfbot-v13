@@ -320,6 +320,7 @@ exports.Opcodes = {
  * * CHANNEL_DELETE: channelDelete
  * * CHANNEL_UPDATE: channelUpdate
  * * CHANNEL_PINS_UPDATE: channelPinsUpdate
+ * * MESSAGE_ACK: messageAck
  * * MESSAGE_CREATE: messageCreate
  * * MESSAGE_DELETE: messageDelete
  * * MESSAGE_UPDATE: messageUpdate
@@ -404,6 +405,7 @@ exports.Events = {
   CHANNEL_DELETE: 'channelDelete',
   CHANNEL_UPDATE: 'channelUpdate',
   CHANNEL_PINS_UPDATE: 'channelPinsUpdate',
+  MESSAGE_ACK: 'messageAck',
   MESSAGE_CREATE: 'messageCreate',
   MESSAGE_DELETE: 'messageDelete',
   MESSAGE_UPDATE: 'messageUpdate',
