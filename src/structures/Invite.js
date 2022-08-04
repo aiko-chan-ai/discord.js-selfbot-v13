@@ -342,7 +342,6 @@ class Invite extends Base {
             captcha_key: captcha,
           }
         : {},
-      // Goodjob discord :) Bypass Phone Verification (not captcha .-.)
       headers: {
         'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
       },

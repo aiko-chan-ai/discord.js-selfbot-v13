@@ -900,7 +900,7 @@ export class ClientUser extends User {
   public setHypeSquad(type: HypeSquadType): Promise<void>;
   public setAccentColor(color: ColorResolvable): Promise<this>;
   public setDiscriminator(discriminator: string, password: string): Promise<this>;
-  public setAboutMe(bio: string): Promise<this>;
+  public setAboutMe(bio: string | null): Promise<this>;
   public setEmail(email: string, password: string): Promise<this>;
   public setPassword(oldPassword: string, newPassword: string): Promise<this>;
   public disableAccount(password: string): Promise<this>;
@@ -1451,6 +1451,9 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public kick(reason?: string): Promise<GuildMember>;
   public permissionsIn(channel: GuildChannelResolvable): Readonly<Permissions>;
   public setNickname(nickname: string | null, reason?: string): Promise<GuildMember>;
+  public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<GuildMember>;
+  public setBanner(banner: BufferResolvable | Base64Resolvable | null): Promise<GuildMember>;
+  public setAboutMe(bio: string | null): Promise<GuildMember>;
   public toJSON(): unknown;
   public toString(): MemberMention;
   public valueOf(): string;
@@ -4938,6 +4941,8 @@ export interface ClientPresenceStatusData {
 export interface ClientUserEditData {
   username?: string;
   avatar?: BufferResolvable | Base64Resolvable | null;
+  banner?: BufferResolvable | Base64Resolvable | null;
+  bio?: string | null;
 }
 
 export interface CloseEvent {
@@ -5582,6 +5587,9 @@ export interface GuildMemberEditData {
   deaf?: boolean;
   channel?: GuildVoiceChannelResolvable | null;
   communicationDisabledUntil?: DateResolvable | null;
+  avatar?: BufferResolvable | Base64Resolvable | null;
+  banner?: BufferResolvable | Base64Resolvable | null;
+  bio?: string | null;
 }
 
 export type GuildMemberResolvable = GuildMember | UserResolvable;

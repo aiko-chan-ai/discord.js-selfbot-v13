@@ -9,6 +9,7 @@ const BaseGuildVoiceChannel = require('../structures/BaseGuildVoiceChannel');
 const { GuildMember } = require('../structures/GuildMember');
 const { Role } = require('../structures/Role');
 const { Events, Opcodes } = require('../util/Constants');
+const DataResolver = require('../util/DataResolver');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
@@ -236,6 +237,9 @@ class GuildMemberManager extends CachedManager {
    * (if they are connected to voice), or `null` if you want to disconnect them from voice
    * @property {DateResolvable|null} [communicationDisabledUntil] The date or timestamp
    * for the member's communication to be disabled until. Provide `null` to enable communication again.
+   * @property {?(BufferResolvable|Base64Resolvable)} [avatar] The new guild avatar
+   * @property {?(BufferResolvable|Base64Resolvable)} [banner] The new guild banner
+   * @property {?string} [bio] The new guild about me
    */
 
   /**
@@ -268,11 +272,22 @@ class GuildMemberManager extends CachedManager {
     _data.communication_disabled_until =
       _data.communicationDisabledUntil && new Date(_data.communicationDisabledUntil).toISOString();
 
+    // Avatar, banner, bio
+    if (typeof _data.avatar !== 'undefined') {
+      _data.avatar = await DataResolver.resolveImage(_data.avatar);
+    }
+    if (typeof _data.banner !== 'undefined') {
+      _data.banner = await DataResolver.resolveImage(_data.banner);
+    }
+
     let endpoint = this.client.api.guilds(this.guild.id);
     if (id === this.client.user.id) {
       const keys = Object.keys(data);
-      if (keys.length === 1 && keys[0] === 'nick') endpoint = endpoint.members('@me');
-      else endpoint = endpoint.members(id);
+      if (keys.length === 1 && ['nick', 'avatar', 'banner', 'bio'].includes(keys[0])) {
+        endpoint = endpoint.members('@me');
+      } else {
+        endpoint = endpoint.members(id);
+      }
     } else {
       endpoint = endpoint.members(id);
     }

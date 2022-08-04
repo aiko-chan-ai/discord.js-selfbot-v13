@@ -348,6 +348,51 @@ class GuildMember extends Base {
   }
 
   /**
+   * Sets the guild avatar of the logged in client.
+   * @param {?(BufferResolvable|Base64Resolvable)} avatar The new avatar
+   * @returns {Promise<GuildMember>}
+   */
+  setAvatar(avatar) {
+    if (this.user.id !== this.client.user.id) {
+      throw new Error('ONLY_ME');
+    }
+    if (this.client.user.nitroType !== 'NITRO_BOOST') {
+      throw new Error('NITRO_BOOST_REQUIRED', 'avatar');
+    }
+    return this.edit({ avatar });
+  }
+
+  /**
+   * Sets the guild banner of the logged in client.
+   * @param {?(BufferResolvable|Base64Resolvable)} banner The new banner
+   * @returns {Promise<GuildMember>}
+   */
+  setBanner(banner) {
+    if (this.user.id !== this.client.user.id) {
+      throw new Error('ONLY_ME');
+    }
+    if (this.client.user.nitroType !== 'NITRO_BOOST') {
+      throw new Error('NITRO_BOOST_REQUIRED', 'banner');
+    }
+    return this.edit({ banner });
+  }
+
+  /**
+   * Set Guild About me
+   * @param {string | null} bio Bio to set
+   * @returns {Promise<GuildMember>}
+   */
+  setAboutMe(bio = null) {
+    if (this.user.id !== this.client.user.id) {
+      throw new Error('ONLY_ME');
+    }
+    if (this.client.user.nitroType !== 'NITRO_BOOST') {
+      throw new Error('NITRO_BOOST_REQUIRED', 'bio');
+    }
+    return this.edit({ bio });
+  }
+
+  /**
    * Creates a DM channel between the client and this member.
    * @param {boolean} [force=false] Whether to skip the cache check and request the API
    * @returns {Promise<DMChannel>}

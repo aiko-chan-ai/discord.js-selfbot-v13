@@ -104,6 +104,8 @@ class ClientUser extends User {
    * @typedef {Object} ClientUserEditData
    * @property {string} [username] The new username
    * @property {?(BufferResolvable|Base64Resolvable)} [avatar] The new avatar
+   * @property {?(BufferResolvable|Base64Resolvable)} [banner] The new banner
+   * @property {?string} [bio] The new bio
    */
 
   /**
@@ -209,7 +211,7 @@ class ClientUser extends User {
   /**
    * Set Accent color
    * @param {ColorResolvable} color Color to set
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   setAccentColor(color = null) {
     return this.edit({ accent_color: color ? Util.resolveColor(color) : null });
@@ -219,7 +221,7 @@ class ClientUser extends User {
    * Set discriminator
    * @param {User.discriminator} discriminator It is #1234
    * @param {string} password The password of the account
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   setDiscriminator(discriminator, password) {
     if (this.nitroType == 'NONE') throw new Error('You must be a Nitro User to change your discriminator.');
@@ -234,8 +236,8 @@ class ClientUser extends User {
 
   /**
    * Set About me
-   * @param {string} bio Bio to set
-   * @returns {Promise}
+   * @param {string | null} bio Bio to set
+   * @returns {Promise<ClientUser>}
    */
   setAboutMe(bio = null) {
     return this.edit({
@@ -247,7 +249,7 @@ class ClientUser extends User {
    * Change the email
    * @param {Email<string>} email Email to change
    * @param {string} password Password of the account
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   setEmail(email, password) {
     if (!password && !this.client.password) {
@@ -263,7 +265,7 @@ class ClientUser extends User {
    * Set new password
    * @param {string} oldPassword Old password
    * @param {string} newPassword New password to set
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   setPassword(oldPassword, newPassword) {
     if (!oldPassword && !this.client.password) {
@@ -279,7 +281,7 @@ class ClientUser extends User {
   /**
    * Disable account
    * @param {string} password Password of the account
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   async disableAccount(password) {
     if (!password && !this.client.password) {
@@ -324,7 +326,7 @@ class ClientUser extends User {
   /**
    * Delete account. Warning: Cannot be changed once used!
    * @param {string} password Password of the account
-   * @returns {Promise}
+   * @returns {Promise<ClientUser>}
    */
   async deleteAccount(password) {
     if (!password && !this.client.password) {

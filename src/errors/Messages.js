@@ -197,6 +197,10 @@ const Messages = {
   INVALID_REMOTE_AUTH_URL: 'Invalid remote auth URL (https://discord.com/ra/{hash})',
   INVALID_URL: url =>
     `Invalid URL: ${url}.\nMake sure you are using a valid URL (https://discord.com/oauth2/authorize?...)`,
+
+  NITRO_REQUIRED: 'This feature is only available for Nitro users.',
+  NITRO_BOOST_REQUIRED: feature => `This feature (${feature}) is only available for Nitro Boost users.`,
+  ONLY_ME: 'This feature is only available for self.',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
