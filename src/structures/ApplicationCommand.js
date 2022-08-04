@@ -781,7 +781,6 @@ class ApplicationCommand extends Base {
       throw new Error('Value required missing');
     }
     let nonce = SnowflakeUtil.generate();
-    console.log(option_);
     const data = {
       type: 2, // Slash command, context menu
       // Type: 4: Auto-complete
