@@ -1,5 +1,5 @@
 # Slash command demo 
-- Unsupport Autocomplete feature (maybe)
+- Support Autocomplete feature (half)
 - Unused `guild.searchInteraction()` (Use only if not working properly)
 
 # Slash Command (no options)
