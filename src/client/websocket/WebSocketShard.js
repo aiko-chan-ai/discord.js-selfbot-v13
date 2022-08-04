@@ -688,9 +688,7 @@ class WebSocketShard extends EventEmitter {
 
     // Clone the identify payload and assign the token and shard info
     client.options.ws.properties = Object.assign(client.options.ws.properties, {
-      $browser_user_agent:
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
-      $browser_version: '103.0.0.0',
+      browser_user_agent: client.options.http.headers['User-Agent'],
     });
     const d = {
       ...client.options.ws,

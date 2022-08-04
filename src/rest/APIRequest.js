@@ -1,10 +1,11 @@
 'use strict';
 
+const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
+const JSONBig = require('json-bigint');
 const fetch = require('node-fetch');
-const { randomUA } = require('../util/Constants');
 
 let agent = null;
 
@@ -17,8 +18,10 @@ class APIRequest {
     this.options = options;
     this.retries = 0;
 
+    /* Remove
     const { userAgentSuffix } = this.client.options;
     this.fullUserAgent = `${randomUA()}${userAgentSuffix.length ? `, ${userAgentSuffix.join(', ')}` : ''}`;
+    */
 
     let queryString = '';
     if (options.query) {
@@ -41,11 +44,29 @@ class APIRequest {
 
     let headers = {
       ...this.client.options.http.headers,
-      'User-Agent': this.fullUserAgent,
+      Accept: '*/*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+      'Sec-Ch-Ua': `"Not A;Brand";v="99", "Chromium";v="${
+        this.client.options.ws.properties.browser_version.split('.')[0]
+      }", "Google Chrome";v="${this.client.options.ws.properties.browser_version.split('.')[0]}`,
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'X-Debug-Options': 'bugReporterEnabled',
+      'X-Super-Properties': `${Buffer.from(JSONBig.stringify(this.client.options.ws.properties), 'ascii').toString(
+        'base64',
+      )}`,
+      'X-Discord-Locale': 'en-US',
+      'User-Agent': this.client.options.http.headers['User-Agent'],
     };
 
-    // Edit UA
+    /* Remove
     this.client.options.http.headers['User-Agent'] = this.fullUserAgent;
+    */
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
     if (this.options.reason) headers['X-Audit-Log-Reason'] = encodeURIComponent(this.options.reason);

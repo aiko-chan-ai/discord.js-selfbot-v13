@@ -1,8 +1,7 @@
 'use strict';
 
-// Not used: const process = require('node:process');
-const Buffer = require('node:buffer').Buffer;
 const JSONBig = require('json-bigint');
+const { randomUA } = require('../util/Constants');
 /**
  * Rate limit data
  * @typedef {Object} RateLimitData
@@ -171,23 +170,21 @@ class Options extends null {
         large_threshold: 50,
         compress: false,
         properties: {
-          // $os: 'iPhone14,5',
-          // $browser: 'Discord iOS',
-          // $device: 'iPhone14,5 OS 15.2',
           os: 'Windows',
-          browser: 'Discord Client',
-          device: 'ASUS ROG Phone 5', // :)
-          // Add
+          browser: 'Chrome',
+          device: '',
+          system_locale: 'en-US',
+          browser_version: '103.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 127546,
+          client_build_number: 139460,
           client_event_source: null,
         },
-        // ? capabilities: 253,
+        // ? capabilities: 509,
         version: 9,
         client_state: {
           guild_hashes: {},
@@ -198,40 +195,10 @@ class Options extends null {
         },
       },
       http: {
-        headers: {
-          Accept: '*/*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          // Referer: 'https://discord.com/channels/@me',
-          'Sec-Ch-Ua': '"Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100',
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-origin',
-          'X-Debug-Options': 'bugReporterEnabled',
-          // https://github.com/Merubokkusu/Discord-S.C.U.M/issues/66#issuecomment-1009171667
-          'X-Super-Properties': `${Buffer.from(
-            JSONBig.stringify({
-              os: 'Windows',
-              browser: 'Discord Client',
-              release_channel: 'stable',
-              client_version: '1.0.9004',
-              os_version: '10.0.22000',
-              os_arch: 'x64',
-              system_locale: 'en-US',
-              client_build_number: 127546,
-              client_event_source: null,
-            }),
-            'ascii',
-          ).toString('base64')}`,
-          'X-Discord-Locale': 'en-US',
-          // Origin: 'https://discord.com', Webhook Error
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9004 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36',
-        },
         agent: {},
+        headers: {
+          'User-Agent': randomUA(),
+        },
         version: 9,
         api: 'https://discord.com/api',
         cdn: 'https://cdn.discordapp.com',
