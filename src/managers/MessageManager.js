@@ -220,20 +220,31 @@ class MessageManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    // Const data = await this.client.api.channels[this.channel.id].messages[messageId].get(); // Discord Block
-    // https://canary.discord.com/api/v9/guilds/809133733591384155/messages/search?channel_id=840225732902518825&max_id=957254525360697375&min_id=957254525360697373
-    const data = (
-      await this.client.api.guilds[this.channel.guild.id].messages.search.get({
-        query: {
-          channel_id: this.channel.id,
-          max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-          min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
-          include_nsfw: true,
-        },
-      })
-    ).messages[0];
-    if (data) return this._add(data[0], cache);
-    else throw new Error('MESSAGE_ID_NOT_FOUND');
+    if (this.channel.guildId) {
+      const data = (
+        await this.client.api.guilds[this.channel.guild.id].messages.search.get({
+          query: {
+            channel_id: this.channel.id,
+            max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
+            min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+            include_nsfw: true,
+          },
+        })
+      ).messages[0];
+      if (data) return this._add(data[0], cache);
+      else throw new Error('MESSAGE_ID_NOT_FOUND');
+    } else {
+      const data = (
+        await this.client.api.channels[this.channel.id].messages.search.get({
+          query: {
+            max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
+            min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+          },
+        })
+      ).messages[0];
+      if (data) return this._add(data[0], cache);
+      else throw new Error('MESSAGE_ID_NOT_FOUND');
+    }
   }
 
   async _fetchMany(options = {}, cache) {
@@ -286,7 +297,7 @@ class MessageManager extends CachedManager {
       },
       options,
     );
-    const stringQuery = [];
+    let stringQuery = [];
     const result = new Collection();
     let data;
     if (author.length > 0) stringQuery.push(author.map(id => `author_id=${id}`).join('&'));
@@ -313,6 +324,7 @@ class MessageManager extends CachedManager {
     if (this.channel.guildId) {
       data = await this.client.api.guilds[this.channel.guildId].messages[`search?${stringQuery.join('&')}`].get();
     } else {
+      stringQuery = stringQuery.filter(v => !v.startsWith('channel_id') && !v.startsWith('include_nsfw'));
       data = await this.client.api.channels[this.channel.id].messages[`search?${stringQuery.join('&')}`].get();
     }
     for await (const message of data.messages) result.set(message[0].id, new Message(this.client, message[0]));
