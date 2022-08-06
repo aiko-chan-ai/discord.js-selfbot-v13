@@ -56,9 +56,25 @@ class DiscordAuthWebsocket extends EventEmitter {
    */
   constructor(client, debug = false, hideLog = false) {
     super();
+    /**
+     * Debug mode
+     * @type {boolean}
+     */
     this.debug = debug;
+    /**
+     * Discord Client (using to automatically login)
+     * @type {?Client}
+     */
     this.client = client;
+    /**
+     * Hide `console.log`
+     * @type {boolean}
+     */
     this.hideLog = hideLog;
+    /**
+     * WebSocket connection
+     * @type {WebSocket}
+     */
     this.ws = new WebSocket(client?.options?.http?.remoteAuth || 'wss://remote-auth-gateway.discord.gg/?v=1', {
       headers: {
         Origin: 'https://discord.com',
@@ -78,7 +94,15 @@ class DiscordAuthWebsocket extends EventEmitter {
     });
     this.heartbeat_interval = null;
     this.connectionDestroy = null;
+    /**
+     * Time remote auth url expires
+     * @type {Date}
+     */
     this.missQR = null;
+    /**
+     * Login state
+     * @type {boolean}
+     */
     this.login_state = false;
     /**
      * User login with QR
