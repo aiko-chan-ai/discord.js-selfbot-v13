@@ -371,7 +371,7 @@ class Guild extends AnonymousGuild {
     } else {
       this.maxVideoChannelUsers ??= null;
     }
-    
+
     if ('approximate_member_count' in data) {
       /**
        * The approximate amount of members the guild has
