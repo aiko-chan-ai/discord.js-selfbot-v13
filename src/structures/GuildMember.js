@@ -97,6 +97,33 @@ class GuildMember extends Base {
     }
   }
 
+  _ProfilePatch(data) {
+    if ('accent_color' in data) {
+      /**
+       * The member's accent color
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?number}
+       */
+      this.accentColor = data.accent_color;
+    }
+    if ('banner' in data) {
+      /**
+       * The member's banner hash
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?string}
+       */
+      this.banner = data.banner;
+    }
+    if ('bio' in data) {
+      /**
+       * The member's biography (About me)
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?string}
+       */
+      this.bio = data.bio;
+    }
+  }
+
   _clone() {
     const clone = super._clone();
     clone._roles = this._roles.slice();
@@ -168,6 +195,21 @@ class GuildMember extends Base {
   avatarURL({ format, size, dynamic } = {}) {
     if (!this.avatar) return null;
     return this.client.rest.cdn.GuildMemberAvatar(this.guild.id, this.id, this.avatar, format, size, dynamic);
+  }
+
+  /**
+   * A link to the user's banner.
+   * <info>This method will throw an error if called before the user is force fetched Profile.
+   * See {@link GuildMember#banner} for more info</info>
+   * @param {ImageURLOptions} [options={}] Options for the Image URL
+   * @returns {?string}
+   */
+  bannerURL({ format, size, dynamic } = {}) {
+    if (typeof this.banner === 'undefined') {
+      throw new Error('USER_BANNER_NOT_FETCHED');
+    }
+    if (!this.banner) return null;
+    return this.client.rest.cdn.GuildMemberBanner(this.guild.id, this.id, this.banner, format, size, dynamic);
   }
 
   /**
@@ -489,6 +531,8 @@ class GuildMember extends Base {
       this.joinedTimestamp === member.joinedTimestamp &&
       this.nickname === member.nickname &&
       this.avatar === member.avatar &&
+      this.accentColor === member.accentColor &&
+      this.bio === member.bio &&
       this.pending === member.pending &&
       this.communicationDisabledUntilTimestamp === member.communicationDisabledUntilTimestamp &&
       (this._roles === member._roles ||

@@ -6,7 +6,7 @@ const ClientApplication = require('./ClientApplication');
 const VoiceState = require('./VoiceState');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
-const { RelationshipTypes } = require('../util/Constants');
+const { RelationshipTypes, NitroType } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
 
@@ -41,11 +41,13 @@ class User extends Base {
 
     /**
      * Accounts connected to this user
+     * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {?ConnectionAccount[]}
      */
     this.connectedAccounts = [];
     /**
      * Time that User has nitro (Unix Timestamp)
+     * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {?number}
      * @readonly
      */
@@ -58,12 +60,14 @@ class User extends Base {
     this.premiumGuildSince = null;
     /**
      * About me (User)
+     * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {?string}
      * @readonly
      */
     this.bio = null;
     /**
      * This user is on the same servers as Client User
+     * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {Collection<Snowflake, Object>}
      * @readonly
      */
@@ -216,8 +220,23 @@ class User extends Base {
       this.premiumGuildSince = date.getTime();
     }
 
-    if ('bio' in data.user) {
-      this.bio = data.user.bio;
+    if ('bio' in data.user_profile || 'bio' in data.user) {
+      this.bio = data.user_profile || data.user.bio;
+    }
+
+    if ('premium_type' in data) {
+      const nitro = NitroType[data.premium_type];
+      /**
+       * Nitro type of the user.
+       * @type {NitroType}
+       */
+      this.nitroType = nitro ?? `UNKNOWN_${data.premium_type}`;
+    }
+
+    if ('guild_member_profile' in data && 'guild_member' in data) {
+      const guild = this.client.guilds.cache.get(data.guild_member_profile.guild_id);
+      const member = guild?.members._add(data.guild_member);
+      member._ProfilePatch(data.guild_member_profile);
     }
 
     this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
@@ -226,11 +245,22 @@ class User extends Base {
   /**
    * Get profile from Discord, if client is in a server with the target.
    * @type {User}
+   * @param {Snowflake | null} guildId The guild id to get the profile from
    * @returns {Promise<User>}
    */
-  async getProfile() {
+  async getProfile(guildId) {
     if (this.client.bot) throw new Error('INVALID_BOT_METHOD');
-    const data = await this.client.api.users(this.id).profile.get();
+    const query = guildId
+      ? {
+          with_mutual_guilds: true,
+          guild_id: guildId,
+        }
+      : {
+          with_mutual_guilds: true,
+        };
+    const data = await this.client.api.users(this.id).profile.get({
+      query,
+    });
     this._ProfilePatch(data);
     return this;
   }
@@ -436,7 +466,8 @@ class User extends Base {
       this.avatar === user.avatar &&
       this.flags?.bitfield === user.flags?.bitfield &&
       this.banner === user.banner &&
-      this.accentColor === user.accentColor
+      this.accentColor === user.accentColor &&
+      this.bio === user.bio
     );
   }
 

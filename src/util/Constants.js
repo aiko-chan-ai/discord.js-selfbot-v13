@@ -169,6 +169,10 @@ exports.Endpoints = {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/avatars/${hash}`, { format, size });
       },
+      GuildMemberBanner: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/banners/${hash}`, { format, size });
+      },
       Banner: (id, hash, format, size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/banners/${id}/${hash}`, { format, size });
