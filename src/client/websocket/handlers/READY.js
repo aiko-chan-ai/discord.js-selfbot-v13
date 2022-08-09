@@ -170,7 +170,7 @@ module.exports = (client, { d: data }, shard) => {
       d: {
         guild_id: guild.id,
         typing: true,
-        threads: false,
+        threads: true,
         activities: true,
         thread_member_lists: [],
         members: [],

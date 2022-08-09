@@ -4,8 +4,6 @@ const { Collection } = require('@discordjs/collection');
 const { Events } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
-  // Console.log(data);
-  // console.log(data.ops[0])
   const guild = client.guilds.cache.get(data.guild_id);
   if (!guild) return;
   const members = new Collection();
@@ -21,7 +19,10 @@ module.exports = (client, { d: data }) => {
         }
       }
     } else if (object.op == 'INVALIDATE') {
-      client.emit(Events.DEBUG, `Invalidate [${object.range[0]}, ${object.range[1]}]`);
+      client.emit(
+        Events.DEBUG,
+        `Invalidate [${object.range[0]}, ${object.range[1]}], Fetching GuildId: ${data.guild_id}`,
+      );
     } else if (object.op == 'UPDATE' || object.op == 'INSERT') {
       const member = object.item.member;
       if (!member) continue;
@@ -33,5 +34,13 @@ module.exports = (client, { d: data }) => {
       // Nothing;
     }
   }
-  client.emit(Events.GUILD_MEMBER_LIST_UPDATE, members, guild, data);
+  /**
+   * Emitted whenever a guild member list (sidebar) is updated.
+   * @event Client#guildMemberListUpdate
+   * @param {Collection<Snowflake, GuildMember>} members Members that were updated
+   * @param {Guild} guild Guild
+   * @param {string} type Type of update (INVALIDATE | UPDATE | INSERT | DELETE | SYNC)
+   * @param {data} raw Raw data
+   */
+  client.emit(Events.GUILD_MEMBER_LIST_UPDATE, members, guild, data.ops[0].op, data);
 };
