@@ -817,6 +817,7 @@ class Client extends BaseClient {
    * @returns {Promise<boolean>}
    */
   async authorizeURL(url, options = {}) {
+    const reg = /^https:\/\/discord.com\/(api\/)*oauth2\/authorize(\W+)/gim;
     const checkURL = () => {
       try {
         // eslint-disable-next-line no-new
@@ -833,10 +834,10 @@ class Client extends BaseClient {
       },
       options,
     );
-    if (!url || !checkURL() || !url.startsWith('https://discord.com/oauth2/authorize?')) {
+    if (!url || !checkURL() || !reg.test(url)) {
       throw new Error('INVALID_URL', url);
     }
-    await this.client.api.oauth2.authorize[`?${url.replace('https://discord.com/oauth2/authorize?', '')}`].post({
+    await this.api.oauth2.authorize[`?${url.replace(reg, '')}`].post({
       data: options,
     });
     return true;
