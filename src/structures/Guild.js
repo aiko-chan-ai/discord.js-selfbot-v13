@@ -225,6 +225,7 @@ class Guild extends AnonymousGuild {
      * * COMMUNITY
      * * DISCOVERABLE
      * * FEATURABLE
+     * * INVITES_DISABLED
      * * INVITE_SPLASH
      * * MEMBER_VERIFICATION_GATE_ENABLED
      * * NEWS
@@ -636,6 +637,7 @@ class Guild extends AnonymousGuild {
   /**
    * Searches for guild interactions
    * @param {GuildSearchInteractionOptions} options Options for the search
+   * @deprecated
    * @returns {void | Promise<ApplicationCommand>}
    */
   searchInteraction(options = {}) {

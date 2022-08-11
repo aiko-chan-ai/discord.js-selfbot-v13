@@ -32,10 +32,11 @@ class User extends Base {
 
     /**
      * An array of object (connected accounts), containing the following properties:
-     * * type: string
-     * * id: string
-     * * name: string
-     * * verified: boolean
+     * @property {string} type The account type (twitch, youtube, etc)
+     * @property {string} name The account name
+     * @property {string} id The account id
+     * @property {boolean} verified Whether the account is verified
+     * @see {@link https://discord.com/developers/docs/resources/user#connection-object}
      * @typedef {Object} ConnectionAccount
      */
 
@@ -68,7 +69,7 @@ class User extends Base {
     /**
      * This user is on the same servers as Client User
      * <info>The user must be force fetched for this property to be present or be updated</info>
-     * @type {Collection<Snowflake, Object>}
+     * @type {Collection<Snowflake, Guild>}
      * @readonly
      */
     this.mutualGuilds = new Collection();
