@@ -21,7 +21,6 @@ const connection = await dmChannel.call();
 # Play Music using `play-dl`
 
 ```js
-const connection = await message.member.user.dmChannel.call();
 const play = require('play-dl');
 const {
 	createAudioPlayer,
