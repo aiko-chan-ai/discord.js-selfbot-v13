@@ -7,7 +7,7 @@ const Invite = require('./Invite');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const MessageManager = require('../managers/MessageManager');
-const { Status } = require('../util/Constants');
+const { Status, Opcodes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 
 /**
@@ -279,9 +279,57 @@ class PartialGroupDMChannel extends Channel {
         });
     });
   }
+  /**
+   * Sync VoiceState of this Group DMChannel.
+   * @returns {undefined}
+   */
+  sync() {
+    this.client.ws.broadcast({
+      op: Opcodes.DM_UPDATE,
+      d: {
+        channel_id: this.id,
+      },
+    });
+  }
+  /**
+   * The user in this voice-based channel
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get voiceUsers() {
+    const coll = new Collection();
+    for (const state of this.client.voiceStates.cache.values()) {
+      if (state.channelId === this.id && state.user) {
+        coll.set(state.id, state.user);
+      }
+    }
+    return coll;
+  }
+  /**
+   * Get connection to current call
+   * @type {?VoiceConnection}
+   * @readonly
+   */
+  get voiceConnection() {
+    const check = this.client.callVoice?.joinConfig?.channelId == this.id;
+    if (check) {
+      return this.client.callVoice;
+    }
+    return null;
+  }
+  /**
+   * Get current shard
+   * @type {WebSocketShard}
+   * @readonly
+   */
   get shard() {
     return this.client.ws.shards.first();
   }
+  /**
+   * The voice state adapter for this client that can be used with @discordjs/voice to play audio in DM / Group DM channels.
+   * @type {?Function}
+   * @readonly
+   */
   get voiceAdapterCreator() {
     return methods => {
       this.client.voice.adapters.set(this.id, methods);

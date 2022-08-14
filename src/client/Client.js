@@ -118,6 +118,10 @@ class Client extends BaseClient {
      */
     this.voice = new ClientVoiceManager(this);
 
+    /**
+     * A manager of the voice states of this client (Support DM / Group DM)
+     * @type {VoiceStateManager}
+     */
     this.voiceStates = new VoiceStateManager({ client: this });
 
     /**
@@ -239,6 +243,10 @@ class Client extends BaseClient {
         this.sweepMessages.bind(this),
         this.options.messageSweepInterval * 1_000,
       ).unref();
+    }
+
+    if (this.options.intents) {
+      process.emitWarning('Intent is not available.', 'DeprecationWarning');
     }
   }
 

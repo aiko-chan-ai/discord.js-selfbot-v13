@@ -796,6 +796,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public setting: ClientUserSettingManager;
   public relationships: RelationshipsManager;
   public updateCookie(): Promise<void>;
+  public readonly callVoice?: VoiceConnection;
+  public voiceStates: VoiceStateManager;
   // End
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
@@ -828,7 +830,6 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
-  public readonly callVoice: VoiceConnection | undefined;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
@@ -1158,7 +1159,10 @@ export class DMChannel extends TextBasedChannelMixin(Channel, [
   public fetch(force?: boolean): Promise<this>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public call(options?: object): Promise<VoiceConnection>;
+  public sync(): undefined;
   public readonly shard: WebSocketShard;
+  public readonly voiceUsers: Collection<Snowflake, User>;
+  public readonly voiceConnection?: VoiceConnection;
 }
 
 export class Emoji extends Base {
@@ -2323,7 +2327,10 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   public removeInvite(invite: Invite): Promise<PartialGroupDMChannel>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public call(options?: object): Promise<VoiceConnection>;
+  public sync(): undefined;
   public readonly shard: WebSocketShard;
+  public readonly voiceUsers: Collection<Snowflake, User>;
+  public readonly voiceConnection?: VoiceConnection;
 }
 
 export class PermissionOverwrites extends Base {
