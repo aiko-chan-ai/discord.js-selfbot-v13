@@ -2,7 +2,7 @@
 
 const { Presence } = require('./Presence');
 const { TypeError } = require('../errors');
-const { Opcodes } = require('../util/Constants');
+const { Opcodes, ActivityTypes } = require('../util/Constants');
 
 /**
  * Represents the client's presence.
@@ -50,14 +50,18 @@ class ClientPresence extends Presence {
       for (const [i, activity] of activities.entries()) {
         if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
         activity.type ??= 0;
-        data.activities.push(activity);
+        data.activities.push(
+          Object.assign(activity, {
+            type: typeof activity.type === 'number' ? activity.type : ActivityTypes[activity.type],
+          }),
+        );
       }
     } else if (!activities && (status || afk || since) && this.activities.length) {
       data.activities.push(
         ...this.activities.map(a =>
           Object.assign(a, {
             name: a.name,
-            type: a.type,
+            type: ActivityTypes[a.type],
             url: a.url ?? undefined,
           }),
         ),
