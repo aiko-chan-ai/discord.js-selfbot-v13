@@ -10,6 +10,7 @@ const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const { lazy } = require('../util/Util');
 const Message = lazy(() => require('../structures/Message').Message);
+
 /**
  * Represents an application command.
  * @extends {Base}
@@ -588,11 +589,15 @@ class ApplicationCommand extends Base {
   /**
    * Send Slash command to channel
    * @param {Message} message Discord Message
+   * @param {Array<string>} subCommandArray SubCommand Array
    * @param {Array<string>} options The options to Slash Command
    * @returns {Promise<InteractionResponseBody>}
    */
-  async sendSlashCommand(message, options = []) {
+  // eslint-disable-next-line consistent-return
+  async sendSlashCommand(message, subCommandArray = [], options = []) {
     // Todo: Refactor
+    const buildError = (type, value, array, msg) =>
+      new Error(`Invalid ${type}: ${value} ${msg}\nList of ${type}:\n${array}`);
     // Check Options
     if (!(message instanceof Message())) {
       throw new TypeError('The message must be a Discord.Message');
@@ -604,6 +609,167 @@ class ApplicationCommand extends Base {
     const optionFormat = [];
     const attachments = [];
     const attachmentsBuffer = [];
+    const parseChoices = (list_choices, value) => {
+      if (value !== undefined) {
+        if (Array.isArray(list_choices) && list_choices.length) {
+          const choice = list_choices.find(c => c.name === value) || list_choices.find(c => c.value === value);
+          if (choice) {
+            return choice.value;
+          }
+          throw buildError(
+            'choice',
+            value,
+            list_choices.map((c, i) => `  #${i + 1} Name: ${c.name} Value: ${c.value}`).join('\n'),
+            'is not a valid choice for this option',
+          );
+        } else {
+          return value;
+        }
+      } else {
+        return undefined;
+      }
+    };
+    const parseOption = async (optionCommand, value) => {
+      const data = {
+        type: ApplicationCommandOptionTypes[optionCommand.type],
+        name: optionCommand.name,
+      };
+      if (value !== undefined) {
+        value = parseChoices(optionCommand.choices, value);
+        switch (optionCommand.type) {
+          case 'BOOLEAN': {
+            data.value = Boolean(value);
+            break;
+          }
+          case 'INTEGER': {
+            data.value = Number(value);
+            break;
+          }
+          case 'ATTACHMENT': {
+            data.value = await addDataFromAttachment(value);
+            break;
+          }
+          case 'SUB_COMMAND_GROUP': {
+            break;
+          }
+          default: {
+            if (optionCommand.autocomplete) {
+              let optionsBuild;
+              switch (subCommandArray.length) {
+                case 0: {
+                  optionsBuild = [
+                    ...optionFormat,
+                    {
+                      type: ApplicationCommandOptionTypes[optionCommand.type],
+                      name: optionCommand.name,
+                      value,
+                      focused: true,
+                    },
+                  ];
+                  break;
+                }
+                case 1: {
+                  const subCommand = this.options.find(o => o.name == subCommandArray[0] && o.type == 'SUB_COMMAND');
+                  optionsBuild = [
+                    {
+                      type: ApplicationCommandOptionTypes[subCommand.type],
+                      name: subCommand.name,
+                      options: [
+                        ...optionFormat,
+                        {
+                          type: ApplicationCommandOptionTypes[optionCommand.type],
+                          name: optionCommand.name,
+                          value,
+                          focused: true,
+                        },
+                      ],
+                    },
+                  ];
+                  break;
+                }
+                case 2: {
+                  const subGroup = this.options.find(
+                    o => o.name == subCommandArray[0] && o.type == 'SUB_COMMAND_GROUP',
+                  );
+                  const subCommand = this.options.find(o => o.name == subCommandArray[1] && o.type == 'SUB_COMMAND');
+                  optionsBuild = [
+                    {
+                      type: ApplicationCommandOptionTypes[subGroup.type],
+                      name: subGroup.name,
+                      options: [
+                        {
+                          type: ApplicationCommandOptionTypes[subCommand.type],
+                          name: subCommand.name,
+                          options: [
+                            ...optionFormat,
+                            {
+                              type: ApplicationCommandOptionTypes[optionCommand.type],
+                              name: optionCommand.name,
+                              value,
+                              focused: true,
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ];
+                  break;
+                }
+              }
+              const autoValue = await getAutoResponse(optionsBuild, value);
+              data.value = autoValue;
+            } else {
+              data.value = value;
+            }
+          }
+        }
+        optionFormat.push(data);
+      }
+      return optionFormat;
+    };
+    const parseSubCommand = async (subCommandName, options) => {
+      const subCommand = this.options.find(o => o.name == subCommandName && o.type == 'SUB_COMMAND');
+      if (!subCommand) {
+        throw buildError(
+          'SubCommand',
+          subCommandName,
+          this.options.map((o, i) => `  #${i + 1} Name: ${o.name}`).join('\n'),
+          'is not a valid sub command',
+        );
+      }
+      const valueRequired = subCommand.options.filter(o => o.required).length;
+      for (let i = 0; i < options.length; i++) {
+        const optionInput = subCommand.options[i];
+        const value = options[i];
+        await parseOption(optionInput, value);
+      }
+      if (valueRequired > options.length) {
+        throw new Error(`Value required missing\nDebug:
+        Required: ${valueRequired} - Options: ${optionFormat.length}`);
+      }
+      return {
+        type: ApplicationCommandOptionTypes[subCommand.type],
+        name: subCommand.name,
+        options: optionFormat,
+      };
+    };
+    const parseSubGroupCommand = async (subGroupName, subName) => {
+      const subGroup = this.options.find(o => o.name == subGroupName && o.type == 'SUB_COMMAND_GROUP');
+      if (!subGroup) {
+        throw buildError(
+          'SubGroupCommand',
+          subGroupName,
+          this.options.map((o, i) => `  #${i + 1} Name: ${o.name}`).join('\n'),
+          'is not a valid sub group command',
+        );
+      }
+      const data = await parseSubCommand(subName, options);
+      return {
+        type: ApplicationCommandOptionTypes[subGroup.type],
+        name: subGroup.name,
+        options: [data],
+      };
+    };
     async function addDataFromAttachment(data) {
       if (!(data instanceof MessageAttachment)) {
         throw new TypeError('The attachment data must be a Discord.MessageAttachment');
@@ -617,49 +783,54 @@ class ApplicationCommand extends Base {
       attachmentsBuffer.push({ attachment: data.attachment, name: data.name, file: resource });
       return id;
     }
-    let option_ = [];
-    let i = 0;
-    // Check Command type is Sub group ?
-    const subCommandCheck = this.options.some(option => ['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type));
-    let subCommand;
-    if (subCommandCheck) {
-      subCommand = this.options.find(option => option.name == options[0]);
-      options.shift();
-      option_[0] = {
-        type: ApplicationCommandOptionTypes[subCommand.type],
-        name: subCommand.name,
-        options: optionFormat,
-      };
-    } else {
-      option_ = optionFormat;
-    }
-    // Autoresponse
-    const getAutoResponse = async (options_, type, name, value) => {
-      const op = Array.from(options_);
-      op.push({
-        type,
-        name,
-        value,
-        focused: true,
-      });
+    const getDataPost = (guildAdd = false, dataAdd = [], nonce, autocomplete = false) => {
+      if (!Array.isArray(dataAdd) && typeof dataAdd == 'object') {
+        dataAdd = [dataAdd];
+      }
+      if (guildAdd) {
+        return {
+          type: autocomplete ? 4 : 2, // Slash command, context menu
+          // Type: 4: Auto-complete
+          application_id: this.applicationId,
+          guild_id: message.guildId,
+          channel_id: message.channelId,
+          session_id: this.client.session_id,
+          data: {
+            // ApplicationCommandData
+            version: this.version,
+            id: this.id,
+            name: this.name,
+            type: ApplicationCommandTypes[this.type],
+            options: dataAdd,
+            attachments: attachments,
+            guild_id: message.guildId,
+          },
+          nonce,
+        };
+      } else {
+        return {
+          type: autocomplete ? 4 : 2, // Slash command, context menu
+          // Type: 4: Auto-complete
+          application_id: this.applicationId,
+          guild_id: message.guildId,
+          channel_id: message.channelId,
+          session_id: this.client.session_id,
+          data: {
+            // ApplicationCommandData
+            version: this.version,
+            id: this.id,
+            name: this.name,
+            type: ApplicationCommandTypes[this.type],
+            options: dataAdd,
+            attachments: attachments,
+          },
+          nonce,
+        };
+      }
+    };
+    const getAutoResponse = async (sendData, value) => {
       let nonce = SnowflakeUtil.generate();
-      const data = {
-        type: 4, // Auto-complete
-        application_id: this.applicationId,
-        guild_id: message.guildId,
-        channel_id: message.channelId,
-        session_id: this.client.session_id,
-        data: {
-          // ApplicationCommandData
-          version: this.version,
-          id: this.id,
-          name: this.name,
-          type: ApplicationCommandTypes[this.type],
-          options: op,
-          attachments: attachments,
-        },
-        nonce,
-      };
+      const data = getDataPost(false, sendData, nonce, true);
       await this.client.api.interactions
         .post({
           data,
@@ -667,10 +838,9 @@ class ApplicationCommand extends Base {
         })
         .catch(async () => {
           nonce = SnowflakeUtil.generate();
-          data.data.guild_id = message.guildId;
-          data.nonce = nonce;
+          const data_ = getDataPost(true, sendData, nonce);
           await this.client.api.interactions.post({
-            data,
+            body: data_,
             files: attachmentsBuffer,
           });
         });
@@ -693,193 +863,68 @@ class ApplicationCommand extends Base {
         this.client.on(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
       });
     };
-    for (i; i < options.length; i++) {
-      const value = options[i];
-      if (!subCommandCheck && !this?.options[i]) continue;
-      if (subCommandCheck && subCommand?.options && !subCommand?.options[i]) continue;
-      if (!subCommandCheck) {
-        // Check value is invalid
-        let choice;
-        if (this.options[i].choices && this.options[i].choices.length > 0) {
-          choice =
-            this.options[i].choices.find(c => c.name == value) || this.options[i].choices.find(c => c.value == value);
-          if (!choice && value !== undefined) {
-            throw new Error(
-              `Invalid option: ${value} is not a valid choice for this option\nList of choices:\n${this.options[
-                i
-              ].choices
-                .map((c, i) => `  #${i + 1} Name: ${c.name} Value: ${c.value}`)
-                .join('\n')}`,
-            );
-          }
-        }
-        const data = {
-          type: ApplicationCommandOptionTypes[this.options[i].type],
-          name: this.options[i].name,
-          value:
-            choice?.value || this.options[i].type == 'ATTACHMENT'
-              ? await addDataFromAttachment(value)
-              : this.options[i].type == 'INTEGER'
-              ? Number(value)
-              : this.options[i].type == 'BOOLEAN'
-              ? Boolean(value)
-              : this.options[i].autocomplete
-              ? await getAutoResponse(
-                  optionFormat,
-                  ApplicationCommandOptionTypes[this.options[i].type],
-                  this.options[i].name,
-                  value,
-                )
-              : value,
-        };
-        if (value !== undefined) optionFormat.push(data);
-      } else {
-        // First element is sub command and removed
-        if (!value) continue;
-        // Check value is invalid
-        let choice;
-        if (subCommand?.options && subCommand.options[i].choices && subCommand.options[i].choices.length > 0) {
-          choice =
-            subCommand.options[i].choices.find(c => c.name == value) ||
-            subCommand.options[i].choices.find(c => c.value == value);
-          if (!choice && value !== undefined) {
-            throw new Error(
-              `Invalid option: ${value} is not a valid choice for this option\nList of choices: \n${subCommand.options[
-                i
-              ].choices
-                .map((c, i) => `#${i + 1} Name: ${c.name} Value: ${c.value}\n`)
-                .join('')}`,
-            );
-          }
-        }
-        const data = {
-          type: ApplicationCommandOptionTypes[subCommand.options[i].type],
-          name: subCommand.options[i].name,
-          value:
-            choice?.value || subCommand.options[i].type == 'ATTACHMENT'
-              ? await addDataFromAttachment(value)
-              : subCommand.options[i].type == 'INTEGER'
-              ? Number(value)
-              : subCommand.options[i].type == 'BOOLEAN'
-              ? Boolean(value)
-              : this.options[i].autocomplete
-              ? await getAutoResponse(
-                  optionFormat,
-                  ApplicationCommandOptionTypes[subCommand.options[i].type],
-                  subCommand.options[i].name,
-                  value,
-                )
-              : value,
-        };
-        if (value !== undefined) optionFormat.push(data);
-      }
-    }
-    if (!subCommandCheck && this.options[i]?.required) {
-      throw new Error('Value required missing');
-    }
-    if (subCommandCheck && subCommand?.options && subCommand?.options[i]?.required) {
-      throw new Error('Value required missing');
-    }
-    let nonce = SnowflakeUtil.generate();
-    const data = {
-      type: 2, // Slash command, context menu
-      // Type: 4: Auto-complete
-      application_id: this.applicationId,
-      guild_id: message.guildId,
-      channel_id: message.channelId,
-      session_id: this.client.session_id,
-      data: {
-        // ApplicationCommandData
-        version: this.version,
-        id: this.id,
-        name: this.name,
-        type: ApplicationCommandTypes[this.type],
-        options: option_,
-        attachments: attachments,
-      },
-      nonce,
-    };
-    await this.client.api.interactions
-      .post({
-        body: data,
-        files: attachmentsBuffer,
-      })
-      .catch(async () => {
-        nonce = SnowflakeUtil.generate();
-        data.data.guild_id = message.guildId;
-        data.nonce = nonce;
-        await this.client.api.interactions.post({
+    const sendData = async (optionsData = []) => {
+      let nonce = SnowflakeUtil.generate();
+      const data = getDataPost(false, optionsData, nonce);
+      await this.client.api.interactions
+        .post({
           body: data,
           files: attachmentsBuffer,
+        })
+        .catch(async () => {
+          nonce = SnowflakeUtil.generate();
+          const data_ = getDataPost(true, optionsData, nonce);
+          await this.client.api.interactions.post({
+            body: data_,
+            files: attachmentsBuffer,
+          });
         });
+      return new Promise((resolve, reject) => {
+        const handler = data => {
+          timeout.refresh();
+          if (data.metadata.nonce !== nonce) return;
+          clearTimeout(timeout);
+          this.client.removeListener('interactionResponse', handler);
+          this.client.decrementMaxListeners();
+          if (data.status) resolve(data.metadata);
+          else reject(data.metadata);
+        };
+        const timeout = setTimeout(() => {
+          this.client.removeListener('interactionResponse', handler);
+          this.client.decrementMaxListeners();
+          reject(new Error('INTERACTION_TIMEOUT'));
+        }, 15_000).unref();
+        this.client.incrementMaxListeners();
+        this.client.on('interactionResponse', handler);
       });
-    return new Promise((resolve, reject) => {
-      const handler = data => {
-        timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
-      this.client.incrementMaxListeners();
-      this.client.on('interactionResponse', handler);
-    });
-  }
-  /**
-   * Message Context Menu
-   * @param {Message} message Discord Message
-   * @param {boolean} sendFromMessage nothing .-. not used
-   * @returns {Promise<InteractionResponseBody>}
-   */
-  async sendContextMenu(message, sendFromMessage = false) {
-    if (!sendFromMessage && !(message instanceof Message())) {
-      throw new TypeError('The message must be a Discord.Message');
+    };
+    // SubCommandArray length max 2
+    // length = 0 => no sub command
+    // length = 1 => sub command
+    // length = 2 => sub command group + sub command
+    switch (subCommandArray.length) {
+      case 0: {
+        const valueRequired = this.options.filter(o => o.required).length;
+        for (let i = 0; i < options.length; i++) {
+          const optionInput = this.options[i];
+          const value = options[i];
+          await parseOption(optionInput, value);
+        }
+        if (valueRequired > options.length) {
+          throw new Error(`Value required missing\nDebug:
+        Required: ${valueRequired} - Options: ${optionFormat.length}`);
+        }
+        return sendData(optionFormat);
+      }
+      case 1: {
+        const optionsData = await parseSubCommand(subCommandArray[0], options);
+        return sendData(optionsData);
+      }
+      case 2: {
+        const optionsData = await parseSubGroupCommand(subCommandArray[0], subCommandArray[1], options);
+        return sendData(optionsData);
+      }
     }
-    if (this.type == 'CHAT_INPUT') return false;
-    const nonce = SnowflakeUtil.generate();
-    await this.client.api.interactions.post({
-      body: {
-        type: 2, // Slash command, context menu
-        application_id: this.applicationId,
-        guild_id: message.guildId,
-        channel_id: message.channelId,
-        session_id: this.client.session_id,
-        data: {
-          // ApplicationCommandData
-          version: this.version,
-          id: this.id,
-          name: this.name,
-          type: ApplicationCommandTypes[this.type],
-          target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
-        },
-        nonce,
-      },
-    });
-    return new Promise((resolve, reject) => {
-      const handler = data => {
-        timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener('interactionResponse', handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
-      this.client.incrementMaxListeners();
-      this.client.on('interactionResponse', handler);
-    });
   }
 }
 

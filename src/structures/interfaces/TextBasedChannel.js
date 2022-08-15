@@ -10,6 +10,14 @@ const { TypeError, Error } = require('../../errors');
 const InteractionCollector = require('../InteractionCollector');
 const { lazy } = require('../../util/Util');
 const Message = lazy(() => require('../Message').Message);
+const { s } = require('@sapphire/shapeshift');
+const validateName = stringName =>
+  s.string
+    .lengthGreaterThanOrEqual(1)
+    .lengthLessThanOrEqual(32)
+    .regex(/^[\p{Ll}\p{Lm}\p{Lo}\p{N}\p{sc=Devanagari}\p{sc=Thai}_-]+$/u)
+    .setValidationEnabled(true)
+    .parse(stringName);
 
 /**
  * Interface for classes that have text-channel-like features.
@@ -395,7 +403,7 @@ class TextBasedChannel {
   /**
    * Send Slash to this channel
    * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
-   * @param {string} commandName Command name
+   * @param {string} commandString Command name (and sub / group formats)
    * @param {...?string|string[]} args Command arguments
    * @returns {Promise<InteractionResponseBody>}
    * @example
@@ -407,9 +415,21 @@ class TextBasedChannel {
    * channel.sendSlash('123456789012345678', 'embed', 'title', 'description', 'author', '#00ff00')
    * // Send embed with Title and Color:
    * channel.sendSlash('123456789012345678', 'embed', 'title', undefined, undefined, '#00ff00')
+   * // CommandName is Group Command / Sub Command
+   * channel.sendSlash('123456789012345678', 'embed title', 'description', 'author', '#00ff00')
    */
-  async sendSlash(botId, commandName, ...args) {
+  async sendSlash(botId, commandString, ...args) {
     args = args.flat(2);
+    const cmd = commandString.trim().split(' ');
+    // Validate CommandName
+    const commandName = validateName(cmd[0]);
+    const sub = cmd.slice(1);
+    for (let i = 0; i < sub.length; i++) {
+      if (sub.length > 2) {
+        throw new Error('INVALID_COMMAND_NAME', cmd);
+      }
+      validateName(sub[i]);
+    }
     if (!botId) throw new Error('Bot ID is required');
     // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});
@@ -463,6 +483,7 @@ class TextBasedChannel {
         content: '',
         id: this.client.user.id,
       }),
+      sub && sub.length > 0 ? sub : [],
       args && args.length ? args : [],
     );
   }

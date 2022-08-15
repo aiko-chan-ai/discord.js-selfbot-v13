@@ -2,6 +2,10 @@
 - Support Autocomplete feature (half)
 - Unused `guild.searchInteraction()` (Use only if not working properly)
 
+# <strong>BREAKING CHANGE: Using Slash Command (Sub Command / Sub Group Command) will not accept subCommand argument in args. That means Command Name needs to be changed same as Discord Client</strong>
+
+# All image demo : v2.3
+
 # Slash Command (no options)
 
 ### Demo
@@ -14,7 +18,6 @@
 
 ```js
 await message.channel.sendSlash('botid', 'aiko')
-// Return nonce (view document)
 ```
 
 ### Result
@@ -23,15 +26,17 @@ await message.channel.sendSlash('botid', 'aiko')
 
 # Slash Command + Sub option (group)
 
-### Demo
+### Demo (v2.5)
 
 ![image](https://user-images.githubusercontent.com/71698422/173346438-678009a1-870c-49a2-97fe-8ceed4f1ab64.png)
 
 ### Code test
 
-```js
-await message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
-// Return nonce (view document)
+```diff
+   v2.5
+- await message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
+   v2.6+
++ await message.channel.sendSlash('450323683840491530', 'animal chat', 'bye')
 ```
 
 ### Result
@@ -51,7 +56,6 @@ const { MessageAttachment } = require('discord.js-selfbot-v13')
 const fs = require('fs')
 const a = new MessageAttachment(fs.readFileSync('./wallpaper.jpg') , 'test.jpg') 
 await message.channel.sendSlash('718642000898818048', 'sauce', a)
-// Return nonce (view document)
 ```
 
 ### Result

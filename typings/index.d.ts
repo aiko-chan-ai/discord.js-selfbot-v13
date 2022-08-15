@@ -474,7 +474,7 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   private static transformCommand(command: ApplicationCommandData): RESTPostAPIApplicationCommandsJSONBody;
   private static isAPICommandData(command: object): command is RESTPostAPIApplicationCommandsJSONBody;
   // Add
-  public static sendSlashCommand(message: Message, options?: string[]): Promise<InteractionResponseBody>;
+  public static sendSlashCommand(message: Message, subCommandArray?: string[], options?: string[]): Promise<InteractionResponseBody>;
   public static sendContextMenu(message: Message): Promise<InteractionResponseBody>;
 }
 

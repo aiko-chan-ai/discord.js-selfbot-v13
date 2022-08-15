@@ -50,6 +50,7 @@ const Messages = {
   /* Add */
   MISSING_PERMISSIONS: (...permission) => `You can't do this action [Missing Permission(s): ${permission.join(', ')}]`,
   EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
+  INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
 
   BUTTON_LABEL: 'MessageButton label must be a string',
   BUTTON_URL: 'MessageButton URL must be a string',
