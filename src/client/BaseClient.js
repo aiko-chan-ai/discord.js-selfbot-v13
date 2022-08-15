@@ -1,6 +1,7 @@
 'use strict';
 
 const EventEmitter = require('node:events');
+const process = require('node:process');
 const RESTManager = require('../rest/RESTManager');
 const Options = require('../util/Options');
 const Util = require('../util/Util');
@@ -12,7 +13,9 @@ const Util = require('../util/Util');
 class BaseClient extends EventEmitter {
   constructor(options = {}) {
     super();
-
+    if (options.intents) {
+      process.emitWarning('Intents is not available.', 'DeprecationWarning');
+    }
     /**
      * The options the client was instantiated with
      * @type {ClientOptions}

@@ -244,10 +244,6 @@ class Client extends BaseClient {
         this.options.messageSweepInterval * 1_000,
       ).unref();
     }
-
-    if (this.options.intents) {
-      process.emitWarning('Intent is not available.', 'DeprecationWarning');
-    }
   }
 
   /**
