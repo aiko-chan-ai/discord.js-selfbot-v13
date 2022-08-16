@@ -328,6 +328,7 @@ class Player extends EventEmitter {
             inlineVolume: true,
         });
         this._currentResourceAudio = resource;
+        this.setVolume(this.volume);
     }
     _play() {
         this._player.play(this._currentResourceAudio);
