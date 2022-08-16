@@ -395,7 +395,7 @@ class Player extends EventEmitter {
         await this.createStream(this.song.url);
         await this.joinVC(checkChangeVC);
         this.emit(Event.PLAY_SONG, this.song);
-        if (!this.guild?.id) await _awaitDM();
+        if (!this.guild?.id) await this._awaitDM();
         this._play();
         this._playingTime = Date.now();
     }
