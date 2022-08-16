@@ -372,6 +372,7 @@ class Player extends EventEmitter {
         this.guild = null;
         this.song = null;
         this.volume = 100;
+        this.loopMode = 0;
         if (force || !finish && this.options.leaveOnStop || finish && this.options.leaveOnFinish) this.currentConnection?.destroy();
         this.message = null;
     }
@@ -615,6 +616,6 @@ currentTime = Unix timestamp miliseconds;
 currentConnection = VoiceConnection;
 queue: Song[];
 previousSongs: Song[];
-
+loopMode = 0;
 */
 ```
