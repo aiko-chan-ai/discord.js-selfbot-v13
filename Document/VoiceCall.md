@@ -403,7 +403,7 @@ class Player extends EventEmitter {
         if (!this._previousSongs.length) throw new Error('No previous songs');
         const previousSong = this._previousSongs.pop();
         this.song = previousSong;
-        await this.reateStream(this.song.url);
+        await this.createStream(this.song.url);
         await this.joinVC();
         this._play();
         this.emit(Event.PLAY_SONG, this.song, this.queue);
