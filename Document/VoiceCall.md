@@ -159,6 +159,7 @@ class Player extends EventEmitter {
         this.isPlaying = false;
         this.volume = 100;
         this.loopMode = 0;
+        this.message = undefined;
         this._timeoutEmpty = undefined;
         this._player = DjsVoice.createAudioPlayer({
             behaviors: {
@@ -252,6 +253,7 @@ class Player extends EventEmitter {
                 }
             }
             this.guild = channel.guild;
+            this.message = message;
             if (typeof query !== 'string') throw new Error(`Invalid query type (Required: string, got: ${typeof query})`);
             const result = await this.search(message, query);
             if (result.length < 1) {
@@ -371,6 +373,7 @@ class Player extends EventEmitter {
         this.song = null;
         this.volume = 100;
         if (force || !finish && this.options.leaveOnStop || finish && this.options.leaveOnFinish) this.currentConnection?.destroy();
+        this.message = null;
     }
     skip() {
         this._skip();
@@ -453,14 +456,14 @@ class Player extends EventEmitter {
                 }
                 if (newState.id == this.client.user.id && oldState.channel?.members?.has(this.client.user.id) && !newState.channel?.members?.has(this.client.user.id)) {
                     this._stop();
-                    this.emit(Event.LEAVE_VC);  
+                    this.emit(Event.LEAVE_VC, this.message);  
                 }
                 if (newState.channel?.members?.has(this.client.user.id) && !newState.channel?.members?.filter(m => m.id != this.client.user.id && !m.bot).size) {
                     // empty
                     if (this.options.leaveOnEmpty && !this._timeoutEmpty) {
                         this._timeoutEmpty = setTimeout(() => {
                             this._stop(false, true);
-                            this.emit(Event.EMPTY);
+                            this.emit(Event.EMPTY, this.message);
                         }, this.options.emptyCooldown);
                     }
                 }
@@ -476,7 +479,7 @@ class Player extends EventEmitter {
                     if (this.options.leaveOnEmpty && !this._timeoutEmpty) {
                         this._timeoutEmpty = setTimeout(() => {
                             this._stop(false, true);
-                            this.emit(Event.EMPTY);
+                            this.emit(Event.EMPTY, this.message);
                         }, this.options.emptyCooldown);
                     }
                 }
@@ -503,7 +506,7 @@ class Player extends EventEmitter {
     _privateEvent() {
         this.on('next_song', async () => {
             await this._skip().catch(() => {
-                this.emit(Event.FINISH);
+                this.emit(Event.FINISH, this.message);
                 this._stop(true);
             });
         });
@@ -540,27 +543,27 @@ module.exports = Player;
 const player = new Player(client, options);
 
 player
-.on('playSong', song => {
-	console.log(`Now playing: ${song.title}`);
-})
-.on('addSong', song => {
-	console.log(`Added: ${song.title}`);
-})
-.on('addPlaylist', playlist => {
-	console.log(`Added Playlist: ${playlist.title}`);
-})
-.on('disconnect', () => {
-	console.log('Disconnected from voice channel.');
-})
-.on('finish', () => {
-	console.log('finish.');
-})
-.on('empty', () => {
-	console.log('empty voice channel.');
-})
-.on('error', error => {
-	console.log('Music error', error);
-})
+    .on('playSong', song => {
+	    player.message.channel.send(`Now playing: ${song.title}`);
+    })
+	.on('addSong', song => {
+		player.message.channel.send(`Added: ${song.title}`);
+	})
+	.on('addPlaylist', playlist => {
+		player.message.channel.send(`Added Playlist: ${playlist.title}`);
+	})
+	.on('disconnect', (message) => {
+		message.channel.send('Disconnected from voice channel.');
+	})
+	.on('finish', (message) => {
+		message.channel.send('Finished playing.');
+	})
+	.on('empty', (message) => {
+		message.channel.send('The queue is empty.');
+	})
+	.on('error', error => {
+		console.log('Music error', error);
+	})
 
 client.player = player;
 
