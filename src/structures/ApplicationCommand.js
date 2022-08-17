@@ -595,7 +595,7 @@ class ApplicationCommand extends Base {
    */
   // eslint-disable-next-line consistent-return
   async sendSlashCommand(message, subCommandArray = [], options = []) {
-    // Todo: Refactor
+    // Todo: Refactor [Done]
     const buildError = (type, value, array, msg) =>
       new Error(`Invalid ${type}: ${value} ${msg}\nList of ${type}:\n${array}`);
     // Check Options
@@ -727,13 +727,14 @@ class ApplicationCommand extends Base {
       }
       return optionFormat;
     };
-    const parseSubCommand = async (subCommandName, options) => {
-      const subCommand = this.options.find(o => o.name == subCommandName && o.type == 'SUB_COMMAND');
+    const parseSubCommand = async (subCommandName, options, subGroup) => {
+      const options_sub = subGroup ? subGroup.options : this.options;
+      const subCommand = options_sub.find(o => o.name == subCommandName && o.type == 'SUB_COMMAND');
       if (!subCommand) {
         throw buildError(
           'SubCommand',
           subCommandName,
-          this.options.map((o, i) => `  #${i + 1} Name: ${o.name}`).join('\n'),
+          options_sub.map((o, i) => `  #${i + 1} Name: ${o.name}`).join('\n'),
           'is not a valid sub command',
         );
       }
@@ -763,7 +764,7 @@ class ApplicationCommand extends Base {
           'is not a valid sub group command',
         );
       }
-      const data = await parseSubCommand(subName, options);
+      const data = await parseSubCommand(subName, options, subGroup);
       return {
         type: ApplicationCommandOptionTypes[subGroup.type],
         name: subGroup.name,
