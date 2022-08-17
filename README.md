@@ -34,14 +34,13 @@
 
 ### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>
 
-## Checklist
-- [x] Send + receive messages (not send Embed :v ).
-- [x] Setting Discord App (Missing a lot of functions)
-- [X] REST (Guild, Relationships, Profile Editing)
-- [X] Interactions (slash commands, buttons, context menu, modal)
-- [X] Voice (Call, Join, Leave, Speak, etc.)
+## Features
+- [x] Message: Send, Recieve, Delete, Edit, Pin, Reaction Emoji, Attachments, Embeds (WebEmbed), Mentions, Webhooks, etc.
+- [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
+- [X] Guild: Fetch Members, Join / Leave, Roles, Channels, etc.
+- [X] Interactions: Slash Commands, Click Buttons, Using Menu, Modal, Context Menu, etc.
+- [X] Voice: Connect, Disconnect, Mute, Deafen, Call, Play Audio, etc.
 - [X] Documentation
-- [ ] Add more guild http api wraps
 - [ ] Video stream
 - [ ] Everything
 
