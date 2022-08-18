@@ -177,7 +177,7 @@ class DiscordAuthWebsocket extends EventEmitter {
         this._logger('debug', 'Receive Token - Login Success.', message.ticket);
         /**
          * Emitted whenever a token is created.
-         * @event DiscordAuthWebsocket#success
+         * @event DiscordAuthWebsocket#finish
          * @param {object} user Discord User
          * @param {string} token Discord Token
          */
