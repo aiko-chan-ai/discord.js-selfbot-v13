@@ -738,7 +738,7 @@ class ApplicationCommand extends Base {
           'is not a valid sub command',
         );
       }
-      const valueRequired = subCommand.options?.filter(o => o.required).length;
+      const valueRequired = subCommand.options?.filter(o => o.required).length || 0;
       for (let i = 0; i < options.length; i++) {
         const optionInput = subCommand.options[i];
         const value = options[i];
@@ -905,7 +905,7 @@ class ApplicationCommand extends Base {
     // length = 2 => sub command group + sub command
     switch (subCommandArray.length) {
       case 0: {
-        const valueRequired = this.options.filter(o => o.required).length;
+        const valueRequired = this.options?.filter(o => o.required).length || 0;
         for (let i = 0; i < options.length; i++) {
           const optionInput = this.options[i];
           const value = options[i];
