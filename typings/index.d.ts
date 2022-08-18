@@ -164,17 +164,28 @@ import {
 // @ts-ignore
 //#region Classes
 export abstract class DiscordAuthWebsocket extends EventEmitter {
-  constructor(client?: Client, debug?: boolean, hideLog?: boolean);
-  public authURL?: string;
+  constructor(options?: DiscordAuthWebsocketOptions);
+  public fingerprint?: string;
+  public heartbeatInterval?: number;
+  public ws?: WebSocket;
   public token?: string;
   public user?: RawUserData;
+  public readonly exprireTime: string;
+  public connect(client?: Client): void;
   public destroy(): void;
-  public generate_qr_code(fingerprint: string): void;
-  public on(event: 'ready', listener: (authURL: string) => void): this;
-  public on(event: 'success', listener: (user: RawUserData, token: string) => void): this;
+  public generateQR(): void;
+  public on(event: 'ready', listener: (fingerprint: string, authURL: string) => void): this;
+  public on(event: 'finish', listener: (user: RawUserData, token: string) => void): this;
   public on(event: 'cancel' | 'pending', listener: (user: RawUserData) => void): this;
-  public on(event: 'closed', listener: (loginState: boolean) => void): this;
+  public on(event: 'closed', listener: (token?: string) => void): this;
   public on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
+}
+export interface DiscordAuthWebsocketOptions {
+  debug: boolean;
+  hiddenLog: boolean;
+  autoLogin: boolean;
+  failIfError: boolean;
+  generateQR: boolean;
 }
 // RPC by aiko-chan-ai
 export interface RichButton {

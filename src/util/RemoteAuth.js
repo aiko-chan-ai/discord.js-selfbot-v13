@@ -2,45 +2,50 @@
 const { Buffer } = require('buffer');
 const crypto = require('crypto');
 const EventEmitter = require('node:events');
-const { setInterval, clearInterval, setTimeout, clearTimeout } = require('node:timers');
+const { setTimeout } = require('node:timers');
 const { StringDecoder } = require('string_decoder');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
 const { randomUA } = require('./Constants');
-var Messages = {
-  HEARTBEAT: 'heartbeat',
-  HEARTBEAT_ACK: 'heartbeat_ack',
+require('colors');
+
+const baseURL = 'https://discord.com/ra/';
+
+const wsURL = 'wss://remote-auth-gateway.discord.gg/?v=2';
+
+const receiveEvent = {
   HELLO: 'hello',
-  INIT: 'init',
   NONCE_PROOF: 'nonce_proof',
   PENDING_REMOTE_INIT: 'pending_remote_init',
-  PENDING_FINISH: 'pending_finish',
-  FINISH: 'finish',
+  HEARTBEAT_ACK: 'heartbeat_ack',
+  PENDING_LOGIN: 'pending_ticket',
   CANCEL: 'cancel',
+  SUCCESS: 'pending_login',
 };
 
-class DiscordUser_FromPayload {
-  constructor(payload, debug = false) {
-    let values = payload.split(':');
-    this.id = values[0];
-    this.username = values[3];
-    this.discriminator = values[1];
-    this.avatar = values[2];
-    this.tag = `${this.username}#${this.discriminator}`;
-    this.avatarURL = `https://cdn.discordapp.com/avatars/${this.id}/${this.avatar}.${
-      this.avatar.startsWith('a_') ? 'gif' : 'png'
-    }`;
-    this.debug = debug;
-    return this;
-  }
-  pretty_print() {
-    let out = '';
-    out += `User:            ${this.tag} (${this.id})\n`;
-    out += `Avatar URL:      ${this.avatarURL}\n`;
-    if (this.debug) out += `Token:           ${this.token}\n`;
-    return out;
-  }
-}
+const sendEvent = {
+  INIT: 'init',
+  NONCE_PROOF: 'nonce_proof',
+  HEARTBEAT: 'heartbeat',
+};
+
+const Event = {
+  READY: 'ready',
+  ERROR: 'error',
+  CANCEL: 'cancel',
+  WAIT: 'pending',
+  FINISH: 'finish',
+  CLOSED: 'closed',
+};
+
+/**
+ * @typedef {Object} DiscordAuthWebsocketOptions
+ * @property {?boolean} [debug=false] Log debug info
+ * @property {?boolean} [hiddenLog=false] Hide log ?
+ * @property {?boolean} [autoLogin=false] Automatically login (DiscordJS.Client Login) ?
+ * @property {?boolean} [failIfError=true] Throw error ?
+ * @property {?boolean} [generateQR=true] Create QR Code ?
+ */
 
 /**
  * Discord Auth QR (Discord.RemoteAuth will be removed in the future, v13.9.0 release)
@@ -50,37 +55,190 @@ class DiscordUser_FromPayload {
 class DiscordAuthWebsocket extends EventEmitter {
   /**
    * Creates a new DiscordAuthWebsocket instance.
-   * @param {?Client} client Discord.Client (Login)
-   * @param {?boolean} debug Log debug info
-   * @param {?boolean} hideLog Hide log ?
+   * @param {?DiscordAuthWebsocketOptions} options Options
    */
-  constructor(client, debug = false, hideLog = false) {
+  constructor(options) {
     super();
     /**
-     * Debug mode
-     * @type {boolean}
+     * WebSocket
+     * @type {?WebSocket}
      */
-    this.debug = debug;
+    this.ws = null;
     /**
-     * Discord Client (using to automatically login)
-     * @type {?Client}
+     * Heartbeat Interval
+     * @type {?number}
      */
-    this.client = client;
+    this.heartbeatInterval = NaN;
+    this._expire = NaN;
+    this.key = null;
     /**
-     * Hide `console.log`
-     * @type {boolean}
+     * User (Scan QR Code)
+     * @type {?Object}
      */
-    this.hideLog = hideLog;
+    this.user = null;
     /**
-     * WebSocket connection
-     * @type {WebSocket}
+     * Token (Scan QR Code)
+     * @type {?string}
      */
-    this.ws = new WebSocket(client?.options?.http?.remoteAuth || 'wss://remote-auth-gateway.discord.gg/?v=1', {
+    this.token = undefined;
+    /**
+     * Fingerprint (QR Code)
+     * @type {?string}
+     */
+    this.fingerprint = null;
+    this._validateOptions(options);
+  }
+  /**
+   * Get expire time
+   * @type {string} Expire time
+   * @readonly
+   */
+  get exprireTime() {
+    return this._expire.toLocaleString('en-US');
+  }
+  _validateOptions(options = {}) {
+    /**
+     * Options
+     * @type {?DiscordAuthWebsocketOptions}
+     */
+    this.options = {
+      debug: false,
+      hiddenLog: false,
+      autoLogin: false,
+      failIfError: true,
+      generateQR: true,
+    };
+    if (typeof options == 'object') {
+      if (typeof options.debug == 'boolean') this.options.debug = options.debug;
+      if (typeof options.hiddenLog == 'boolean') this.options.hiddenLog = options.hiddenLog;
+      if (typeof options.autoLogin == 'boolean') this.options.autoLogin = options.autoLogin;
+      if (typeof options.failIfError == 'boolean') this.options.failIfError = options.failIfError;
+      if (typeof options.generateQR == 'boolean') this.options.generateQR = options.generateQR;
+    }
+  }
+  _createWebSocket(url) {
+    this.ws = new WebSocket(url, {
       headers: {
         Origin: 'https://discord.com',
         'User-Agent': randomUA(),
       },
     });
+    this._handleWebSocket();
+  }
+  _handleWebSocket() {
+    this.ws.on('error', error => {
+      this._logger('error', error);
+    });
+    this.ws.on('open', () => {
+      this._logger('debug', 'Client Connected');
+    });
+    this.ws.on('close', () => {
+      this._logger('debug', 'Connection closed.');
+    });
+    this.ws.on('message', message => {
+      this._handleMessage(JSON.parse(message));
+    });
+  }
+  _handleMessage(message) {
+    switch (message.op) {
+      case receiveEvent.HELLO: {
+        this._ready(message);
+        break;
+      }
+      case receiveEvent.NONCE_PROOF: {
+        this._receiveNonceProof(message);
+        break;
+      }
+      case receiveEvent.PENDING_REMOTE_INIT: {
+        this._pendingRemoteInit(message);
+        break;
+      }
+      case receiveEvent.HEARTBEAT_ACK: {
+        this._logger('debug', 'Heartbeat acknowledged.');
+        this._heartbeatAck();
+        break;
+      }
+      case receiveEvent.PENDING_LOGIN: {
+        this._pendingLogin(message);
+        break;
+      }
+      case receiveEvent.CANCEL: {
+        this._logger('debug', 'Cancel login.');
+        /**
+         * Emitted whenever a user cancels the login process.
+         * @event DiscordAuthWebsocket#cancel
+         * @param {object} user User (Raw)
+         */
+        this.emit(Event.CANCEL, this.user);
+        this.destroy();
+        break;
+      }
+      case receiveEvent.SUCCESS: {
+        this._logger('debug', 'Receive Token - Login Success.', message.ticket);
+        /**
+         * Emitted whenever a token is created.
+         * @event DiscordAuthWebsocket#success
+         * @param {object} user Discord User
+         * @param {string} token Discord Token
+         */
+        this.emit(Event.FINISH, this.user, message.ticket);
+        this.token = message.ticket;
+        this.destroy();
+        break;
+      }
+      default: {
+        this._logger('debug', `Unknown op: ${message.op}`, message);
+      }
+    }
+  }
+  _logger(type = 'default', ...message) {
+    if (this.options.hiddenLog) return;
+    switch (type.toLowerCase()) {
+      case 'error': {
+        // eslint-disable-next-line no-unused-expressions
+        this.options.failIfError
+          ? this._throwError(new Error(message[0]))
+          : console.error(`[DiscordRemoteAuth] ERROR`.red, ...message);
+        break;
+      }
+      case 'default': {
+        console.log(`[DiscordRemoteAuth]`.green, ...message);
+        break;
+      }
+      case 'debug': {
+        if (this.options.debug) console.log(`[DiscordRemoteAuth] DEBUG`.yellow, ...message);
+        break;
+      }
+    }
+  }
+  _throwError(error) {
+    throw error;
+  }
+  _send(op, data) {
+    if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
+    let payload = { op: op };
+    if (data !== null) payload = { ...payload, ...data };
+    this._logger('debug', `Send Data:`, payload);
+    this.ws.send(JSON.stringify(payload));
+  }
+  _heartbeat() {
+    this._send(sendEvent.HEARTBEAT);
+  }
+  _heartbeatAck() {
+    setTimeout(() => {
+      this._heartbeat();
+    }, this.heartbeatInterval);
+  }
+  _ready(data) {
+    this._logger('debug', 'Attempting server handshake...');
+    this._expire = new Date(Date.now() + data.timeout_ms);
+    this.heartbeatInterval = data.heartbeat_interval;
+    this._createKey();
+    this._heartbeatAck();
+    this._init();
+  }
+  _createKey() {
+    if (this.key) this._throwError(new Error('Key is already created.'));
     this.key = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: {
@@ -92,195 +250,36 @@ class DiscordAuthWebsocket extends EventEmitter {
         format: 'pem',
       },
     });
-    this.heartbeat_interval = null;
-    this.connectionDestroy = null;
-    /**
-     * Time remote auth url expires
-     * @type {Date}
-     */
-    this.missQR = null;
-    /**
-     * Login state
-     * @type {boolean}
-     */
-    this.login_state = false;
-    /**
-     * User login with QR
-     * @type {?object}
-     */
-    this.user = null;
-    /**
-     * Discord Auth URL (QR Code decoded)
-     * @type {?string}
-     */
-    this.authURL = null;
-    /**
-     * Discord Token
-     * @type {?string}
-     */
-    this.token = null;
-    this.ws.on('error', error => {
-      if (this.debug) console.log(error);
-    });
-    this.ws.on('open', () => {
-      if (this.debug) console.log('[WebSocket] Client Connected');
-    });
-    this.ws.on('message', message => {
-      let data = JSON.parse(message);
-      if (this.debug) console.log(`[WebSocket] Packet receive`, data);
-      let op = data.op;
-      if (op == Messages.HELLO) {
-        if (this.debug) console.log('[WebSocket] Attempting server handshake...');
-        this.heartbeat_interval = setInterval(() => {
-          this.heartbeat_sender();
-        }, data.heartbeat_interval);
-        this.connectionDestroy = setTimeout(() => {
-          this.destroy();
-        }, data.timeout_ms);
-        this.missQR = new Date(Date.now() + data.timeout_ms);
-        let publickey = this.public_key();
-        this.send(Messages.INIT, { encoded_public_key: publickey });
-        if (this.debug) console.log('[WebSocket] Sent PEM');
-      } else if (op == Messages.HEARTBEAT_ACK) {
-        if (this.debug) console.log('[WebSocket] Heartbeat acknowledged');
-      } else if (op == Messages.NONCE_PROOF) {
-        let nonce = data.encrypted_nonce;
-        let decrypted_nonce = this.decrypt_payload(nonce);
-        let proof = crypto.createHash('sha256').update(decrypted_nonce).digest();
-        proof = urlsafe_b64encode(proof);
-        proof = proof.replace(/\s+$/, '');
-        this.send(Messages.NONCE_PROOF, { proof: proof });
-        if (this.debug) console.log('[WebSocket] Nonce proof decrypted');
-      } else if (op == Messages.PENDING_REMOTE_INIT) {
-        let fingerprint = data.fingerprint;
-        this.authURL = `https://discord.com/ra/${fingerprint}`;
-        /**
-         * Emitted whenever a url is created.
-         * @event DiscordAuthWebsocket#ready
-         * @param {string} url DiscordAuthWebsocket
-         */
-        this.emit('ready', this.authURL);
-        if (!this.hideLog) this.generate_qr_code(fingerprint);
-        if (this.debug) console.log('[WebSocket] QR Code generated');
-        if (!this.hideLog) {
-          console.log(
-            `Please scan the QR code to continue.\nQR Code will expire in ${this.missQR.toLocaleString('vi-VN')}`,
-          );
-        }
-      } else if (op == Messages.PENDING_FINISH) {
-        let encrypted_payload = data.encrypted_user_payload;
-        let payload = this.decrypt_payload(encrypted_payload);
-        const decoder = new StringDecoder('utf-8');
-        this.user = new DiscordUser_FromPayload(decoder.write(payload), this.debug);
-        if (!this.hideLog) console.log('\n');
-        if (!this.hideLog) console.log(this.user.pretty_print());
-        /**
-         * Emitted whenever a user is scan QR Code.
-         * @event DiscordAuthWebsocket#pending
-         * @param {object} user Discord User Raw
-         */
-        this.emit('pending', this.user);
-        if (this.debug) console.log('[WebSocket] Waiting for user to finish login...');
-        if (!this.hideLog) console.log('\n');
-        if (!this.hideLog) console.log('Please check your phone again to confirm login.');
-      } else if (op == Messages.FINISH) {
-        this.login_state = true;
-        let encrypted_token = data.encrypted_token;
-        let token = this.decrypt_payload(encrypted_token);
-        const decoder = new StringDecoder('utf-8');
-        this.user.token = decoder.write(token);
-        if (this.debug) console.log(this.user.pretty_print());
-        this.token = this.user.token;
-        /**
-         * Emitted whenever a token is created.
-         * @event DiscordAuthWebsocket#success
-         * @param {object} user Discord User (Raw)
-         * @param {string} token Discord Token
-         */
-        this.emit('success', this.user, this.token);
-        this.client?.login(this.user.token);
-        this.destroy();
-      } else if (op == Messages.CANCEL) {
-        /**
-         * Emitted whenever a user cancels the login process.
-         * @event DiscordAuthWebsocket#cancel
-         * @param {object} user User (Raw)
-         */
-        this.emit('cancel', this.user);
-        this.destroy();
-      }
-    });
-    this.ws.on('close', () => {
-      if (this.debug) {
-        console.log('[WebSocket] Connection closed.');
-      }
-    });
-    if (this.debug) console.log('[WebSocket] Setup passed');
   }
-
-  /**
-   * Destroy WebSocket connection
-   * @returns {void}
-   */
-  destroy() {
-    this.ws.close();
-    clearInterval(this.heartbeat_interval);
-    clearTimeout(this.connectionDestroy);
-    /**
-     * Emitted whenever a connection is closed.
-     * @event DiscordAuthWebsocket#closed
-     * @param {boolean} loginState Login state
-     */
-    this.emit('closed', this.login_state);
-    if (this.debug) {
-      console.log(`[WebSocket] Connection Destroyed, User login state: ${this.login_state ? 'success' : 'failure'}`);
-    }
-    if (!this.login_state && this.client) throw new Error('Login failed');
-  }
-
-  public_key() {
-    if (this.debug) console.log('[WebSocket] Generating public key...');
+  _createPublicKey() {
+    if (!this.key) this._throwError(new Error('Key is not created.'));
+    this._logger('debug', 'Generating public key...');
     const decoder = new StringDecoder('utf-8');
-    let pub_key = this.key.publicKey;
-    if (this.debug) console.log(pub_key);
-    pub_key = decoder.write(pub_key);
-    if (this.debug) console.log(pub_key);
+    let pub_key = decoder.write(this.key.publicKey);
     pub_key = pub_key.split('\n').slice(1, -2).join('');
-    if (this.debug) console.log(pub_key);
-    if (this.debug) console.log('[WebSocket] Public key generated');
+    this._logger('debug', 'Public key generated.', pub_key);
     return pub_key;
   }
-
-  heartbeat_sender() {
-    if (this.ws.readyState === this.ws.OPEN) {
-      this.send(Messages.HEARTBEAT);
-      if (this.debug) console.log('[WebSocket] Heartbeat sent');
-    } else if (this.debug) {
-      console.log('[WebSocket] Heartbeat not sent');
-    }
+  _init() {
+    const public_key = this._createPublicKey();
+    this._send(sendEvent.INIT, { encoded_public_key: public_key });
   }
-
-  send(op, data = null) {
-    let payload = { op: op };
-    if (data !== null) payload = { ...payload, ...data };
-
-    if (this.debug) {
-      console.log(`Send:`, payload);
-      console.log(payload);
-    }
-    this.ws.send(JSON.stringify(payload));
+  _receiveNonceProof(data) {
+    const nonce = data.encrypted_nonce;
+    const decrypted_nonce = this._decryptPayload(nonce);
+    let proof = crypto.createHash('sha256').update(decrypted_nonce).digest();
+    proof = urlsafe_b64encode(proof);
+    proof = proof.replace(/\s+$/, '');
+    this._send(sendEvent.NONCE_PROOF, { proof: proof });
+    this._logger('debug', `Nonce proof decrypted:`, proof);
   }
-
-  decrypt_payload(encrypted_payload) {
-    let payload = Buffer.from(encrypted_payload, 'base64');
-    if (this.debug) {
-      console.log(payload);
-      console.log(this.key.privateKey);
-    }
+  _decryptPayload(encrypted_payload) {
+    if (!this.key) this._throwError(new Error('Key is not created.'));
+    const payload = Buffer.from(encrypted_payload, 'base64');
+    this._logger('debug', `Encrypted Payload (Buffer):`, payload);
     const decoder = new StringDecoder('utf-8');
-    let private_key = this.key.privateKey;
-    private_key = decoder.write(private_key);
-    let decrypted = crypto.privateDecrypt(
+    const private_key = decoder.write(this.key.privateKey);
+    const data = crypto.privateDecrypt(
       {
         key: private_key,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
@@ -288,18 +287,106 @@ class DiscordAuthWebsocket extends EventEmitter {
       },
       payload,
     );
-
-    return decrypted;
+    this._logger('debug', `Decrypted Payload:`, data.toString());
+    return data;
   }
-
+  _pendingLogin(data) {
+    const user_data = this._decryptPayload(data.encrypted_user_payload);
+    const user = new User(user_data.toString());
+    this.user = user;
+    /**
+     * Emitted whenever a user is scan QR Code.
+     * @event DiscordAuthWebsocket#pending
+     * @param {object} user Discord User Raw
+     */
+    this.emit(Event.WAIT, user);
+    this._logger('debug', 'Waiting for user to finish login...');
+    this.user.prettyPrint(this);
+    this._logger('default', 'Please check your phone again to confirm login.');
+  }
+  _pendingRemoteInit(data) {
+    this._logger('debug', `Pending Remote Init:`, data);
+    /**
+     * Emitted whenever a url is created.
+     * @event DiscordAuthWebsocket#ready
+     * @param {string} fingerprint Fingerprint
+     * @param {string} url DiscordAuthWebsocket
+     */
+    this.emit(Event.READY, data.fingerprint, `${baseURL}${data.fingerprint}`);
+    this.fingerprint = data.fingerprint;
+    if (this.options.generateQR) this.generateQR();
+  }
+  _awaitLogin(client) {
+    this.once(Event.FINISH, (user, token) => {
+      this._logger('debug', 'Create login state...', user, token);
+      client.login(token);
+    });
+  }
+  /**
+   * Connect to DiscordAuthWebsocket.
+   * @param {?Client} client Using only for auto login.
+   * @returns {undefined}
+   */
+  connect(client) {
+    this._createWebSocket(wsURL);
+    if (client && this.options.autoLogin) this._awaitLogin(client);
+  }
+  /**
+   * Disconnect from DiscordAuthWebsocket.
+   * @returns {undefined}
+   */
+  destroy() {
+    if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
+    this.ws.close();
+    /**
+     * Emitted whenever a connection is closed.
+     * @event DiscordAuthWebsocket#closed
+     * @param {boolean} loginState Login state
+     */
+    this.emit(Event.CLOSED, this.token);
+    this._logger('debug', 'WebSocket closed.');
+  }
   /**
    * Generate QR code for user to scan (Terminal)
-   * @param {string} fingerprint Auth URL
+   * @returns {undefined}
    */
-  generate_qr_code(fingerprint) {
-    require('@aikochan2k6/qrcode-terminal').generate(`https://discord.com/ra/${fingerprint}`, {
-      small: true,
-    });
+  generateQR() {
+    if (!this.fingerprint) this._throwError(new Error('Fingerprint is not created.'));
+    if (this.options.generateQR) {
+      require('@aikochan2k6/qrcode-terminal').generate(`${baseURL}${this.fingerprint}`, {
+        small: true,
+      });
+    }
+    this._logger('default', `Please scan the QR code to continue.\nQR Code will expire in ${this.exprireTime}`);
+  }
+}
+
+class User {
+  constructor(payload) {
+    const values = payload.split(':');
+    this.id = values[0];
+    this.username = values[3];
+    this.discriminator = values[1];
+    this.avatar = values[2];
+    return this;
+  }
+  get avatarURL() {
+    return `https://cdn.discordapp.com/avatars/${this.id}/${this.avatar}.${
+      this.avatar.startsWith('a_') ? 'gif' : 'png'
+    }`;
+  }
+  get tag() {
+    return `${this.username}#${this.discriminator}`;
+  }
+  prettyPrint(RemoteAuth) {
+    let string = `\n`;
+    string += `         ${'User:'.bgBlue}           `;
+    string += `${this.tag} (${this.id})\n`;
+    string += `         ${'Avatar URL:'.bgGreen}     `;
+    string += `${this.avatarURL}\n`.cyan;
+    string += `         ${'Token:'.bgMagenta}          `;
+    string += `${this.token ? this.token : 'Unknown'}`.red;
+    RemoteAuth._logger('default', string);
   }
 }
 

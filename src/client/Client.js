@@ -386,9 +386,12 @@ class Client extends BaseClient {
    * client.QRLogin();
    */
   QRLogin(debug = false) {
-    const QR = new DiscordAuthWebsocket(this, debug);
+    const QR = new DiscordAuthWebsocket({
+      autoLogin: true,
+      debug,
+    });
     this.emit(Events.DEBUG, `Preparing to connect to the gateway`, QR);
-    return QR;
+    return QR.connect(this);
   }
 
   /**
@@ -443,13 +446,21 @@ class Client extends BaseClient {
   createToken() {
     return new Promise(resolve => {
       // Step 1: Create DiscordAuthWebsocket
-      const QR = new DiscordAuthWebsocket(undefined, false, true);
+      const QR = new DiscordAuthWebsocket({
+        hiddenLog: true,
+        generateQR: false,
+        autoLogin: false,
+        debug: false,
+        failIfError: false,
+      });
       // Step 2: Add event
       QR.on('ready', async url => {
         await this.remoteAuth(url, true);
-      }).on('success', (user, token) => {
+      }).on('finish', (user, token) => {
         resolve(token);
       });
+
+      QR.connect();
     });
   }
 
