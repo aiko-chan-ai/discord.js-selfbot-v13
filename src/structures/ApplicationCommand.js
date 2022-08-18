@@ -738,7 +738,7 @@ class ApplicationCommand extends Base {
           'is not a valid sub command',
         );
       }
-      const valueRequired = subCommand.options.filter(o => o.required).length;
+      const valueRequired = subCommand.options?.filter(o => o.required).length;
       for (let i = 0; i < options.length; i++) {
         const optionInput = subCommand.options[i];
         const value = options[i];
