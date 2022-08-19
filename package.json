@@ -62,7 +62,6 @@
     "axios": "^0.27.2",
     "bignumber.js": "^9.1.0",
     "chalk": "^4.1.2",
-    "colors": "^1.4.0",
     "discord-api-types": "^0.37.2",
     "form-data": "^4.0.0",
     "json-bigint": "^1.0.0",

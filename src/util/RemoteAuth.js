@@ -4,10 +4,10 @@ const crypto = require('crypto');
 const EventEmitter = require('node:events');
 const { setTimeout } = require('node:timers');
 const { StringDecoder } = require('string_decoder');
+const chalk = require('chalk');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
 const { randomUA } = require('./Constants');
-require('colors');
 
 const baseURL = 'https://discord.com/ra/';
 
@@ -198,15 +198,15 @@ class DiscordAuthWebsocket extends EventEmitter {
         // eslint-disable-next-line no-unused-expressions
         this.options.failIfError
           ? this._throwError(new Error(message[0]))
-          : console.error(`[DiscordRemoteAuth] ERROR`.red, ...message);
+          : console.error(chalk.red(`[DiscordRemoteAuth] ERROR`), ...message);
         break;
       }
       case 'default': {
-        console.log(`[DiscordRemoteAuth]`.green, ...message);
+        console.log(chalk.green(`[DiscordRemoteAuth]`), ...message);
         break;
       }
       case 'debug': {
-        if (this.options.debug) console.log(`[DiscordRemoteAuth] DEBUG`.yellow, ...message);
+        if (this.options.debug) console.log(chalk.yellow(`[DiscordRemoteAuth] DEBUG`), ...message);
         break;
       }
     }
@@ -380,12 +380,12 @@ class User {
   }
   prettyPrint(RemoteAuth) {
     let string = `\n`;
-    string += `         ${'User:'.bgBlue}           `;
+    string += `         ${chalk.bgBlue('User:')}           `;
     string += `${this.tag} (${this.id})\n`;
-    string += `         ${'Avatar URL:'.bgGreen}     `;
-    string += `${this.avatarURL}\n`.cyan;
-    string += `         ${'Token:'.bgMagenta}          `;
-    string += `${this.token ? this.token : 'Unknown'}`.red;
+    string += `         ${chalk.bgGreen('Avatar URL:')}     `;
+    string += chalk.cyan(`${this.avatarURL}\n`);
+    string += `         ${chalk.bgMagenta('Token:')}          `;
+    string += chalk.red(`${this.token ? this.token : 'Unknown'}`);
     RemoteAuth._logger('default', string);
   }
 }
