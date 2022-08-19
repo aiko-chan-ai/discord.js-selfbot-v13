@@ -133,15 +133,11 @@ class PartialGroupDMChannel extends Channel {
    * @returns {Promise<PartialGroupDMChannel>}
    */
   async addMember(user) {
-    if (this.ownerId !== this.client.user.id) {
-      return Promise.reject(new Error('NOT_OWNER_GROUP_DM_CHANNEL'));
-    }
     user = this.client.users.resolveId(user);
     if (!user) {
       return Promise.reject(new TypeError('User is not a User or User ID'));
     }
-    if (this.recipients.get(user)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL'));
-    //
+    if (this.recipients.get(user)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL')); // Fails sometimes if member leaves recently (ex. user leave msg's channel used for adding)
     await this.client.api.channels[this.id].recipients[user].put();
     this.recipients.set(user, this.client.users.cache.get(user));
     return this;
