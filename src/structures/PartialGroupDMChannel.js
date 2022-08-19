@@ -21,25 +21,19 @@ class PartialGroupDMChannel extends Channel {
      * The name of this Group DM Channel
      * @type {?string}
      */
-    this.name = data.name;
+    this.name = null;
 
     /**
      * The hash of the channel icon
      * @type {?string}
      */
-    this.icon = data.icon;
-
-    /**
-     * Recipient data received in a {@link PartialGroupDMChannel}.
-     * @typedef {Object} PartialRecipient
-     * @property {string} username The username of the recipient
-     */
+    this.icon = null;
 
     /**
      * The recipients of this Group DM Channel.
-     * @type {PartialRecipient[]}
+     * @type {Collection<Snowflake, User>}
      */
-    this.recipients = new Collection();
+    this.recipients = null;
 
     /**
      * Messages data
@@ -49,7 +43,7 @@ class PartialGroupDMChannel extends Channel {
 
     /**
      * Last Message ID
-     * @type {?snowflake<Message.id>}
+     * @type {?Snowflake}
      */
     this.lastMessageId = null;
 
@@ -60,12 +54,10 @@ class PartialGroupDMChannel extends Channel {
     this.lastPinTimestamp = null;
 
     /**
-     * The owner of this Group DM Channel
-     * @type {?User}
-     * @readonly
+     * Owner ID
+     * @type {?Snowflake}
      */
-    this.owner = client.users.cache.get(data.owner_id);
-    this.ownerId = data.owner_id;
+    this.ownerId = null;
 
     /**
      * Invites fetch
@@ -73,22 +65,28 @@ class PartialGroupDMChannel extends Channel {
      */
     this.invites = new Collection();
 
-    this._setup(client, data);
+    this._patch(data);
+  }
+
+  /**
+   * The owner of this Group DM Channel
+   * @type {?User}
+   * @readonly
+   */
+  get owner() {
+    return this.client.users.cache.get(this.ownerId);
   }
 
   /**
    *
-   * @param {Discord.Client} client Discord Bot Client
    * @param {Object} data Channel Data
    * @private
    */
-  _setup(client, data) {
+  _patch(data) {
+    super._patch(data);
     if ('recipients' in data) {
-      Promise.all(
-        data.recipients.map(recipient =>
-          this.recipients.set(recipient.id, client.users.cache.get(data.owner_id) || recipient),
-        ),
-      );
+      this.recipients = new Collection();
+      data.recipients.map(recipient => this.recipients.set(recipient.id, this.client.users._add(recipient)));
     }
     if ('last_pin_timestamp' in data) {
       const date = new Date(data.last_pin_timestamp);
@@ -97,12 +95,21 @@ class PartialGroupDMChannel extends Channel {
     if ('last_message_id' in data) {
       this.lastMessageId = data.last_message_id;
     }
+    if ('owner_id' in data) {
+      this.ownerId = data.owner_id;
+    }
+    if ('name' in data) {
+      this.name = data.name;
+    }
+    if ('icon' in data) {
+      this.icon = data.icon;
+    }
   }
 
   /**
-   *
-   * @param {Object} data name, icon
-   * @returns {any} any data .-.
+   * Edit channel data
+   * @param {Object} data name, icon owner
+   * @returns {Promise<undefined>}
    * @private
    */
   async edit(data) {
@@ -110,6 +117,9 @@ class PartialGroupDMChannel extends Channel {
     if ('name' in data) _data.name = data.name?.trim() ?? null;
     if (typeof data.icon !== 'undefined') {
       _data.icon = await DataResolver.resolveImage(data.icon);
+    }
+    if ('owner' in data) {
+      _data.owner = data.owner;
     }
     const newData = await this.client.api.channels(this.id).patch({
       data: _data,
@@ -181,6 +191,25 @@ class PartialGroupDMChannel extends Channel {
   }
 
   /**
+   * Changes the owner of this Group DM Channel.
+   * @param {UserResolvable} user User to transfer ownership to
+   * @returns {Promise<PartialGroupDMChannel>}
+   */
+  setOwner(user) {
+    const id = this.client.users.resolveId(user);
+    if (!id) {
+      throw new TypeError('User is not a User or User ID');
+    }
+    if (this.ownerId !== this.client.user.id) {
+      throw new Error('NOT_OWNER_GROUP_DM_CHANNEL');
+    }
+    if (this.ownerId === id) {
+      return this;
+    }
+    return this.edit({ owner: id });
+  }
+
+  /**
    * Gets the invite for this Group DM Channel.
    * @returns {Promise<Invite>}
    */
@@ -224,6 +253,29 @@ class PartialGroupDMChannel extends Channel {
     }
     await this.client.api.channels(this.id).invites[invite.code].delete();
     this.invites.delete(invite.code);
+    return this;
+  }
+
+  /**
+   * Leave this Group DM Channel.
+   * @param {?boolean} slient Leave without notifying other members
+   * @returns {Promise<Channel>}
+   * @example
+   * // Delete the channel
+   * channel.delete()
+   *   .then(console.log)
+   *   .catch(console.error);
+   */
+  async delete(slient = false) {
+    if (typeof slient === 'boolean' && slient) {
+      await this.client.api.channels(this.id).delete({
+        query: {
+          silent: true,
+        },
+      });
+    } else {
+      await this.client.api.channels(this.id).delete();
+    }
     return this;
   }
 

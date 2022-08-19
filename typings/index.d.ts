@@ -2341,6 +2341,8 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   public getInvite(): Promise<Invite>;
   public fetchInvite(force: boolean): Promise<Invite>;
   public removeInvite(invite: Invite): Promise<PartialGroupDMChannel>;
+  public delete(slient?: boolean): Promise<this>;
+  public setOwner(user: UserResolvable): Promise<PartialGroupDMChannel>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public call(options?: object): Promise<VoiceConnection>;
   public sync(): undefined;
@@ -3553,7 +3555,7 @@ export class BaseGuildEmojiManager extends CachedManager<Snowflake, GuildEmoji, 
 export class ChannelManager extends CachedManager<Snowflake, AnyChannel, ChannelResolvable> {
   private constructor(client: Client, iterable: Iterable<RawChannelData>);
   public fetch(id: Snowflake, options?: FetchChannelOptions): Promise<AnyChannel | null>;
-  public createGroupDM(recipients: User[]): Promise<PartialGroupDMChannel>;
+  public createGroupDM(recipients: UserResolvable[]): Promise<PartialGroupDMChannel>;
 }
 
 export type FetchGuildApplicationCommandFetchOptions = Omit<FetchApplicationCommandOptions, 'guildId'>;
@@ -6213,10 +6215,6 @@ export type PermissionString =
 export type RecursiveArray<T> = ReadonlyArray<T | RecursiveArray<T>>;
 
 export type RecursiveReadonlyArray<T> = ReadonlyArray<T | RecursiveReadonlyArray<T>>;
-
-export interface PartialRecipient {
-  username: string;
-}
 
 export type PremiumTier = keyof typeof PremiumTiers;
 

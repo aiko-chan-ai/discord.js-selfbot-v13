@@ -135,28 +135,10 @@ module.exports = (client, { d: data }, shard) => {
       `Gateway Rate Limit Warning: Sending ${data.private_channels.length} Requests / ${Date.now() - syncTime || 1} ms`,
     );
   }
-  // Remove event because memory leak
 
   if (client.options.readyStatus && !running) {
     client.customStatusAuto(client);
   }
-
-  /**
-   * Read_state: Return Array:
-   *     {
-   *      mention_count: 14, // ok it's ping count
-   *      last_pin_timestamp: '1970-01-01T00:00:00+00:00', // why discord ?
-   *      last_message_id: 0, // :)
-   *      id: '840218426969817119' // channel id
-   *	   },
-   */
-
-  /*
-  for (const object of data.read_state) {
-    if (object.mention_count == 0) continue;
-    client.user.messageMentions.set(object.id, object);
-  }
-  */
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;
