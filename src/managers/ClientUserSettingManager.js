@@ -210,7 +210,7 @@ class ClientUserSettingManager extends BaseManager {
         mutual_guilds: data.friend_source_flags.all ? true : data.friend_source_flags.mutual_guilds,
       };
     }
-    if ('guild_folders' in data) {
+    if ('guild_folders' in data && 'guild_positions' in data) {
       const data_ = data.guild_positions.map((guildId, i) => {
         // Find folder
         const folderIndex = data.guild_folders.findIndex(obj => obj.guild_ids.includes(guildId));
