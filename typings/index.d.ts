@@ -169,6 +169,7 @@ export abstract class DiscordAuthWebsocket extends EventEmitter {
   public heartbeatInterval?: number;
   public ws?: WebSocket;
   public token?: string;
+  public realToken?: string;
   public user?: RawUserData;
   public readonly exprireTime: string;
   public connect(client?: Client): void;
@@ -808,7 +809,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
 
   public application: If<Ready, ClientApplication>;
   // Added
-  public setting: ClientUserSettingManager;
+  public setting: ClientSettingManager;
   public relationships: RelationshipsManager;
   public updateCookie(): Promise<void>;
   public readonly callVoice?: VoiceConnection;
@@ -3560,15 +3561,29 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
 
 export type FetchGuildApplicationCommandFetchOptions = Omit<FetchApplicationCommandOptions, 'guildId'>;
 
-export interface guildFolderData {
-  guildId: Snowflake;
-  folderId: number | string;
-  folderIndex: number;
-  folderName: string;
-  folderColor: any;
-  folderGuilds: Snowflake[];
+export class GuildFolderManager extends BaseManager {
+  private constructor(client: Client);
+  public cache: Collection<number, GuildFolder>;
 }
-export class ClientUserSettingManager extends BaseManager {
+
+export interface RawGuildFolderData {
+  id: number | null;
+  name: string | null;
+  guild_ids: Snowflake[];
+  color: number | null;
+}
+export class GuildFolder extends Base {
+  private constructor(client: Client, data: RawGuildFolderData);
+  public id: number | null;
+  public name: string | null;
+  public guild_ids: Snowflake[];
+  public color: number | null;
+  public readonly hexColor: string | null;
+  public readonly guilds: Collection<Snowflake, Guild>;
+  public toJSON(): RawGuildFolderData;
+}
+
+export class ClientSettingManager extends BaseManager {
   private constructor(client: Client);
   public rawSetting: RawUserSettingsData | object;
   public locale: localeSetting | null;
@@ -3598,14 +3613,14 @@ export class ClientUserSettingManager extends BaseManager {
       }
     | object;
   public addFriendFrom: { all?: boolean; mutual_friends?: boolean; mututal_guilds?: boolean } | object;
-  public guildMetadata: Collection<Snowflake, guildFolderData>;
+  public guildFolder: GuildFolderManager;
   public disableDMfromServer: Collection<Snowflake, boolean>;
   public fetch(): Promise<RawUserSettingsData>;
   public setDisplayCompactMode(value?: boolean): Promise<this>;
   public setTheme(value?: 'dark' | 'light'): Promise<this>;
   public setLocale(value: localeSetting): Promise<this>;
   // @ts-ignore
-  public setCustomStatus(value?: CustomStatusOption): Promise<this>;
+  public setCustomStatus(value?: CustomStatusOption | CustomStatus): Promise<this>;
   public restrictedGuilds(status: boolean): Promise<void>;
   public addRestrictedGuild(guildId: GuildResolvable): Promise<void>;
   public removeRestrictedGuild(guildId: GuildResolvable): Promise<void>;

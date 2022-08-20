@@ -111,7 +111,7 @@ module.exports = (client, { d: data }, shard) => {
 
   client.user.setAFK(false);
 
-  client.setting._patch(data.user_settings);
+  client.settings._patch(data.user_settings);
 
   client.user.connectedAccounts = data.connected_accounts ?? [];
 

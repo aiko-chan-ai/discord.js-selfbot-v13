@@ -69,7 +69,41 @@ exports.NitroType = createEnum(['NONE', 'NITRO_CLASSIC', 'NITRO_BOOST']);
  */
 exports.HypeSquadType = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE', 'HOUSE_BALANCE']);
 
-exports.localeObject = {
+/**
+ * All locale codes:
+ * * `DANISH`
+ * * `GERMAN`
+ * * `ENGLISH_UK`
+ * * `ENGLISH_US`
+ * * `SPANISH`
+ * * `FRENCH`
+ * * `CROATIAN`
+ * * `ITALIAN`
+ * * `LITHUANIAN`
+ * * `HUNGARIAN`
+ * * `DUTCH`
+ * * `NORWEGIAN`
+ * * `POLISH`
+ * * `BRAZILIAN_PORTUGUESE`
+ * * `ROMANIA_ROMANIAN`
+ * * `FINNISH`
+ * * `SWEDISH`
+ * * `VIETNAMESE`
+ * * `TURKISH`
+ * * `CZECH`
+ * * `GREEK`
+ * * `BULGARIAN`
+ * * `RUSSIAN`
+ * * `UKRAINIAN`
+ * * `HINDI`
+ * * `THAI`
+ * * `CHINA_CHINESE`
+ * * `JAPANESE`
+ * * `TAIWAN_CHINESE`
+ * * `KOREAN`
+ * @typedef {Object<string, string>} localeSetting
+ */
+exports.localeSetting = {
   da: 'DANISH',
   de: 'GERMAN',
   'en-GB': 'ENGLISH_UK',

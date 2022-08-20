@@ -11,7 +11,7 @@ const WebSocketManager = require('./websocket/WebSocketManager');
 const { Error, TypeError, RangeError } = require('../errors');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const ChannelManager = require('../managers/ChannelManager');
-const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
+const ClientSettingManager = require('../managers/ClientSettingManager');
 const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
 const RelationshipsManager = require('../managers/RelationshipsManager');
@@ -146,9 +146,9 @@ class Client extends BaseClient {
     this.relationships = new RelationshipsManager(this);
     /**
      * All of the settings {@link Object}
-     * @type {ClientUserSettingManager}
+     * @type {ClientSettingManager}
      */
-    this.setting = new ClientUserSettingManager(this);
+    this.settings = new ClientSettingManager(this);
     /**
      * All of the guilds the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* guild the bot is a member of

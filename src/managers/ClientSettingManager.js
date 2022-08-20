@@ -1,16 +1,18 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-// Not used: const { remove } = require('lodash');
 const BaseManager = require('./BaseManager');
+const GuildFolderManager = require('./GuildFolderManager');
 const { Error, TypeError } = require('../errors/DJSError');
-const { localeObject, DMScanLevel, stickerAnimationMode } = require('../util/Constants');
+const GuildFolder = require('../structures/GuildFolder');
+const { CustomStatus } = require('../structures/RichPresence');
+const { localeSetting, DMScanLevel, stickerAnimationMode } = require('../util/Constants');
 /**
  * Manages API methods for users and stores their cache.
  * @extends {BaseManager}
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
  */
-class ClientUserSettingManager extends BaseManager {
+class ClientSettingManager extends BaseManager {
   constructor(client) {
     super(client);
     /**
@@ -125,19 +127,10 @@ class ClientUserSettingManager extends BaseManager {
      */
     this.customStatus = null;
     /**
-     * @typedef {object} guildFolderData
-     * @property {Snowflake} guildId Guild ID
-     * @property {number | string} folderId ID of the folder
-     * @property {number} folderIndex Index of the folder
-     * @property {string} folderName Name of the folder
-     * @property {any} folderColor Color of the folder
-     * @property {Snowflake[]} folderGuilds Array of guild IDs in the folder
-     */
-    /**
      * Guild folder and position
-     * @type {Collection<Snowflake, guildFolderData>}
+     * @type {GuildFolderManager}
      */
-    this.guildMetadata = new Collection();
+    this.guildFolder = new GuildFolderManager(client);
     // Todo: add new method from Discum
   }
   /**
@@ -149,7 +142,7 @@ class ClientUserSettingManager extends BaseManager {
   _patch(data) {
     this.rawSetting = Object.assign(this.rawSetting, data);
     if ('locale' in data) {
-      this.locale = localeObject[data.locale];
+      this.locale = localeSetting[data.locale];
     }
     if ('show_current_game' in data) {
       this.activityDisplay = data.show_current_game;
@@ -210,22 +203,10 @@ class ClientUserSettingManager extends BaseManager {
         mutual_guilds: data.friend_source_flags.all ? true : data.friend_source_flags.mutual_guilds,
       };
     }
-    if ('guild_folders' in data && 'guild_positions' in data) {
-      const data_ = data.guild_positions.map((guildId, i) => {
-        // Find folder
-        const folderIndex = data.guild_folders.findIndex(obj => obj.guild_ids.includes(guildId));
-        const metadata = {
-          guildId: guildId,
-          guildIndex: i,
-          folderId: data.guild_folders[folderIndex]?.id,
-          folderIndex,
-          folderName: data.guild_folders[folderIndex]?.name,
-          folderColor: data.guild_folders[folderIndex]?.color,
-          folderGuilds: data.guild_folders[folderIndex]?.guild_ids,
-        };
-        return [guildId, metadata];
-      });
-      this.guildMetadata = new Collection(data_);
+    if ('guild_folders' in data) {
+      data.guild_folders.map((folder, index) =>
+        this.guildFolder.cache.set(index, new GuildFolder(this.client, folder)),
+      );
     }
     if ('restricted_guilds' in data) {
       this.disableDMfromServer = new Collection(data.restricted_guilds.map(guildId => [guildId, true]));
@@ -254,8 +235,8 @@ class ClientUserSettingManager extends BaseManager {
    * @returns {boolean}
    */
   async setDisplayCompactMode(value) {
-    if (typeof value !== 'boolean' && value !== null && typeof value !== 'undefined') {
-      throw new TypeError('INVALID_TYPE', 'value', 'boolean | null | undefined', true);
+    if (typeof value !== 'boolean' && value !== null) {
+      throw new TypeError('INVALID_TYPE', 'value', 'boolean | null', true);
     }
     if (!value) value = !this.compactMode;
     if (value !== this.compactMode) {
@@ -270,8 +251,8 @@ class ClientUserSettingManager extends BaseManager {
    */
   async setTheme(value) {
     const validValues = ['dark', 'light'];
-    if (typeof value !== 'string' && value !== null && typeof value !== 'undefined') {
-      throw new TypeError('INVALID_TYPE', 'value', 'string | null | undefined', true);
+    if (typeof value !== 'string' && value !== null) {
+      throw new TypeError('INVALID_TYPE', 'value', 'string | null', true);
     }
     if (!validValues.includes(value)) {
       if (value == validValues[0]) value = validValues[1];
@@ -293,12 +274,31 @@ class ClientUserSettingManager extends BaseManager {
    */
 
   /**
-   * Set custom status (Setting)
-   * @param {CustomStatusOption} options Object | null
+   * Set custom status
+   * @param {?CustomStatus | CustomStatusOption} options CustomStatus
    */
   setCustomStatus(options) {
     if (typeof options !== 'object') {
       this.edit({ custom_status: null });
+    } else if (options instanceof CustomStatus) {
+      options = options.toJSON();
+      let data = {
+        emoji_name: null,
+        expires_at: null,
+        text: null,
+      };
+      if (typeof options.state === 'string') {
+        data.text = options.state;
+      }
+      if (options.emoji) {
+        if (options.emoji?.id) {
+          data.emoji_name = options.emoji?.name;
+          data.emoji_id = options.emoji?.id;
+        } else {
+          data.emoji_name = typeof options.emoji?.name === 'string' ? options.emoji?.name : null;
+        }
+      }
+      this.edit({ custom_status: data });
     } else {
       let data = {
         emoji_name: null,
@@ -363,16 +363,16 @@ class ClientUserSettingManager extends BaseManager {
    * * `JAPANESE`
    * * `TAIWAN_CHINESE`
    * * `KOREAN`
-   * @param {string} value Locale to set
+   * @param {localeSetting} value Locale to set
    * @returns {locale}
    */
   async setLocale(value) {
     if (typeof value !== 'string') {
       throw new TypeError('INVALID_TYPE', 'value', 'string', true);
     }
-    if (!localeObject[value]) throw new Error('INVALID_LOCALE');
-    if (localeObject[value] !== this.locale) {
-      await this.edit({ locale: localeObject[value] });
+    if (!localeSetting[value]) throw new Error('INVALID_LOCALE');
+    if (localeSetting[value] !== this.locale) {
+      await this.edit({ locale: localeSetting[value] });
     }
     return this.locale;
   }
@@ -487,4 +487,4 @@ class ClientUserSettingManager extends BaseManager {
   }
 }
 
-module.exports = ClientUserSettingManager;
+module.exports = ClientSettingManager;
