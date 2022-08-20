@@ -10,9 +10,9 @@
 
 ```js
 client.setting // Return Data Setting User;
-client.setting.setDisplayCompactMode(true | false); // Message Compact Mode
-client.setting.setTheme('dark' | 'light'); // Discord App theme
-client.setting.setLocale(value); // Set Language
+client.settings.setDisplayCompactMode(true | false); // Message Compact Mode
+client.settings.setTheme('dark' | 'light'); // Discord App theme
+client.settings.setLocale(value); // Set Language
 	/**
 	 * * Locale Setting, must be one of:
 	 * * `DANISH`
@@ -47,14 +47,14 @@ client.setting.setLocale(value); // Set Language
 	 * * `KOREAN`
 	 */
 // Setting Status
-client.setting.setCustomStatus({
+client.settings.setCustomStatus({
   status: 'online', // 'online' | 'idle' | 'dnd' | 'invisible' | null
   text: 'Hello world', // String | null
   emoji: '🎮', // UnicodeEmoji | DiscordEmoji | null
   expires: null, // Date.now() + 1 * 3600 * 1000 <= 1h to ms
 });
 // => Clear
-client.setting.setCustomStatus();
+client.settings.setCustomStatus();
 ```
 
 </details>
