@@ -810,17 +810,17 @@ class Client extends BaseClient {
   customStatusAuto(client) {
     client = client ?? this;
     const custom_status = new CustomStatus();
-    if (client.setting.rawSetting.custom_status?.text || client.setting.rawSetting.custom_status?.emoji_name) {
+    if (client.settings.rawSetting.custom_status?.text || client.settings.rawSetting.custom_status?.emoji_name) {
       custom_status.setEmoji({
-        name: client.setting.rawSetting.custom_status?.emoji_name,
-        id: client.setting.rawSetting.custom_status?.emoji_id,
+        name: client.settings.rawSetting.custom_status?.emoji_name,
+        id: client.settings.rawSetting.custom_status?.emoji_id,
       });
-      custom_status.setState(client.setting.rawSetting.custom_status?.text);
+      custom_status.setState(client.settings.rawSetting.custom_status?.text);
       client.user.setPresence({
         activities: custom_status
           ? [custom_status.toJSON(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')]
           : this.presence.activities.filter(a => a.type !== 'CUSTOM'),
-        status: client.setting.rawSetting.status,
+        status: client.settings.rawSetting.status,
       });
     }
   }

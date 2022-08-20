@@ -1278,20 +1278,20 @@ class Guild extends AnonymousGuild {
         throw new TypeError('INVALID_TYPE', 'folderID', 'String | Number');
       }
       // Get Data from Folder ID
-      const folder = await this.client.setting.rawSetting.guild_folders.find(obj => obj.id == folderID);
+      const folder = await this.client.settings.rawSetting.guild_folders.find(obj => obj.id == folderID);
       if (!folder) throw new Error('FOLDER_NOT_FOUND');
       if (folder.guild_ids.length - 1 < position || position < 0) {
         throw new Error('FOLDER_POSITION_INVALID');
       }
       if (position !== folder.guild_ids.indexOf(this.id)) {
-        await this.client.setting.guildChangePosition(this.id, position, 1, folderID);
+        await this.client.settings.guildChangePosition(this.id, position, 1, folderID);
       }
     } else if (type == 2 || `${type}`.toUpperCase() === 'HOME') {
-      if (this.client.setting.guild_positions - 1 < position || position < 0) {
+      if (this.client.settings.guild_positions - 1 < position || position < 0) {
         throw new Error('FOLDER_POSITION_INVALID');
       }
       if (position !== this.position) {
-        await this.client.setting.guildChangePosition(this.id, position, 2, null);
+        await this.client.settings.guildChangePosition(this.id, position, 2, null);
       }
     } else {
       throw new TypeError('INVALID_TYPE', 'type', '`Folder`| `Home`');
