@@ -4,10 +4,14 @@ const crypto = require('crypto');
 const EventEmitter = require('node:events');
 const { setTimeout } = require('node:timers');
 const { StringDecoder } = require('string_decoder');
+const axios = require('axios');
 const chalk = require('chalk');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
 const { randomUA } = require('./Constants');
+const Options = require('./Options');
+
+const defaultClientOptions = Options.createDefault();
 
 const baseURL = 'https://discord.com/ra/';
 
@@ -34,6 +38,7 @@ const Event = {
   ERROR: 'error',
   CANCEL: 'cancel',
   WAIT: 'pending',
+  SUCCESS: 'success',
   FINISH: 'finish',
   CLOSED: 'closed',
 };
@@ -45,6 +50,7 @@ const Event = {
  * @property {?boolean} [autoLogin=false] Automatically login (DiscordJS.Client Login) ?
  * @property {?boolean} [failIfError=true] Throw error ?
  * @property {?boolean} [generateQR=true] Create QR Code ?
+ * @property {?number} [apiVersion=9] API Version
  */
 
 /**
@@ -77,10 +83,15 @@ class DiscordAuthWebsocket extends EventEmitter {
      */
     this.user = null;
     /**
-     * Token (Scan QR Code)
+     * Temporary Token (Scan QR Code)
      * @type {?string}
      */
     this.token = undefined;
+    /**
+     * Real Token (Login)
+     * @type {?string}
+     */
+    this.realToken = undefined;
     /**
      * Fingerprint (QR Code)
      * @type {?string}
@@ -107,6 +118,7 @@ class DiscordAuthWebsocket extends EventEmitter {
       autoLogin: false,
       failIfError: true,
       generateQR: true,
+      apiVersion: 9,
     };
     if (typeof options == 'object') {
       if (typeof options.debug == 'boolean') this.options.debug = options.debug;
@@ -114,6 +126,7 @@ class DiscordAuthWebsocket extends EventEmitter {
       if (typeof options.autoLogin == 'boolean') this.options.autoLogin = options.autoLogin;
       if (typeof options.failIfError == 'boolean') this.options.failIfError = options.failIfError;
       if (typeof options.generateQR == 'boolean') this.options.generateQR = options.generateQR;
+      if (typeof options.apiVersion == 'number') this.options.apiVersion = options.apiVersion;
     }
   }
   _createWebSocket(url) {
@@ -176,14 +189,14 @@ class DiscordAuthWebsocket extends EventEmitter {
       case receiveEvent.SUCCESS: {
         this._logger('debug', 'Receive Token - Login Success.', message.ticket);
         /**
-         * Emitted whenever a token is created.
-         * @event DiscordAuthWebsocket#finish
+         * Emitted whenever a token is created. (Fake token)
+         * @event DiscordAuthWebsocket#success
          * @param {object} user Discord User
-         * @param {string} token Discord Token
+         * @param {string} token Discord Token (Fake)
          */
-        this.emit(Event.FINISH, this.user, message.ticket);
+        this.emit(Event.SUCCESS, this.user, message.ticket);
         this.token = message.ticket;
-        this.destroy();
+        this._findRealToken();
         break;
       }
       default: {
@@ -358,6 +371,48 @@ class DiscordAuthWebsocket extends EventEmitter {
       });
     }
     this._logger('default', `Please scan the QR code to continue.\nQR Code will expire in ${this.exprireTime}`);
+  }
+
+  async _findRealToken() {
+    if (!this.token) this._throwError(new Error('Token is not created.'));
+    const res = await axios.post(
+      `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
+      {
+        ticket: this.token,
+      },
+      {
+        headers: {
+          Accept: '*/*',
+          'Content-Type': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          'Sec-Ch-Ua': `"Not A;Brand";v="99", "Chromium";v="${
+            defaultClientOptions.ws.properties.browser_version.split('.')[0]
+          }", "Google Chrome";v="${defaultClientOptions.ws.properties.browser_version.split('.')[0]}`,
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'same-origin',
+          'X-Debug-Options': 'bugReporterEnabled',
+          'X-Super-Properties': `${Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'ascii').toString(
+            'base64',
+          )}`,
+          'X-Discord-Locale': 'en-US',
+          'User-Agent': randomUA(),
+        },
+      },
+    );
+    this._logger('debug', 'Find real token...', res.data);
+    this.realToken = this._decryptPayload(res.data.encrypted_token).toString();
+    /**
+     * Emitted whenever a real token is found.
+     * @event DiscordAuthWebsocket#finish
+     * @param {object} user User
+     * @param {string} token Real token
+     */
+    this.emit(Event.FINISH, this.user, this.realToken);
   }
 }
 

@@ -59,6 +59,7 @@ class CustomStatus {
    * @returns {CustomStatus}
    */
   setState(state) {
+    if (typeof state == 'string' && state.length > 128) throw new Error('State must be less than 128 characters');
     this.state = state;
     return this;
   }

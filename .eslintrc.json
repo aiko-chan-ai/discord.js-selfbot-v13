@@ -280,6 +280,7 @@
 				"name": "setImmediate",
 				"message": "Import setImmediate from `node:timers` instead"
 			}
-		]
+		],
+		"linebreak-style": 0
 	}
 }
