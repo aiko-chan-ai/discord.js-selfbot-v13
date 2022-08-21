@@ -81,6 +81,7 @@ const { randomUA } = require('../util/Constants');
  * @property {PresenceData} [presence={}] Presence data to use upon login
  * @property {IntentsResolvable} [intents=131071] Intents to enable for this connection (but not using)
  * @property {number} [waitGuildTimeout=15000] Time in milliseconds that Clients with the GUILDS intent should wait for
+ * @property {number} [messageCreateEventGuildTimeout=100] Time in milliseconds that Clients to register for messages with each guild
  * missing guilds to be received before starting the bot. If not specified, the default is 15 seconds.
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
  * @property {WebsocketOptions} [ws] Options for the WebSocket
@@ -149,6 +150,7 @@ class Options extends null {
       DMSync: false,
       patchVoice: true,
       waitGuildTimeout: 15_000,
+      messageCreateEventGuildTimeout: 100,
       shardCount: 1,
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
       messageCacheLifetime: 0,

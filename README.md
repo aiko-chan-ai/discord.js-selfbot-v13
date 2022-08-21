@@ -35,7 +35,7 @@
 ### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>
 
 ## Features
-- [x] Message: Send, Recieve, Delete, Edit, Pin, Reaction Emoji, Attachments, Embeds (WebEmbed), Mentions, Webhooks, etc.
+- [x] Message: Send, Receive, Delete, Edit, Pin, Reaction Emoji, Attachments, Embeds (WebEmbed), Mentions, Webhooks, etc.
 - [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
 - [X] Guild: Fetch Members, Join / Leave, Roles, Channels, etc.
 - [X] Interactions: Slash Commands, Click Buttons, Using Menu, Modal, Context Menu, etc.

@@ -59,7 +59,7 @@ async function checkUpdate(client) {
   return client.emit('update', Discord.version, latest_tag);
 }
 
-module.exports = (client, { d: data }, shard) => {
+module.exports = async (client, { d: data }, shard) => {
   checkUpdate(client);
 
   if (client.options.patchVoice && !running) {
@@ -146,7 +146,8 @@ module.exports = (client, { d: data }, shard) => {
   }
 
   // Receive messages in large guilds
-  client.guilds.cache.map(guild => {
+  for (const guild of data.guilds) {
+    await client.sleep(client.options.messageCreateEventGuildTimeout);
     client.ws.broadcast({
       op: Opcodes.LAZY_REQUEST,
       d: {
@@ -156,13 +157,10 @@ module.exports = (client, { d: data }, shard) => {
         activities: true,
         thread_member_lists: [],
         members: [],
-        channels: {
-          // [guild.channels.cache.first().id]: [[0, 99]],
-        },
+        channels: {},
       },
     });
-    return true;
-  });
+  }
 
   client.relationships._setup(data.relationships);
 
