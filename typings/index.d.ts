@@ -4564,6 +4564,7 @@ export interface ClientOptions {
   presence?: PresenceData;
   intents?: BitFieldResolvable<IntentsString, number>;
   waitGuildTimeout?: number;
+  messageCreateEventGuildTimeout?: number;
   sweepers?: SweeperOptions;
   ws?: WebSocketOptions;
   http?: HTTPOptions;
