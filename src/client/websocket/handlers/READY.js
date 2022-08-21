@@ -9,7 +9,7 @@ const { Events, Opcodes } = require('../../../util/Constants');
 const { Networking } = require('../../../util/Voice');
 let running = false;
 /**
- * Emitted whenever clientOptions.checkUpdate = true
+ * Emitted whenever clientOptions.checkUpdate = false
  * @event Client#update
  * @param {string} oldVersion Current version
  * @param {string} newVersion Latest version
@@ -20,7 +20,7 @@ async function checkUpdate(client) {
     .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
     .catch(() => {});
   if (!res_) {
-    return client.emit('update', `${chalk.redBright('[Fail]')} Check Update error`);
+    return client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error`);
   }
   const latest_tag = res_.data['dist-tags'].latest;
   if (client.options.checkUpdate) {
@@ -30,33 +30,35 @@ async function checkUpdate(client) {
       ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
       Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(latest_tag)}
   
-      If you don't want to show this message, set \`checkUpdate\` to false
+      If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
       new Client({
           checkUpdate: false,
       });
   
       and using event update
-      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`);
+      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`);
       }
     } else if (!running) {
       console.log(
         `
       ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(Discord.version)}
   
-      If you don't want to show this message, set \`checkUpdate\` to false
+      If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
       new Client({
           checkUpdate: false,
       });
   
       and using event update
-      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update`,
+      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`,
       );
     }
+  } else {
+    client.emit('update', Discord.version, latest_tag);
   }
   running = true;
-  return client.emit('update', Discord.version, latest_tag);
+  return undefined;
 }
 
 module.exports = async (client, { d: data }, shard) => {
@@ -95,7 +97,7 @@ module.exports = async (client, { d: data }, shard) => {
     };
     client.emit(
       Events.DEBUG,
-      `${chalk.greenBright('[OK]')} Patched VoiceConnection.prototype.configureNetworking [@discordjs/voice - v0.11.0]`,
+      `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright('VoiceConnection.prototype.configureNetworking')} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.11.0')}]`,
     );
     /* eslint-enable */
   }
