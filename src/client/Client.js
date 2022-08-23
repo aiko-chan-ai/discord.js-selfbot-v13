@@ -454,7 +454,7 @@ class Client extends BaseClient {
         failIfError: false,
       });
       // Step 2: Add event
-      QR.on('ready', async url => {
+      QR.on('ready', async (_, url) => {
         await this.remoteAuth(url, true);
       }).on('finish', (user, token) => {
         resolve(token);
