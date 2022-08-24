@@ -222,7 +222,7 @@ class User extends Base {
     }
 
     if ('bio' in data.user_profile || 'bio' in data.user) {
-      this.bio = data.user_profile || data.user.bio;
+      this.bio = data.user_profile.bio || data.user.bio;
     }
 
     if ('premium_type' in data) {
