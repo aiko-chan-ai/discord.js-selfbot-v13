@@ -60,6 +60,7 @@ exports.PresenceManager = require('./managers/PresenceManager');
 exports.ReactionManager = require('./managers/ReactionManager');
 exports.ReactionUserManager = require('./managers/ReactionUserManager');
 exports.RoleManager = require('./managers/RoleManager');
+exports.SessionManager = require('./managers/SessionManager');
 exports.StageInstanceManager = require('./managers/StageInstanceManager');
 exports.ThreadManager = require('./managers/ThreadManager');
 exports.ThreadMemberManager = require('./managers/ThreadMemberManager');
@@ -137,6 +138,7 @@ exports.ReactionCollector = require('./structures/ReactionCollector');
 exports.ReactionEmoji = require('./structures/ReactionEmoji');
 exports.RichPresenceAssets = require('./structures/Presence').RichPresenceAssets;
 exports.Role = require('./structures/Role').Role;
+exports.Session = require('./structures/Session');
 // RPC
 exports.getUUID = require('./structures/RichPresence').getUUID;
 exports.CustomStatus = require('./structures/RichPresence').CustomStatus;

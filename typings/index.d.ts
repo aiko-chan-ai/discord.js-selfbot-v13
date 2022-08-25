@@ -163,6 +163,28 @@ import {
 } from './rawDataTypes';
 // @ts-ignore
 //#region Classes
+
+export abstract class SessionManager extends CachedManager {
+  constructor(client: Client, iterable?: Iterable<unknown>);
+  public fetch(): Promise<SessionManager>;
+  public logoutAllDevices(password?: string, mfaCode?: string): Promise<undefined>;
+}
+
+export abstract class Session extends Base {
+  constructor(client: Client);
+  public id?: string;
+  public clientInfo?: SessionClientInfo;
+  public readonly createdTimestamp: number;
+  public readonly createdAt: Date;
+  public logout(password?: string, mfaCode?: string): Promise<undefined>;
+}
+
+export interface SessionClientInfo {
+  location?: string;
+  platform?: string;
+  os?: string;
+}
+
 export abstract class DiscordAuthWebsocket extends EventEmitter {
   constructor(options?: DiscordAuthWebsocketOptions);
   public fingerprint?: string;

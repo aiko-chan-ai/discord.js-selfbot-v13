@@ -104,6 +104,8 @@ const Messages = {
   STAGE_CHANNEL_RESOLVE: 'Could not resolve channel to a stage channel.',
   GUILD_SCHEDULED_EVENT_RESOLVE: 'Could not resolve the guild scheduled event.',
 
+  REQUIRE_PASSWORD: 'You must provide a password.',
+
   MISSING_VALUE: (where, type) => `Missing value for ${where} (${type})`,
 
   INVALID_TYPE: (name, expected, an = false) => `Supplied ${name} is not a${an ? 'n' : ''} ${expected}.`,

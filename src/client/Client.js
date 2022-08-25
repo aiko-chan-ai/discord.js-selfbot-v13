@@ -15,6 +15,7 @@ const ClientSettingManager = require('../managers/ClientSettingManager');
 const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
 const RelationshipsManager = require('../managers/RelationshipsManager');
+const SessionManager = require('../managers/SessionManager');
 const UserManager = require('../managers/UserManager');
 const VoiceStateManager = require('../managers/VoiceStateManager');
 const ShardClientUtil = require('../sharding/ShardClientUtil');
@@ -155,6 +156,12 @@ class Client extends BaseClient {
      * @type {GuildManager}
      */
     this.guilds = new GuildManager(this);
+
+    /**
+     * All of the sessions of the client
+     * @type {SessionManager}
+     */
+    this.sessions = new SessionManager(this);
 
     /**
      * All of the {@link Channel}s that the client is currently handling, mapped by their ids -
