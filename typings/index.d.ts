@@ -4598,6 +4598,7 @@ export interface ClientOptions {
   autoRedeemNitro?: boolean;
   patchVoice?: boolean;
   DMSync?: boolean;
+  proxy?: string;
 }
 
 // end copy
