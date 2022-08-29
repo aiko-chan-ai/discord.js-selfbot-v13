@@ -436,6 +436,7 @@ class TextBasedChannel {
     if (!user || !user.bot || !user.application) {
       throw new Error('botId is not a bot or does not have an application slash command');
     }
+    if (user._partial) await user.getProfile();
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
     // Using API to search (without opcode ~ehehe)
     let commandTarget;
@@ -445,7 +446,7 @@ class TextBasedChannel {
       include_applications: false,
     };
     if (this.client.channels.cache.get(this.id)?.type == 'DM') {
-      query.application_id = botId;
+      query.application_id = user.application.id;
     } else {
       query.limit = 25;
       query.query = commandName;
@@ -454,7 +455,7 @@ class TextBasedChannel {
       query,
     });
     for (const command of data.application_commands) {
-      if (user.id == command.application_id) {
+      if (user.id == command.application_id || user.application.id == command.application_id) {
         const c = user.application?.commands?._add(command, true);
         if (command.name == commandName) commandTarget = c;
       } else {
