@@ -94,7 +94,7 @@ const r = new Discord.RichPresence()
 	.setParty({
 		max: 9,
 		current: 1,
-		id: Discord.getUUID(),
+		id: Discord.RichPresence.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
 	.setAssetsLargeImage('mp:attachments/820557032016969751/991172011483218010/unknown.png')
@@ -118,7 +118,7 @@ const r = new Discord.RichPresence()
 	.setParty({
 		max: 9,
 		current: 1,
-		id: Discord.getUUID(),
+		id: Discord.RichPresence.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
 	.setAssetsLargeImage('https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png')
@@ -135,7 +135,7 @@ client.user.setActivity(r.toJSON());
 
 ```js
 const rpc = new Discord.RichPresence();
-const imageSet = await rpc.getExternal(client, '820344593357996092', 'https://musedash.moe/covers/papipupipupipa_cover.hash.93ae31d41.png', 'https://musedash.moe/covers/lights_of_muse_cover.hash.1c18e1e22.png')
+const imageSet = await Discord.RichPresence.getExternal(client, '820344593357996092', 'https://musedash.moe/covers/papipupipupipa_cover.hash.93ae31d41.png', 'https://musedash.moe/covers/lights_of_muse_cover.hash.1c18e1e22.png')
 rpc
 	.setApplicationId('820344593357996092')
 	.setType('PLAYING')
@@ -165,4 +165,4 @@ const asset = await bot.application.fetchAssets();
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995307606115618926/unknown.png'>
 
 - More: 
-  - You can change the status 5 times every 20 seconds!
+  - You can change the status 5 times / 20 seconds!
