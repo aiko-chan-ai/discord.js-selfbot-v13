@@ -79,6 +79,7 @@ class User extends Base {
      * @readonly
      */
     this.application = null;
+    this._partial = true;
     this._patch(data);
   }
 
@@ -207,6 +208,8 @@ class User extends Base {
   _ProfilePatch(data) {
     if (!data) return;
 
+    this._partial = false;
+
     if (data.connected_accounts.length > 0) {
       this.connectedAccounts = data.connected_accounts;
     }
@@ -238,6 +241,10 @@ class User extends Base {
       const guild = this.client.guilds.cache.get(data.guild_member_profile.guild_id);
       const member = guild?.members._add(data.guild_member);
       member._ProfilePatch(data.guild_member_profile);
+    }
+
+    if ('application' in data) {
+      this.application = new ClientApplication(this.client, data.application, this);
     }
 
     this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
