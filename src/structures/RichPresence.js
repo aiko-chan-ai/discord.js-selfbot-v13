@@ -473,7 +473,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
    * Get random UUID string (Util)
    * @returns {string}
    */
-  getUUID() {
+  static getUUID() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a =>
       (a ^ ((Math.random() * 16) >> (a / 4))).toString(16),
     );
@@ -487,7 +487,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
    * @param {string} image2 URL image 2 (not from Discord)
    * @returns {ExternalAssets[]}
    */
-  async getExternal(client, applicationId, image1 = '', image2 = '') {
+  static async getExternal(client, applicationId, image1 = '', image2 = '') {
     const checkURL = url => {
       try {
         // eslint-disable-next-line no-new

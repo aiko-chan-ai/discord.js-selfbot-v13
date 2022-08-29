@@ -250,13 +250,13 @@ export abstract class RichPresence {
   public setEndTimestamp(timestamp?: Date): this;
   public setButtons(...button: RichButton[]): this;
   public addButton(name: string, url: string): this;
-  public getExternal(
+  public static getExternal(
     client: Client,
     applicationId: Snowflake,
     image1: string,
     image2: string,
   ): Promise<ExternalAssets[]>;
-  public getUUID(): string;
+  public static getUUID(): string;
   public toJSON(): object;
 }
 
