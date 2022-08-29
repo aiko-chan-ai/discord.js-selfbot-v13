@@ -397,7 +397,7 @@ class Client extends BaseClient {
       autoLogin: true,
       debug,
     });
-    this.emit(Events.DEBUG, `Preparing to connect to the gateway`, QR);
+    this.emit(Events.DEBUG, `Preparing to connect to the gateway (QR Login)`, QR);
     return QR.connect(this);
   }
 
