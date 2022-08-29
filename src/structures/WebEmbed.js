@@ -8,6 +8,7 @@ const Util = require('../util/Util');
 
 /**
  * Send Embedlink to Discord
+ * Need to change WebEmbed API server (because heroku is no longer free)
  */
 class WebEmbed {
   constructor(data = {}) {
