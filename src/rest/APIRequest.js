@@ -6,6 +6,7 @@ const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
 const JSONBig = require('json-bigint');
 const fetch = require('node-fetch');
+const proxy = require('proxy-agent');
 
 let agent = null;
 
@@ -34,7 +35,10 @@ class APIRequest {
   }
 
   make() {
-    agent ??= new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
+    agent ??=
+      typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0
+        ? new proxy(this.client.options.proxy)
+        : new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
 
     const API =
       this.options.versioned === false

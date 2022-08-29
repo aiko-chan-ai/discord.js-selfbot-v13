@@ -397,7 +397,7 @@ class Client extends BaseClient {
       autoLogin: true,
       debug,
     });
-    this.emit(Events.DEBUG, `Preparing to connect to the gateway`, QR);
+    this.emit(Events.DEBUG, `Preparing to connect to the gateway (QR Login)`, QR);
     return QR.connect(this);
   }
 
@@ -896,6 +896,9 @@ class Client extends BaseClient {
     }
     if (options && typeof options.patchVoice !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'patchVoice', 'a boolean');
+    }
+    if (options && typeof options.proxy !== 'string') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
     }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');
