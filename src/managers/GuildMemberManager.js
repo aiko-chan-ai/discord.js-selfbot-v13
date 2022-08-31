@@ -426,7 +426,7 @@ class GuildMemberManager extends CachedManager {
   /**
    * Options used to fetch multiple members from a guild.
    * @typedef {Object} BruteforceOptions
-   * @property {Array<string>} [dictionary] Limit fetch to members with similar usernames {@see https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37}
+   * @property {Array<string>} [dictionary] Limit fetch to members with similar usernames {@link https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37}
    * @property {number} [limit=100] Maximum number of members to request
    * @property {number} [delay=500] Timeout for new requests in ms
    */
@@ -435,6 +435,7 @@ class GuildMemberManager extends CachedManager {
    * Fetches multiple members from the guild.
    * @param {BruteforceOptions} options Options for the bruteforce
    * @returns {Collection<Snowflake, GuildMember>} (All) members in the guild
+   * @see https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md
    * @example
    * guild.members.fetchBruteForce()
    * .then(members => console.log(`Fetched ${members.size} members`))
@@ -537,6 +538,7 @@ class GuildMemberManager extends CachedManager {
    * @param {GuildTextChannelResolvable} channel The channel to get members from (Members has VIEW_CHANNEL permission)
    * @param {number} [offset=0] Start index of the members to get
    * @param {number} [time=10e3] Timeout for receipt of members
+   * @see https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md
    * @returns {Collection<Snowflake, GuildMember>} Members in the guild
    */
   fetchMemberList(channel, offset = 0, time = 10_000) {
