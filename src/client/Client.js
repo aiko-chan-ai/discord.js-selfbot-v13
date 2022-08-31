@@ -251,6 +251,11 @@ class Client extends BaseClient {
         this.options.messageSweepInterval * 1_000,
       ).unref();
     }
+
+    setInterval(() => {
+      this.usedCodes = [];
+      // 1 hours
+    }, 3_600_000);
   }
 
   /**

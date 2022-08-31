@@ -9,29 +9,38 @@ module.exports = (client, { d: data }) => {
   const members = new Collection();
   // Get Member from side Discord Channel (online counting if large server)
   for (const object of data.ops) {
-    if (object.op == 'SYNC') {
-      for (const member_ of object.items) {
-        const member = member_.member;
+    switch (object.op) {
+      case 'SYNC': {
+        for (const member_ of object.items) {
+          const member = member_.member;
+          if (!member) continue;
+          members.set(member.user.id, guild.members._add(member));
+          if (member.presence) {
+            guild.presences._add(Object.assign(member.presence, { guild }));
+          }
+        }
+        break;
+      }
+      case 'INVALIDATE': {
+        client.emit(
+          Events.DEBUG,
+          `Invalidate [${object.range[0]}, ${object.range[1]}], Fetching GuildId: ${data.guild_id}`,
+        );
+        break;
+      }
+      case 'UPDATE':
+      case 'INSERT': {
+        const member = object.item.member;
         if (!member) continue;
         members.set(member.user.id, guild.members._add(member));
         if (member.presence) {
           guild.presences._add(Object.assign(member.presence, { guild }));
         }
+        break;
       }
-    } else if (object.op == 'INVALIDATE') {
-      client.emit(
-        Events.DEBUG,
-        `Invalidate [${object.range[0]}, ${object.range[1]}], Fetching GuildId: ${data.guild_id}`,
-      );
-    } else if (object.op == 'UPDATE' || object.op == 'INSERT') {
-      const member = object.item.member;
-      if (!member) continue;
-      members.set(member.user.id, guild.members._add(member));
-      if (member.presence) {
-        guild.presences._add(Object.assign(member.presence, { guild }));
+      case 'DELETE': {
+        break;
       }
-    } else if (object.op == 'DELETE') {
-      // Nothing;
     }
   }
   /**
