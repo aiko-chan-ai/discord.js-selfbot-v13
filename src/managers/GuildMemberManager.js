@@ -441,7 +441,7 @@ class GuildMemberManager extends CachedManager {
    * .then(members => console.log(`Fetched ${members.size} members`))
    * .catch(console.error);
    */
-  fetchBruteforce(options) {
+  fetchBruteforce(options = {}) {
     // eslint-disable-next-line
     let dictionary = [
       ' ',
