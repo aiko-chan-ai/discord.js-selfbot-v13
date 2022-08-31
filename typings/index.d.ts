@@ -3771,7 +3771,7 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
     offset?: number,
     time?: number,
   ): Promise<Collection<Snowflake, GuildMember>>;
-  public fetchBruteforce(options?: BruteforceOptions): Promise<Collection<Snowflake, GuildMember>>
+  public fetchBruteforce(options?: BruteforceOptions): Promise<Collection<Snowflake, GuildMember>>;
   public kick(user: UserResolvable, reason?: string): Promise<GuildMember | User | Snowflake>;
   public list(options?: GuildListMembersOptions): Promise<Collection<Snowflake, GuildMember>>;
   public prune(options: GuildPruneMembersOptions & { dry?: false; count: false }): Promise<null>;
