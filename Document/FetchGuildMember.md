@@ -126,7 +126,7 @@ ____________________________________
 > Dictionary of query parameters: [Here](https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37)
 1) run the function:
   ```js
-  guild.members.fetchBruteForce({
+  guild.members.fetchBruteforce({
     delay: 500,
   })
   ```

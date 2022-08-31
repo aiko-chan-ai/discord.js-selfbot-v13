@@ -437,7 +437,7 @@ class GuildMemberManager extends CachedManager {
    * @returns {Collection<Snowflake, GuildMember>} (All) members in the guild
    * @see https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md
    * @example
-   * guild.members.fetchBruteForce()
+   * guild.members.fetchBruteforce()
    * .then(members => console.log(`Fetched ${members.size} members`))
    * .catch(console.error);
    */
