@@ -423,6 +423,107 @@ class GuildMemberManager extends CachedManager {
     return this._add(data, cache);
   }
 
+  /**
+   * Options used to fetch multiple members from a guild.
+   * @typedef {Object} BruteforceOptions
+   * @property {Array<string>} [dictionary] Limit fetch to members with similar usernames {@see https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37}
+   * @property {number} [limit=100] Maximum number of members to request
+   * @property {number} [delay=500] Timeout for new requests in ms
+   */
+
+  /**
+   * Fetches multiple members from the guild.
+   * @param {BruteforceOptions} options Options for the bruteforce
+   * @returns {Collection<Snowflake, GuildMember>} (All) members in the guild
+   * @example
+   * guild.members.fetchBruteForce()
+   * .then(members => console.log(`Fetched ${members.size} members`))
+   * .catch(console.error);
+   */
+  fetchBruteforce(options) {
+    // eslint-disable-next-line
+    let dictionary = [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~'];
+    let limit = 100;
+    let delay = 500;
+    if (options.dictionary) dictionary = options.dictionary;
+    if (options.limit) limit = options.limit;
+    if (options.delay) delay = options.delay;
+    if (!Array.isArray(dictionary)) throw new TypeError('INVALID_TYPE', 'dictionary', 'Array', true);
+    if (typeof limit !== 'number') throw new TypeError('INVALID_TYPE', 'limit', 'Number');
+    if (limit < 1 || limit > 100) throw new RangeError('INVALID_RANGE_QUERY_MEMBER');
+    if (typeof delay !== 'number') throw new TypeError('INVALID_TYPE', 'delay', 'Number');
+    console.warn(`[WARNING] Gateway Rate Limit Warning: Sending ${dictionary.length} Requests`);
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      for (const query of dictionary) {
+        await this._fetchMany({ query, limit }).catch(reject);
+        await this.guild.client.sleep(delay);
+      }
+      resolve(this.guild.members.cache);
+    });
+  }
+
+  /**
+   * Fetches multiple members from the guild.
+   * @param {GuildTextChannelResolvable} channel The channel to get members from (Members has VIEW_CHANNEL permission)
+   * @param {number} [offset=0] Start index of the members to get
+   * @param {number} [time=10e3] Timeout for receipt of members
+   * @returns {Collection<Snowflake, GuildMember>} Members in the guild
+   */
+  fetchMemberList(channel, offset = 0, time = 10_000) {
+    const channel_ = this.guild.channels.resolve(channel);
+    if (!channel_?.isText()) throw new TypeError('INVALID_TYPE', 'channel', 'GuildTextChannelResolvable');
+    if (typeof offset !== 'number') throw new TypeError('INVALID_TYPE', 'offset', 'Number');
+    if (typeof time !== 'number') throw new TypeError('INVALID_TYPE', 'time', 'Number');
+    return new Promise((resolve, reject) => {
+      const default_ = [[0, 99]];
+      const fetchedMembers = new Collection();
+      if (offset === 0) {
+        default_.push([100, 199]);
+      } else {
+        default_.push([offset, offset + 99], [offset + 100, offset + 199]);
+      }
+      this.guild.shard.send({
+        op: Opcodes.LAZY_REQUEST,
+        d: {
+          guild_id: this.guild.id,
+          typing: true,
+          threads: true,
+          activities: true,
+          channels: {
+            [channel_.id]: default_,
+          },
+          thread_member_lists: [],
+          members: [],
+        },
+      });
+      const handler = (members, guild, type, raw) => {
+        timeout.refresh();
+        if (guild.id !== this.guild.id) return;
+        if (type == 'INVALIDATE' && offset > 100) {
+          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+          this.client.decrementMaxListeners();
+          reject(new Error('INVALIDATE_MEMBER', raw.ops[0].range));
+        } else {
+          for (const member of members.values()) {
+            fetchedMembers.set(member.id, member);
+          }
+          clearTimeout(timeout);
+          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+          this.client.decrementMaxListeners();
+          resolve(fetchedMembers);
+        }
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('GUILD_MEMBERS_TIMEOUT'));
+      }, time).unref();
+      this.client.incrementMaxListeners();
+      this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+    });
+  }
+
   _fetchMany({
     limit = 0,
     withPresences: presences = true,
@@ -431,140 +532,45 @@ class GuildMemberManager extends CachedManager {
     time = 120e3,
     nonce = SnowflakeUtil.generate(),
   } = {}) {
-    let type, sendGateway, stopped;
     return new Promise((resolve, reject) => {
       if (!query && !user_ids) query = '';
       if (nonce.length > 32) throw new RangeError('MEMBER_FETCH_NONCE_LENGTH');
-      if (
-        this.guild.me.permissions.has('ADMINISTRATOR') ||
-        this.guild.me.permissions.has('KICK_MEMBERS') ||
-        this.guild.me.permissions.has('BAN_MEMBERS') ||
-        this.guild.me.permissions.has('MANAGE_ROLES')
-      ) {
-        type = Opcodes.REQUEST_GUILD_MEMBERS; // This is opcode
-        this.guild.shard.send({
-          op: type,
-          d: {
-            guild_id: [this.guild.id],
-            presences,
-            user_ids,
-            query,
-            nonce,
-            limit,
-          },
-        });
-      } else {
-        type = Opcodes.LAZY_REQUEST;
-        let channel;
-        const channels = this.guild.channels.cache
-          .filter(c => c.isText())
-          .filter(c => c.permissionsFor(this.guild.me).has('VIEW_CHANNEL'));
-        if (!channels.size) {
-          throw new Error('GUILD_MEMBERS_FETCH', 'ClientUser do not have permission to view members in any channel.');
-        }
-        const channels_allowed_everyone = channels.filter(c =>
-          c.permissionsFor(this.guild.roles.everyone).has('VIEW_CHANNEL'),
-        );
-        channel = channels_allowed_everyone.random() ?? channels.random();
-        // Create array limit [0, 99]
-        const list = [];
-        let allMember = this.guild.memberCount;
-        if (allMember < 100) {
-          list.push([[0, 99]]);
-        } else if (allMember < 200) {
-          list.push([
-            [0, 99],
-            [100, 199],
-          ]);
-        } else if (allMember < 300) {
-          list.push([
-            [0, 99],
-            [100, 199],
-            [200, 299],
-          ]);
-        } else {
-          if (allMember > 1_000) {
-            console.warn(
-              `[WARN] Guild ${this.guild.id} has ${allMember} > 1000 members. Can't get offline members (Opcode 14)\n> https://discordpy-self.readthedocs.io/en/latest/migrating_from_dpy.html#guild-members`,
-            );
-            if (allMember > 75_000) {
-              allMember = 75_000;
-              console.warn(`[WARN] Can't get enough members [Maximum = 75000] because the guild is large (Opcode 14)`);
-            }
-          }
-          let x = 100;
-          for (let i = 0; i < allMember; i++) {
-            if (x > allMember) {
-              i = allMember;
-              continue;
-            }
-            list.push([
-              [0, 99],
-              [x, x + 99],
-              [x + 100, x + 199],
-            ]);
-            x += 200;
-          }
-        }
-        // Caculate sleepTime
-        let indexSend = list.length - 1;
-        sendGateway = async () => {
-          if (indexSend == 0) {
-            stopped = true;
-            return true;
-          }
-          const d = {
-            op: type,
-            d: {
-              guild_id: this.guild.id,
-              typing: true,
-              threads: true,
-              activities: true,
-              channels: {
-                [channel.id]: list[indexSend],
-              },
-              thread_member_lists: [],
-              members: [],
-            },
-          };
-          this.guild.shard.send(d);
-          indexSend--;
-          await this.guild.client.sleep(500);
-          return sendGateway();
-        };
-        console.warn(`[WARN] Gateway Rate Limit Warning: Sending ${list.length} Requests`);
-        sendGateway();
-      }
+      this.guild.shard.send({
+        op: Opcodes.REQUEST_GUILD_MEMBERS,
+        d: {
+          guild_id: this.guild.id,
+          presences,
+          user_ids,
+          query,
+          nonce,
+          limit,
+        },
+      });
       const fetchedMembers = new Collection();
       let i = 0;
       const handler = (members, _, chunk) => {
         timeout.refresh();
-        // eslint-disable-next-line no-unused-expressions
-        Opcodes.REQUEST_GUILD_MEMBERS === type ? (stopped = true) : stopped;
-        if (chunk?.nonce !== nonce && type === Opcodes.REQUEST_GUILD_MEMBERS) return;
+        if (chunk.nonce !== nonce) return;
         i++;
         for (const member of members.values()) {
           fetchedMembers.set(member.id, member);
         }
-        if (stopped && (members.size < 1_000 || (limit && fetchedMembers.size >= limit) || i === chunk?.count)) {
+        if (members.size < 1_000 || (limit && fetchedMembers.size >= limit) || i === chunk.count) {
           clearTimeout(timeout);
           this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
-          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
           this.client.decrementMaxListeners();
-          let fetched = fetchedMembers.size < this.guild.members.cache.size ? this.guild.members.cache : fetchedMembers;
+          let fetched = fetchedMembers;
           if (user_ids && !Array.isArray(user_ids) && fetched.size) fetched = fetched.first();
           resolve(fetched);
         }
       };
       const timeout = setTimeout(() => {
         this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
-        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
         this.client.decrementMaxListeners();
         reject(new Error('GUILD_MEMBERS_TIMEOUT'));
       }, time).unref();
       this.client.incrementMaxListeners();
       this.client.on(Events.GUILD_MEMBERS_CHUNK, handler);
-      this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
     });
   }
 }

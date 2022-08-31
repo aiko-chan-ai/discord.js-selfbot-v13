@@ -3746,6 +3746,12 @@ export class GuildManager extends CachedManager<Snowflake, Guild, GuildResolvabl
   public fetch(options?: FetchGuildsOptions): Promise<Collection<Snowflake, OAuth2Guild>>;
 }
 
+export interface BruteforceOptions {
+  dictionary: string[];
+  limit: number;
+  delay: number;
+}
+
 export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, GuildMemberResolvable> {
   private constructor(guild: Guild, iterable?: Iterable<RawGuildMemberData>);
   public guild: Guild;
@@ -3760,6 +3766,12 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
     options: UserResolvable | FetchMemberOptions | (FetchMembersOptions & { user: UserResolvable }),
   ): Promise<GuildMember>;
   public fetch(options?: FetchMembersOptions): Promise<Collection<Snowflake, GuildMember>>;
+  public fetchMemberList(
+    channel: GuildTextChannelResolvable,
+    offset?: number,
+    time?: number,
+  ): Promise<Collection<Snowflake, GuildMember>>;
+  public fetchBruteforce(options?: BruteforceOptions): Promise<Collection<Snowflake, GuildMember>>
   public kick(user: UserResolvable, reason?: string): Promise<GuildMember | User | Snowflake>;
   public list(options?: GuildListMembersOptions): Promise<Collection<Snowflake, GuildMember>>;
   public prune(options: GuildPruneMembersOptions & { dry?: false; count: false }): Promise<null>;

@@ -51,6 +51,7 @@ const Messages = {
   MISSING_PERMISSIONS: (...permission) => `You can't do this action [Missing Permission(s): ${permission.join(', ')}]`,
   EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
   INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
+  INVALID_RANGE_QUERY_MEMBER: 'Invalid range query member. (0<x<=100)',
 
   BUTTON_LABEL: 'MessageButton label must be a string',
   BUTTON_URL: 'MessageButton URL must be a string',
@@ -105,6 +106,7 @@ const Messages = {
   GUILD_SCHEDULED_EVENT_RESOLVE: 'Could not resolve the guild scheduled event.',
 
   REQUIRE_PASSWORD: 'You must provide a password.',
+  INVALIDATE_MEMBER: range => `Invalid member range: [${range[0]}, ${range[1]}]`,
 
   MISSING_VALUE: (where, type) => `Missing value for ${where} (${type})`,
 
