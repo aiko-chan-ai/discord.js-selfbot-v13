@@ -394,7 +394,7 @@ class GuildMemberManager extends CachedManager {
    *   .then(banInfo => console.log(`Banned ${banInfo.user?.tag ?? banInfo.tag ?? banInfo}`))
    *   .catch(console.error);
    */
-  ban(user, options = { days: 0 }) {
+  ban(user, options) {
     return this.guild.bans.create(user, options);
   }
 
@@ -442,7 +442,76 @@ class GuildMemberManager extends CachedManager {
    */
   fetchBruteforce(options) {
     // eslint-disable-next-line
-    let dictionary = [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~'];
+    let dictionary = [
+      ' ',
+      '!',
+      '"',
+      '#',
+      '$',
+      '%',
+      '&',
+      "'",
+      '(',
+      ')',
+      '*',
+      '+',
+      ',',
+      '-',
+      '.',
+      '/',
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      ':',
+      ';',
+      '<',
+      '=',
+      '>',
+      '?',
+      '@',
+      '[',
+      ']',
+      '^',
+      '_',
+      '`',
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'w',
+      'x',
+      'y',
+      'z',
+      '{',
+      '|',
+      '}',
+      '~',
+    ];
     let limit = 100;
     let delay = 500;
     if (options.dictionary) dictionary = options.dictionary;
