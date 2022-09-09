@@ -10,7 +10,7 @@ const { RelationshipTypes } = require('../util/Constants');
 /**
  * Manages API methods for Relationships and stores their cache.
  */
-class RelationshipsManager {
+class RelationshipManager {
   constructor(client, users) {
     /**
      * The client that instantiated this manager.
@@ -24,6 +24,54 @@ class RelationshipsManager {
      */
     this.cache = new Collection();
     this._setup(users);
+  }
+
+  /**
+   * Get all friends
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get friendCache() {
+    const users = this.cache
+      .filter(value => value === RelationshipTypes.FRIEND)
+      .map((value, key) => [key, this.client.users.cache.get(key)]);
+    return new Collection(users);
+  }
+
+  /**
+   * Get all blocked users
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get blockedCache() {
+    const users = this.cache
+      .filter(value => value === RelationshipTypes.BLOCKED)
+      .map((value, key) => [key, this.client.users.cache.get(key)]);
+    return new Collection(users);
+  }
+
+  /**
+   * Get all incoming friend requests
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get incomingCache() {
+    const users = this.cache
+      .filter(value => value === RelationshipTypes.PENDING_INCOMING)
+      .map((value, key) => [key, this.client.users.cache.get(key)]);
+    return new Collection(users);
+  }
+
+  /**
+   * Get all outgoing friend requests
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get outgoingCache() {
+    const users = this.cache
+      .filter(value => value === RelationshipTypes.PENDING_OUTGOING)
+      .map((value, key) => [key, this.client.users.cache.get(key)]);
+    return new Collection(users);
   }
 
   /**
@@ -172,4 +220,4 @@ class RelationshipsManager {
   }
 }
 
-module.exports = RelationshipsManager;
+module.exports = RelationshipManager;

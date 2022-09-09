@@ -14,7 +14,7 @@ const ChannelManager = require('../managers/ChannelManager');
 const ClientSettingManager = require('../managers/ClientSettingManager');
 const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
-const RelationshipsManager = require('../managers/RelationshipsManager');
+const RelationshipManager = require('../managers/RelationshipManager');
 const SessionManager = require('../managers/SessionManager');
 const UserManager = require('../managers/UserManager');
 const VoiceStateManager = require('../managers/VoiceStateManager');
@@ -142,9 +142,9 @@ class Client extends BaseClient {
     // Patch
     /**
      * All of the relationships {@link User}
-     * @type {RelationshipsManager}
+     * @type {RelationshipManager}
      */
-    this.relationships = new RelationshipsManager(this);
+    this.relationships = new RelationshipManager(this);
     /**
      * All of the settings {@link Object}
      * @type {ClientSettingManager}
