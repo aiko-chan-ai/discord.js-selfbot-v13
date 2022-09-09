@@ -68,7 +68,7 @@ exports.UserManager = require('./managers/UserManager');
 exports.VoiceStateManager = require('./managers/VoiceStateManager');
 exports.WebSocketManager = require('./client/websocket/WebSocketManager');
 exports.WebSocketShard = require('./client/websocket/WebSocketShard');
-exports.RelationshipsManager = require('./managers/RelationshipsManager');
+exports.RelationshipManager = require('./managers/RelationshipManager');
 
 // Structures
 exports.Activity = require('./structures/Presence').Activity;

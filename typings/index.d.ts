@@ -9,7 +9,6 @@ import {
   hyperlink,
   inlineCode,
   italic,
-  JSONEncodable,
   quote,
   roleMention,
   SlashCommandBuilder,
@@ -25,14 +24,11 @@ import { VoiceConnection } from '@discordjs/voice';
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
-  APIActionRowComponentTypes,
-  APIApplicationCommand,
   APIApplicationCommandInteractionData,
   APIApplicationCommandOption,
   APIApplicationCommandPermission,
   APIAuditLogChange,
   APIButtonComponent,
-  APIChannel,
   APIEmbed,
   APIEmoji,
   APIInteractionDataResolvedChannel,
@@ -832,7 +828,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public application: If<Ready, ClientApplication>;
   // Added
   public setting: ClientSettingManager;
-  public relationships: RelationshipsManager;
+  public relationships: RelationshipManager;
   public updateCookie(): Promise<void>;
   public readonly callVoice?: VoiceConnection;
   public voiceStates: VoiceStateManager;
@@ -903,6 +899,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
 export class ClientApplication extends Application {
   private constructor(client: Client, data: RawClientApplicationData);
   public botPublic: boolean | null;
+  public popularCommands: Collection<Snowflake, ApplicationCommand> | undefined;
   public botRequireCodeGrant: boolean | null;
   public commands: ApplicationCommandManager;
   public cover: string | null;
@@ -1943,7 +1940,8 @@ export class MessageActionRow<
     ? APIActionRowComponent<APIModalActionRowComponent>
     : APIActionRowComponent<APIMessageActionRowComponent>,
 > extends BaseMessageComponent {
-  // @ts-ignore
+  // @ts-ignore (TS:2344, Caused by TypeScript 4.8)
+  // Fixed in DiscordJS >= 14.x / DiscordApiTypes >= 0.37.x, ignoring the type error here.
   public constructor(data?: MessageActionRow<T> | MessageActionRowOptions<U> | V);
   public type: 'ACTION_ROW';
   public components: T[];
@@ -3998,10 +3996,14 @@ export class UserManager extends CachedManager<Snowflake, User, UserResolvable> 
   public send(user: UserResolvable, options: string | MessagePayload | MessageOptions): Promise<Message>;
 }
 
-export class RelationshipsManager {
+export class RelationshipManager {
   private constructor(client: Client, users?: object[]);
   public cache: Collection<Snowflake, RelationshipTypes>;
   public client: Client;
+  public readonly friendCache: Collection<Snowflake, User>;
+  public readonly blockedCache: Collection<Snowflake, User>;
+  public readonly incomingCache: Collection<Snowflake, User>;
+  public readonly outgoingCache: Collection<Snowflake, User>;
   public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes>;
   public deleteFriend(user: UserResolvable): Promise<boolean>;
   public deleteBlocked(user: UserResolvable): Promise<boolean>;
@@ -4858,7 +4860,9 @@ export interface AwaitReactionsOptions extends ReactionCollectorOptions {
 }
 
 export interface BanOptions {
+  /** @deprecated Use {@link deleteMessageSeconds} instead. */
   days?: number;
+  deleteMessageSeconds?: number;
   reason?: string;
 }
 
@@ -5845,6 +5849,7 @@ export type IntentsString =
   | 'DIRECT_MESSAGES'
   | 'DIRECT_MESSAGE_REACTIONS'
   | 'DIRECT_MESSAGE_TYPING'
+  | 'MESSAGE_CONTENT'
   | 'GUILD_SCHEDULED_EVENTS';
 
 export interface InviteGenerationOptions {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { Collection } = require('@discordjs/collection');
 const Team = require('./Team');
 const Application = require('./interfaces/Application');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
@@ -105,6 +106,17 @@ class ClientApplication extends Application {
       this.botPublic = data.bot_public;
     } else {
       this.botPublic ??= null;
+    }
+
+    if ('popular_application_command_ids' in data) {
+      /**
+       * List of popular command
+       * @type {?Collection<Snowflake, ApplicationCommand>}
+       */
+      this.popularCommands = new Collection();
+      data.popular_application_command_ids.forEach(id => {
+        this.popularCommands.set(id, this.commands.cache.get(id));
+      });
     }
 
     /**
