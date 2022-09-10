@@ -16,7 +16,7 @@ const Message = lazy(() => require('../structures/Message').Message);
  * @extends {Base}
  */
 class ApplicationCommand extends Base {
-  constructor(client, data, guild, guildId) {
+  constructor(client, data) {
     super(client);
 
     /**
@@ -30,19 +30,6 @@ class ApplicationCommand extends Base {
      * @type {Snowflake}
      */
     this.applicationId = data.application_id;
-
-    /**
-     * The guild this command is part of
-     * @type {?Guild}
-     */
-    this.guild = guild ?? null;
-
-    /**
-     * The guild's id this command is part of, this may be non-null when `guild` is `null` if the command
-     * was fetched from the `ApplicationCommandManager`
-     * @type {?Snowflake}
-     */
-    this.guildId = guild?.id ?? guildId ?? null;
 
     /**
      * The manager for permissions of this command on its guild or arbitrary guilds when the command is global
@@ -61,7 +48,24 @@ class ApplicationCommand extends Base {
     this._patch(data);
   }
 
+  /**
+   * The guild this command is part of
+   * @type {?Guild}
+   */
+  get guild() {
+    return this.client.guilds.resolve(this.guildId);
+  }
+
   _patch(data) {
+    if ('guild_id' in data) {
+      /**
+       * The guild's id this command is part of, this may be non-null when `guild` is `null` if the command
+       * was fetched from the `ApplicationCommandManager`
+       * @type {?Snowflake}
+       */
+      this.guildId = data.guild_id ?? null;
+    }
+
     if ('name' in data) {
       /**
        * The name of this command
@@ -784,67 +788,40 @@ class ApplicationCommand extends Base {
       attachmentsBuffer.push({ attachment: data.attachment, name: data.name, file: resource });
       return id;
     }
-    const getDataPost = (guildAdd = false, dataAdd = [], nonce, autocomplete = false) => {
+    const getDataPost = (dataAdd = [], nonce, autocomplete = false) => {
       if (!Array.isArray(dataAdd) && typeof dataAdd == 'object') {
         dataAdd = [dataAdd];
       }
-      if (guildAdd) {
-        return {
-          type: autocomplete ? 4 : 2, // Slash command, context menu
-          // Type: 4: Auto-complete
-          application_id: this.applicationId,
-          guild_id: message.guildId,
-          channel_id: message.channelId,
-          session_id: this.client.session_id,
-          data: {
-            // ApplicationCommandData
-            version: this.version,
-            id: this.id,
-            name: this.name,
-            type: ApplicationCommandTypes[this.type],
-            options: dataAdd,
-            attachments: attachments,
-            guild_id: message.guildId,
-          },
-          nonce,
-        };
-      } else {
-        return {
-          type: autocomplete ? 4 : 2, // Slash command, context menu
-          // Type: 4: Auto-complete
-          application_id: this.applicationId,
-          guild_id: message.guildId,
-          channel_id: message.channelId,
-          session_id: this.client.session_id,
-          data: {
-            // ApplicationCommandData
-            version: this.version,
-            id: this.id,
-            name: this.name,
-            type: ApplicationCommandTypes[this.type],
-            options: dataAdd,
-            attachments: attachments,
-          },
-          nonce,
-        };
+      const data = {
+        type: autocomplete ? 4 : 2, // Slash command, context menu
+        // Type: 4: Auto-complete
+        application_id: this.applicationId,
+        guild_id: message.guildId,
+        channel_id: message.channelId,
+        session_id: this.client.session_id,
+        data: {
+          // ApplicationCommandData
+          version: this.version,
+          id: this.id,
+          name: this.name,
+          type: ApplicationCommandTypes[this.type],
+          options: dataAdd,
+          attachments: attachments,
+        },
+        nonce,
+      };
+      if (this.guildId) {
+        data.data.guild_id = message.guildId;
       }
+      return data;
     };
     const getAutoResponse = async (sendData, value) => {
       let nonce = SnowflakeUtil.generate();
-      const data = getDataPost(false, sendData, nonce, true);
-      await this.client.api.interactions
-        .post({
-          data,
-          files: attachmentsBuffer,
-        })
-        .catch(async () => {
-          nonce = SnowflakeUtil.generate();
-          const data_ = getDataPost(true, sendData, nonce);
-          await this.client.api.interactions.post({
-            body: data_,
-            files: attachmentsBuffer,
-          });
-        });
+      const data = getDataPost(sendData, nonce, true);
+      await this.client.api.interactions.post({
+        data,
+        files: attachmentsBuffer,
+      });
       return new Promise(resolve => {
         const handler = data => {
           timeout.refresh();
@@ -866,20 +843,11 @@ class ApplicationCommand extends Base {
     };
     const sendData = async (optionsData = []) => {
       let nonce = SnowflakeUtil.generate();
-      const data = getDataPost(false, optionsData, nonce);
-      await this.client.api.interactions
-        .post({
-          body: data,
-          files: attachmentsBuffer,
-        })
-        .catch(async () => {
-          nonce = SnowflakeUtil.generate();
-          const data_ = getDataPost(true, optionsData, nonce);
-          await this.client.api.interactions.post({
-            body: data_,
-            files: attachmentsBuffer,
-          });
-        });
+      const data = getDataPost(optionsData, nonce);
+      await this.client.api.interactions.post({
+        body: data,
+        files: attachmentsBuffer,
+      });
       return new Promise((resolve, reject) => {
         const handler = data => {
           timeout.refresh();
@@ -926,6 +894,58 @@ class ApplicationCommand extends Base {
         return sendData(optionsData);
       }
     }
+  }
+  /**
+   * Message Context Menu
+   * @param {Message} message Discord Message
+   * @returns {Promise<InteractionResponseBody>}
+   */
+  async sendContextMenu(message) {
+    if (!(message instanceof Message())) {
+      throw new TypeError('The message must be a Discord.Message');
+    }
+    if (this.type == 'CHAT_INPUT') return false;
+    const nonce = SnowflakeUtil.generate();
+    const data = {
+      type: 2, // Slash command, context menu
+      application_id: this.applicationId,
+      guild_id: message.guildId,
+      channel_id: message.channelId,
+      session_id: this.client.session_id,
+      data: {
+        // ApplicationCommandData
+        version: this.version,
+        id: this.id,
+        name: this.name,
+        type: ApplicationCommandTypes[this.type],
+        target_id: ApplicationCommandTypes[this.type] == 1 ? message.author.id : message.id,
+      },
+      nonce,
+    };
+    if (this.guildId) {
+      data.data.guild_id = message.guildId;
+    }
+    await this.client.api.interactions.post({
+      body: data,
+    });
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        if (data.status) resolve(data.metadata);
+        else reject(data.metadata);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_TIMEOUT'));
+      }, 15_000).unref();
+      this.client.incrementMaxListeners();
+      this.client.on('interactionResponse', handler);
+    });
   }
 }
 

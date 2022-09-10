@@ -445,7 +445,7 @@ export class DeveloperPortalManager extends BaseManager {
 }
 
 export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
-  private constructor(client: Client, data: RawApplicationCommandData, guild?: Guild, guildId?: Snowflake);
+  private constructor(client: Client, data: RawApplicationCommandData);
   public applicationId: Snowflake;
   public readonly createdAt: Date;
   public readonly createdTimestamp: number;
@@ -454,7 +454,7 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   public description: string;
   public descriptionLocalizations: LocalizationMap | null;
   public descriptionLocalized: string | null;
-  public guild: Guild | null;
+  public readonly guild: Guild | null;
   public guildId: Snowflake | null;
   public readonly manager: ApplicationCommandManager;
   public id: Snowflake;
