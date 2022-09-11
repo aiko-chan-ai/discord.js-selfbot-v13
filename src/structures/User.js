@@ -229,12 +229,12 @@ class User extends Base {
     }
 
     if ('premium_type' in data) {
-      const nitro = NitroType[data.premium_type];
+      const nitro = NitroType[data.premium_type ?? 0];
       /**
        * Nitro type of the user.
        * @type {NitroType}
        */
-      this.nitroType = nitro ?? `UNKNOWN_${data.premium_type}`;
+      this.nitroType = nitro ?? `UNKNOWN_TYPE_${data.premium_type}`;
     }
 
     if ('guild_member_profile' in data && 'guild_member' in data) {

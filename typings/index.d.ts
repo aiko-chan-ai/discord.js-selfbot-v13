@@ -4061,7 +4061,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
-  sendSlash(botId: Snowflake, commandName: string, ...args: any): Promise<InteractionResponseBody>;
+  sendSlash(bot: UserResolvable, commandName: string, ...args: any): Promise<InteractionResponseBody>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;

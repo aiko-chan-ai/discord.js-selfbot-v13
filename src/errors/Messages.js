@@ -52,6 +52,7 @@ const Messages = {
   EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
   INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
   INVALID_RANGE_QUERY_MEMBER: 'Invalid range query member. (0<x<=100)',
+  MUST_SPECIFY_BOT: 'You must specify a bot to use this command.',
 
   BUTTON_LABEL: 'MessageButton label must be a string',
   BUTTON_URL: 'MessageButton URL must be a string',

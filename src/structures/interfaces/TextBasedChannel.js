@@ -402,7 +402,7 @@ class TextBasedChannel {
 
   /**
    * Send Slash to this channel
-   * @param {Snowflake} botId Bot Id (Supports application ID - not bot)
+   * @param {UserResolvable} bot Bot user
    * @param {string} commandString Command name (and sub / group formats)
    * @param {...?string|string[]} args Command arguments
    * @returns {Promise<InteractionResponseBody>}
@@ -418,7 +418,7 @@ class TextBasedChannel {
    * // CommandName is Group Command / Sub Command
    * channel.sendSlash('123456789012345678', 'embed title', 'description', 'author', '#00ff00')
    */
-  async sendSlash(botId, commandString, ...args) {
+  async sendSlash(bot, commandString, ...args) {
     args = args.flat(2);
     const cmd = commandString.trim().split(' ');
     // Validate CommandName
@@ -430,7 +430,8 @@ class TextBasedChannel {
       }
       validateName(sub[i]);
     }
-    if (!botId) throw new Error('Bot ID is required');
+    if (!bot) throw new Error('MUST_SPECIFY_BOT');
+    const botId = this.client.users.resolveId(bot);
     // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});
     if (!user || !user.bot || !user.application) {
@@ -439,41 +440,29 @@ class TextBasedChannel {
     if (user._partial) await user.getProfile();
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
     // Using API to search (without opcode ~ehehe)
-    let commandTarget;
-    // https://discord.com/api/v9/channels/id/application-commands/search?type=1&query=aiko&limit=7&include_applications=false&application_id=id
+    // https://discord.com/api/v9/channels/id/application-commands/search?type=1&application_id=161660517914509312
     const query = {
       type: 1, // Slash commands
-      include_applications: false,
+      application_id: user.application?.id ?? user.id,
     };
-    if (this.client.channels.cache.get(this.id)?.type == 'DM') {
-      query.application_id = user.application.id;
-    } else {
-      query.limit = 25;
-      query.query = commandName;
-    }
     const data = await this.client.api.channels[this.id]['application-commands'].search.get({
       query,
     });
     for (const command of data.application_commands) {
       if (user.id == command.application_id || user.application.id == command.application_id) {
-        const c = user.application?.commands?._add(command, true);
-        if (command.name == commandName) commandTarget = c;
-      } else {
-        const tempUser = this.client.users.cache.get(command.application_id);
-        if (tempUser && tempUser.bot && tempUser.application) {
-          tempUser.application?.commands?._add(command, true);
-        }
+        user.application?.commands?._add(command, true);
       }
     }
     // Remove
-    commandTarget =
-      commandTarget || user.application?.commands?.cache.find(c => c.name === commandName && c.type === 'CHAT_INPUT');
+    const commandTarget = user.application?.commands?.cache.find(
+      c => c.name === commandName && c.type === 'CHAT_INPUT',
+    );
     if (!commandTarget) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
-        `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId}\n+ args: ${args.join(
-          ' | ',
-        )}`,
+        `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId} (ApplicationId: ${
+          user.application?.id
+        })\n+ args: ${args.join(' | ') || null}`,
       );
     }
     return commandTarget.sendSlashCommand(
