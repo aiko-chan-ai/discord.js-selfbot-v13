@@ -427,7 +427,7 @@ class GuildMemberManager extends CachedManager {
    * Options used to fetch multiple members from a guild.
    * @typedef {Object} BruteforceOptions
    * @property {Array<string>} [dictionary] Limit fetch to members with similar usernames {@link https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37}
-   * @property {number} [limit=100] Maximum number of members to request
+   * @property {number} [limit=100] Maximum number of members per request
    * @property {number} [delay=500] Timeout for new requests in ms
    */
 
