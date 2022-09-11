@@ -38,12 +38,12 @@ class ClientUser extends User {
 
     // Todo: Add (Selfbot)
     if ('premium_type' in data) {
-      const nitro = NitroType[data.premium_type];
+      const nitro = NitroType[data.premium_type ?? 0];
       /**
        * Nitro type of the client user.
        * @type {NitroType}
        */
-      this.nitroType = nitro ?? `UNKNOWN_${data.premium_type}`;
+      this.nitroType = nitro ?? `UNKNOWN_TYPE_${data.premium_type}`;
     }
     if ('purchased_flags' in data) {
       /**
@@ -73,6 +73,9 @@ class ClientUser extends User {
        * @type {?string}
        */
       this.emailAddress = data.email;
+    }
+    if ('bio' in data) {
+      this.bio = data.bio;
     }
   }
 
