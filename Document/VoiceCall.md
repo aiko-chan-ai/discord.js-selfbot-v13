@@ -66,7 +66,7 @@ let i = setInterval(() => {
 ```js
 /* Copyright aiko-chan-ai @2022. All rights reserved. */
 const DjsVoice = require('@discordjs/voice');
-const Discord = require('./mymodule/src/index.js');  // require('discord.js-selfbot-v13');
+const Discord = require('discord.js-selfbot-v13');
 const playDL = require('play-dl');
 const EventEmitter = require('events');
 const Event = {
