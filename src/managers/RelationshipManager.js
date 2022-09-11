@@ -1,5 +1,6 @@
 'use strict';
 
+const Buffer = require('node:buffer').Buffer;
 const { Collection } = require('@discordjs/collection');
 const { GuildMember } = require('../structures/GuildMember');
 const { Message } = require('../structures/Message');
@@ -125,8 +126,6 @@ class RelationshipManager {
     return this.cache.get(id);
   }
 
-  // Some option .-.
-
   /**
    * Deletes a friend relationship with a client user.
    * @param {UserResolvable} user Target
@@ -163,6 +162,9 @@ class RelationshipManager {
         username,
         discriminator: parseInt(discriminator),
       },
+      headers: {
+        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Add Friend' }), 'utf8').toString('base64'),
+      },
     });
     return true;
   }
@@ -179,7 +181,11 @@ class RelationshipManager {
   }
 
   async __cancel(id) {
-    await this.client.api.users['@me'].relationships[id].delete();
+    await this.client.api.users['@me'].relationships[id].delete({
+      headers: {
+        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Friends' }), 'utf8').toString('base64'),
+      },
+    });
     return true;
   }
 
@@ -198,6 +204,9 @@ class RelationshipManager {
       data: {
         type: RelationshipTypes.FRIEND,
       },
+      headers: {
+        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Friends' }), 'utf8').toString('base64'),
+      },
     });
     return true;
   }
@@ -214,6 +223,9 @@ class RelationshipManager {
     await this.client.api.users['@me'].relationships[id].put({
       data: {
         type: RelationshipTypes.BLOCKED,
+      },
+      headers: {
+        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'ContextMenu' }), 'utf8').toString('base64'),
       },
     });
     return true;

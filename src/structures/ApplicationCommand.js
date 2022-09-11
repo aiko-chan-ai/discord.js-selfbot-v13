@@ -51,6 +51,7 @@ class ApplicationCommand extends Base {
   /**
    * The guild this command is part of
    * @type {?Guild}
+   * @readonly
    */
   get guild() {
     return this.client.guilds.resolve(this.guildId);
