@@ -66,7 +66,7 @@ let i = setInterval(() => {
 ```js
 /* Copyright aiko-chan-ai @2022. All rights reserved. */
 const DjsVoice = require('@discordjs/voice');
-const Discord = require('discord.js-selfbot-v13');
+const Discord = require('./mymodule/src/index.js');  // require('discord.js-selfbot-v13');
 const playDL = require('play-dl');
 const EventEmitter = require('events');
 const Event = {
@@ -359,22 +359,25 @@ class Player extends EventEmitter {
         if (!this._currentResourceAudio) throw new Error('No current resource audio');
         this._stop(false, this.options.leaveOnStop);
     }
+    _reset(){
+        this._currentTime = 0;
+        this._currentResourceAudio = null;
+        this._playingTime = 0;
+        this.isPlaying = false;
+        this._player.stop();
+    }
     _stop(finish = false, force = false) {
         if (!this._currentResourceAudio) return;
         this._queue.reset();
         this._previousSongs.reset();
         this._timeoutEmpty = undefined;
-        this._player.stop();
-        this._currentTime = 0;
-        this._currentResourceAudio = null;
-        this._playingTime = 0;
-        this.isPlaying = false;
+        this._reset();
+        if (force || finish && this.options.leaveOnFinish) this.currentConnection?.destroy();
         this.channel = null;
         this.guild = null;
         this.song = null;
         this.volume = 100;
         this.loopMode = 0;
-        if (force || !finish && this.options.leaveOnStop || finish && this.options.leaveOnFinish) this.currentConnection?.destroy();
         this.message = null;
     }
     skip() {
@@ -403,6 +406,9 @@ class Player extends EventEmitter {
     }
     async previous() {
         if (!this._previousSongs.length) throw new Error('No previous songs');
+        const currentSong = this.song;
+        // add to queue
+        this._queue.enqueue(currentSong);
         const previousSong = this._previousSongs.pop();
         this.song = previousSong;
         await this.createStream(this.song.url);
@@ -508,8 +514,8 @@ class Player extends EventEmitter {
     _privateEvent() {
         this.on('next_song', async () => {
             await this._skip().catch(() => {
-                this.emit(Event.FINISH, this.message);
-                this._stop(true);
+                if (this.message) this.emit(Event.FINISH, this.message);
+                this._reset();
             });
         });
     }
