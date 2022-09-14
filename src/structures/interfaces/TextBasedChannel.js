@@ -437,7 +437,7 @@ class TextBasedChannel {
     if (!user || !user.bot || !user.application) {
       throw new Error('botId is not a bot or does not have an application slash command');
     }
-    if (user._partial) await user.getProfile();
+    if (user._partial) await user.getProfile().catch(() => {});
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
     // Using API to search (without opcode ~ehehe)
     // https://discord.com/api/v9/channels/id/application-commands/search?type=1&application_id=161660517914509312
