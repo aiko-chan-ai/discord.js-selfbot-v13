@@ -1,6 +1,6 @@
 'use strict';
 const axios = require('axios');
-const baseURL = 'https://sagiri-v3dot3.herokuapp.com/embed?';
+const baseURL = 'https://webembed.nezukobot.vn/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
 const { RangeError } = require('../errors');
@@ -8,9 +8,12 @@ const Util = require('../util/Util');
 
 /**
  * Send Embedlink to Discord
- * Need to change WebEmbed API server (because heroku is no longer free)
+ * Sponsored by NezukoBot (thanks github/CookieGMVN)
  */
 class WebEmbed {
+  /**
+   * @param {WebEmbed} [data={}] Raw data
+   */
   constructor(data = {}) {
     /**
      * A `Partial` object is a representation of any existing object.
@@ -53,14 +56,14 @@ class WebEmbed {
 
     /**
      * Using Custom WebEmbed server ?
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/embed?
+     * @type {?string} https://webembed.nezukobot.vn/embed?
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.baseURL = data.baseURL ?? baseURL;
 
     /**
      * Shorten API
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/short?url=
+     * @type {?string} https://webembed.nezukobot.vn/short?url=
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.shortenAPI = data.shortenAPI;
@@ -381,12 +384,7 @@ class WebEmbed {
 
 // Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url, embed) => {
-  const APIurl = [
-    'https://tinyurl.com/api-create.php?url=',
-    // 'https://sagiri-fansub.tk/api/v1/short?url=', // My api, pls don't ddos :(
-    'https://sagiri-v3dot3.herokuapp.com/short?url=', // My api, pls don't ddos :(
-    // 'https://lazuee.ga/api/v1/shorten?url=',
-  ];
+  const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://webembed.nezukobot.vn/short?url='];
   const shorten = `${
     embed.shortenAPI && typeof embed.shortenAPI == 'string'
       ? embed.shortenAPI
