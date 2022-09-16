@@ -77,6 +77,13 @@ class ClientUser extends User {
     if ('bio' in data) {
       this.bio = data.bio;
     }
+
+    /**
+     * The friend nicknames cache of the client user.
+     * @type {Collection<Snowflake, string>}
+     * @private
+     */
+    this.friendNicknames = new Collection();
   }
 
   /**

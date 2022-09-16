@@ -30,12 +30,6 @@ class PartialGroupDMChannel extends Channel {
     this.icon = null;
 
     /**
-     * The recipients of this Group DM Channel.
-     * @type {Collection<Snowflake, User>}
-     */
-    this.recipients = null;
-
-    /**
      * Messages data
      * @type {Collection}
      */
@@ -69,6 +63,18 @@ class PartialGroupDMChannel extends Channel {
   }
 
   /**
+   * The recipients of this Group DM Channel.
+   * @type {Collection<Snowflake, User>}
+   * @readonly
+   */
+  get recipients() {
+    const collect = new Collection();
+    this._recipients.map(recipient => collect.set(recipient.id, this.client.users._add(recipient)));
+    collect.set(this.client.user.id, this.client.user);
+    return collect;
+  }
+
+  /**
    * The owner of this Group DM Channel
    * @type {?User}
    * @readonly
@@ -85,8 +91,7 @@ class PartialGroupDMChannel extends Channel {
   _patch(data) {
     super._patch(data);
     if ('recipients' in data) {
-      this.recipients = new Collection();
-      data.recipients.map(recipient => this.recipients.set(recipient.id, this.client.users._add(recipient)));
+      this._recipients = data.recipients;
     }
     if ('last_pin_timestamp' in data) {
       const date = new Date(data.last_pin_timestamp);

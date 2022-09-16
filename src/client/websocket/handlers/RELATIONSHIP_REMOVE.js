@@ -4,6 +4,7 @@ const { Events, RelationshipTypes } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
   client.relationships.cache.delete(data.id);
+  client.user.friendNicknames.delete(data.id);
   /**
    * Emitted whenever a relationship is delete.
    * @event Client#relationshipRemove

@@ -197,6 +197,15 @@ class User extends Base {
   }
 
   /**
+   * Get friend nickname
+   * @type {?string}
+   * @readonly
+   */
+  get nickname() {
+    return this.client.user.friendNicknames.get(this.id);
+  }
+
+  /**
    * The voice state of this member
    * @type {VoiceState}
    * @readonly
@@ -280,6 +289,16 @@ class User extends Base {
    */
   setFriend() {
     return this.client.relationships.addFriend(this);
+  }
+
+  /**
+   * Changes the nickname of the friend
+   * @param {?string} nickname The nickname to change
+   * @type {boolean}
+   * @returns {Promise<boolean>}
+   */
+  setNickname(nickname) {
+    return this.client.user.setNickname(this.id, nickname);
   }
 
   /**

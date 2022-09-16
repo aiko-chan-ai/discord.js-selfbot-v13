@@ -91,6 +91,7 @@ class RelationshipManager {
   _setup(users) {
     if (!Array.isArray(users)) return;
     for (const relationShip of users) {
+      this.client.user.friendNicknames.set(relationShip.id, relationShip.nickname);
       this.cache.set(relationShip.id, relationShip.type);
     }
   }
@@ -206,6 +207,23 @@ class RelationshipManager {
       },
       headers: {
         'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Friends' }), 'utf8').toString('base64'),
+      },
+    });
+    return true;
+  }
+
+  /**
+   * Changes the nickname of a friend.
+   * @param {UserResolvable} user The user to change the nickname
+   * @param {?string} nickname New nickname
+   * @returns {Promise<boolean>}
+   */
+  async setNickname(user, nickname) {
+    const id = this.resolveId(user);
+    if (this.cache.get(id) !== RelationshipTypes.FRIEND) return false;
+    await this.client.api.users['@me'].relationships[id].patch({
+      data: {
+        nickname: typeof nickname === 'string' ? nickname : null,
       },
     });
     return true;

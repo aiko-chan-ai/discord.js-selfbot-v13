@@ -358,6 +358,8 @@ exports.Opcodes = {
  * * CHANNEL_DELETE: channelDelete
  * * CHANNEL_UPDATE: channelUpdate
  * * CHANNEL_PINS_UPDATE: channelPinsUpdate
+ * * CHANNEL_RECIPIENT_REMOVE: channelRecipientRemove
+ * * CHANNEL_RECIPIENT_ADD: channelRecipientAdd
  * * MESSAGE_ACK: messageAck
  * * MESSAGE_CREATE: messageCreate
  * * MESSAGE_DELETE: messageDelete
@@ -443,6 +445,8 @@ exports.Events = {
   CHANNEL_DELETE: 'channelDelete',
   CHANNEL_UPDATE: 'channelUpdate',
   CHANNEL_PINS_UPDATE: 'channelPinsUpdate',
+  CHANNEL_RECIPIENT_REMOVE: 'channelRecipientRemove',
+  CHANNEL_RECIPIENT_ADD: 'channelRecipientAdd',
   MESSAGE_ACK: 'messageAck',
   MESSAGE_CREATE: 'messageCreate',
   MESSAGE_DELETE: 'messageDelete',
@@ -493,6 +497,7 @@ exports.Events = {
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
   RELATIONSHIP_ADD: 'relationshipAdd',
   RELATIONSHIP_REMOVE: 'relationshipRemove',
+  RELATIONSHIP_UPDATE: 'relationshipUpdate',
   UNHANDLED_PACKET: 'unhandledPacket',
 };
 

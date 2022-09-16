@@ -924,6 +924,8 @@ export class ClientUser extends User {
   public mfaEnabled: boolean;
   public readonly presence: ClientPresence;
   public verified: boolean;
+  public notes: Collection<Snowflake, string>;
+  public friendNicknames: Collection<Snowflake, string>;
   public edit(data: ClientUserEditData): Promise<this>;
   public setActivity(options?: ActivityOptions): ClientPresence;
   public setActivity(name: string, options?: ActivityOptions): ClientPresence;
@@ -2347,7 +2349,7 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   private constructor(client: Client, data: RawPartialGroupDMChannelData);
   public name: string | null;
   public icon: string | null;
-  public recipients: Collection<Snowflake, User>;
+  public readonly recipients: Collection<Snowflake, User>;
   public messages: MessageManager;
   public invites: Collection<string, Invite>;
   public lastMessageId: Snowflake | null;
@@ -2964,6 +2966,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly tag: string;
   public username: string;
   public readonly note: string | null;
+  public readonly nickname: string | null;
   public readonly connectedAccounts: object[];
   public readonly premiumSince: Date;
   public readonly premiumGuildSince: Date;
@@ -2985,6 +2988,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public unBlock(): Promise<User>;
   public setNote(note?: any): Promise<string>;
   public getProfile(guildId?: Snowflake): Promise<User>;
+  public setNickname(nickname: string | null): Promise<boolean>;
   public toString(): UserMention;
   public ring(): Promise<boolean>;
 }
@@ -4014,6 +4018,7 @@ export class RelationshipManager {
   public cancelFriendRequest(user: UserResolvable): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
   public addBlocked(user: UserResolvable): Promise<boolean>;
+  public setNickname(user: UserResolvable, nickname: string|null): Promise<boolean>;
   private __cancel(id: Snowflake): Promise<boolean>;
 }
 
@@ -4332,6 +4337,8 @@ export interface ClientEvents extends BaseClientEvents {
   channelCreate: [channel: NonThreadGuildBasedChannel];
   channelDelete: [channel: DMChannel | NonThreadGuildBasedChannel];
   channelPinsUpdate: [channel: TextBasedChannel, date: Date];
+  channelRecipientAdd: [channel: PartialGroupDMChannel, user: User];
+  channelRecipientRemove: [channel: PartialGroupDMChannel, user: User];
   channelUpdate: [
     oldChannel: DMChannel | NonThreadGuildBasedChannel,
     newChannel: DMChannel | NonThreadGuildBasedChannel,
@@ -4425,6 +4432,7 @@ export interface ClientEvents extends BaseClientEvents {
   guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, user: User];
   relationshipAdd: [id: Snowflake, type: RelationshipTypes];
   relationshipRemove: [id: Snowflake];
+  relationshipUpdate: [id: Snowflake, type: RelationshipTypes, data: object];
   unhandledPacket: [packet: { op: GatewayOpcodes | number; d?: any; s?: number; t?: string }, shard: WebSocketShard];
   update: [oldVersion: string, newVersion: string];
 }
@@ -4470,6 +4478,8 @@ export interface ConstantsEvents {
   CHANNEL_DELETE: 'channelDelete';
   CHANNEL_UPDATE: 'channelUpdate';
   CHANNEL_PINS_UPDATE: 'channelPinsUpdate';
+  CHANNEL_RECIPIENT_ADD: 'channelRecipientAdd';
+  CHANNEL_RECIPIENT_REMOVE: 'channelRecipientRemove';
   MESSAGE_ACK: 'messageAck';
   MESSAGE_CREATE: 'messageCreate';
   MESSAGE_DELETE: 'messageDelete';
@@ -4520,6 +4530,7 @@ export interface ConstantsEvents {
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove';
   RELATIONSHIP_ADD: 'relationshipAdd';
   RELATIONSHIP_REMOVE: 'relationshipRemove';
+  RELATIONSHIP_UPDATE: 'relationshipUpdate';
   UNHANDLED_PACKET: 'unhandledPacket';
 }
 

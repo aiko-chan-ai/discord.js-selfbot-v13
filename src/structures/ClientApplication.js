@@ -115,7 +115,7 @@ class ClientApplication extends Application {
        */
       this.popularCommands = new Collection();
       data.popular_application_command_ids.forEach(id => {
-        this.popularCommands.set(id, this.commands.cache.get(id));
+        this.popularCommands.set(id, this.commands?.cache?.get(id));
       });
     }
 
@@ -147,10 +147,11 @@ class ClientApplication extends Application {
     const app = await this.client.api.oauth2.authorize.get({
       query: {
         client_id: this.id,
-        scope: 'bot',
+        scope: 'bot applications.commands',
       },
     });
-    this.client.users._add(app.bot);
+    const user = this.client.users._add(app.bot);
+    user._partial = false;
     this._patch(app.application);
     return this;
   }
