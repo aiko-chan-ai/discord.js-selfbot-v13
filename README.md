@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.6`, based on `discord.js@13.10.3`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.6`, based on `discord.js@13.11.0`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 

@@ -4018,7 +4018,7 @@ export class RelationshipManager {
   public cancelFriendRequest(user: UserResolvable): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
   public addBlocked(user: UserResolvable): Promise<boolean>;
-  public setNickname(user: UserResolvable, nickname: string|null): Promise<boolean>;
+  public setNickname(user: UserResolvable, nickname: string | null): Promise<boolean>;
   private __cancel(id: Snowflake): Promise<boolean>;
 }
 
