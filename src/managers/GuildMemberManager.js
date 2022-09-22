@@ -572,6 +572,7 @@ class GuildMemberManager extends CachedManager {
         timeout.refresh();
         if (guild.id !== this.guild.id) return;
         if (type == 'INVALIDATE' && offset > 100) {
+          clearTimeout(timeout);
           this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
           this.client.decrementMaxListeners();
           reject(new Error('INVALIDATE_MEMBER', raw.ops[0].range));
