@@ -8,6 +8,7 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const ClientApplication = require('./ClientApplication');
 const InteractionCollector = require('./InteractionCollector');
 const MessageAttachment = require('./MessageAttachment');
+const MessageButton = require('./MessageButton');
 const Embed = require('./MessageEmbed');
 const Mentions = require('./MessageMentions');
 const MessagePayload = require('./MessagePayload');
@@ -1029,33 +1030,26 @@ class Message extends Base {
   }
 
   /**
-   * Click specific button [Suggestion: Dux#2925]
-   * @param {string} buttonID Button ID
+   * Click specific button
+   * @param {MessageButton|string} button Button ID
    * @returns {Promise<InteractionResponseBody>}
    */
-  async clickButton(buttonID) {
-    if (typeof buttonID !== 'string') {
+  clickButton(button) {
+    let buttonID;
+    if (button instanceof MessageButton) button = button.customId;
+    if (typeof button === 'string') buttonID = button;
+    if (!buttonID) {
       throw new TypeError('BUTTON_ID_NOT_STRING');
     }
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    let button;
-    await Promise.all(
-      this.components.map(async row => {
-        await Promise.all(
-          row.components.map(interactionComponent => {
-            if (interactionComponent.type == 'BUTTON' && interactionComponent.customId == buttonID) {
-              button = interactionComponent;
-            }
-            return true;
-          }),
-        );
-      }),
-    );
-    if (!button) {
-      throw new TypeError('BUTTON_NOT_FOUND');
-    } else {
-      return button.click(this);
+    for (const components of this.components) {
+      for (const interactionComponent of components.components) {
+        if (interactionComponent.type == 'BUTTON' && interactionComponent.customId == buttonID) {
+          return interactionComponent.click(this);
+        }
+      }
     }
+    throw new TypeError('BUTTON_NOT_FOUND');
   }
   /**
    * Select specific menu or First Menu
