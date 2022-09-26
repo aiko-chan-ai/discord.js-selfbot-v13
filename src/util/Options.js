@@ -108,8 +108,8 @@ const { randomUA } = require('../util/Constants');
 /**
  * WebSocket options (these are left as snake_case to match the API)
  * @typedef {Object} WebsocketOptions
- * @property {number} [large_threshold=50] Number of members in a guild after which offline users will no longer be
- * sent in the initial guild member list, must be between 50 and 250
+ * @property {boolean} [compress=false] Whether to compress data sent on the connection
+ * @property {WebSocketProperties} [properties] Properties to identify the client with
  */
 
 /**
@@ -171,24 +171,23 @@ class Options extends null {
       sweepers: {},
       proxy: '',
       ws: {
-        large_threshold: 50,
         compress: false,
         properties: {
           os: 'Windows',
           browser: 'Chrome',
           device: '',
           system_locale: 'en-US',
-          browser_version: '104.0.0.0',
+          browser_version: '105.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 142510,
+          client_build_number: 149043,
           client_event_source: null,
         },
-        // ? capabilities: 509,
+        // ? capabilities: 1021,
         version: 9,
         client_state: {
           guild_hashes: {},
@@ -196,6 +195,7 @@ class Options extends null {
           read_state_version: 0,
           user_guild_settings_version: -1,
           user_settings_version: -1,
+          private_channels_version: '0',
         },
       },
       http: {

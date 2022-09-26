@@ -6703,7 +6703,6 @@ export interface WebhookMessageOptions extends Omit<MessageOptions, 'reply' | 's
 export type WebhookType = keyof typeof WebhookTypes;
 
 export interface WebSocketOptions {
-  large_threshold?: number;
   compress?: boolean;
   properties?: WebSocketProperties;
 }
