@@ -1929,7 +1929,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   // Added
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
-  public clickButton(buttonID: string): Promise<InteractionResponseBody>;
+  public clickButton(button: MessageButton | string): Promise<InteractionResponseBody>;
   public selectMenu(menuID: string, options: string[]): Promise<InteractionResponseBody>;
   public selectMenu(options: string[]): Promise<InteractionResponseBody>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponseBody>;
