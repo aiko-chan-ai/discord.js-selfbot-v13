@@ -2,11 +2,12 @@
 
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { Message } = require('./Message');
 const { RangeError } = require('../errors');
 const { MessageButtonStyles, MessageComponentTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
+const { lazy } = require('../util/Util');
+const Message = lazy(() => require('../structures/Message').Message);
 
 /**
  * Represents a button message component.
@@ -171,7 +172,7 @@ class MessageButton extends BaseMessageComponent {
    */
   async click(message) {
     const nonce = SnowflakeUtil.generate();
-    if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
+    if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
     await message.client.api.interactions.post({
       data: {

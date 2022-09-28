@@ -1,6 +1,7 @@
 'use strict';
 
 const { setTimeout } = require('node:timers');
+const { findBestMatch } = require('string-similarity');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const MessageAttachment = require('../structures/MessageAttachment');
@@ -830,8 +831,17 @@ class ApplicationCommand extends Base {
           clearTimeout(timeout);
           this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
           this.client.decrementMaxListeners();
-          if (data.choices.length > 1) resolve(data.choices[0].value);
-          else resolve(value);
+          if (data.choices.length > 1) {
+            // Find best match name
+            const bestMatch = findBestMatch(
+              value,
+              data.choices.map(c => c.name),
+            );
+            const result = data.choices.find(c => c.name == bestMatch.bestMatch.target);
+            resolve(result.value);
+          } else {
+            resolve(value);
+          }
         };
         const timeout = setTimeout(() => {
           this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
