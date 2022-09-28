@@ -47,7 +47,7 @@ class Modal {
     this.nonce = data.nonce ?? null;
 
     /**
-     * ID of modal ???
+     * ID slash / button / menu when modal is displayed
      * @type {?Snowflake}
      */
     this.id = data.id ?? null;
@@ -135,7 +135,7 @@ class Modal {
 
   /**
    * Reply to this modal with data. (Event only)
-   * @param {Snowflake} guildId GuildID of the guild to send the modal to
+   * @param {?Snowflake} guildId GuildID of the guild to send the modal to
    * @param {Snowflake} channelId ChannelID of the channel to send the modal to
    * @param  {...ModalReplyData} data Data to send with the modal
    * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
@@ -153,10 +153,15 @@ class Modal {
    */
   async reply(guildId, channelId, ...data) {
     if (!this.application) throw new Error('Modal cannot reply (Missing Application)');
-    const guild = this.client.guilds.cache.get(guildId);
-    if (!guild) throw new Error('GUILD_NOT_FOUND', `Guild ${guildId} not found`);
-    const channel = guild.channels.cache.get(channelId);
-    if (!channel) throw new Error('CHANNEL_NOT_FOUND', `Channel ${channelId} [Guild ${guildId}] not found`);
+    let guild, channel;
+    if (guildId) {
+      guild = this.client.guilds.cache.get(guildId);
+      if (!guild) throw new Error('GUILD_NOT_FOUND', `Guild ${guildId} not found`);
+    }
+    channel = guild ? guild.channels.cache.get(channelId) : this.client.channels.cache.get(channelId);
+    if (!channel) {
+      throw new Error('CHANNEL_NOT_FOUND', `Channel ${channelId} ${guildId ? `in guild ${guildId}` : ''} not found`);
+    }
     // Add data to components
     // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
     // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow
@@ -202,7 +207,7 @@ class Modal {
     const postData = {
       type: 5, // Modal
       application_id: this.application.id,
-      guild_id: guildId,
+      guild_id: guildId || null,
       channel_id: channelId,
       data: dataFinal,
       nonce,
