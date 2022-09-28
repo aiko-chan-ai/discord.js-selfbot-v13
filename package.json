@@ -1,11 +1,11 @@
 {
   "name": "discord.js-selfbot-v13",
-  "version": "2.6.15",
+  "version": "2.6.16",
   "description": "A unofficial discord.js fork for creating selfbots [Based on discord.js v13]",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {
-    "all": "npm run lint:fix && npm run lint:typings:fix && npm run fix:all && npm run build",
+    "all": "npm run lint:fix && npm run lint:typings:fix && npm run fix:all && npm run build && npm publish",
     "test": "npm run lint:all && npm run docs:test && npm run test:typescript",
     "fix:all": "npm run lint:fix && npm run lint:typings:fix && npm run format",
     "test:typescript": "tsc --noEmit && tsd",
