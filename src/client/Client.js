@@ -393,7 +393,7 @@ class Client extends BaseClient {
   /**
    * Sign in with the QR code on your phone.
    * @param {boolean} debug Debug mode
-   * @returns {DiscordAuthWebsocket} nothing :))
+   * @returns {DiscordAuthWebsocket}
    * @example
    * client.QRLogin();
    */

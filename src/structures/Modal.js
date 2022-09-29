@@ -128,17 +128,22 @@ class Modal {
   }
 
   /**
-   * @typedef {Object} ModalReplyData
+   * @typedef {Object} TextInputComponentReplyData
    * @property {string} [customId] TextInputComponent custom id
    * @property {string} [value] TextInputComponent value
    */
 
   /**
+   * @typedef {Object} ModalReplyData
+   * @property {GuildResolvable} [guild] Guild to send the modal to
+   * @property {TextChannelResolvable} [channel] User to send the modal to
+   * @property {TextInputComponentReplyData[]} [data] Reply data
+   */
+
+  /**
    * Reply to this modal with data. (Event only)
-   * @param {?Snowflake} guildId GuildID of the guild to send the modal to
-   * @param {Snowflake} channelId ChannelID of the channel to send the modal to
-   * @param  {...ModalReplyData} data Data to send with the modal
-   * @returns {Promise<Snowflake>} Nonce (Discord Timestamp) when command was sent
+   * @param  {ModalReplyData} data Data to send with the modal
+   * @returns {Promise<InteractionResponseBody>}
    * @example
    * // With Event
    * client.on('interactionModalCreate', modal => {
@@ -151,22 +156,17 @@ class Modal {
    *  })
    * })
    */
-  async reply(guildId, channelId, ...data) {
+  async reply(data) {
+    if (typeof data !== 'object') throw new TypeError('ModalReplyData must be an object');
+    if (!Array.isArray(data.data)) throw new TypeError('ModalReplyData.data must be an array');
     if (!this.application) throw new Error('Modal cannot reply (Missing Application)');
-    let guild, channel;
-    if (guildId) {
-      guild = this.client.guilds.cache.get(guildId);
-      if (!guild) throw new Error('GUILD_NOT_FOUND', `Guild ${guildId} not found`);
-    }
-    channel = guild ? guild.channels.cache.get(channelId) : this.client.channels.cache.get(channelId);
-    if (!channel) {
-      throw new Error('CHANNEL_NOT_FOUND', `Channel ${channelId} ${guildId ? `in guild ${guildId}` : ''} not found`);
-    }
+    const guild = this.client.guilds.resolveId(data.guild);
+    const channel = this.client.channels.resolveId(data.channel);
     // Add data to components
     // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
     // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow
     for (let i = 0; i < this.components.length; i++) {
-      const value = data.find(d => d.customId == this.components[i].components[0].customId);
+      const value = data.data.find(d => d.customId == this.components[i].components[0].customId);
       if (this.components[i].components[0].required == true) {
         if (!value) {
           throw new Error(
@@ -207,8 +207,8 @@ class Modal {
     const postData = {
       type: 5, // Modal
       application_id: this.application.id,
-      guild_id: guildId || null,
-      channel_id: channelId,
+      guild_id: guild || null,
+      channel_id: channel,
       data: dataFinal,
       nonce,
       session_id: this.client.session_id,
@@ -216,7 +216,10 @@ class Modal {
     await this.client.api.interactions.post({
       data: postData,
     });
-    return nonce;
+    return {
+      nonce,
+      id: this.id,
+    };
   }
 }
 

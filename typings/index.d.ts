@@ -2271,10 +2271,16 @@ export class Modal {
   ): this;
   public setTitle(title: string): this;
   public toJSON(): RawModalSubmitInteractionData;
-  public reply(guildId: Snowflake, channelId: Snowflake, ...args: ModalReplyData[]): Promise<Snowflake>;
+  public reply(data: ModalReplyData): Promise<InteractionResponseBody>;
 }
 
 export interface ModalReplyData {
+  guild: GuildResolvable;
+  channel: TextChannelResolvable;
+  data: TextInputComponentReplyData[];
+}
+
+export interface TextInputComponentReplyData {
   customId: string;
   value: string;
 }
