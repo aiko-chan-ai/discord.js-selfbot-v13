@@ -17,7 +17,7 @@ class SessionManager extends CachedManager {
    */
   fetch() {
     return new Promise((resolve, reject) => {
-      this.client.api.auth.session
+      this.client.api.auth.sessions
         .get()
         .then(data => {
           const allData = data.user_sessions;
