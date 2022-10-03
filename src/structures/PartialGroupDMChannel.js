@@ -63,6 +63,8 @@ class PartialGroupDMChannel extends Channel {
      */
     this.invites = new Collection();
 
+    this._recipients = [];
+
     this._patch(data);
   }
 
