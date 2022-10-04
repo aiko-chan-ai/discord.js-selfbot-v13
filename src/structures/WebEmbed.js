@@ -1,6 +1,6 @@
 'use strict';
 const axios = require('axios');
-const baseURL = 'https://sagiri-v3dot3.herokuapp.com/embed?';
+const baseURL = 'https://webembed.nezukobot.vn/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
 const { RangeError } = require('../errors');
@@ -56,14 +56,14 @@ class WebEmbed {
 
     /**
      * Using Custom WebEmbed server ?
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/embed?
+     * @type {?string} https://webembed.nezukobot.vn/embed?
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.baseURL = data.baseURL ?? baseURL;
 
     /**
      * Shorten API
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/short?url=
+     * @type {?string} https://webembed.nezukobot.vn/short?url=
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.shortenAPI = data.shortenAPI;
@@ -383,7 +383,7 @@ class WebEmbed {
 }
 
 const getShorten = async (url, embed) => {
-  const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://sagiri-v3dot3.herokuapp.com/short?url='];
+  const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://webembed.nezukobot.vn/short?url='];
   const shorten = `${
     embed.shortenAPI && typeof embed.shortenAPI == 'string'
       ? embed.shortenAPI
