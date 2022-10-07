@@ -697,7 +697,7 @@ class ApplicationCommand extends Base {
                   const subGroup = this.options.find(
                     o => o.name == subCommandArray[0] && o.type == 'SUB_COMMAND_GROUP',
                   );
-                  const subCommand = this.options.find(o => o.name == subCommandArray[1] && o.type == 'SUB_COMMAND');
+                  const subCommand = subGroup.options.find(o => o.name == subCommandArray[1] && o.type == 'SUB_COMMAND');
                   optionsBuild = [
                     {
                       type: ApplicationCommandOptionTypes[subGroup.type],
