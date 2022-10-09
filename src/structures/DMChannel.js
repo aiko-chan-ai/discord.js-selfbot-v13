@@ -4,6 +4,7 @@ const { Collection } = require('@discordjs/collection');
 const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 const { Status, Opcodes } = require('../util/Constants');
 
@@ -24,6 +25,12 @@ class DMChannel extends Channel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
   }
 
   _patch(data) {

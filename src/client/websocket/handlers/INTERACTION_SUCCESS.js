@@ -8,8 +8,21 @@ module.exports = (client, { d: data }) => {
    * @param {InteractionResponseBody} data data
    */
   client.emit(Events.INTERACTION_SUCCESS, data);
+  // Get channel data
+  const cache = client._interactionCache.get(data.nonce);
+  const channel = cache.guildId
+    ? client.guilds.cache.get(cache.guildId)?.channels.cache.get(cache.channelId)
+    : client.channels.cache.get(cache.channelId);
+  // Set data
+  const interaction = {
+    ...cache,
+    ...data,
+  };
+  const data_ = channel.interactions._add(interaction);
   client.emit('interactionResponse', {
     status: true,
-    metadata: data,
+    metadata: data_,
   });
+  // Delete cache
+  // client._interactionCache.delete(data.nonce);
 };

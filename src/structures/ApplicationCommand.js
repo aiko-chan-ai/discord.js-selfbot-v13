@@ -597,7 +597,7 @@ class ApplicationCommand extends Base {
    * @param {Message} message Discord Message
    * @param {Array<string>} subCommandArray SubCommand Array
    * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   // eslint-disable-next-line consistent-return
   async sendSlashCommand(message, subCommandArray = [], options = []) {
@@ -861,6 +861,11 @@ class ApplicationCommand extends Base {
         body: data,
         files: attachmentsBuffer,
       });
+      this.client._interactionCache.set(nonce, {
+        channelId: message.channelId,
+        guildId: message.guildId,
+        metadata: data,
+      });
       return new Promise((resolve, reject) => {
         const handler = data => {
           timeout.refresh();
@@ -911,7 +916,7 @@ class ApplicationCommand extends Base {
   /**
    * Message Context Menu
    * @param {Message} message Discord Message
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async sendContextMenu(message) {
     if (!(message instanceof Message())) {
@@ -940,6 +945,11 @@ class ApplicationCommand extends Base {
     }
     await this.client.api.interactions.post({
       body: data,
+    });
+    this.client._interactionCache.set(nonce, {
+      channelId: message.channelId,
+      guildId: message.guildId,
+      metadata: data,
     });
     return new Promise((resolve, reject) => {
       const handler = data => {

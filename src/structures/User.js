@@ -16,7 +16,7 @@ const UserFlags = require('../util/UserFlags');
  * @extends {Base}
  */
 class User extends Base {
-  constructor(client, data) {
+  constructor(client, data, application) {
     super(client);
     /**
      * The user's id
@@ -78,7 +78,7 @@ class User extends Base {
      * @type {?ClientApplication}
      * @readonly
      */
-    this.application = null;
+    this.application = application ? new ClientApplication(this.client, application, this) : null;
     this._partial = true;
     this._patch(data);
   }
@@ -100,7 +100,7 @@ class User extends Base {
        * @type {?boolean}
        */
       this.bot = Boolean(data.bot);
-      if (this.bot === true) {
+      if (this.bot === true && !this.application) {
         this.application = new ClientApplication(this.client, { id: this.id }, this);
         this.botInGuildsCount = null;
       }

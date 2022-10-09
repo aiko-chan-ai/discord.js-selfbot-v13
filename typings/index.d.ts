@@ -509,8 +509,8 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
     message: Message,
     subCommandArray?: string[],
     options?: string[],
-  ): Promise<InteractionResponseBody>;
-  public static sendContextMenu(message: Message): Promise<InteractionResponseBody>;
+  ): Promise<InteractionResponse>;
+  public static sendContextMenu(message: Message): Promise<InteractionResponse>;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -1934,10 +1934,10 @@ export class Message<Cached extends boolean = boolean> extends Base {
   // Added
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
-  public clickButton(button: MessageButton | string): Promise<InteractionResponseBody>;
-  public selectMenu(menuID: string, options: string[]): Promise<InteractionResponseBody>;
-  public selectMenu(options: string[]): Promise<InteractionResponseBody>;
-  public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponseBody>;
+  public clickButton(button: MessageButton | string): Promise<InteractionResponse>;
+  public selectMenu(menuID: string, options: string[]): Promise<InteractionResponse>;
+  public selectMenu(options: string[]): Promise<InteractionResponse>;
+  public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponse>;
 }
 
 export class MessageActionRow<
@@ -2001,7 +2001,7 @@ export class MessageButton extends BaseMessageComponent {
   public setStyle(style: MessageButtonStyleResolvable): this;
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
-  public click(message: Message): Promise<InteractionResponseBody>;
+  public click(message: Message): Promise<InteractionResponse>;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
 }
 
@@ -2241,7 +2241,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values: string[]): Promise<InteractionResponseBody>;
+  public select(message: Message, values: string[]): Promise<InteractionResponse>;
 }
 
 // Todo
@@ -2253,6 +2253,7 @@ export class Modal {
   public application: object | null;
   public client: Client | null;
   public nonce: Snowflake | null;
+  public readonly sendFromInteraction: InteractionResponse | null;
   public addComponents(
     ...components: (
       | MessageActionRow<ModalActionRowComponent>
@@ -2276,12 +2277,12 @@ export class Modal {
   ): this;
   public setTitle(title: string): this;
   public toJSON(): RawModalSubmitInteractionData;
-  public reply(data: ModalReplyData): Promise<InteractionResponseBody>;
+  public reply(data: ModalReplyData): Promise<InteractionResponse>;
 }
 
 export interface ModalReplyData {
-  guild: GuildResolvable;
-  channel: TextChannelResolvable;
+  guild?: GuildResolvable;
+  channel?: TextChannelResolvable;
   data: TextInputComponentReplyData[];
 }
 
@@ -3901,6 +3902,26 @@ export class MessageManager extends CachedManager<Snowflake, Message, MessageRes
   public search(options: MessageSearchOptions): Promise<MessageSearchResult>;
 }
 
+export class InteractionManager extends CachedManager<Snowflake, Message, MessageResolvable> {
+  private constructor(channel: TextBasedChannel, iterable?: Iterable<RawMessageData>);
+  public channel: TextBasedChannel;
+  public cache: Collection<Snowflake, Message>;
+}
+
+export class InteractionResponse extends Base {
+  private constructor(client: Client, data: Object);
+  public readonly channel: GuildTextBasedChannel | TextBasedChannel;
+  public channelId: Snowflake;
+  public readonly createdAt: Date;
+  public createdTimestamp: number;
+  public guildId: Snowflake | null;
+  public readonly guild: Snowflake | null;
+  public id: Snowflake;
+  public nonce: Snowflake;
+  public sendData: Object;
+  public awaitModal(time?: number): Modal;
+}
+
 export interface MessageSearchOptions {
   author: Snowflake[];
   content: string;
@@ -4069,6 +4090,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   lastPinTimestamp: number | null;
   readonly lastPinAt: Date | null;
   messages: MessageManager;
+  interactions: InteractionManager;
   awaitMessageComponent<T extends MessageComponentTypeResolvable = 'ACTION_ROW'>(
     options?: AwaitMessageCollectorOptionsParams<T, true>,
   ): Promise<MappedInteractionTypes[T]>;
@@ -4086,7 +4108,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
-  sendSlash(bot: UserResolvable, commandName: string, ...args: any): Promise<InteractionResponseBody>;
+  sendSlash(bot: UserResolvable, commandName: string, ...args: any): Promise<InteractionResponse>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;
@@ -6616,7 +6638,7 @@ export type AnyChannel =
   | VoiceChannel
   | ForumChannel;
 
-export type TextBasedChannel = Exclude<Extract<AnyChannel, { messages: MessageManager }>, ForumChannel>;
+export type TextBasedChannel = Exclude<Extract<AnyChannel, { messages: MessageManager, interactions: InteractionManager }>, ForumChannel>;
 
 export type TextBasedChannelTypes = TextBasedChannel['type'];
 
