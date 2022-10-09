@@ -3909,7 +3909,7 @@ export class InteractionManager extends CachedManager<Snowflake, Message, Messag
 }
 
 export class InteractionResponse extends Base {
-  private constructor(client: Client, data: Object);
+  private constructor(client: Client, data: object);
   public readonly channel: GuildTextBasedChannel | TextBasedChannel;
   public channelId: Snowflake;
   public readonly createdAt: Date;
@@ -3918,7 +3918,7 @@ export class InteractionResponse extends Base {
   public readonly guild: Snowflake | null;
   public id: Snowflake;
   public nonce: Snowflake;
-  public sendData: Object;
+  public sendData: object;
   public awaitModal(time?: number): Modal;
 }
 
@@ -6638,7 +6638,10 @@ export type AnyChannel =
   | VoiceChannel
   | ForumChannel;
 
-export type TextBasedChannel = Exclude<Extract<AnyChannel, { messages: MessageManager, interactions: InteractionManager }>, ForumChannel>;
+export type TextBasedChannel = Exclude<
+  Extract<AnyChannel, { messages: MessageManager; interactions: InteractionManager }>,
+  ForumChannel
+>;
 
 export type TextBasedChannelTypes = TextBasedChannel['type'];
 
