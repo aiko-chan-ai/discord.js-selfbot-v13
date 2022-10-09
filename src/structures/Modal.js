@@ -59,11 +59,27 @@ class Modal {
     this.application = data.application
       ? {
           ...data.application,
-          bot: data.application.bot ? new User(client, data.application.bot) : null,
+          bot: data.application.bot ? new User(client, data.application.bot, data.application) : null,
         }
       : null;
 
     this.client = client;
+  }
+
+  /**
+   * Get Interaction Response
+   * @type {?InteractionResponse}
+   * @readonly
+   */
+  get sendFromInteraction() {
+    if (this.id && this.nonce && this.client) {
+      const cache = this.client._interactionCache.get(this.nonce);
+      const channel = cache.guildId
+        ? this.client.guilds.cache.get(cache.guildId)?.channels.cache.get(cache.channelId)
+        : this.client.channels.cache.get(cache.channelId);
+      return channel.interactions.cache.get(this.id);
+    }
+    return null;
   }
 
   /**
@@ -135,24 +151,27 @@ class Modal {
 
   /**
    * @typedef {Object} ModalReplyData
-   * @property {GuildResolvable} [guild] Guild to send the modal to
-   * @property {TextChannelResolvable} [channel] User to send the modal to
+   * @property {?GuildResolvable} [guild] Guild to send the modal to
+   * @property {?TextChannelResolvable} [channel] User to send the modal to
    * @property {TextInputComponentReplyData[]} [data] Reply data
    */
 
   /**
    * Reply to this modal with data. (Event only)
    * @param  {ModalReplyData} data Data to send with the modal
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    * @example
-   * // With Event
    * client.on('interactionModalCreate', modal => {
-   *  modal.reply('guildId', 'channelId', {
-   *    customId: 'code',
-   *    value: '1+1'
-   *  }, {
-   *    customId: 'message',
-   *    value: 'hello'
+   *  modal.reply({
+   *     data: [
+   *         {
+   *             customId: 'code',
+   *             value: '1+1'
+   *         }, {
+   *             customId: 'message',
+   *             value: 'hello'
+   *         }
+   *     ]
    *  })
    * })
    */
@@ -160,8 +179,9 @@ class Modal {
     if (typeof data !== 'object') throw new TypeError('ModalReplyData must be an object');
     if (!Array.isArray(data.data)) throw new TypeError('ModalReplyData.data must be an array');
     if (!this.application) throw new Error('Modal cannot reply (Missing Application)');
-    const guild = this.client.guilds.resolveId(data.guild);
-    const channel = this.client.channels.resolveId(data.channel);
+    const data_cache = this.sendFromInteraction;
+    const guild = this.client.guilds.resolveId(data.guild) || data_cache.guildId || null;
+    const channel = this.client.channels.resolveId(data.channel) || data_cache.channelId;
     // Add data to components
     // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
     // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow

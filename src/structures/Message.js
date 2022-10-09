@@ -1043,7 +1043,7 @@ class Message extends Base {
   /**
    * Click specific button
    * @param {MessageButton|string} button Button ID
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   clickButton(button) {
     let buttonID;
@@ -1066,7 +1066,7 @@ class Message extends Base {
    * Select specific menu or First Menu
    * @param {string|Array<string>} menuID Select Menu specific id or auto select first Menu
    * @param {Array<string>} options Menu Options
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
@@ -1100,7 +1100,7 @@ class Message extends Base {
    * Send context Menu v2
    * @param {Snowflake} botId Bot id
    * @param {string} commandName Command name in Context Menu
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async contextMenu(botId, commandName) {
     if (!botId) throw new Error('Bot ID is required');

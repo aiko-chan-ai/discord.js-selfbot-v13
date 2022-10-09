@@ -204,6 +204,8 @@ class Client extends BaseClient {
       this.token = null;
     }
 
+    this._interactionCache = new Collection();
+
     /**
      * User that the client is logged in as
      * @type {?ClientUser}
@@ -340,7 +342,7 @@ class Client extends BaseClient {
         this.emit(Events.DEBUG, `Added Fingerprint: ${res.data.fingerprint}`);
       })
       .catch(err => {
-        this.emit(Events.DEBUG, `Finding Cookie and Fingerprint failed: ${err.message}`);
+        this.emit(Events.DEBUG, `Update Cookie and Fingerprint failed: ${err.message}`);
       });
   }
 

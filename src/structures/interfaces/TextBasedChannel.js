@@ -1,6 +1,7 @@
 'use strict';
 
 /* eslint-disable import/order */
+const InteractionManager = require('../../managers/InteractionManager');
 const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
@@ -30,6 +31,12 @@ class TextBasedChannel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
 
     /**
      * The channel's last message id, if one was sent
@@ -405,7 +412,7 @@ class TextBasedChannel {
    * @param {UserResolvable} bot Bot user
    * @param {string} commandString Command name (and sub / group formats)
    * @param {...?string|string[]} args Command arguments
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    * @example
    * // Send Slash to this channel
    * // Demo:
