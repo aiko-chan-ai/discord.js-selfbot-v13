@@ -382,7 +382,6 @@ class WebEmbed {
   }
 }
 
-// Credit: https://www.npmjs.com/package/node-url-shortener + google :))
 const getShorten = async (url, embed) => {
   const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://sagiri-v3dot3.herokuapp.com/short?url='];
   const shorten = `${

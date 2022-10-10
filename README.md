@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.6`, based on `discord.js@13.11.0`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.8`, based on `discord.js@13.11`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -68,7 +68,7 @@ client.login('token');
 
 ## Get Token ?
 
-<strong>Copy code to console Discord [Ctrl + Shift + I]</strong>
+<strong>Run code (Discord Console - [Ctrl + Shift + I])</strong>
 
 ```js
 window.webpackChunkdiscord_app.push([

@@ -3,6 +3,7 @@
 const process = require('node:process');
 const BaseGuildVoiceChannel = require('./BaseGuildVoiceChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 const { VideoQualityModes } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
@@ -23,6 +24,12 @@ class VoiceChannel extends BaseGuildVoiceChannel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
 
     /**
      * If the guild considers this channel NSFW

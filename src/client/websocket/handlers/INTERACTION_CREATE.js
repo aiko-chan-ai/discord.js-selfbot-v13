@@ -3,7 +3,7 @@ const { Events } = require('../../../util/Constants');
 
 /**
  * @typedef {Object} InteractionResponseBody
- * @property {Snowflake} id maybe id of this event (???) (documentation needed)
+ * @property {Snowflake} id Interaction ID
  * @property {Snowflake} nonce nonce in POST /interactions
  */
 

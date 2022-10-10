@@ -215,7 +215,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * Mesage select menu
    * @param {Message} message The message this select menu is for
    * @param {Array<string>} values The values of the select menu
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async select(message, values = []) {
     // Github copilot is the best :))
@@ -242,23 +242,29 @@ class MessageSelectMenu extends BaseMessageComponent {
       );
     }
     const nonce = SnowflakeUtil.generate();
-    await message.client.api.interactions.post({
+    const data = {
+      type: 3, // ?
+      guild_id: message.guild?.id ?? null, // In DMs
+      channel_id: message.channel.id,
+      message_id: message.id,
+      application_id: message.applicationId ?? message.author.id,
+      session_id: message.client.session_id,
+      message_flags: message.flags.bitfield,
       data: {
-        type: 3, // ?
-        guild_id: message.guild?.id ?? null, // In DMs
-        channel_id: message.channel.id,
-        message_id: message.id,
-        application_id: message.applicationId ?? message.author.id,
-        session_id: message.client.session_id,
-        message_flags: message.flags.bitfield,
-        data: {
-          component_type: 3, // Select Menu
-          custom_id: this.customId,
-          type: 3, // Select Menu
-          values,
-        },
-        nonce,
+        component_type: 3, // Select Menu
+        custom_id: this.customId,
+        type: 3, // Select Menu
+        values,
       },
+      nonce,
+    };
+    await message.client.api.interactions.post({
+      data,
+    });
+    message.client._interactionCache.set(nonce, {
+      channelId: message.channelId,
+      guildId: message.guildId,
+      metadata: data,
     });
     return new Promise((resolve, reject) => {
       const handler = data => {

@@ -1,6 +1,7 @@
 'use strict';
 
 const { setTimeout } = require('node:timers');
+const { findBestMatch } = require('string-similarity');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const MessageAttachment = require('../structures/MessageAttachment');
@@ -596,7 +597,7 @@ class ApplicationCommand extends Base {
    * @param {Message} message Discord Message
    * @param {Array<string>} subCommandArray SubCommand Array
    * @param {Array<string>} options The options to Slash Command
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   // eslint-disable-next-line consistent-return
   async sendSlashCommand(message, subCommandArray = [], options = []) {
@@ -696,7 +697,9 @@ class ApplicationCommand extends Base {
                   const subGroup = this.options.find(
                     o => o.name == subCommandArray[0] && o.type == 'SUB_COMMAND_GROUP',
                   );
-                  const subCommand = this.options.find(o => o.name == subCommandArray[1] && o.type == 'SUB_COMMAND');
+                  const subCommand = subGroup.options.find(
+                    o => o.name == subCommandArray[1] && o.type == 'SUB_COMMAND',
+                  );
                   optionsBuild = [
                     {
                       type: ApplicationCommandOptionTypes[subGroup.type],
@@ -830,8 +833,17 @@ class ApplicationCommand extends Base {
           clearTimeout(timeout);
           this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
           this.client.decrementMaxListeners();
-          if (data.choices.length > 1) resolve(data.choices[0].value);
-          else resolve(value);
+          if (data.choices.length > 1) {
+            // Find best match name
+            const bestMatch = findBestMatch(
+              value,
+              data.choices.map(c => c.name),
+            );
+            const result = data.choices.find(c => c.name == bestMatch.bestMatch.target);
+            resolve(result.value);
+          } else {
+            resolve(value);
+          }
         };
         const timeout = setTimeout(() => {
           this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
@@ -848,6 +860,11 @@ class ApplicationCommand extends Base {
       await this.client.api.interactions.post({
         body: data,
         files: attachmentsBuffer,
+      });
+      this.client._interactionCache.set(nonce, {
+        channelId: message.channelId,
+        guildId: message.guildId,
+        metadata: data,
       });
       return new Promise((resolve, reject) => {
         const handler = data => {
@@ -899,7 +916,7 @@ class ApplicationCommand extends Base {
   /**
    * Message Context Menu
    * @param {Message} message Discord Message
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async sendContextMenu(message) {
     if (!(message instanceof Message())) {
@@ -928,6 +945,11 @@ class ApplicationCommand extends Base {
     }
     await this.client.api.interactions.post({
       body: data,
+    });
+    this.client._interactionCache.set(nonce, {
+      channelId: message.channelId,
+      guildId: message.guildId,
+      metadata: data,
     });
     return new Promise((resolve, reject) => {
       const handler = data => {

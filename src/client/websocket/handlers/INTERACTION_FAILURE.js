@@ -12,4 +12,6 @@ module.exports = (client, { d: data }) => {
     status: false,
     metadata: data,
   });
+  // Delete cache
+  client._interactionCache.delete(data.nonce);
 };

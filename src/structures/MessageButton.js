@@ -2,11 +2,12 @@
 
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { Message } = require('./Message');
 const { RangeError } = require('../errors');
 const { MessageButtonStyles, MessageComponentTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
+const { lazy } = require('../util/Util');
+const Message = lazy(() => require('../structures/Message').Message);
 
 /**
  * Represents a button message component.
@@ -167,27 +168,33 @@ class MessageButton extends BaseMessageComponent {
   /**
    * Click the button
    * @param {Message} message Discord Message
-   * @returns {Promise<InteractionResponseBody>}
+   * @returns {Promise<InteractionResponse>}
    */
   async click(message) {
     const nonce = SnowflakeUtil.generate();
-    if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
+    if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
-    await message.client.api.interactions.post({
+    const data = {
+      type: 3, // ?
+      nonce,
+      guild_id: message.guild?.id ?? null, // In DMs
+      channel_id: message.channel.id,
+      message_id: message.id,
+      application_id: message.applicationId ?? message.author.id,
+      session_id: message.client.session_id,
+      message_flags: message.flags.bitfield,
       data: {
-        type: 3, // ?
-        nonce,
-        guild_id: message.guild?.id ?? null, // In DMs
-        channel_id: message.channel.id,
-        message_id: message.id,
-        application_id: message.applicationId ?? message.author.id,
-        session_id: message.client.session_id,
-        message_flags: message.flags.bitfield,
-        data: {
-          component_type: 2, // Button
-          custom_id: this.customId,
-        },
+        component_type: 2, // Button
+        custom_id: this.customId,
       },
+    };
+    await message.client.api.interactions.post({
+      data,
+    });
+    message.client._interactionCache.set(nonce, {
+      channelId: message.channelId,
+      guildId: message.guildId,
+      metadata: data,
     });
     return new Promise((resolve, reject) => {
       const handler = data => {

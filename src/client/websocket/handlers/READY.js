@@ -1,12 +1,12 @@
 'use strict';
 
 let ClientUser;
-const { VoiceConnection, VoiceConnectionStatus } = require('@discordjs/voice');
+const { VoiceConnection } = require('@discordjs/voice');
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
-const { Networking } = require('../../../util/Voice');
+const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
 let running = false;
 /**
  * Emitted whenever clientOptions.checkUpdate = false
@@ -66,35 +66,7 @@ module.exports = async (client, { d: data }, shard) => {
 
   if (client.options.patchVoice && !running) {
     /* eslint-disable */
-    VoiceConnection.prototype.configureNetworking = function () {
-      const { server, state } = this.packets;
-      if (
-        !server ||
-        !state ||
-        this.state.status === VoiceConnectionStatus.Destroyed /* Destroyed */ ||
-        !server.endpoint
-      )
-        return;
-      const networking = new Networking(
-        {
-          endpoint: server.endpoint,
-          serverId: server.guild_id ?? server.channel_id,
-          token: server.token,
-          sessionId: state.session_id,
-          userId: state.user_id,
-        },
-        Boolean(this.debug),
-      );
-      networking.once('close', this.onNetworkingClose);
-      networking.on('stateChange', this.onNetworkingStateChange);
-      networking.on('error', this.onNetworkingError);
-      networking.on('debug', this.onNetworkingDebug);
-      this.state = {
-        ...this.state,
-        status: VoiceConnectionStatus.Connecting /* Connecting */,
-        networking,
-      };
-    };
+    VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
     client.emit(
       Events.DEBUG,
       `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(

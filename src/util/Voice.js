@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-disable */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -47,15 +46,16 @@ var require_package = __commonJS({
   'package.json'(exports, module2) {
     module2.exports = {
       name: '@discordjs/voice',
-      version: '0.11.0',
+      version: '0.12.0',
       description: 'Implementation of the Discord Voice API for node.js',
       scripts: {
-        build: 'tsup && node scripts/postbuild.mjs',
+        build: 'tsup',
         test: 'jest --coverage',
-        lint: 'prettier --check . && eslint src __tests__ --ext mjs,js,ts',
-        format: 'prettier --write . && eslint src __tests__ --ext mjs,js,ts --fix',
-        docs: 'docgen -i src/index.ts -c docs/index.json -o docs/docs.json --typescript && api-extractor run --local',
-        prepack: 'yarn build && yarn lint && yarn test',
+        lint: 'prettier --check . && cross-env TIMING=1 eslint src __tests__ --ext mjs,js,ts',
+        format: 'prettier --write . && cross-env TIMING=1 eslint src __tests__ --ext mjs,js,ts --fix',
+        fmt: 'yarn format',
+        docs: 'downlevel-dts dist docs/dist --to=3.7 && docgen -i src/index.ts -c docs/index.json -o docs/docs.json --typescript && api-extractor run --local',
+        prepack: 'yarn lint && yarn test && yarn build',
         changelog: "git cliff --prepend ./CHANGELOG.md -u -c ./cliff.toml -r ../../ --include-path 'packages/voice/*'",
         release: 'cliff-jumper',
       },
@@ -77,7 +77,7 @@ var require_package = __commonJS({
         'Amish Shah <amishshah.2k@gmail.com>',
         'SpaceEEC <spaceeec@yahoo.com>',
         'Vlad Frangu <kingdgrizzle@gmail.com>',
-        'Antonio Roman <kyradiscord@gmail.com>',
+        'Aura Rom\xE1n <kyradiscord@gmail.com>',
       ],
       license: 'Apache-2.0',
       keywords: ['discord', 'discord.js', 'audio', 'voice', 'streaming'],
@@ -91,29 +91,31 @@ var require_package = __commonJS({
       homepage: 'https://discord.js.org',
       dependencies: {
         '@types/ws': '^8.5.3',
-        'discord-api-types': '^0.36.2',
+        'discord-api-types': '^0.37.10',
         'prism-media': '^1.3.4',
         tslib: '^2.4.0',
-        ws: '^8.8.1',
+        ws: '^8.9.0',
       },
       devDependencies: {
-        '@babel/core': '^7.18.6',
-        '@babel/preset-env': '^7.18.6',
+        '@babel/core': '^7.19.1',
+        '@babel/preset-env': '^7.19.1',
         '@babel/preset-typescript': '^7.18.6',
-        '@discordjs/docgen': 'workspace:^',
-        '@discordjs/scripts': 'workspace:^',
-        '@favware/cliff-jumper': '^1.8.5',
-        '@microsoft/api-extractor': '^7.28.4',
-        '@types/jest': '^28.1.6',
-        '@types/node': '^16.11.45',
-        eslint: '^8.20.0',
-        jest: '^28.1.3',
-        'jest-websocket-mock': '^2.3.0',
+        '@discordjs/docgen': '^0.12.1',
+        '@favware/cliff-jumper': '^1.8.7',
+        '@microsoft/api-extractor': '^7.31.2',
+        '@types/jest': '^29.0.3',
+        '@types/node': '^16.11.62',
+        'cross-env': '^7.0.3',
+        'downlevel-dts': '^0.10.1',
+        eslint: '^8.24.0',
+        'eslint-config-neon': '^0.1.33',
+        jest: '^29.0.3',
+        'jest-websocket-mock': '^2.4.0',
         'mock-socket': '^9.1.5',
         prettier: '^2.7.1',
-        tsup: '^6.1.3',
+        tsup: '^6.2.3',
         tweetnacl: '^1.0.3',
-        typescript: '^4.7.4',
+        typescript: '^4.8.3',
       },
       engines: {
         node: '>=16.9.0',
@@ -139,7 +141,7 @@ __export(src_exports, {
   SSRCMap: () => SSRCMap,
   SpeakingMap: () => SpeakingMap,
   StreamType: () => StreamType,
-  VoiceConnection: () => VoiceConnection2,
+  VoiceConnection: () => VoiceConnection,
   VoiceConnectionDisconnectReason: () => VoiceConnectionDisconnectReason,
   VoiceConnectionStatus: () => VoiceConnectionStatus,
   VoiceReceiver: () => VoiceReceiver,
@@ -154,7 +156,6 @@ __export(src_exports, {
   getVoiceConnections: () => getVoiceConnections,
   joinVoiceChannel: () => joinVoiceChannel,
   validateDiscordOpusHead: () => validateDiscordOpusHead,
-  Networking: () => Networking,
 });
 module.exports = __toCommonJS(src_exports);
 
@@ -171,6 +172,7 @@ function createJoinVoiceChannelPayload(config) {
       channel_id: config.channelId,
       self_deaf: config.selfDeaf,
       self_mute: config.selfMute,
+      self_video: config.selfVideo,
     },
   };
 }
@@ -213,7 +215,9 @@ function audioCycleStep() {
   if (nextTime === -1) return;
   nextTime += FRAME_LENGTH;
   const available = audioPlayers.filter(player => player.checkPlayable());
-  available.forEach(player => player['_stepDispatch']());
+  for (const player of available) {
+    player['_stepDispatch']();
+  }
   prepareNextAudioFrame(available);
 }
 __name(audioCycleStep, 'audioCycleStep');
@@ -255,16 +259,85 @@ function deleteAudioPlayer(player) {
 __name(deleteAudioPlayer, 'deleteAudioPlayer');
 
 // src/networking/Networking.ts
+var import_node_buffer3 = require('buffer');
 var import_node_events3 = require('events');
 var import_v42 = require('discord-api-types/voice/v4');
 
+// src/util/Secretbox.ts
+var import_node_buffer = require('buffer');
+var libs = {
+  'sodium-native': sodium => ({
+    open: (buffer, nonce2, secretKey) => {
+      if (buffer) {
+        const output = import_node_buffer.Buffer.allocUnsafe(buffer.length - sodium.crypto_box_MACBYTES);
+        if (sodium.crypto_secretbox_open_easy(output, buffer, nonce2, secretKey)) return output;
+      }
+      return null;
+    },
+    close: (opusPacket, nonce2, secretKey) => {
+      const output = import_node_buffer.Buffer.allocUnsafe(opusPacket.length + sodium.crypto_box_MACBYTES);
+      sodium.crypto_secretbox_easy(output, opusPacket, nonce2, secretKey);
+      return output;
+    },
+    random: (num, buffer = import_node_buffer.Buffer.allocUnsafe(num)) => {
+      sodium.randombytes_buf(buffer);
+      return buffer;
+    },
+  }),
+  sodium: sodium => ({
+    open: sodium.api.crypto_secretbox_open_easy,
+    close: sodium.api.crypto_secretbox_easy,
+    random: (num, buffer = import_node_buffer.Buffer.allocUnsafe(num)) => {
+      sodium.api.randombytes_buf(buffer);
+      return buffer;
+    },
+  }),
+  'libsodium-wrappers': sodium => ({
+    open: sodium.crypto_secretbox_open_easy,
+    close: sodium.crypto_secretbox_easy,
+    random: sodium.randombytes_buf,
+  }),
+  tweetnacl: tweetnacl => ({
+    open: tweetnacl.secretbox.open,
+    close: tweetnacl.secretbox,
+    random: tweetnacl.randomBytes,
+  }),
+};
+var fallbackError = /* @__PURE__ */ __name(() => {
+  throw new Error(
+    `Cannot play audio as no valid encryption package is installed.
+- Install sodium, libsodium-wrappers, or tweetnacl.
+- Use the generateDependencyReport() function for more information.
+`,
+  );
+}, 'fallbackError');
+var methods = {
+  open: fallbackError,
+  close: fallbackError,
+  random: fallbackError,
+};
+void (async () => {
+  for (const libName of Object.keys(libs)) {
+    try {
+      const lib = require(libName);
+      if (libName === 'libsodium-wrappers' && lib.ready) await lib.ready;
+      Object.assign(methods, libs[libName](lib));
+      break;
+    } catch {}
+  }
+})();
+
+// src/util/util.ts
+var noop = /* @__PURE__ */ __name(() => {}, 'noop');
+
 // src/networking/VoiceUDPSocket.ts
+var import_node_buffer2 = require('buffer');
 var import_node_dgram = require('dgram');
 var import_node_events = require('events');
 var import_node_net = require('net');
 function parseLocalPacket(message) {
-  const packet = Buffer.from(message);
-  const ip = packet.slice(8, packet.indexOf(0, 8)).toString('utf-8');
+  const packet = import_node_buffer2.Buffer.from(message);
+  const ip = packet.slice(8, packet.indexOf(0, 8)).toString('utf8');
   if (!(0, import_node_net.isIPv4)(ip)) {
     throw new Error('Malformed IP address');
   }
@@ -276,23 +349,23 @@ var KEEP_ALIVE_INTERVAL = 5e3;
 var KEEP_ALIVE_LIMIT = 12;
 var MAX_COUNTER_VALUE = 2 ** 32 - 1;
 var VoiceUDPSocket = class extends import_node_events.EventEmitter {
+  socket;
+  remote;
+  keepAlives;
+  keepAliveCounter = 0;
+  keepAliveBuffer;
+  keepAliveInterval;
+  ping;
+  debug;
   constructor(remote, debug = false) {
     super();
-    __publicField(this, 'socket');
-    __publicField(this, 'remote');
-    __publicField(this, 'keepAlives');
-    __publicField(this, 'keepAliveCounter', 0);
-    __publicField(this, 'keepAliveBuffer');
-    __publicField(this, 'keepAliveInterval');
-    __publicField(this, 'ping');
-    __publicField(this, 'debug');
     this.socket = (0, import_node_dgram.createSocket)('udp4');
     this.socket.on('error', error => this.emit('error', error));
     this.socket.on('message', buffer => this.onMessage(buffer));
     this.socket.on('close', () => this.emit('close'));
     this.remote = remote;
     this.keepAlives = [];
-    this.keepAliveBuffer = Buffer.alloc(8);
+    this.keepAliveBuffer = import_node_buffer2.Buffer.alloc(8);
     this.keepAliveInterval = setInterval(() => this.keepAlive(), KEEP_ALIVE_INTERVAL);
     setImmediate(() => this.keepAlive());
     this.debug = debug ? message => this.emit('debug', message) : null;
@@ -325,7 +398,7 @@ var VoiceUDPSocket = class extends import_node_events.EventEmitter {
     }
   }
   send(buffer) {
-    return this.socket.send(buffer, this.remote.port, this.remote.ip);
+    this.socket.send(buffer, this.remote.port, this.remote.ip);
   }
   destroy() {
     try {
@@ -333,7 +406,7 @@ var VoiceUDPSocket = class extends import_node_events.EventEmitter {
     } catch {}
     clearInterval(this.keepAliveInterval);
   }
-  performIPDiscovery(ssrc) {
+  async performIPDiscovery(ssrc) {
     return new Promise((resolve2, reject) => {
       const listener = /* @__PURE__ */ __name(message => {
         try {
@@ -345,7 +418,7 @@ var VoiceUDPSocket = class extends import_node_events.EventEmitter {
       }, 'listener');
       this.socket.on('message', listener);
       this.socket.once('close', () => reject(new Error('Cannot perform IP discovery - socket closed')));
-      const discoveryBuffer = Buffer.alloc(74);
+      const discoveryBuffer = import_node_buffer2.Buffer.alloc(74);
       discoveryBuffer.writeUInt16BE(1, 0);
       discoveryBuffer.writeUInt16BE(70, 2);
       discoveryBuffer.writeUInt32BE(ssrc, 4);
@@ -360,20 +433,20 @@ var import_node_events2 = require('events');
 var import_v4 = require('discord-api-types/voice/v4');
 var import_ws = __toESM(require('ws'));
 var VoiceWebSocket = class extends import_node_events2.EventEmitter {
+  heartbeatInterval;
+  lastHeartbeatAck;
+  lastHeartbeatSend;
+  missedHeartbeats = 0;
+  ping;
+  debug;
+  ws;
   constructor(address, debug) {
     super();
-    __publicField(this, 'heartbeatInterval');
-    __publicField(this, 'lastHeartbeatAck');
-    __publicField(this, 'lastHeartbeatSend');
-    __publicField(this, 'missedHeartbeats', 0);
-    __publicField(this, 'ping');
-    __publicField(this, 'debug');
-    __publicField(this, 'ws');
     this.ws = new import_ws.default(address);
-    this.ws.onmessage = e => this.onMessage(e);
-    this.ws.onopen = e => this.emit('open', e);
-    this.ws.onerror = e => this.emit('error', e instanceof Error ? e : e.error);
-    this.ws.onclose = e => this.emit('close', e);
+    this.ws.onmessage = err => this.onMessage(err);
+    this.ws.onopen = err => this.emit('open', err);
+    this.ws.onerror = err => this.emit('error', err instanceof Error ? err : err.error);
+    this.ws.onclose = err => this.emit('close', err);
     this.lastHeartbeatAck = 0;
     this.lastHeartbeatSend = 0;
     this.debug = debug ? message => this.emit('debug', message) : null;
@@ -384,8 +457,8 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
       this.setHeartbeatInterval(-1);
       this.ws.close(1e3);
     } catch (error) {
-      const e = error;
-      this.emit('error', e);
+      const err = error;
+      this.emit('error', err);
     }
   }
   onMessage(event) {
@@ -395,8 +468,8 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
     try {
       packet = JSON.parse(event.data);
     } catch (error) {
-      const e = error;
-      this.emit('error', e);
+      const err = error;
+      this.emit('error', err);
       return;
     }
     if (packet.op === import_v4.VoiceOpcodes.HeartbeatAck) {
@@ -410,17 +483,18 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
     try {
       const stringified = JSON.stringify(packet);
       this.debug?.(`>> ${stringified}`);
-      return this.ws.send(stringified);
+      this.ws.send(stringified);
+      return;
     } catch (error) {
-      const e = error;
-      this.emit('error', e);
+      const err = error;
+      this.emit('error', err);
     }
   }
   sendHeartbeat() {
     this.lastHeartbeatSend = Date.now();
     this.missedHeartbeats++;
     const nonce2 = this.lastHeartbeatSend;
-    return this.sendPacket({
+    this.sendPacket({
       op: import_v4.VoiceOpcodes.Heartbeat,
       d: nonce2,
     });
@@ -440,76 +514,12 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
 };
 __name(VoiceWebSocket, 'VoiceWebSocket');
 
-// src/util/Secretbox.ts
-var libs = {
-  'sodium-native': sodium => ({
-    open: (buffer, nonce2, secretKey) => {
-      if (buffer) {
-        const output = Buffer.allocUnsafe(buffer.length - sodium.crypto_box_MACBYTES);
-        if (sodium.crypto_secretbox_open_easy(output, buffer, nonce2, secretKey)) return output;
-      }
-      return null;
-    },
-    close: (opusPacket, nonce2, secretKey) => {
-      const output = Buffer.allocUnsafe(opusPacket.length + sodium.crypto_box_MACBYTES);
-      sodium.crypto_secretbox_easy(output, opusPacket, nonce2, secretKey);
-      return output;
-    },
-    random: (n, buffer = Buffer.allocUnsafe(n)) => {
-      sodium.randombytes_buf(buffer);
-      return buffer;
-    },
-  }),
-  sodium: sodium => ({
-    open: sodium.api.crypto_secretbox_open_easy,
-    close: sodium.api.crypto_secretbox_easy,
-    random: (n, buffer = Buffer.allocUnsafe(n)) => {
-      sodium.api.randombytes_buf(buffer);
-      return buffer;
-    },
-  }),
-  'libsodium-wrappers': sodium => ({
-    open: sodium.crypto_secretbox_open_easy,
-    close: sodium.crypto_secretbox_easy,
-    random: sodium.randombytes_buf,
-  }),
-  tweetnacl: tweetnacl => ({
-    open: tweetnacl.secretbox.open,
-    close: tweetnacl.secretbox,
-    random: tweetnacl.randomBytes,
-  }),
-};
-var fallbackError = /* @__PURE__ */ __name(() => {
-  throw new Error(`Cannot play audio as no valid encryption package is installed.
-- Install sodium, libsodium-wrappers, or tweetnacl.
-- Use the generateDependencyReport() function for more information.
-`);
-}, 'fallbackError');
-var methods = {
-  open: fallbackError,
-  close: fallbackError,
-  random: fallbackError,
-};
-void (async () => {
-  for (const libName of Object.keys(libs)) {
-    try {
-      const lib = require(libName);
-      if (libName === 'libsodium-wrappers' && lib.ready) await lib.ready;
-      Object.assign(methods, libs[libName](lib));
-      break;
-    } catch {}
-  }
-})();
-
-// src/util/util.ts
-var noop = /* @__PURE__ */ __name(() => {}, 'noop');
-
 // src/networking/Networking.ts
 var CHANNELS = 2;
 var TIMESTAMP_INC = (48e3 / 100) * CHANNELS;
 var MAX_NONCE_SIZE = 2 ** 32 - 1;
 var SUPPORTED_ENCRYPTION_MODES = ['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305'];
-var nonce = Buffer.alloc(24);
+var nonce = import_node_buffer3.Buffer.alloc(24);
 function stringifyState(state) {
   return JSON.stringify({
     ...state,
@@ -526,15 +536,15 @@ function chooseEncryptionMode(options) {
   return option;
 }
 __name(chooseEncryptionMode, 'chooseEncryptionMode');
-function randomNBit(n) {
-  return Math.floor(Math.random() * 2 ** n);
+function randomNBit(numberOfBits) {
+  return Math.floor(Math.random() * 2 ** numberOfBits);
 }
 __name(randomNBit, 'randomNBit');
 var Networking = class extends import_node_events3.EventEmitter {
+  _state;
+  debug;
   constructor(options, debug) {
     super();
-    __publicField(this, '_state');
-    __publicField(this, 'debug');
     this.onWsOpen = this.onWsOpen.bind(this);
     this.onChildError = this.onChildError.bind(this);
     this.onWsPacket = this.onWsPacket.bind(this);
@@ -700,7 +710,7 @@ to ${stringifyState(newState)}`);
           sequence: randomNBit(16),
           timestamp: randomNBit(32),
           nonce: 0,
-          nonceBuffer: Buffer.alloc(24),
+          nonceBuffer: import_node_buffer3.Buffer.alloc(24),
           speaking: false,
           packetsPlayed: 0,
         },
@@ -762,7 +772,7 @@ to ${stringifyState(newState)}`);
     });
   }
   createAudioPacket(opusPacket, connectionData) {
-    const packetBuffer = Buffer.alloc(12);
+    const packetBuffer = import_node_buffer3.Buffer.alloc(12);
     packetBuffer[0] = 128;
     packetBuffer[1] = 120;
     const { sequence, timestamp, ssrc } = connectionData;
@@ -770,7 +780,7 @@ to ${stringifyState(newState)}`);
     packetBuffer.writeUIntBE(timestamp, 4, 4);
     packetBuffer.writeUIntBE(ssrc, 8, 4);
     packetBuffer.copy(nonce, 0, 0, 12);
-    return Buffer.concat([packetBuffer, ...this.encryptOpusPacket(opusPacket, connectionData)]);
+    return import_node_buffer3.Buffer.concat([packetBuffer, ...this.encryptOpusPacket(opusPacket, connectionData)]);
   }
   encryptOpusPacket(opusPacket, connectionData) {
     const { secretKey, encryptionMode } = connectionData;
@@ -789,19 +799,21 @@ to ${stringifyState(newState)}`);
 __name(Networking, 'Networking');
 
 // src/receive/VoiceReceiver.ts
+var import_node_buffer5 = require('buffer');
 var import_v43 = require('discord-api-types/voice/v4');
 
 // src/receive/AudioReceiveStream.ts
 var import_node_stream = require('stream');
 
 // src/audio/AudioPlayer.ts
-var import_node_events4 = __toESM(require('events'));
+var import_node_buffer4 = require('buffer');
+var import_node_events4 = require('events');
 
 // src/audio/AudioPlayerError.ts
 var AudioPlayerError = class extends Error {
+  resource;
   constructor(error, resource) {
     super(error.message);
-    __publicField(this, 'resource');
     this.resource = resource;
     this.name = error.name;
     this.stack = error.stack;
@@ -811,9 +823,9 @@ __name(AudioPlayerError, 'AudioPlayerError');
 
 // src/audio/PlayerSubscription.ts
 var PlayerSubscription = class {
+  connection;
+  player;
   constructor(connection, player) {
-    __publicField(this, 'connection');
-    __publicField(this, 'player');
     this.connection = connection;
     this.player = player;
   }
@@ -825,7 +837,7 @@ var PlayerSubscription = class {
 __name(PlayerSubscription, 'PlayerSubscription');
 
 // src/audio/AudioPlayer.ts
-var SILENCE_FRAME = Buffer.from([248, 255, 254]);
+var SILENCE_FRAME = import_node_buffer4.Buffer.from([248, 255, 254]);
 var NoSubscriberBehavior = /* @__PURE__ */ (NoSubscriberBehavior2 => {
   NoSubscriberBehavior2['Pause'] = 'pause';
   NoSubscriberBehavior2['Play'] = 'play';
@@ -833,11 +845,11 @@ var NoSubscriberBehavior = /* @__PURE__ */ (NoSubscriberBehavior2 => {
   return NoSubscriberBehavior2;
 })(NoSubscriberBehavior || {});
 var AudioPlayerStatus = /* @__PURE__ */ (AudioPlayerStatus2 => {
-  AudioPlayerStatus2['Idle'] = 'idle';
+  AudioPlayerStatus2['AutoPaused'] = 'autopaused';
   AudioPlayerStatus2['Buffering'] = 'buffering';
+  AudioPlayerStatus2['Idle'] = 'idle';
   AudioPlayerStatus2['Paused'] = 'paused';
   AudioPlayerStatus2['Playing'] = 'playing';
-  AudioPlayerStatus2['AutoPaused'] = 'autopaused';
   return AudioPlayerStatus2;
 })(AudioPlayerStatus || {});
 function stringifyState2(state) {
@@ -848,13 +860,13 @@ function stringifyState2(state) {
   });
 }
 __name(stringifyState2, 'stringifyState');
-var AudioPlayer = class extends import_node_events4.default {
+var AudioPlayer = class extends import_node_events4.EventEmitter {
+  _state;
+  subscribers = [];
+  behaviors;
+  debug;
   constructor(options = {}) {
     super();
-    __publicField(this, '_state');
-    __publicField(this, 'subscribers', []);
-    __publicField(this, 'behaviors');
-    __publicField(this, 'debug');
     this._state = { status: 'idle' /* Idle */ };
     this.behaviors = {
       noSubscriber: 'pause' /* Pause */,
@@ -1035,7 +1047,9 @@ to ${stringifyState2(newState)}`);
   _stepDispatch() {
     const state = this._state;
     if (state.status === 'idle' /* Idle */ || state.status === 'buffering' /* Buffering */) return;
-    this.playable.forEach(connection => connection.dispatchAudio());
+    for (const connection of this.playable) {
+      connection.dispatchAudio();
+    }
   }
   _stepPrepare() {
     const state = this._state;
@@ -1085,11 +1099,15 @@ to ${stringifyState2(newState)}`);
     }
   }
   _signalStopSpeaking() {
-    return this.subscribers.forEach(({ connection }) => connection.setSpeaking(false));
+    for (const { connection } of this.subscribers) {
+      connection.setSpeaking(false);
+    }
   }
   _preparePacket(packet, receivers, state) {
     state.playbackDuration += 20;
-    receivers.forEach(connection => connection.prepareAudioPacket(packet));
+    for (const connection of receivers) {
+      connection.prepareAudioPacket(packet);
+    }
   }
 };
 __name(AudioPlayer, 'AudioPlayer');
@@ -1114,24 +1132,23 @@ function createDefaultAudioReceiveStreamOptions() {
 }
 __name(createDefaultAudioReceiveStreamOptions, 'createDefaultAudioReceiveStreamOptions');
 var AudioReceiveStream = class extends import_node_stream.Readable {
+  end;
+  endTimeout;
   constructor({ end, ...options }) {
     super({
       ...options,
       objectMode: true,
     });
-    __publicField(this, 'end');
-    __publicField(this, 'endTimeout');
     this.end = end;
   }
   push(buffer) {
-    if (buffer) {
-      if (
-        this.end.behavior === 2 /* AfterInactivity */ ||
+    if (
+      buffer &&
+      (this.end.behavior === 2 /* AfterInactivity */ ||
         (this.end.behavior === 1 /* AfterSilence */ &&
-          (buffer.compare(SILENCE_FRAME) !== 0 || typeof this.endTimeout === 'undefined'))
-      ) {
-        this.renewEndTimeout(this.end);
-      }
+          (buffer.compare(SILENCE_FRAME) !== 0 || typeof this.endTimeout === 'undefined')))
+    ) {
+      this.renewEndTimeout(this.end);
     }
     return super.push(buffer);
   }
@@ -1148,9 +1165,9 @@ __name(AudioReceiveStream, 'AudioReceiveStream');
 // src/receive/SSRCMap.ts
 var import_node_events5 = require('events');
 var SSRCMap = class extends import_node_events5.EventEmitter {
+  map;
   constructor() {
     super();
-    __publicField(this, 'map');
     this.map = /* @__PURE__ */ new Map();
   }
   update(data) {
@@ -1198,10 +1215,10 @@ __name(SSRCMap, 'SSRCMap');
 // src/receive/SpeakingMap.ts
 var import_node_events6 = require('events');
 var _SpeakingMap = class extends import_node_events6.EventEmitter {
+  users;
+  speakingTimeouts;
   constructor() {
     super();
-    __publicField(this, 'users');
-    __publicField(this, 'speakingTimeouts');
     this.users = /* @__PURE__ */ new Map();
     this.speakingTimeouts = /* @__PURE__ */ new Map();
   }
@@ -1232,12 +1249,12 @@ __publicField(SpeakingMap, 'DELAY', 100);
 
 // src/receive/VoiceReceiver.ts
 var VoiceReceiver = class {
+  voiceConnection;
+  ssrcMap;
+  subscriptions;
+  connectionData;
+  speaking;
   constructor(voiceConnection) {
-    __publicField(this, 'voiceConnection');
-    __publicField(this, 'ssrcMap');
-    __publicField(this, 'subscriptions');
-    __publicField(this, 'connectionData');
-    __publicField(this, 'speaking');
     this.voiceConnection = voiceConnection;
     this.ssrcMap = new SSRCMap();
     this.speaking = new SpeakingMap();
@@ -1280,7 +1297,7 @@ var VoiceReceiver = class {
     }
     const decrypted = methods.open(buffer.slice(12, end), nonce2, secretKey);
     if (!decrypted) return;
-    return Buffer.from(decrypted);
+    return import_node_buffer5.Buffer.from(decrypted);
   }
   parsePacket(buffer, mode, nonce2, secretKey) {
     let packet = this.decrypt(buffer, mode, nonce2, secretKey);
@@ -1329,11 +1346,11 @@ __name(VoiceReceiver, 'VoiceReceiver');
 
 // src/VoiceConnection.ts
 var VoiceConnectionStatus = /* @__PURE__ */ (VoiceConnectionStatus2 => {
-  VoiceConnectionStatus2['Signalling'] = 'signalling';
   VoiceConnectionStatus2['Connecting'] = 'connecting';
-  VoiceConnectionStatus2['Ready'] = 'ready';
-  VoiceConnectionStatus2['Disconnected'] = 'disconnected';
   VoiceConnectionStatus2['Destroyed'] = 'destroyed';
+  VoiceConnectionStatus2['Disconnected'] = 'disconnected';
+  VoiceConnectionStatus2['Ready'] = 'ready';
+  VoiceConnectionStatus2['Signalling'] = 'signalling';
   return VoiceConnectionStatus2;
 })(VoiceConnectionStatus || {});
 var VoiceConnectionDisconnectReason = /* @__PURE__ */ (VoiceConnectionDisconnectReason2 => {
@@ -1343,23 +1360,23 @@ var VoiceConnectionDisconnectReason = /* @__PURE__ */ (VoiceConnectionDisconnect
   VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2['Manual'] = 3)] = 'Manual';
   return VoiceConnectionDisconnectReason2;
 })(VoiceConnectionDisconnectReason || {});
-var VoiceConnection2 = class extends import_node_events7.EventEmitter {
-  constructor(joinConfig, { debug, adapterCreator }) {
+var VoiceConnection = class extends import_node_events7.EventEmitter {
+  rejoinAttempts;
+  _state;
+  joinConfig;
+  packets;
+  receiver;
+  debug;
+  constructor(joinConfig, options) {
     super();
-    __publicField(this, 'rejoinAttempts');
-    __publicField(this, '_state');
-    __publicField(this, 'joinConfig');
-    __publicField(this, 'packets');
-    __publicField(this, 'receiver');
-    __publicField(this, 'debug');
-    this.debug = debug ? message => this.emit('debug', message) : null;
+    this.debug = options.debug ? message => this.emit('debug', message) : null;
     this.rejoinAttempts = 0;
     this.receiver = new VoiceReceiver(this);
     this.onNetworkingClose = this.onNetworkingClose.bind(this);
     this.onNetworkingStateChange = this.onNetworkingStateChange.bind(this);
     this.onNetworkingError = this.onNetworkingError.bind(this);
     this.onNetworkingDebug = this.onNetworkingDebug.bind(this);
-    const adapter = adapterCreator({
+    const adapter = options.adapterCreator({
       onVoiceServerUpdate: data => this.addServerPacket(data),
       onVoiceStateUpdate: data => this.addStatePacket(data),
       destroy: () => this.destroy(false),
@@ -1449,7 +1466,7 @@ var VoiceConnection2 = class extends import_node_events7.EventEmitter {
     const networking = new Networking(
       {
         endpoint: server.endpoint,
-        serverId: server.guild_id,
+        serverId: server.guild_id ?? server.channel_id,
         token: server.token,
         sessionId: state.session_id,
         userId: state.user_id,
@@ -1621,7 +1638,7 @@ var VoiceConnection2 = class extends import_node_events7.EventEmitter {
     }
   }
 };
-__name(VoiceConnection2, 'VoiceConnection');
+__name(VoiceConnection, 'VoiceConnection');
 function createVoiceConnection(joinConfig, options) {
   const payload = createJoinVoiceChannelPayload(joinConfig);
   const existing = getVoiceConnection(joinConfig.guildId, joinConfig.group);
@@ -1631,6 +1648,7 @@ function createVoiceConnection(joinConfig, options) {
         channelId: joinConfig.channelId,
         selfDeaf: joinConfig.selfDeaf,
         selfMute: joinConfig.selfMute,
+        selfVideo: joinConfig.selfVideo,
       });
     } else if (!existing.state.adapter.sendPayload(payload)) {
       existing.state = {
@@ -1641,16 +1659,17 @@ function createVoiceConnection(joinConfig, options) {
     }
     return existing;
   }
-  const voiceConnection = new VoiceConnection2(joinConfig, options);
+  const voiceConnection = new VoiceConnection(joinConfig, options);
   trackVoiceConnection(voiceConnection);
-  if (voiceConnection.state.status !== 'destroyed' /* Destroyed */) {
-    if (!voiceConnection.state.adapter.sendPayload(payload)) {
-      voiceConnection.state = {
-        ...voiceConnection.state,
-        status: 'disconnected' /* Disconnected */,
-        reason: 1 /* AdapterUnavailable */,
-      };
-    }
+  if (
+    voiceConnection.state.status !== 'destroyed' /* Destroyed */ &&
+    !voiceConnection.state.adapter.sendPayload(payload)
+  ) {
+    voiceConnection.state = {
+      ...voiceConnection.state,
+      status: 'disconnected' /* Disconnected */,
+      reason: 1 /* AdapterUnavailable */,
+    };
   }
   return voiceConnection;
 }
@@ -1662,6 +1681,7 @@ function joinVoiceChannel(options) {
     selfDeaf: true,
     selfMute: false,
     group: 'default',
+    selfVideo: false,
     ...options,
   };
   return createVoiceConnection(joinConfig, {
@@ -1694,16 +1714,16 @@ var FFMPEG_OPUS_ARGUMENTS = [
 ];
 var StreamType = /* @__PURE__ */ (StreamType2 => {
   StreamType2['Arbitrary'] = 'arbitrary';
-  StreamType2['Raw'] = 'raw';
   StreamType2['OggOpus'] = 'ogg/opus';
-  StreamType2['WebmOpus'] = 'webm/opus';
   StreamType2['Opus'] = 'opus';
+  StreamType2['Raw'] = 'raw';
+  StreamType2['WebmOpus'] = 'webm/opus';
   return StreamType2;
 })(StreamType || {});
 var Node = class {
+  edges = [];
+  type;
   constructor(type) {
-    __publicField(this, 'edges', []);
-    __publicField(this, 'type');
     this.type = type;
   }
   addEdge(edge) {
@@ -1788,9 +1808,9 @@ function findPath(from, constraints, goal = getNode('opus' /* Opus */), path = [
   if (from === goal && constraints(path)) {
     return { cost: 0 };
   } else if (depth === 0) {
-    return { cost: Infinity };
+    return { cost: Number.POSITIVE_INFINITY };
   }
-  let currentBest = void 0;
+  let currentBest;
   for (const edge of from.edges) {
     if (currentBest && edge.cost > currentBest.cost) continue;
     const next = findPath(edge.to, constraints, goal, [...path, edge], depth - 1);
@@ -1799,7 +1819,7 @@ function findPath(from, constraints, goal = getNode('opus' /* Opus */), path = [
       currentBest = { cost, edge, next };
     }
   }
-  return currentBest ?? { cost: Infinity };
+  return currentBest ?? { cost: Number.POSITIVE_INFINITY };
 }
 __name(findPath, 'findPath');
 function constructPipeline(step) {
@@ -1819,17 +1839,17 @@ __name(findPipeline, 'findPipeline');
 
 // src/audio/AudioResource.ts
 var AudioResource = class {
+  playStream;
+  edges;
+  metadata;
+  volume;
+  encoder;
+  audioPlayer;
+  playbackDuration = 0;
+  started = false;
+  silencePaddingFrames;
+  silenceRemaining = -1;
   constructor(edges, streams, metadata, silencePaddingFrames) {
-    __publicField(this, 'playStream');
-    __publicField(this, 'edges');
-    __publicField(this, 'metadata');
-    __publicField(this, 'volume');
-    __publicField(this, 'encoder');
-    __publicField(this, 'audioPlayer');
-    __publicField(this, 'playbackDuration', 0);
-    __publicField(this, 'started', false);
-    __publicField(this, 'silencePaddingFrames');
-    __publicField(this, 'silenceRemaining', -1);
     this.edges = edges;
     this.playStream = streams.length > 1 ? (0, import_node_stream2.pipeline)(streams, noop) : streams[0];
     this.metadata = metadata;
@@ -1921,7 +1941,7 @@ function findPackageJSON(dir, packageName, depth) {
     const pkg = require(attemptedPath);
     if (pkg.name !== packageName) throw new Error('package.json does not match');
     return pkg;
-  } catch (err) {
+  } catch {
     return findPackageJSON((0, import_node_path.resolve)(dir, '..'), packageName, depth - 1);
   }
 }
@@ -1933,7 +1953,7 @@ function version(name) {
         ? require_package()
         : findPackageJSON((0, import_node_path.dirname)(require.resolve(name)), name, 3);
     return pkg?.version ?? 'not found';
-  } catch (err) {
+  } catch {
     return 'not found';
   }
 }
@@ -1960,7 +1980,7 @@ function generateDependencyReport() {
     const info = import_prism_media3.default.FFmpeg.getInfo();
     report.push(`- version: ${info.version}`);
     report.push(`- libopus: ${info.output.includes('--enable-libopus') ? 'yes' : 'no'}`);
-  } catch (err) {
+  } catch {
     report.push('- not found');
   }
   return ['-'.repeat(50), ...report, '-'.repeat(50)].join('\n');
@@ -1994,6 +2014,8 @@ async function entersState(target, status, timeoutOrSignal) {
 __name(entersState, 'entersState');
 
 // src/util/demuxProbe.ts
+var import_node_buffer6 = require('buffer');
+var import_node_process = __toESM(require('process'));
 var import_node_stream3 = require('stream');
 var import_prism_media4 = __toESM(require('prism-media'));
 function validateDiscordOpusHead(opusHead) {
@@ -2002,12 +2024,18 @@ function validateDiscordOpusHead(opusHead) {
   return channels === 2 && sampleRate === 48e3;
 }
 __name(validateDiscordOpusHead, 'validateDiscordOpusHead');
-function demuxProbe(stream, probeSize = 1024, validator = validateDiscordOpusHead) {
+async function demuxProbe(stream, probeSize = 1024, validator = validateDiscordOpusHead) {
   return new Promise((resolve2, reject) => {
-    if (stream.readableObjectMode) return reject(new Error('Cannot probe a readable stream in object mode'));
-    if (stream.readableEnded) return reject(new Error('Cannot probe a stream that has ended'));
-    let readBuffer = Buffer.alloc(0);
-    let resolved = void 0;
+    if (stream.readableObjectMode) {
+      reject(new Error('Cannot probe a readable stream in object mode'));
+      return;
+    }
+    if (stream.readableEnded) {
+      reject(new Error('Cannot probe a stream that has ended'));
+      return;
+    }
+    let readBuffer = import_node_buffer6.Buffer.alloc(0);
+    let resolved;
     const finish = /* @__PURE__ */ __name(type => {
       stream.off('data', onData);
       stream.off('close', onClose);
@@ -2049,13 +2077,13 @@ function demuxProbe(stream, probeSize = 1024, validator = validateDiscordOpusHea
       }
     }, 'onClose');
     const onData = /* @__PURE__ */ __name(buffer => {
-      readBuffer = Buffer.concat([readBuffer, buffer]);
+      readBuffer = import_node_buffer6.Buffer.concat([readBuffer, buffer]);
       webm.write(buffer);
       ogg.write(buffer);
       if (readBuffer.length >= probeSize) {
         stream.off('data', onData);
         stream.pause();
-        process.nextTick(onClose);
+        import_node_process.default.nextTick(onClose);
       }
     }, 'onData');
     stream.once('error', reject);
@@ -2094,6 +2122,5 @@ __name(demuxProbe, 'demuxProbe');
     getVoiceConnections,
     joinVoiceChannel,
     validateDiscordOpusHead,
-    Networking,
   });
 //# sourceMappingURL=index.js.map

@@ -13,6 +13,9 @@
 		"es2021": true,
 		"node": true
 	},
+	"ignorePatterns": [
+		"**/src/util/Voice.js"
+	],
 	"rules": {
 		"import/order": [
 			"error",

@@ -2,8 +2,9 @@
 
 const GuildChannel = require('./GuildChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const GuildTextThreadManager = require('../managers/GuildTextThreadManager');
+const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
-const ThreadManager = require('../managers/ThreadManager');
 
 /**
  * Represents a text-based guild channel on Discord.
@@ -21,10 +22,16 @@ class BaseGuildTextChannel extends GuildChannel {
     this.messages = new MessageManager(this);
 
     /**
-     * A manager of the threads belonging to this channel
-     * @type {ThreadManager}
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
      */
-    this.threads = new ThreadManager(this);
+    this.interactions = new InteractionManager(this);
+
+    /**
+     * A manager of the threads belonging to this channel
+     * @type {GuildTextThreadManager}
+     */
+    this.threads = new GuildTextThreadManager(this);
 
     /**
      * If the guild considers this channel NSFW
