@@ -829,7 +829,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
 
   public application: If<Ready, ClientApplication>;
   // Added
-  public setting: ClientSettingManager;
+  public settings: ClientSettingManager;
   public relationships: RelationshipManager;
   public updateCookie(): Promise<void>;
   public readonly callVoice?: VoiceConnection;
