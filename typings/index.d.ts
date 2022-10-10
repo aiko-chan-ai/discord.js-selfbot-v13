@@ -53,7 +53,6 @@ import {
   RESTPostAPIApplicationCommandsJSONBody,
   Snowflake,
   LocalizationMap,
-  SortOrderType,
 } from 'discord-api-types/v9';
 import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -97,6 +96,7 @@ import {
   GuildScheduledEventPrivacyLevels,
   HypeSquadType,
   VideoQualityModes,
+  SortOrderType,
 } from './enums';
 import {
   RawActivityData,
