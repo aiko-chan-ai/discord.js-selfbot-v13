@@ -54,7 +54,7 @@
     "@aikochan2k6/qrcode-terminal": "^0.12.1",
     "@discordjs/builders": "^1.2.0",
     "@discordjs/collection": "^1.1.0",
-    "@discordjs/voice": "^0.11.0",
+    "@discordjs/voice": "^0.13.0",
     "@sapphire/async-queue": "^1.5.0",
     "@sapphire/shapeshift": "^3.6.0",
     "@types/node-fetch": "^2.6.2",
