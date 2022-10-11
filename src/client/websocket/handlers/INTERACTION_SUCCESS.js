@@ -10,6 +10,7 @@ module.exports = (client, { d: data }) => {
   client.emit(Events.INTERACTION_SUCCESS, data);
   // Get channel data
   const cache = client._interactionCache.get(data.nonce);
+  if (!cache) return;
   const channel = cache.guildId
     ? client.guilds.cache.get(cache.guildId)?.channels.cache.get(cache.channelId)
     : client.channels.cache.get(cache.channelId);
