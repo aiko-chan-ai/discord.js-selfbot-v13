@@ -139,7 +139,7 @@ class ClientSettingManager extends BaseManager {
    * @private
    * @param {Object} data Raw Data to patch
    */
-  _patch(data) {
+  _patch(data = {}) {
     this.rawSetting = Object.assign(this.rawSetting, data);
     if ('locale' in data) {
       this.locale = localeSetting[data.locale];
