@@ -1,12 +1,10 @@
 'use strict';
 
 let ClientUser;
-const { VoiceConnection } = require('@discordjs/voice');
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
-const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
 let running = false;
 /**
  * Emitted whenever clientOptions.checkUpdate = false
@@ -65,15 +63,38 @@ module.exports = async (client, { d: data }, shard) => {
   checkUpdate(client);
 
   if (client.options.patchVoice && !running) {
-    /* eslint-disable */
-    VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
-    client.emit(
-      Events.DEBUG,
-      `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(
-        'VoiceConnection.prototype.configureNetworking',
-      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.11.0')}]`,
-    );
-    /* eslint-enable */
+    try {
+      const { VoiceConnection } = require('@discordjs/voice');
+      const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
+      /* eslint-disable */
+      VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
+      client.emit(
+        Events.DEBUG,
+        `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(
+          'VoiceConnection.prototype.configureNetworking',
+        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
+      );
+      /* eslint-enable */
+    } catch (e) {
+      client.emit(
+        Events.DEBUG,
+        `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
+          'VoiceConnection.prototype.configureNetworking',
+        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]\n${e.stack}`,
+      );
+      client.emit(
+        Events.ERROR,
+        `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
+          'VoiceConnection.prototype.configureNetworking',
+        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
+      );
+      client.emit(
+        Events.ERROR,
+        `${chalk.redBright('[Error]')} Please install ${chalk.bgMagentaBright(
+          '@discordjs/voice',
+        )} version ${chalk.redBright('v0.13.0')}`,
+      );
+    }
   }
 
   client.session_id = data.session_id;

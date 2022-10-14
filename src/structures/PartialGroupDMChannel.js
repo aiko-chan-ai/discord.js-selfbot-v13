@@ -311,31 +311,40 @@ class PartialGroupDMChannel extends Channel {
    */
   call(options = {}) {
     return new Promise((resolve, reject) => {
-      this.client.api
-        .channels(this.id)
-        .call.ring.post({
-          body: {
-            recipients: null,
-          },
-        })
-        .catch(e => {
-          console.error('Emit ring error:', e.message);
+      if (!this.client.options.patchVoice) {
+        reject(
+          new Error(
+            'VOICE_NOT_PATCHED',
+            'Enable voice patching in client options\nhttps://discordjs-self-v13.netlify.app/#/docs/docs/main/typedef/ClientOptions',
+          ),
+        );
+      } else {
+        this.client.api
+          .channels(this.id)
+          .call.ring.post({
+            body: {
+              recipients: null,
+            },
+          })
+          .catch(e => {
+            console.error('Emit ring error:', e.message);
+          });
+        const connection = joinVoiceChannel({
+          channelId: this.id,
+          guildId: null,
+          adapterCreator: this.voiceAdapterCreator,
+          selfDeaf: options.selfDeaf ?? false,
+          selfMute: options.selfMute ?? false,
         });
-      const connection = joinVoiceChannel({
-        channelId: this.id,
-        guildId: null,
-        adapterCreator: this.voiceAdapterCreator,
-        selfDeaf: options.selfDeaf ?? false,
-        selfMute: options.selfMute ?? false,
-      });
-      entersState(connection, VoiceConnectionStatus.Ready, 30000)
-        .then(connection => {
-          resolve(connection);
-        })
-        .catch(err => {
-          connection.destroy();
-          reject(err);
-        });
+        entersState(connection, VoiceConnectionStatus.Ready, 30000)
+          .then(connection => {
+            resolve(connection);
+          })
+          .catch(err => {
+            connection.destroy();
+            reject(err);
+          });
+      }
     });
   }
   /**
