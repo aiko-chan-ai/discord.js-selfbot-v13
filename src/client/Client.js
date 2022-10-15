@@ -3,7 +3,6 @@
 const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
-const { getVoiceConnection } = require('@discordjs/voice');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -301,6 +300,7 @@ class Client extends BaseClient {
    * @readonly
    */
   get callVoice() {
+    const { getVoiceConnection } = require('@discordjs/voice');
     return getVoiceConnection(null);
   }
 

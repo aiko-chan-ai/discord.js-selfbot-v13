@@ -1,10 +1,12 @@
 'use strict';
 
 let ClientUser;
+const { VoiceConnection } = require('@discordjs/voice');
 const axios = require('axios');
 const chalk = require('chalk');
 const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
+const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
 let running = false;
 /**
  * Emitted whenever clientOptions.checkUpdate = false
@@ -64,8 +66,6 @@ module.exports = async (client, { d: data }, shard) => {
 
   if (client.options.patchVoice && !running) {
     try {
-      const { VoiceConnection } = require('@discordjs/voice');
-      const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
       /* eslint-disable */
       VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
       client.emit(
