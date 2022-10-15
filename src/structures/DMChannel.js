@@ -1,7 +1,7 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-
+const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const InteractionManager = require('../managers/InteractionManager');
@@ -115,7 +115,6 @@ class DMChannel extends Channel {
    * @returns {Promise<VoiceConnection>}
    */
   call(options = {}) {
-    const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
     return new Promise((resolve, reject) => {
       if (!this.client.options.patchVoice) {
         reject(
