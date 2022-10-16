@@ -1,6 +1,6 @@
 'use strict';
 const axios = require('axios');
-const baseURL = 'https://sagiri-v3dot3.herokuapp.com/embed?';
+const baseURL = 'https://webembed.onrender.com/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
 const { RangeError } = require('../errors');
@@ -56,14 +56,14 @@ class WebEmbed {
 
     /**
      * Using Custom WebEmbed server ?
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/embed?
+     * @type {?string} https://webembed.onrender.com/embed?
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.baseURL = data.baseURL ?? baseURL;
 
     /**
      * Shorten API
-     * @type {?string} https://sagiri-v3dot3.herokuapp.com/short?url=
+     * @type {?string} https://webembed.onrender.com/short?url=
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.shortenAPI = data.shortenAPI;
@@ -165,8 +165,6 @@ class WebEmbed {
      * @typedef {Object} WebEmbedAuthor
      * @property {string} name The name of this author
      * @property {string} url URL of this author
-     * @property {string} iconURL URL of the icon for this author
-     * @property {string} proxyIconURL Proxied URL of the icon for this author
      */
 
     /**
