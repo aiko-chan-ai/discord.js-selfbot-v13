@@ -426,6 +426,19 @@ class TextBasedChannel {
    * channel.sendSlash('123456789012345678', 'embed title', 'description', 'author', '#00ff00')
    */
   async sendSlash(bot, commandString, ...args) {
+    const perms = this.permissionsFor(this.client.user);
+    if (!perms.has('SEND_MESSAGES')) {
+      throw new Error(
+        'INTERACTION_SEND_FAILURE',
+        `Cannot send Slash to ${this.toString()} due to missing SEND_MESSAGES permission`,
+      );
+    }
+    if (!perms.has('USE_APPLICATION_COMMANDS')) {
+      throw new Error(
+        'INTERACTION_SEND_FAILURE',
+        `Cannot send Slash to ${this.toString()} due to missing USE_APPLICATION_COMMANDS permission`,
+      );
+    }
     args = args.flat(2);
     const cmd = commandString.trim().split(' ');
     // Validate CommandName

@@ -21,6 +21,7 @@ class SessionManager extends CachedManager {
         .get()
         .then(data => {
           const allData = data.user_sessions;
+          this.cache.clear();
           for (const session of allData) {
             this._add(new Session(this.client, session), true, { id: session.id_hash });
           }
