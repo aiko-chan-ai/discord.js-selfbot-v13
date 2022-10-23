@@ -175,7 +175,21 @@ class GuildMemberManager extends CachedManager {
    *   .catch(console.error);
    */
   fetch(options) {
-    if (!options) return this._fetchMany();
+    if (!options || !options?.query) {
+      // Check Permissions
+      if (
+        this.guild.me.permissions.has('KICK_MEMBERS') ||
+        this.guild.me.permissions.has('BAN_MEMBERS') ||
+        this.guild.me.permissions.has('MANAGE_ROLES')
+      ) {
+        return this._fetchMany();
+      } else {
+        return this.fetchBruteforce({
+          delay: 50,
+          skipWarn: true,
+        });
+      }
+    }
     const user = this.client.users.resolveId(options);
     if (user) return this._fetchSingle({ user, cache: true });
     if (options.user) {
@@ -443,86 +457,21 @@ class GuildMemberManager extends CachedManager {
    */
   fetchBruteforce(options = {}) {
     // eslint-disable-next-line
-    let dictionary = [
-      ' ',
-      '!',
-      '"',
-      '#',
-      '$',
-      '%',
-      '&',
-      "'",
-      '(',
-      ')',
-      '*',
-      '+',
-      ',',
-      '-',
-      '.',
-      '/',
-      '0',
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      ':',
-      ';',
-      '<',
-      '=',
-      '>',
-      '?',
-      '@',
-      '[',
-      ']',
-      '^',
-      '_',
-      '`',
-      'a',
-      'b',
-      'c',
-      'd',
-      'e',
-      'f',
-      'g',
-      'h',
-      'i',
-      'j',
-      'k',
-      'l',
-      'm',
-      'n',
-      'o',
-      'p',
-      'q',
-      'r',
-      's',
-      't',
-      'u',
-      'v',
-      'w',
-      'x',
-      'y',
-      'z',
-      '{',
-      '|',
-      '}',
-      '~',
-    ];
+    let dictionary = ' !"#$%&\'()*+,-./0123456789:;<=>?@[]^_`abcdefghijklmnopqrstuvwxyz{|}~'.split('');
     let limit = 100;
     let delay = 500;
-    if (options.dictionary) dictionary = options.dictionary;
-    if (options.limit) limit = options.limit;
-    if (options.delay) delay = options.delay;
+    if (options?.dictionary) dictionary = options?.dictionary;
+    if (options?.limit) limit = options?.limit;
+    if (options?.delay) delay = options?.delay;
     if (!Array.isArray(dictionary)) throw new TypeError('INVALID_TYPE', 'dictionary', 'Array', true);
     if (typeof limit !== 'number') throw new TypeError('INVALID_TYPE', 'limit', 'Number');
     if (limit < 1 || limit > 100) throw new RangeError('INVALID_RANGE_QUERY_MEMBER');
     if (typeof delay !== 'number') throw new TypeError('INVALID_TYPE', 'delay', 'Number');
-    console.warn(`[WARNING] Gateway Rate Limit Warning: Sending ${dictionary.length} Requests`);
+    if (delay < 500 && !options?.skipWarn) {
+      console.warn(
+        `[WARNING] GuildMemberManager#fetchBruteforce: delay is less than 500ms, this may cause rate limits.`,
+      );
+    }
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       for (const query of dictionary) {
