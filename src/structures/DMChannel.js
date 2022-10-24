@@ -124,16 +124,13 @@ class DMChannel extends Channel {
           ),
         );
       } else {
-        this.client.api
-          .channels(this.id)
-          .call.ring.post({
-            data: {
+        if (options?.ring) {
+          this.client.api.channels(this.id).call.ring.post({
+            body: {
               recipients: null,
             },
-          })
-          .catch(e => {
-            console.error('Emit ring error:', e.message);
           });
+        }
         const connection = joinVoiceChannel({
           channelId: this.id,
           guildId: null,

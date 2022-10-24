@@ -1198,11 +1198,17 @@ export class DMChannel extends TextBasedChannelMixin(Channel, [
   public flags: Readonly<ChannelFlags>;
   public fetch(force?: boolean): Promise<this>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
-  public call(options?: object): Promise<VoiceConnection>;
+  public call(options?: CallOptions): Promise<VoiceConnection>;
   public sync(): undefined;
   public readonly shard: WebSocketShard;
   public readonly voiceUsers: Collection<Snowflake, User>;
   public readonly voiceConnection?: VoiceConnection;
+}
+
+export interface CallOptions {
+  selfDeaf?: boolean;
+  selfMute?: boolean;
+  ring?: boolean;
 }
 
 export class Emoji extends Base {
@@ -2380,7 +2386,7 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   public delete(slient?: boolean): Promise<this>;
   public setOwner(user: UserResolvable): Promise<PartialGroupDMChannel>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
-  public call(options?: object): Promise<VoiceConnection>;
+  public call(options?: CallOptions): Promise<VoiceConnection>;
   public sync(): undefined;
   public readonly shard: WebSocketShard;
   public readonly voiceUsers: Collection<Snowflake, User>;

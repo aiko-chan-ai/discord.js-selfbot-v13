@@ -301,6 +301,7 @@ class PartialGroupDMChannel extends Channel {
    * @typedef {Object} CallOptions
    * @property {boolean} [selfDeaf] Whether to deafen yourself
    * @property {boolean} [selfMute] Whether to mute yourself
+   * @property {boolean} [ring=true] Emit a ringtone
    */
   // Testing feature: Call
   // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
@@ -319,16 +320,13 @@ class PartialGroupDMChannel extends Channel {
           ),
         );
       } else {
-        this.client.api
-          .channels(this.id)
-          .call.ring.post({
+        if (options?.ring) {
+          this.client.api.channels(this.id).call.ring.post({
             body: {
               recipients: null,
             },
-          })
-          .catch(e => {
-            console.error('Emit ring error:', e.message);
           });
+        }
         const connection = joinVoiceChannel({
           channelId: this.id,
           guildId: null,
