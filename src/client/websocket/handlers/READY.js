@@ -112,6 +112,8 @@ module.exports = async (client, { d: data }, shard) => {
 
   client.user.connectedAccounts = data.connected_accounts ?? [];
 
+  client.relationships._setup(data.relationships);
+
   client.user._patchNote(data.notes);
 
   const syncTime = Date.now();
@@ -158,8 +160,6 @@ module.exports = async (client, { d: data }, shard) => {
       },
     });
   }
-
-  client.relationships._setup(data.relationships);
 
   shard.checkReady();
 };

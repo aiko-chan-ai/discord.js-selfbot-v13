@@ -311,6 +311,12 @@ class PartialGroupDMChannel extends Channel {
    * @returns {Promise<VoiceConnection>}
    */
   call(options = {}) {
+    options = Object.assign(
+      {
+        ring: true,
+      },
+      options || {},
+    );
     return new Promise((resolve, reject) => {
       if (!this.client.options.patchVoice) {
         reject(
@@ -320,7 +326,7 @@ class PartialGroupDMChannel extends Channel {
           ),
         );
       } else {
-        if (options?.ring) {
+        if (options.ring) {
           this.client.api.channels(this.id).call.ring.post({
             body: {
               recipients: null,

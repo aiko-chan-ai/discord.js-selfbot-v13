@@ -111,20 +111,25 @@ class RelationshipManager {
 
   /**
    * Obtains a user from Discord, or the user cache if it's already available.
-   * @param {UserResolvable} user The user to fetch
+   * @param {UserResolvable} [user] The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @returns {Promise<RelationshipTypes>} Enums
+   * @returns {Promise<RelationshipTypes|RelationshipManager>}
    */
   async fetch(user, { force = false } = {}) {
-    const id = this.resolveId(user);
-    if (!force) {
-      const existing = this.cache.get(id);
-      if (existing && !existing.partial) return existing;
+    if (user) {
+      const id = this.resolveId(user);
+      if (!force) {
+        const existing = this.cache.get(id);
+        if (existing && !existing.partial) return existing;
+      }
+      const data = await this.client.api.users['@me'].relationships.get();
+      await this._setup(data);
+      return this.cache.get(id);
+    } else {
+      const data = await this.client.api.users['@me'].relationships.get();
+      await this._setup(data);
+      return this;
     }
-
-    const data = await this.client.api.users['@me'].relationships.get();
-    await this._setup(data);
-    return this.cache.get(id);
   }
 
   /**
