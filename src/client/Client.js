@@ -466,6 +466,8 @@ class Client extends BaseClient {
         autoLogin: false,
         debug: false,
         failIfError: false,
+        userAgent: this.options.http.headers['User-Agent'],
+        wsProperties: this.options.ws.properties,
       });
       // Step 2: Add event
       QR.on('ready', async (_, url) => {
