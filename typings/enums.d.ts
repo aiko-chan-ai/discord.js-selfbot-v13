@@ -26,6 +26,7 @@ export const enum NitroType {
   NONE = 0,
   NITRO_CLASSIC = 1,
   NITRO_BOOST = 2,
+  NITRO_BASIC = 3,
 }
 
 export const enum RelationshipTypes {

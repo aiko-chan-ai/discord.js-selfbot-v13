@@ -51,13 +51,14 @@ exports.stickerAnimationMode = createEnum(['ALWAYS', 'INTERACTION', 'NEVER']);
 /**
  * All available nitro types:
  * * `NONE` - None
- * * `CLASSIC` - Nitro Classic
+ * * `NITRO_CLASSIC` - Nitro Classic
  * * `NITRO_BOOST` - Nitro
- * * `UNKNOWN` - New nitro (maybe Nitro Lite / Basic ???)
+ * * `NITRO_BASIC` - Nitro Basic
+ * * `UNKNOWN` - Unknown
  * @typedef {string} NitroType
  * @see {@link https://discord.com/developers/docs/resources/user#user-object-premium-types}
  */
-exports.NitroType = createEnum(['NONE', 'NITRO_CLASSIC', 'NITRO_BOOST']);
+exports.NitroType = createEnum(['NONE', 'NITRO_CLASSIC', 'NITRO_BOOST', 'NITRO_BASIC']);
 
 /**
  * All available HypeSquad types:
