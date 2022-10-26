@@ -96,7 +96,7 @@ class PartialGroupDMChannel extends Channel {
    */
   _patch(data) {
     super._patch(data);
-    if ('recipients' in data) {
+    if ('recipients' in data && Array.isArray(data.recipients)) {
       this._recipients = data.recipients;
     }
     if ('last_pin_timestamp' in data) {

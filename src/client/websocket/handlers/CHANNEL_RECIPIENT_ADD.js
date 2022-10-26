@@ -9,6 +9,7 @@ module.exports = (client, packet) => {
    */
   const channel = client.channels.cache.get(packet.d.channel_id);
   if (!channel) return;
+  if (!channel._recipients) channel._recipients = [];
   channel._recipients.push(packet.d.user);
   const user = client.users._add(packet.d.user);
   client.emit(Events.CHANNEL_RECIPIENT_ADD, channel, user);

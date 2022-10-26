@@ -1517,6 +1517,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public toJSON(): unknown;
   public toString(): MemberMention;
   public valueOf(): string;
+  public setThemeColors(primary?: ColorResolvable, accent?: ColorResolvable): GuildMember;
 }
 
 export class GuildPreview extends Base {

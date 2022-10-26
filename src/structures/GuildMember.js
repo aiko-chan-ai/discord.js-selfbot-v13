@@ -7,6 +7,7 @@ const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const GuildMemberRoleManager = require('../managers/GuildMemberRoleManager');
 const Permissions = require('../util/Permissions');
+const Util = require('../util/Util');
 
 /**
  * @type {WeakSet<GuildMember>}
@@ -450,6 +451,34 @@ class GuildMember extends Base {
       throw new Error('NITRO_BOOST_REQUIRED', 'bio');
     }
     return this.edit({ bio });
+  }
+
+  /**
+   * Change Theme color
+   * @param {ColorResolvable} primary The primary color of the user's profile
+   * @param {ColorResolvable} accent The accent color of the user's profile
+   * @returns {Promise<GuildMember>}
+   */
+  async setThemeColors(primary, accent) {
+    if (this.user.id !== this.client.user.id) {
+      throw new Error('ONLY_ME');
+    }
+    if (!primary || !accent) throw new Error('PRIMARY_COLOR or ACCENT_COLOR are required.');
+    // Check nitro
+    if (this.nitroType !== 'NITRO_BOOST') {
+      throw new Error('NITRO_BOOST_REQUIRED', 'themeColors');
+    }
+    primary = Util.resolveColor(primary) || this.themeColors ? this.themeColors[0] : 0;
+    accent = Util.resolveColor(accent) || this.themeColors ? this.themeColors[1] : 0;
+    const data_ = await this.client.api.guilds[this.guild.id].profile['@me'].patch({
+      data: {
+        theme_colors: [primary, accent],
+      },
+    });
+    this._ProfilePatch({
+      guild_member_profile: data_,
+    });
+    return this;
   }
 
   /**
