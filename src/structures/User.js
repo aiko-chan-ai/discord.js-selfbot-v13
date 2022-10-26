@@ -233,10 +233,6 @@ class User extends Base {
       this.premiumGuildSince = date.getTime();
     }
 
-    if ('bio' in data.user_profile || 'bio' in data.user) {
-      this.bio = data.user_profile.bio || data.user.bio;
-    }
-
     if ('premium_type' in data) {
       const nitro = NitroType[data.premium_type ?? 0];
       /**
@@ -244,6 +240,16 @@ class User extends Base {
        * @type {NitroType}
        */
       this.nitroType = nitro ?? `UNKNOWN_TYPE_${data.premium_type}`;
+    }
+
+    if ('user_profile' in data) {
+      this.bio = data.user_profile.bio;
+      /**
+       * The user's theme colors (Profile theme) [Primary, Accent]
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?Array<number>}
+       */
+      this.themeColors = data.user_profile.theme_colors;
     }
 
     if ('guild_member_profile' in data && 'guild_member' in data) {
@@ -440,6 +446,16 @@ class User extends Base {
           reject(e);
         });
     });
+  }
+
+  /**
+   * The hexadecimal version of the user theme color, with a leading hash [Primary, Accent]
+   * <info>The user must be force fetched for this property to be present or be updated</info>
+   * @type {?Array<string>}
+   * @readonly
+   */
+  get hexThemeColor() {
+    return this.themeColors?.map(c => `#${c.toString(16).padStart(6, '0')}`) || null;
   }
 
   /**

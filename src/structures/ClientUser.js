@@ -5,6 +5,7 @@ const Invite = require('./Invite');
 const { Message } = require('./Message');
 const User = require('./User');
 const { Util } = require('..');
+const { Error: Error_ } = require('../errors');
 const { Opcodes, NitroType, HypeSquadType } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const PurchasedFlags = require('../util/PurchasedFlags');
@@ -486,6 +487,31 @@ class ClientUser extends User {
       collection.set(msg.id, new Message(this.client, msg));
     }
     return collection;
+  }
+
+  /**
+   * Change Theme color
+   * @param {ColorResolvable} primary The primary color of the user's profile
+   * @param {ColorResolvable} accent The accent color of the user's profile
+   * @returns {Promise<ClientUser>}
+   */
+  async setThemeColors(primary, accent) {
+    if (!primary || !accent) throw new Error('PRIMARY_COLOR or ACCENT_COLOR are required.');
+    // Check nitro
+    if (this.nitroType !== 'NITRO_BOOST') {
+      throw new Error_('NITRO_BOOST_REQUIRED', 'themeColors');
+    }
+    primary = Util.resolveColor(primary) || this.themeColors[0];
+    accent = Util.resolveColor(accent) || this.themeColors[1];
+    const data_ = await this.client.api.users['@me'].profile.patch({
+      data: {
+        theme_colors: [primary, accent],
+      },
+    });
+    this._ProfilePatch({
+      user_profile: data_,
+    });
+    return this;
   }
 }
 

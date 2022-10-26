@@ -122,6 +122,24 @@ class GuildMember extends Base {
        */
       this.bio = data.bio;
     }
+    if ('theme_colors' in data) {
+      /**
+       * The member's theme colors (Profile theme) [Primary, Accent]
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?Array<number>}
+       */
+      this.themeColors = data.theme_colors;
+    }
+  }
+
+  /**
+   * The hexadecimal version of the user theme color, with a leading hash [Primary, Accent]
+   * <info>The user must be force fetched for this property to be present or be updated</info>
+   * @type {?Array<string>}
+   * @readonly
+   */
+  get hexThemeColor() {
+    return this.themeColors?.map(c => `#${c.toString(16).padStart(6, '0')}`) || null;
   }
 
   _clone() {
@@ -538,6 +556,14 @@ class GuildMember extends Base {
       (this._roles === member._roles ||
         (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i])))
     );
+  }
+
+  /**
+   * Get profile guildMember
+   * @returns {Promise<User>}
+   */
+  getProfile() {
+    return this.user.getProfile(this.guild.id);
   }
 
   /**

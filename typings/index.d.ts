@@ -206,6 +206,8 @@ export interface DiscordAuthWebsocketOptions {
   autoLogin: boolean;
   failIfError: boolean;
   generateQR: boolean;
+  userAgent?: string;
+  wsProperties?: object;
 }
 // RPC by aiko-chan-ai
 export interface RichButton {
@@ -928,6 +930,7 @@ export class ClientUser extends User {
   public verified: boolean;
   public notes: Collection<Snowflake, string>;
   public friendNicknames: Collection<Snowflake, string>;
+  public setThemeColors(primary?: ColorResolvable, accent?: ColorResolvable): ClientUser;
   public edit(data: ClientUserEditData): Promise<this>;
   public setActivity(options?: ActivityOptions): ClientPresence;
   public setActivity(name: string, options?: ActivityOptions): ClientPresence;
@@ -965,7 +968,9 @@ export class ClientUser extends User {
   public readonly nsfwAllowed: boolean;
   public readonly emailAddress: string;
 }
-type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST';
+
+type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST' | 'NITRO_BASIC';
+
 export class Options extends null {
   private constructor();
   public static defaultMakeCacheSettings: CacheWithLimitsOptions;
@@ -1487,6 +1492,8 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public readonly roles: GuildMemberRoleManager;
   public user: User;
   public readonly voice: VoiceState;
+  public themeColors?: [number, number];
+  public readonly hexThemeColor: [string, string] | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public ban(options?: BanOptions): Promise<GuildMember>;
   public disableCommunicationUntil(timeout: DateResolvable | null, reason?: string): Promise<GuildMember>;
@@ -1506,6 +1513,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<GuildMember>;
   public setBanner(banner: BufferResolvable | Base64Resolvable | null): Promise<GuildMember>;
   public setAboutMe(bio: string | null): Promise<GuildMember>;
+  public getProfile(): Promise<User>;
   public toJSON(): unknown;
   public toString(): MemberMention;
   public valueOf(): string;
@@ -2934,6 +2942,8 @@ export class ThreadChannel extends TextBasedChannelMixin(Channel, ['fetchWebhook
   public setLocked(locked?: boolean, reason?: string): Promise<ThreadChannel>;
   public setName(name: string, reason?: string): Promise<ThreadChannel>;
   public setAppliedTags(appliedTags: Snowflake[], reason?: string): Promise<ThreadChannel>;
+  public pin(reason?: string): Promise<ThreadChannel>;
+  public unpin(reason?: string): Promise<ThreadChannel>;
 }
 
 export class ThreadMember extends Base {
@@ -3016,6 +3026,8 @@ export class User extends PartialTextBasedChannel(Base) {
   public setNickname(nickname: string | null): Promise<boolean>;
   public toString(): UserMention;
   public ring(): Promise<boolean>;
+  public themeColors?: [number, number];
+  public readonly hexThemeColor: [string, string] | null;
 }
 
 export class UserContextMenuInteraction<Cached extends CacheType = CacheType> extends ContextMenuInteraction<Cached> {
@@ -6703,6 +6715,7 @@ export interface ThreadEditData {
   locked?: boolean;
   invitable?: boolean;
   threadName?: string;
+  flags?: ChannelFlagsResolvable;
 }
 
 export type ThreadMemberFlagsString = '';
