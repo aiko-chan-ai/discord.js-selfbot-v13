@@ -132,7 +132,7 @@ class DMChannel extends Channel {
       } else {
         if (options.ring) {
           this.client.api.channels(this.id).call.ring.post({
-            body: {
+            data: {
               recipients: null,
             },
           });
