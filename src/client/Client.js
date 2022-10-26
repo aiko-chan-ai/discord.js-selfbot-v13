@@ -402,6 +402,8 @@ class Client extends BaseClient {
   QRLogin(debug = false) {
     const QR = new DiscordAuthWebsocket({
       autoLogin: true,
+      userAgent: this.options.http.headers['User-Agent'],
+      wsProperties: this.options.ws.properties,
       debug,
     });
     this.emit(Events.DEBUG, `Preparing to connect to the gateway (QR Login)`, QR);
