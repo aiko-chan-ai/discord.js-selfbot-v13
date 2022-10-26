@@ -3,9 +3,9 @@
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { RangeError } = require('../errors');
-const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 const ThreadMemberManager = require('../managers/ThreadMemberManager');
+const ChannelFlags = require('../util/ChannelFlags');
 const Permissions = require('../util/Permissions');
 const { resolveAutoArchiveMaxLimit } = require('../util/Util');
 
@@ -35,12 +35,6 @@ class ThreadChannel extends Channel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
-
-    /**
-     * A manager of the interactions sent to this channel
-     * @type {InteractionManager}
-     */
-    this.interactions = new InteractionManager(this);
 
     /**
      * A manager of the members that are part of this thread
@@ -329,6 +323,7 @@ class ThreadChannel extends Channel {
    * @property {number} [rateLimitPerUser] The rate limit per user (slowmode) for the thread in seconds
    * @property {boolean} [locked] Whether the thread is locked
    * @property {boolean} [invitable] Whether non-moderators can add other non-moderators to a thread
+   * @property {ChannelFlagsResolvable} [flags] The flags to set on the channel
    * <info>Can only be edited on `GUILD_PRIVATE_THREAD`</info>
    */
 
@@ -356,21 +351,12 @@ class ThreadChannel extends Channel {
         locked: data.locked,
         invitable: this.type === 'GUILD_PRIVATE_THREAD' ? data.invitable : undefined,
         applied_tags: data.appliedTags,
+        flags: 'flags' in data ? ChannelFlags.resolve(data.flags) : undefined,
       },
       reason,
     });
 
     return this.client.actions.ChannelUpdate.handle(newData).updated;
-  }
-
-  /**
-   * Set the applied tags for this channel (only applicable to forum threads)
-   * @param {Snowflake[]} appliedTags The tags to set for this channel
-   * @param {string} [reason] Reason for changing the thread's applied tags
-   * @returns {Promise<GuildForumThreadChannel>}
-   */
-  setAppliedTags(appliedTags, reason) {
-    return this.edit({ appliedTags, reason });
   }
 
   /**
@@ -457,6 +443,34 @@ class ThreadChannel extends Channel {
    */
   setRateLimitPerUser(rateLimitPerUser, reason) {
     return this.edit({ rateLimitPerUser }, reason);
+  }
+
+  /**
+   * Pins this thread from the forum channel.
+   * @param {string} [reason] Reason for pinning
+   * @returns {Promise<ThreadChannel>}
+   */
+  pin(reason) {
+    return this.edit({ flags: this.flags.add(ChannelFlags.FLAGS.PINNED), reason });
+  }
+
+  /**
+   * Unpins this thread from the forum channel.
+   * @param {string} [reason] Reason for unpinning
+   * @returns {Promise<ThreadChannel>}
+   */
+  unpin(reason) {
+    return this.edit({ flags: this.flags.remove(ChannelFlags.FLAGS.PINNED), reason });
+  }
+
+  /**
+   * Set the applied tags for this channel (only applicable to forum threads)
+   * @param {Snowflake[]} appliedTags The tags to set for this channel
+   * @param {string} [reason] Reason for changing the thread's applied tags
+   * @returns {Promise<GuildForumThreadChannel>}
+   */
+  setAppliedTags(appliedTags, reason) {
+    return this.edit({ appliedTags, reason });
   }
 
   /**
