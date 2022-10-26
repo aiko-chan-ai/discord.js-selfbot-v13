@@ -51,6 +51,8 @@ const Event = {
  * @property {?boolean} [failIfError=true] Throw error ?
  * @property {?boolean} [generateQR=true] Create QR Code ?
  * @property {?number} [apiVersion=9] API Version
+ * @property {?string} [userAgent] User Agent
+ * @property {?Object.<string,string>} [wsProperties]  Web Socket Properties
  */
 
 /**
@@ -119,6 +121,8 @@ class DiscordAuthWebsocket extends EventEmitter {
       failIfError: true,
       generateQR: true,
       apiVersion: 9,
+      userAgent: randomUA(),
+      wsProperties: defaultClientOptions.ws.properties,
     };
     if (typeof options == 'object') {
       if (typeof options.debug == 'boolean') this.options.debug = options.debug;
@@ -127,13 +131,15 @@ class DiscordAuthWebsocket extends EventEmitter {
       if (typeof options.failIfError == 'boolean') this.options.failIfError = options.failIfError;
       if (typeof options.generateQR == 'boolean') this.options.generateQR = options.generateQR;
       if (typeof options.apiVersion == 'number') this.options.apiVersion = options.apiVersion;
+      if (typeof options.userAgent == 'string') this.options.userAgent = options.userAgent;
+      if (typeof options.wsProperties == 'object') this.options.wsProperties = options.wsProperties;
     }
   }
   _createWebSocket(url) {
     this.ws = new WebSocket(url, {
       headers: {
         Origin: 'https://discord.com',
-        'User-Agent': randomUA(),
+        'User-Agent': this.options.userAgent,
       },
     });
     this._handleWebSocket();
@@ -387,20 +393,13 @@ class DiscordAuthWebsocket extends EventEmitter {
           'Accept-Language': 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
-          'Sec-Ch-Ua': `"Not A;Brand";v="99", "Chromium";v="${
-            defaultClientOptions.ws.properties.browser_version.split('.')[0]
-          }", "Google Chrome";v="${defaultClientOptions.ws.properties.browser_version.split('.')[0]}`,
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
           'Sec-Fetch-Dest': 'empty',
           'Sec-Fetch-Mode': 'cors',
           'Sec-Fetch-Site': 'same-origin',
           'X-Debug-Options': 'bugReporterEnabled',
-          'X-Super-Properties': `${Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'ascii').toString(
-            'base64',
-          )}`,
+          'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString('base64')}`,
           'X-Discord-Locale': 'en-US',
-          'User-Agent': randomUA(),
+          'User-Agent': this.options.userAgent,
         },
       },
     );

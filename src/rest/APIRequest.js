@@ -52,11 +52,6 @@ class APIRequest {
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
-      'Sec-Ch-Ua': `"Not A;Brand";v="99", "Chromium";v="${
-        this.client.options.ws.properties.browser_version.split('.')[0]
-      }", "Google Chrome";v="${this.client.options.ws.properties.browser_version.split('.')[0]}`,
-      'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"Windows"',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
