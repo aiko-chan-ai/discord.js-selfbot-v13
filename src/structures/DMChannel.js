@@ -61,6 +61,51 @@ class DMChannel extends Channel {
     } else {
       this.lastPinTimestamp ??= null;
     }
+
+    if ('is_message_request' in data) {
+      /**
+       * Whether the channel is a message request
+       * @type {boolean}
+       */
+      this.messageRequest = data.is_message_request;
+    }
+
+    if ('is_message_request_timestamp' in data) {
+      /**
+       * The timestamp when the message request was created
+       * @type {?number}
+       */
+      this.messageRequestTimestamp = new Date(data.is_message_request_timestamp).getTime();
+    }
+  }
+
+  /**
+   * Accept this DMChannel.
+   * @returns {Promise<DMChannel>}
+   */
+  async acceptMessageRequest() {
+    if (!this.messageRequest) {
+      throw new Error('NOT_MESSAGE_REQUEST', 'This channel is not a message request');
+    }
+    const c = await this.client.api.channels[this.id].recipients['@me'].put({
+      data: {
+        consent_status: 2,
+      },
+    });
+    this.messageRequest = false;
+    return this.client.channels._add(c);
+  }
+
+  /**
+   * Cancel this DMChannel.
+   * @returns {Promise<DMChannel>}
+   */
+  async cancelMessageRequest() {
+    if (!this.messageRequest) {
+      throw new Error('NOT_MESSAGE_REQUEST', 'This channel is not a message request');
+    }
+    await this.client.api.channels[this.id].recipients['@me'].delete();
+    return this;
   }
 
   /**

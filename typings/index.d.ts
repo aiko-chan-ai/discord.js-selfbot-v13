@@ -2384,6 +2384,10 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   public owner: User | null;
   public ownerId: Snowflake | null;
   public flags: null;
+  public messageRequest: boolean | undefined;
+  public messageRequestTimestamp: Date | undefined;
+  public acceptMessageRequest(): Promise<this>;
+  public cancelMessageRequest(): Promise<this>;
   public iconURL(options?: StaticImageURLOptions): string | null;
   public addMember(user: User): Promise<PartialGroupDMChannel>;
   public removeMember(user: User): Promise<PartialGroupDMChannel>;
