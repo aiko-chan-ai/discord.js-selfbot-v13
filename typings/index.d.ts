@@ -1300,7 +1300,6 @@ export class Guild extends AnonymousGuild {
   public fetchAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'>(
     options?: GuildAuditLogsFetchOptions<T>,
   ): Promise<GuildAuditLogs<T>>;
-  public searchInteraction(options?: guildSearchInteraction): Promise<Collection<Snowflake, ApplicationCommand>>;
   public fetchIntegrations(): Promise<Collection<Snowflake | string, Integration>>;
   public fetchOwner(options?: BaseFetchOptions): Promise<GuildMember>;
   public fetchPreview(): Promise<GuildPreview>;
@@ -4132,6 +4131,10 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
   sendTyping(): Promise<void>;
   sendSlash(bot: UserResolvable, commandName: string, ...args: any): Promise<InteractionResponse>;
+  searchInteraction(
+    applicationId: ApplicationCommandTypes,
+    type?: ApplicationCommandTypes,
+  ): Promise<Object>;
 }
 
 export function PartialWebhookMixin<T>(Base?: Constructable<T>): Constructable<T & PartialWebhookFields>;
@@ -4377,15 +4380,6 @@ export interface ApplicationAsset {
   name: string;
   id: Snowflake;
   type: 'BIG' | 'SMALL';
-}
-
-// copy
-export interface guildSearchInteraction {
-  type?: ApplicationCommandTypes;
-  query?: string | null | undefined;
-  limit?: number;
-  offset?: number;
-  botID?: Snowflake;
 }
 
 export interface ClientEvents extends BaseClientEvents {

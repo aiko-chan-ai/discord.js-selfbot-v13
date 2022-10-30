@@ -47,17 +47,6 @@ await message.contextMenu(botID, commandName);
 ```
 </details>
 <details open>
-<summary>Issue ?</summary>
-
-- It has some minor bugs.
-```js
-DiscordAPIError [20012] You are not authorized to perform this action on this application
-Fix it: creating 1 DMs with bot
-In this way, all Slash commands can be obtained
-```
-- With Gateway guild.searchInteraction() (using gateway)
-- With REST: Working ! [TextBasedChannel.sendSlash()].
-</details>
 
 ## MessageEmbed ?
 - Because Discord has removed the ability to send Embeds in its API, that means MessageEmbed is unusable. But I have created a constructor that uses oEmbed with help [from this site](https://www.reddit.com/r/discordapp/comments/82p8i6/a_basic_tutorial_on_how_to_get_the_most_out_of/)

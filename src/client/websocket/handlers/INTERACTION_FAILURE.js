@@ -11,6 +11,7 @@ module.exports = (client, { d: data }) => {
   client.emit('interactionResponse', {
     status: false,
     metadata: data,
+    error: 'No response from bot',
   });
   // Delete cache
   client._interactionCache.delete(data.nonce);

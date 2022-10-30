@@ -149,6 +149,7 @@ class DMChannel extends Channel {
   createMessageComponentCollector() {}
   awaitMessageComponent() {}
   sendSlash() {}
+  searchInteraction() {}
   // Doesn't work on DM channels; bulkDelete() {}
   // Doesn't work on DM channels; setRateLimitPerUser() {}
   // Doesn't work on DM channels; setNSFW() {}

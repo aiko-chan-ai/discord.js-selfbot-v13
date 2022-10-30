@@ -408,6 +408,34 @@ class TextBasedChannel {
   }
 
   /**
+   * Search Slash Command (return raw data)
+   * @param {Snowflake} applicationId Application ID
+   * @param {?ApplicationCommandType} type Command Type
+   * @returns {Object}
+   */
+  searchInteraction(applicationId, type = 'CHAT_INPUT') {
+    switch (type) {
+      case 'USER':
+      case 2:
+        type = 2;
+        break;
+      case 'MESSAGE':
+      case 3:
+        type = 3;
+        break;
+      default:
+        type = 1;
+        break;
+    }
+    return this.client.api.channels[this.id]['application-commands'].search.get({
+      query: {
+        type,
+        application_id: applicationId,
+      },
+    });
+  }
+
+  /**
    * Send Slash to this channel
    * @param {UserResolvable} bot Bot user
    * @param {string} commandString Command name (and sub / group formats)
@@ -459,15 +487,7 @@ class TextBasedChannel {
     }
     if (user._partial) await user.getProfile().catch(() => {});
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    // Using API to search (without opcode ~ehehe)
-    // https://discord.com/api/v9/channels/id/application-commands/search?type=1&application_id=161660517914509312
-    const query = {
-      type: 1, // Slash commands
-      application_id: user.application?.id ?? user.id,
-    };
-    const data = await this.client.api.channels[this.id]['application-commands'].search.get({
-      query,
-    });
+    const data = await this.searchInteraction(user.application?.id ?? user.id, 'CHAT_INPUT');
     for (const command of data.application_commands) {
       if (user.id == command.application_id || user.application.id == command.application_id) {
         user.application?.commands?._add(command, true);
@@ -515,6 +535,7 @@ class TextBasedChannel {
         'setRateLimitPerUser',
         'setNSFW',
         'sendSlash',
+        'searchInteraction',
       );
     }
     for (const prop of props) {

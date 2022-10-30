@@ -1,6 +1,6 @@
 # Slash command demo 
 - Support Autocomplete feature (half)
-- Unused `guild.searchInteraction()` (Use only if not working properly)
+- Unused `guild.searchInteraction()` (Deleted)
 
 # <strong>BREAKING CHANGE: Using Slash Command (Sub Command / Sub Group Command) will not accept subCommand argument in args. That means Command Name needs to be changed same as Discord Client</strong>
 

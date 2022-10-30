@@ -273,8 +273,15 @@ class MessageSelectMenu extends BaseMessageComponent {
         clearTimeout(timeout);
         message.client.removeListener('interactionResponse', handler);
         message.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
+        if (data.status) {
+          resolve(data.metadata);
+        } else {
+          reject(
+            new Error('INTERACTION_ERROR', {
+              cause: data,
+            }),
+          );
+        }
       };
       const timeout = setTimeout(() => {
         message.client.removeListener('interactionResponse', handler);

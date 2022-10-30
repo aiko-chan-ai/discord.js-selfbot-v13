@@ -1,7 +1,6 @@
 'use strict';
 
 const process = require('node:process');
-const setTimeout = require('node:timers').setTimeout;
 const { Collection } = require('@discordjs/collection');
 const AnonymousGuild = require('./AnonymousGuild');
 const GuildAuditLogs = require('./GuildAuditLogs');
@@ -32,12 +31,8 @@ const {
   Status,
   MFALevels,
   PremiumTiers,
-  Opcodes,
-  Events,
-  ApplicationCommandTypes,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
 const Util = require('../util/Util');
 
@@ -623,67 +618,6 @@ class Guild extends AnonymousGuild {
       default:
         return 96_000;
     }
-  }
-
-  /**
-   * Options for guildSearchInteraction
-   * @typedef {Object} GuildSearchInteractionOptions
-   * @property {string} query Command name
-   * @property {?number} [limit=10] Maximum number of results
-   * @property {?number} [offset=0] Only return entries for actions made by this user
-   * @property {?Snowflake} [botId] BotID
-   * @property {?ApplicationCommandType} [type=CHAT_INPUT] Type of command
-   */
-  /**
-   * Searches for guild interactions
-   * @param {GuildSearchInteractionOptions} options Options for the search
-   * @deprecated
-   * @returns {void | Promise<ApplicationCommand>}
-   */
-  searchInteraction(options = {}) {
-    let { query, limit, offset, botId, type } = Object.assign(
-      { query: undefined, limit: 10, offset: 0, botId: undefined, type: 'CHAT_INPUT' },
-      options,
-    );
-    if (!query) throw new Error('MISSING_VALUE', 'searchInteraction', 'query');
-    const nonce = SnowflakeUtil.generate();
-    this.shard.send({
-      op: Opcodes.REQUEST_APPLICATION_COMMANDS,
-      d: {
-        guild_id: this.id,
-        applications: false,
-        limit,
-        offset,
-        query,
-        nonce,
-      },
-    });
-    if (!botId || !type) return undefined;
-    return new Promise((resolve, reject) => {
-      const handler = applications => {
-        timeout.refresh();
-        if (applications.nonce !== nonce) return;
-        const cmd = applications.application_commands.find(app => app.name == query && app.application_id == botId);
-        if (!cmd) return;
-        clearTimeout(timeout);
-        this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
-        this.client.decrementMaxListeners();
-        resolve(
-          this.client.users.cache
-            .get(botId)
-            ?.application?.commands?.cache?.find(
-              c => (c.name === query && c.type == type) || c.type == ApplicationCommandTypes[type],
-            ),
-        );
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('GUILD_APPLICATION_COMMANDS_SEARCH_TIMEOUT'));
-      }, 10000).unref();
-      this.client.incrementMaxListeners();
-      this.client.on(Events.GUILD_APPLICATION_COMMANDS_UPDATE, handler);
-    });
   }
 
   /**

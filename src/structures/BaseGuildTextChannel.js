@@ -185,6 +185,7 @@ class BaseGuildTextChannel extends GuildChannel {
   setRateLimitPerUser() {}
   setNSFW() {}
   sendSlash() {}
+  searchInteraction() {}
 }
 
 TextBasedChannel.applyToClass(BaseGuildTextChannel, true);

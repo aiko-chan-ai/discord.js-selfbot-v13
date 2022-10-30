@@ -873,8 +873,15 @@ class ApplicationCommand extends Base {
           clearTimeout(timeout);
           this.client.removeListener('interactionResponse', handler);
           this.client.decrementMaxListeners();
-          if (data.status) resolve(data.metadata);
-          else reject(data.metadata);
+          if (data.status) {
+            resolve(data.metadata);
+          } else {
+            reject(
+              new Error('INTERACTION_ERROR', {
+                cause: data,
+              }),
+            );
+          }
         };
         const timeout = setTimeout(() => {
           this.client.removeListener('interactionResponse', handler);
@@ -958,8 +965,15 @@ class ApplicationCommand extends Base {
         clearTimeout(timeout);
         this.client.removeListener('interactionResponse', handler);
         this.client.decrementMaxListeners();
-        if (data.status) resolve(data.metadata);
-        else reject(data.metadata);
+        if (data.status) {
+          resolve(data.metadata);
+        } else {
+          reject(
+            new Error('INTERACTION_ERROR', {
+              cause: data,
+            }),
+          );
+        }
       };
       const timeout = setTimeout(() => {
         this.client.removeListener('interactionResponse', handler);
