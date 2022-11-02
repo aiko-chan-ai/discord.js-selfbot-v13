@@ -101,7 +101,7 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 - See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
 
 ## Need help?
-Contact me in Discord: [Shiraori#1782](https://discord.com/users/721746046543331449)
+Contact me in Discord: [Elysia#1782](https://discord.com/users/721746046543331449)
 
 ## Credits
 - [Discord.js](https://github.com/discordjs/discord.js)
