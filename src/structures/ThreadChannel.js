@@ -3,6 +3,7 @@
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { RangeError } = require('../errors');
+const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 const ThreadMemberManager = require('../managers/ThreadMemberManager');
 const ChannelFlags = require('../util/ChannelFlags');
@@ -41,6 +42,12 @@ class ThreadChannel extends Channel {
      * @type {ThreadMemberManager}
      */
     this.members = new ThreadMemberManager(this);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
     if (data) this._patch(data, fromInteraction);
   }
 
