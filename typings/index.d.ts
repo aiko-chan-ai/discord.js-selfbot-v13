@@ -1179,10 +1179,17 @@ export class DataResolver extends null {
   public static resolveGuildTemplateCode(data: GuildTemplateResolvable): string;
 }
 
+export interface Captcha {
+  captcha_key: string[];
+  captcha_service: string;
+  captcha_sitekey: string;
+  captcha_rqdata?: string;
+  captcha_rqtoken?: string;
+}
 export class DiscordAPIError extends Error {
   private constructor(error: unknown, status: number, request: unknown);
   private static flattenErrors(obj: unknown, key: string): string[];
-
+  public captcha?: Captcha;
   public code: number;
   public method: string;
   public path: string;
@@ -4680,6 +4687,8 @@ export interface ClientOptions {
   patchVoice?: boolean;
   DMSync?: boolean;
   proxy?: string;
+  captchaService?: string;
+  captchaKey?: string;
 }
 
 // end copy

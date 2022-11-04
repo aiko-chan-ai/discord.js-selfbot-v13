@@ -38,7 +38,7 @@ class DiscordAPIError extends Error {
     /**
      * @typedef {Object} Captcha
      * @property {Array<string>} captcha_key ['message']
-     * @property {string} captcha_sitekey Captcha code ???
+     * @property {string} captcha_sitekey Captcha sitekey (hcaptcha)
      * @property {string} captcha_service hcaptcha
      * @property {string} [captcha_rqdata]
      * @property {string} [captcha_rqtoken]

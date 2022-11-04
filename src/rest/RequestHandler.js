@@ -103,7 +103,7 @@ class RequestHandler {
     }
   }
 
-  async execute(request) {
+  async execute(request, captchaKey) {
     /*
      * After calculations have been done, pre-emptively stop further requests
      * Potentially loop until this task can run if e.g. the global rate limit is hit twice
@@ -194,7 +194,7 @@ class RequestHandler {
     // Perform the request
     let res;
     try {
-      res = await request.make();
+      res = await request.make(captchaKey);
     } catch (error) {
       // Retry the specified number of times for request abortions
       if (request.retries === this.manager.client.options.retryLimit) {
@@ -343,6 +343,27 @@ class RequestHandler {
       let data;
       try {
         data = await parseResponse(res);
+        if (data?.captcha_service && this.manager.client.options.captchaService) {
+          // Retry the request after a captcha is solved
+          this.manager.client.emit(
+            DEBUG,
+            `Hit a captcha while executing a request. Solving captcha ...
+    Method  : ${request.method}
+    Path    : ${request.path}
+    Route   : ${request.route}
+    Sitekey : ${data.captcha_sitekey}`,
+          );
+          const captcha = await this.manager.captchaService.solve(data.captcha_sitekey);
+          this.manager.client.emit(
+            DEBUG,
+            `Captcha solved.
+    Method  : ${request.method}
+    Path    : ${request.path}
+    Route   : ${request.route}
+    Key     : ${captcha}`,
+          );
+          return this.execute(request, captcha);
+        }
       } catch (err) {
         throw new HTTPError(err.message, err.constructor.name, err.status, request);
       }

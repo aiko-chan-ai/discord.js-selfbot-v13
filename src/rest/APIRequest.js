@@ -34,7 +34,7 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  make() {
+  make(captchaKey = undefined) {
     agent ??=
       typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0
         ? new proxy(this.client.options.proxy)
@@ -99,6 +99,12 @@ class APIRequest {
       body = new FormData();
       body.append('payload_json', JSON.stringify(this.options.body));
       headers = Object.assign(headers, body.getHeaders());
+    }
+
+    if (headers['Content-Type'] === 'application/json' && captchaKey && typeof captchaKey == 'string' && body) {
+      body = JSON.parse(body);
+      body.captcha_key = captchaKey;
+      body = JSON.stringify(body);
     }
 
     const controller = new AbortController();

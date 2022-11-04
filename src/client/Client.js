@@ -850,11 +850,17 @@ class Client extends BaseClient {
    * @returns {Promise<boolean>}
    */
   async authorizeURL(url, options = {}) {
-    const reg = /^https:\/\/discord.com\/(api\/)*oauth2\/authorize(\W+)/gim;
+    const reg = /(api\/)*oauth2\/authorize/gim;
+    let searchParams = {};
     const checkURL = () => {
       try {
         // eslint-disable-next-line no-new
-        new URL(url);
+        const url_ = new URL(url);
+        if (!['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(url_.hostname)) return false;
+        if (!reg.test(url_.pathname)) return false;
+        for (const [key, value] of url_.searchParams.entries()) {
+          searchParams[key] = value;
+        }
         return true;
       } catch (e) {
         return false;
@@ -867,10 +873,11 @@ class Client extends BaseClient {
       },
       options,
     );
-    if (!url || !checkURL() || !reg.test(url)) {
+    if (!url || !checkURL()) {
       throw new Error('INVALID_URL', url);
     }
-    await this.api.oauth2.authorize[`?${url.replace(reg, '')}`].post({
+    await this.api.oauth2.authorize.post({
+      query: searchParams,
       data: options,
     });
     return true;
@@ -885,6 +892,7 @@ class Client extends BaseClient {
    * @private
    */
   _validateOptions(options = this.options) {
+    const captchaService = ['2captcha'];
     if (typeof options.intents === 'undefined') {
       throw new TypeError('CLIENT_MISSING_INTENTS');
     } else {
@@ -901,6 +909,12 @@ class Client extends BaseClient {
     }
     if (options && typeof options.autoRedeemNitro !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
+    }
+    if (options && options.captchaService && !captchaService.includes(options.captchaService)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaService.join(', '));
+    }
+    if (options && captchaService.includes(options.captchaService) && typeof options.captchaKey !== 'string') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
     }
     if (options && typeof options.DMSync !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');

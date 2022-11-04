@@ -34,15 +34,20 @@
 
 ### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>
 
-## Features
-- [x] Message: Send, Receive, Delete, Edit, Pin, Reaction Emoji, Attachments, Embeds (WebEmbed), Mentions, Webhooks, etc.
+## Features (User)
+- [x] Message: Embeds (WebEmbed)
 - [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
 - [X] Guild: Fetch Members, Join / Leave, Roles, Channels, etc.
-- [X] Interactions: Slash Commands, Click Buttons, Using Menu, Modal, Context Menu, etc.
+- [X] Interactions: Slash Commands, Click Buttons, Menu (classic), Modal, Context Menu, etc.
 - [X] Voice: Connect, Disconnect, Mute, Deafen, Call, Play Audio, etc.
+- [X] Captcha Handler (Must not use due to safety concerns)
 - [X] Documentation
 - [ ] Video stream
 - [ ] Everything
+
+### Optional packages
+
+- [2captcha](https://www.npmjs.com/package/2captcha) for solving captcha (`npm install 2captcha`)
 
 ## Installation
 
@@ -51,6 +56,7 @@
 ```sh-session
 npm install discord.js-selfbot-v13@latest
 ```
+
 ## Example
 
 ```js

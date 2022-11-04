@@ -4,6 +4,7 @@ const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const APIRequest = require('./APIRequest');
 const routeBuilder = require('./APIRouter');
+const CaptchaSolver = require('./CaptchaSolver');
 const RequestHandler = require('./RequestHandler');
 const { Error } = require('../errors');
 const { Endpoints } = require('../util/Constants');
@@ -22,6 +23,12 @@ class RESTManager {
         this.handlers.sweep(handler => handler._inactive);
       }, client.options.restSweepInterval * 1_000).unref();
     }
+    this.captchaService = null;
+    this.setup();
+  }
+
+  setup() {
+    this.captchaService = new CaptchaSolver(this.client.options.captchaService, this.client.options.captchaKey);
   }
 
   get api() {
