@@ -893,6 +893,7 @@ class Client extends BaseClient {
    */
   _validateOptions(options = this.options) {
     const captchaService = ['2captcha'];
+    options.captchaService = '';
     if (typeof options.intents === 'undefined') {
       throw new TypeError('CLIENT_MISSING_INTENTS');
     } else {

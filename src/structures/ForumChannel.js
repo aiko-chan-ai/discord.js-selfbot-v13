@@ -3,6 +3,7 @@
 const GuildChannel = require('./GuildChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const GuildForumThreadManager = require('../managers/GuildForumThreadManager');
+const InteractionManager = require('../managers/InteractionManager');
 const { SortOrderTypes } = require('../util/Constants');
 const { transformAPIGuildForumTag, transformAPIGuildDefaultReaction } = require('../util/Util');
 
@@ -50,6 +51,12 @@ class ForumChannel extends GuildChannel {
      * @type {GuildForumThreadManager}
      */
     this.threads = new GuildForumThreadManager(this);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
 
     this._patch(data);
   }
