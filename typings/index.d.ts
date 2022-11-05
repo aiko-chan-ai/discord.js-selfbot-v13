@@ -1863,8 +1863,12 @@ export type AwaitMessageCollectorOptionsParams<
 
 export interface StringMappedInteractionTypes<Cached extends CacheType = CacheType> {
   BUTTON: ButtonInteraction<Cached>;
-  SELECT_MENU: SelectMenuInteraction<Cached>;
+  STRING_SELECT_MENU: SelectMenuInteraction<Cached>;
   ACTION_ROW: MessageComponentInteraction<Cached>;
+  USER_SELECT_MENU: SelectMenuInteraction<Cached>;
+  ROLE_SELECT_MENU: SelectMenuInteraction<Cached>;
+  MENTIONABLE_SELECT_MENU: SelectMenuInteraction<Cached>;
+  CHANNEL_SELECT_MENU: SelectMenuInteraction<Cached>;
 }
 
 export type WrapBooleanCache<T extends boolean> = If<T, 'cached', CacheType>;
@@ -1873,9 +1877,13 @@ export type MappedInteractionTypes<Cached extends boolean = boolean> = EnumValue
   typeof MessageComponentTypes,
   {
     BUTTON: ButtonInteraction<WrapBooleanCache<Cached>>;
-    SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    STRING_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     ACTION_ROW: MessageComponentInteraction<WrapBooleanCache<Cached>>;
     TEXT_INPUT: ModalSubmitInteraction<WrapBooleanCache<Cached>>;
+    USER_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    ROLE_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    MENTIONABLE_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    CHANNEL_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
   }
 >;
 
@@ -2248,9 +2256,10 @@ export class MessageSelectMenu extends BaseMessageComponent {
   public minValues: number | null;
   public options: MessageSelectOption[];
   public placeholder: string | null;
-  public type: 'SELECT_MENU';
+  public type: SelectMenuTypes;
   public addOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
   public setOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
+  public setType(type: SelectMenuTypes): this;
   public setCustomId(customId: string): this;
   public setDisabled(disabled?: boolean): this;
   public setMaxValues(maxValues: number): this;
@@ -2262,7 +2271,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values: string[]): Promise<InteractionResponse>;
+  public select(message: Message, values?: string[]): Promise<InteractionResponse>;
 }
 
 // Todo
@@ -2544,6 +2553,8 @@ export class Role extends Base {
   public static comparePositions(role1: Role, role2: Role): number;
 }
 
+export type SelectMenuTypes = 'STRING_SELECT_MENU' | 'USER_SELECT_MENU' | 'ROLE_SELECT_MENU' | 'MENTIONABLE_SELECT_MENU' | 'CHANNEL_SELECT_MENU';
+
 export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
   public constructor(client: Client, data: RawMessageSelectMenuInteractionData);
   public readonly component: CacheTypeReducer<
@@ -2553,7 +2564,7 @@ export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends
     MessageSelectMenu | APISelectMenuComponent,
     MessageSelectMenu | APISelectMenuComponent
   >;
-  public componentType: 'SELECT_MENU';
+  public componentType: SelectMenuTypes;
   public values: string[];
   public inGuild(): this is SelectMenuInteraction<'raw' | 'cached'>;
   public inCachedGuild(): this is SelectMenuInteraction<'cached'>;

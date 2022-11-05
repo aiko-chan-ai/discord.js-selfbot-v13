@@ -47,7 +47,11 @@ class InteractionCreateAction extends Action {
           case MessageComponentTypes.BUTTON:
             InteractionType = ButtonInteraction;
             break;
-          case MessageComponentTypes.SELECT_MENU:
+          case MessageComponentTypes.STRING_SELECT_MENU:
+          case MessageComponentTypes.USER_SELECT_MENU:
+          case MessageComponentTypes.ROLE_SELECT_MENU:
+          case MessageComponentTypes.MENTIONABLE_SELECT_MENU:
+          case MessageComponentTypes.CHANNEL_SELECT_MENU:
             InteractionType = SelectMenuInteraction;
             break;
           default:

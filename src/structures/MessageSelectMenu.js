@@ -3,7 +3,7 @@
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
-const { MessageComponentTypes } = require('../util/Constants');
+const { MessageComponentTypes, InteractionTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
@@ -44,7 +44,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @param {MessageSelectMenu|MessageSelectMenuOptions} [data={}] MessageSelectMenu to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: 'SELECT_MENU' });
+    super({ type: data?.type ? MessageComponentTypes[data.type] : 'STRING_SELECT_MENU' });
 
     this.setup(data);
   }
@@ -85,6 +85,28 @@ class MessageSelectMenu extends BaseMessageComponent {
      * @type {boolean}
      */
     this.disabled = data.disabled ?? false;
+  }
+
+  /**
+   * @typedef {string} SelectMenuTypes
+   * Must be one of:
+   * * `STRING_SELECT_MENU`
+   * * `USER_SELECT_MENU`
+   * * `ROLE_SELECT_MENU`
+   * * `MENTIONABLE_SELECT_MENU`
+   * * `CHANNEL_SELECT_MENU`
+   */
+
+  /**
+   * Set type of select menu
+   * @param {SelectMenuTypes} type Type of select menu
+   * @returns {MessageSelectMenu}
+   */
+
+  setType(type) {
+    if (!type) type = MessageComponentTypes.STRING_SELECT_MENU;
+    this.type = MessageSelectMenu.resolveType(type);
+    return this;
   }
 
   /**
@@ -202,6 +224,10 @@ class MessageSelectMenu extends BaseMessageComponent {
     return { label, value, description, emoji, default: option.default ?? false };
   }
 
+  static resolveType(type) {
+    return typeof type === 'string' ? type : MessageComponentTypes[type];
+  }
+
   /**
    * Normalizes option input and resolves strings and emojis.
    * @param {...MessageSelectOptionData|MessageSelectOptionData[]} options The select menu options to normalize
@@ -218,11 +244,9 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @returns {Promise<InteractionResponse>}
    */
   async select(message, values = []) {
-    // Github copilot is the best :))
-    // POST data from https://github.com/phamleduy04
     if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!Array.isArray(values)) throw new TypeError('[INVALID_VALUES] Please pass an array of values');
-    if (!this.customId || this.disabled || values.length == 0) return false; // Disabled or null customID or [] array
+    if (!this.customId || this.disabled) return false; // Disabled or null customID
     // Check value is invalid [Max options is 20] => For loop
     if (values.length < this.minValues) {
       throw new RangeError(`[SELECT_MENU_MIN_VALUES] The minimum number of values is ${this.minValues}`);
@@ -230,30 +254,68 @@ class MessageSelectMenu extends BaseMessageComponent {
     if (values.length > this.maxValues) {
       throw new RangeError(`[SELECT_MENU_MAX_VALUES] The maximum number of values is ${this.maxValues}`);
     }
-    const validValue = this.options.map(obj => obj.value);
-    const check_ = await values.find(element => {
-      if (typeof element !== 'string') return true;
-      if (!validValue.includes(element)) return true;
-      return false;
+    const enableCheck = {};
+    this.options.forEach(obj => {
+      enableCheck[obj.value] = obj.default;
     });
-    if (check_) {
-      throw new RangeError(
-        `[SELECT_MENU_INVALID_VALUE] The value ${check_} is invalid. Please use a valid value ${validValue.join(', ')}`,
-      );
+    const parseValues = value => {
+      switch (this.type) {
+        case 'STRING_SELECT_MENU': {
+          if (typeof value !== 'string') throw new TypeError('[INVALID_VALUE] Please pass a string value');
+          const value_ = this.options.find(obj => obj.value === value || obj.label === value);
+          if (!value_) throw new Error('[INVALID_VALUE] Please pass a valid value');
+          return value_.value;
+        }
+        case 'USER_SELECT_MENU': {
+          const userId = this.client.users.resolveId(value);
+          if (!userId) throw new Error('[INVALID_VALUE] Please pass a valid user');
+          return userId;
+        }
+        case 'ROLE_SELECT_MENU': {
+          const roleId = this.client.roles.resolveId(value);
+          if (!roleId) throw new Error('[INVALID_VALUE] Please pass a valid role');
+          return roleId;
+        }
+        case 'MENTIONABLE_SELECT_MENU': {
+          const mentionableId = this.client.users.resolveId(value) || this.client.roles.resolveId(value);
+          if (!mentionableId) throw new Error('[INVALID_VALUE] Please pass a valid mentionable');
+          return mentionableId;
+        }
+        case 'CHANNEL_SELECT_MENU': {
+          const channelId = this.client.channels.resolveId(value);
+          if (!channelId) throw new Error('[INVALID_VALUE] Please pass a valid channel');
+          return channelId;
+        }
+        default: {
+          throw new Error(`[INVALID_TYPE] Please pass a valid select menu type (Got ${this.type})`);
+        }
+      }
+    };
+
+    for (const value of values) {
+      const value_ = parseValues(value);
+      if (value_ in enableCheck) {
+        enableCheck[value_] = !enableCheck[value_];
+      } else {
+        enableCheck[value_] = true;
+      }
     }
+
+    values = values?.length ? Object.keys(enableCheck).filter(key => enableCheck[key]) : [];
+
     const nonce = SnowflakeUtil.generate();
     const data = {
-      type: 3, // ?
-      guild_id: message.guild?.id ?? null, // In DMs
+      type: InteractionTypes.MESSAGE_COMPONENT,
+      guild_id: message.guild?.id ?? null,
       channel_id: message.channel.id,
       message_id: message.id,
       application_id: message.applicationId ?? message.author.id,
       session_id: message.client.session_id,
       message_flags: message.flags.bitfield,
       data: {
-        component_type: 3, // Select Menu
+        component_type: MessageComponentTypes[this.type],
         custom_id: this.customId,
-        type: 3, // Select Menu
+        type: MessageComponentTypes[this.type],
         values,
       },
       nonce,

@@ -5,7 +5,13 @@ const { findBestMatch } = require('string-similarity');
 const Base = require('./Base');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
 const MessageAttachment = require('../structures/MessageAttachment');
-const { ApplicationCommandOptionTypes, ApplicationCommandTypes, ChannelTypes, Events } = require('../util/Constants');
+const {
+  ApplicationCommandOptionTypes,
+  ApplicationCommandTypes,
+  ChannelTypes,
+  Events,
+  InteractionTypes,
+} = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -797,14 +803,12 @@ class ApplicationCommand extends Base {
         dataAdd = [dataAdd];
       }
       const data = {
-        type: autocomplete ? 4 : 2, // Slash command, context menu
-        // Type: 4: Auto-complete
+        type: autocomplete ? InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE : InteractionTypes.APPLICATION_COMMAND,
         application_id: this.applicationId,
         guild_id: message.guildId,
         channel_id: message.channelId,
         session_id: this.client.session_id,
         data: {
-          // ApplicationCommandData
           version: this.version,
           id: this.id,
           name: this.name,
@@ -932,13 +936,12 @@ class ApplicationCommand extends Base {
     if (this.type == 'CHAT_INPUT') return false;
     const nonce = SnowflakeUtil.generate();
     const data = {
-      type: 2, // Slash command, context menu
+      type: InteractionTypes.APPLICATION_COMMAND,
       application_id: this.applicationId,
       guild_id: message.guildId,
       channel_id: message.channelId,
       session_id: this.client.session_id,
       data: {
-        // ApplicationCommandData
         version: this.version,
         id: this.id,
         name: this.name,

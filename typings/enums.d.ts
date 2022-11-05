@@ -218,8 +218,12 @@ export const enum MessageButtonStyles {
 export const enum MessageComponentTypes {
   ACTION_ROW = 1,
   BUTTON = 2,
-  SELECT_MENU = 3,
+  STRING_SELECT_MENU = 3,
   TEXT_INPUT = 4,
+  USER_SELECT_MENU = 5,
+  ROLE_SELECT_MENU = 6,
+  MENTIONABLE_SELECT_MENU = 7,
+  CHANNEL_SELECT_MENU = 8,
 }
 
 export const enum ModalComponentTypes {
