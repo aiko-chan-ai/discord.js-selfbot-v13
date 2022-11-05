@@ -1068,32 +1068,33 @@ class Message extends Base {
    * @param {Array<string>} options Menu Options
    * @returns {Promise<InteractionResponse>}
    */
-  async selectMenu(menuID, options = []) {
+  selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    let menuFirst;
-    let menuCorrect;
-    let menuCount = 0;
-    await Promise.all(
-      this.components.map(row => {
-        const firstElement = row.components[0]; // Because 1 row has only 1 menu;
-        if (firstElement.type == 'SELECT_MENU') {
-          menuCount++;
-          if (firstElement.customId == menuID) {
-            menuCorrect = firstElement;
-          } else if (!menuFirst) {
-            menuFirst = firstElement;
-          }
+    const menuAll = [];
+    for (const row of this.components) {
+      for (const component of row.components) {
+        if (
+          [
+            'STRING_SELECT_MENU',
+            'USER_SELECT_MENU',
+            'ROLE_SELECT_MENU',
+            'MENTIONABLE_SELECT_MENU',
+            'CHANNEL_SELECT_MENU',
+          ].includes(component.type)
+        ) {
+          menuAll.push(component);
         }
-        return true;
-      }),
-    );
-    if (menuCount == 0) throw new TypeError('MENU_NOT_FOUND');
-    if (!menuCorrect) {
-      if (menuCount == 1) menuCorrect = menuFirst;
-      else if (typeof menuID !== 'string') throw new TypeError('MENU_ID_NOT_STRING');
-      else throw new TypeError('MENU_ID_NOT_FOUND');
+      }
     }
-    return menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
+    if (menuAll.length == 0) throw new TypeError('MENU_NOT_FOUND');
+    if (menuAll.length == 1) {
+      return menuAll[0].select(this, Array.isArray(menuID) ? menuID : options);
+    } else {
+      if (typeof menuID !== 'string') throw new TypeError('MENU_ID_NOT_STRING');
+      const menuCorrect = menuAll.find(menu => menu.customId == menuID);
+      if (!menuCorrect) throw new TypeError('MENU_NOT_FOUND');
+      return menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
+    }
   }
   //
   /**
