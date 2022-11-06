@@ -2556,12 +2556,7 @@ export class Role extends Base {
   public static comparePositions(role1: Role, role2: Role): number;
 }
 
-export type SelectMenuTypes =
-  | 'STRING_SELECT'
-  | 'USER_SELECT'
-  | 'ROLE_SELECT'
-  | 'MENTIONABLE_SELECT'
-  | 'CHANNEL_SELECT';
+export type SelectMenuTypes = 'STRING_SELECT' | 'USER_SELECT' | 'ROLE_SELECT' | 'MENTIONABLE_SELECT' | 'CHANNEL_SELECT';
 
 export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
   public constructor(client: Client, data: RawMessageSelectMenuInteractionData);
