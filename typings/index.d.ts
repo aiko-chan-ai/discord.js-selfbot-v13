@@ -2257,9 +2257,12 @@ export class MessageSelectMenu extends BaseMessageComponent {
   public options: MessageSelectOption[];
   public placeholder: string | null;
   public type: SelectMenuTypes;
+  public channelTypes: ChannelTypes[];
   public addOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
   public setOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
   public setType(type: SelectMenuTypes): this;
+  public addChannelTypes(...channelTypes: ChannelTypes[]): this;
+  public setChannelTypes(...channelTypes: ChannelTypes[]): this;
   public setCustomId(customId: string): this;
   public setDisabled(disabled?: boolean): this;
   public setMaxValues(maxValues: number): this;
@@ -6258,11 +6261,11 @@ export interface MessageReference {
 export type MessageResolvable = Message | Snowflake;
 
 export interface MessageSelectMenuOptions extends BaseMessageComponentOptions {
+  type?: SelectMenuTypes;
   customId?: string;
   disabled?: boolean;
   maxValues?: number;
   minValues?: number;
-  options?: MessageSelectOptionData[];
   placeholder?: string;
 }
 

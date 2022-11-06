@@ -2,7 +2,6 @@
 
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
-// Disable: const { findBestMatch } = require('string-similarity'); // Not check similarity
 const Base = require('./Base');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const ClientApplication = require('./ClientApplication');
@@ -1074,13 +1073,9 @@ class Message extends Base {
     for (const row of this.components) {
       for (const component of row.components) {
         if (
-          [
-            'STRING_SELECT',
-            'USER_SELECT',
-            'ROLE_SELECT',
-            'MENTIONABLE_SELECT',
-            'CHANNEL_SELECT',
-          ].includes(component.type)
+          ['STRING_SELECT', 'USER_SELECT', 'ROLE_SELECT', 'MENTIONABLE_SELECT', 'CHANNEL_SELECT'].includes(
+            component.type,
+          )
         ) {
           menuAll.push(component);
         }

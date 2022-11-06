@@ -272,7 +272,13 @@ class Interaction extends Base {
   isSelectMenu() {
     return (
       InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
-      MessageComponentTypes[this.componentType] === MessageComponentTypes.SELECT_MENU
+      [
+        MessageComponentTypes.STRING_SELECT,
+        MessageComponentTypes.USER_SELECT,
+        MessageComponentTypes.ROLE_SELECT,
+        MessageComponentTypes.MENTIONABLE_SELECT,
+        MessageComponentTypes.CHANNEL_SELECT,
+      ].includes(MessageComponentTypes[this.componentType])
     );
   }
 

@@ -3,7 +3,7 @@
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { Message } = require('./Message');
-const { MessageComponentTypes, InteractionTypes } = require('../util/Constants');
+const { MessageComponentTypes, InteractionTypes, ChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
@@ -75,7 +75,7 @@ class MessageSelectMenu extends BaseMessageComponent {
     this.maxValues = data.max_values ?? data.maxValues ?? null;
 
     /**
-     * Options for the select menu
+     * Options for the STRING_SELECT menu
      * @type {MessageSelectOption[]}
      */
     this.options = this.constructor.normalizeOptions(data.options ?? []);
@@ -85,6 +85,15 @@ class MessageSelectMenu extends BaseMessageComponent {
      * @type {boolean}
      */
     this.disabled = data.disabled ?? false;
+
+    /**
+     * Channels that are possible to select in CHANNEL_SELECT menu
+     * @type {ChannelType[]}
+     */
+    this.channelTypes =
+      data.channel_types?.map(channelType =>
+        typeof channelType === 'string' ? channelType : ChannelTypes[channelType],
+      ) ?? [];
   }
 
   /**
@@ -106,6 +115,36 @@ class MessageSelectMenu extends BaseMessageComponent {
   setType(type) {
     if (!type) type = MessageComponentTypes.STRING_SELECT;
     this.type = MessageSelectMenu.resolveType(type);
+    return this;
+  }
+
+  /**
+   * Adds the channel type to the select menu
+   * @param {...ChannelType[]} channelType Added channel type
+   * @returns {MessageSelectMenu}
+   */
+  addChannelTypes(...channelTypes) {
+    if (!channelTypes.every(channelType => ChannelTypes[channelType])) {
+      throw new TypeError('INVALID_TYPE', 'channelTypes', 'Array<ChannelType>');
+    }
+    this.channelTypes.push(
+      ...channelTypes.map(channelType => (typeof channelType === 'string' ? channelType : ChannelTypes[channelType])),
+    );
+    return this;
+  }
+
+  /**
+   * Sets the channel types of the select menu
+   * @param {ChannelType[]} channelTypes An array of new channel types
+   * @returns {MessageSelectMenu}
+   */
+  setChannelTypes(...channelTypes) {
+    if (!channelTypes.every(channelType => ChannelTypes[channelType])) {
+      throw new TypeError('INVALID_TYPE', 'channelTypes', 'Array<ChannelType>');
+    }
+    this.channelTypes = channelTypes.map(channelType =>
+      typeof channelType === 'string' ? channelType : ChannelTypes[channelType],
+    );
     return this;
   }
 
@@ -204,6 +243,7 @@ class MessageSelectMenu extends BaseMessageComponent {
       min_values: this.minValues,
       max_values: this.maxValues ?? (this.minValues ? this.options.length : undefined),
       options: this.options,
+      channel_types: this.channelTypes.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)),
       type: typeof this.type === 'string' ? MessageComponentTypes[this.type] : this.type,
     };
   }
@@ -282,9 +322,16 @@ class MessageSelectMenu extends BaseMessageComponent {
           return mentionableId;
         }
         case 'CHANNEL_SELECT': {
-          const channelId = this.client.channels.resolveId(value);
-          if (!channelId) throw new Error('[INVALID_VALUE] Please pass a valid channel');
-          return channelId;
+          const channel = this.client.channels.resolve(value);
+          if (!channel) throw new Error('[INVALID_VALUE] Please pass a valid channel');
+          if (!this.channelTypes.includes(channel.type)) {
+            throw new Error(
+              `[INVALID_VALUE] Please pass a valid channel type (Got: ${channel.type}, allow: ${this.channelTypes.join(
+                ', ',
+              )})`,
+            );
+          }
+          return channel.id;
         }
         default: {
           throw new Error(`[INVALID_TYPE] Please pass a valid select menu type (Got ${this.type})`);
