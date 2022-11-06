@@ -454,14 +454,19 @@ class TextBasedChannel {
    * channel.sendSlash('123456789012345678', 'embed title', 'description', 'author', '#00ff00')
    */
   async sendSlash(bot, commandString, ...args) {
-    const perms = this.permissionsFor(this.client.user);
-    if (!perms.has('SEND_MESSAGES')) {
+    const perms =
+      this.type != 'DM'
+        ? this.permissionsFor(this.client.user).toArray()
+        : ['USE_APPLICATION_COMMANDS', `${this.recipient.relationships == 'BLOCKED' ? '' : 'SEND_MESSAGES'}`];
+    if (!perms.includes('SEND_MESSAGES')) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
-        `Cannot send Slash to ${this.toString()} due to missing SEND_MESSAGES permission`,
+        `Cannot send Slash to ${this.toString()} ${
+          this.recipient ? 'because user has been blocked' : 'due to missing SEND_MESSAGES permission'
+        }`,
       );
     }
-    if (!perms.has('USE_APPLICATION_COMMANDS')) {
+    if (!perms.includes('USE_APPLICATION_COMMANDS')) {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
         `Cannot send Slash to ${this.toString()} due to missing USE_APPLICATION_COMMANDS permission`,

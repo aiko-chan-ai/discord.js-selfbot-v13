@@ -32,7 +32,7 @@ async function checkUpdate(client) {
   
       If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
-      new Client({
+      const client = new Client({
           checkUpdate: false,
       });
   
@@ -46,7 +46,7 @@ async function checkUpdate(client) {
   
       If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
-      new Client({
+      const client = new Client({
           checkUpdate: false,
       });
   

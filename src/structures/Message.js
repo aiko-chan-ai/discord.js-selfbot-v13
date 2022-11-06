@@ -1075,11 +1075,11 @@ class Message extends Base {
       for (const component of row.components) {
         if (
           [
-            'STRING_SELECT_MENU',
-            'USER_SELECT_MENU',
-            'ROLE_SELECT_MENU',
-            'MENTIONABLE_SELECT_MENU',
-            'CHANNEL_SELECT_MENU',
+            'STRING_SELECT',
+            'USER_SELECT',
+            'ROLE_SELECT',
+            'MENTIONABLE_SELECT',
+            'CHANNEL_SELECT',
           ].includes(component.type)
         ) {
           menuAll.push(component);

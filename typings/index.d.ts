@@ -1863,12 +1863,12 @@ export type AwaitMessageCollectorOptionsParams<
 
 export interface StringMappedInteractionTypes<Cached extends CacheType = CacheType> {
   BUTTON: ButtonInteraction<Cached>;
-  STRING_SELECT_MENU: SelectMenuInteraction<Cached>;
+  STRING_SELECT: SelectMenuInteraction<Cached>;
   ACTION_ROW: MessageComponentInteraction<Cached>;
-  USER_SELECT_MENU: SelectMenuInteraction<Cached>;
-  ROLE_SELECT_MENU: SelectMenuInteraction<Cached>;
-  MENTIONABLE_SELECT_MENU: SelectMenuInteraction<Cached>;
-  CHANNEL_SELECT_MENU: SelectMenuInteraction<Cached>;
+  USER_SELECT: SelectMenuInteraction<Cached>;
+  ROLE_SELECT: SelectMenuInteraction<Cached>;
+  MENTIONABLE_SELECT: SelectMenuInteraction<Cached>;
+  CHANNEL_SELECT: SelectMenuInteraction<Cached>;
 }
 
 export type WrapBooleanCache<T extends boolean> = If<T, 'cached', CacheType>;
@@ -1877,13 +1877,13 @@ export type MappedInteractionTypes<Cached extends boolean = boolean> = EnumValue
   typeof MessageComponentTypes,
   {
     BUTTON: ButtonInteraction<WrapBooleanCache<Cached>>;
-    STRING_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    STRING_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     ACTION_ROW: MessageComponentInteraction<WrapBooleanCache<Cached>>;
     TEXT_INPUT: ModalSubmitInteraction<WrapBooleanCache<Cached>>;
-    USER_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    ROLE_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    MENTIONABLE_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    CHANNEL_SELECT_MENU: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    USER_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    ROLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    MENTIONABLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
+    CHANNEL_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
   }
 >;
 
@@ -2554,11 +2554,11 @@ export class Role extends Base {
 }
 
 export type SelectMenuTypes =
-  | 'STRING_SELECT_MENU'
-  | 'USER_SELECT_MENU'
-  | 'ROLE_SELECT_MENU'
-  | 'MENTIONABLE_SELECT_MENU'
-  | 'CHANNEL_SELECT_MENU';
+  | 'STRING_SELECT'
+  | 'USER_SELECT'
+  | 'ROLE_SELECT'
+  | 'MENTIONABLE_SELECT'
+  | 'CHANNEL_SELECT';
 
 export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
   public constructor(client: Client, data: RawMessageSelectMenuInteractionData);

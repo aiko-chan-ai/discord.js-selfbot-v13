@@ -44,7 +44,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @param {MessageSelectMenu|MessageSelectMenuOptions} [data={}] MessageSelectMenu to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: data?.type ? MessageComponentTypes[data.type] : 'STRING_SELECT_MENU' });
+    super({ type: data?.type ? MessageComponentTypes[data.type] : 'STRING_SELECT' });
 
     this.setup(data);
   }
@@ -90,11 +90,11 @@ class MessageSelectMenu extends BaseMessageComponent {
   /**
    * @typedef {string} SelectMenuTypes
    * Must be one of:
-   * * `STRING_SELECT_MENU`
-   * * `USER_SELECT_MENU`
-   * * `ROLE_SELECT_MENU`
-   * * `MENTIONABLE_SELECT_MENU`
-   * * `CHANNEL_SELECT_MENU`
+   * * `STRING_SELECT`
+   * * `USER_SELECT`
+   * * `ROLE_SELECT`
+   * * `MENTIONABLE_SELECT`
+   * * `CHANNEL_SELECT`
    */
 
   /**
@@ -104,7 +104,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    */
 
   setType(type) {
-    if (!type) type = MessageComponentTypes.STRING_SELECT_MENU;
+    if (!type) type = MessageComponentTypes.STRING_SELECT;
     this.type = MessageSelectMenu.resolveType(type);
     return this;
   }
@@ -260,28 +260,28 @@ class MessageSelectMenu extends BaseMessageComponent {
     });
     const parseValues = value => {
       switch (this.type) {
-        case 'STRING_SELECT_MENU': {
+        case 'STRING_SELECT': {
           if (typeof value !== 'string') throw new TypeError('[INVALID_VALUE] Please pass a string value');
           const value_ = this.options.find(obj => obj.value === value || obj.label === value);
           if (!value_) throw new Error('[INVALID_VALUE] Please pass a valid value');
           return value_.value;
         }
-        case 'USER_SELECT_MENU': {
+        case 'USER_SELECT': {
           const userId = this.client.users.resolveId(value);
           if (!userId) throw new Error('[INVALID_VALUE] Please pass a valid user');
           return userId;
         }
-        case 'ROLE_SELECT_MENU': {
+        case 'ROLE_SELECT': {
           const roleId = this.client.roles.resolveId(value);
           if (!roleId) throw new Error('[INVALID_VALUE] Please pass a valid role');
           return roleId;
         }
-        case 'MENTIONABLE_SELECT_MENU': {
+        case 'MENTIONABLE_SELECT': {
           const mentionableId = this.client.users.resolveId(value) || this.client.roles.resolveId(value);
           if (!mentionableId) throw new Error('[INVALID_VALUE] Please pass a valid mentionable');
           return mentionableId;
         }
-        case 'CHANNEL_SELECT_MENU': {
+        case 'CHANNEL_SELECT': {
           const channelId = this.client.channels.resolveId(value);
           if (!channelId) throw new Error('[INVALID_VALUE] Please pass a valid channel');
           return channelId;

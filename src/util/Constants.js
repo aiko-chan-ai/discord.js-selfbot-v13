@@ -1513,12 +1513,12 @@ exports.InteractionResponseTypes = createEnum([
  * The type of a message component
  * * ACTION_ROW
  * * BUTTON
- * * STRING_SELECT_MENU
+ * * STRING_SELECT
  * * TEXT_INPUT
- * * USER_SELECT_MENU
- * * ROLE_SELECT_MENU
- * * MENTIONABLE_SELECT_MENU
- * * CHANNEL_SELECT_MENU
+ * * USER_SELECT
+ * * ROLE_SELECT
+ * * MENTIONABLE_SELECT
+ * * CHANNEL_SELECT
  * @typedef {string} MessageComponentType
  * @see {@link https://discord.com/developers/docs/interactions/message-components#component-object-component-types}
  */
@@ -1526,12 +1526,12 @@ exports.MessageComponentTypes = createEnum([
   null,
   'ACTION_ROW',
   'BUTTON',
-  'STRING_SELECT_MENU',
+  'STRING_SELECT',
   'TEXT_INPUT',
-  'USER_SELECT_MENU',
-  'ROLE_SELECT_MENU',
-  'MENTIONABLE_SELECT_MENU',
-  'CHANNEL_SELECT_MENU',
+  'USER_SELECT',
+  'ROLE_SELECT',
+  'MENTIONABLE_SELECT',
+  'CHANNEL_SELECT',
 ]);
 
 /**
