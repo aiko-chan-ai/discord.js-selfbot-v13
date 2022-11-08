@@ -381,6 +381,7 @@ class DiscordAuthWebsocket extends EventEmitter {
 
   async _findRealToken() {
     if (!this.token) this._throwError(new Error('Token is not created.'));
+    const chromeVersion = defaultClientOptions.ws.properties.browser_version.split('.')[0];
     const res = await axios.post(
       `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
       {
@@ -393,6 +394,9 @@ class DiscordAuthWebsocket extends EventEmitter {
           'Accept-Language': 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
           Pragma: 'no-cache',
+          'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="24"`,
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
           'Sec-Fetch-Dest': 'empty',
           'Sec-Fetch-Mode': 'cors',
           'Sec-Fetch-Site': 'same-origin',
