@@ -59,17 +59,15 @@ class Session extends Base {
 
   /**
    * Logout the client (remote).
-   * @param {string} password User's password
    * @param {string | null} mfaCode MFA code (if 2FA is enabled)
    * @returns {Promise<undefined>}
    */
-  logout(password, mfaCode) {
-    password = password || this.client.password;
-    if (!password || typeof password !== 'string') throw new Error('REQUIRE_PASSWORD', 'You must provide a password.');
+  logout(mfaCode) {
+    if (typeof this.client.password !== 'string') throw new Error('REQUIRE_PASSWORD', 'You must provide a password.');
     return this.client.api.auth.sessions.logout({
       data: {
         session_id_hashes: [this.id],
-        password,
+        password: this.client.password,
         code: typeof mfaCode === 'string' ? mfaCode : undefined,
       },
     });

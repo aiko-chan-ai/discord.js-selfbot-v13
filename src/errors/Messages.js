@@ -210,6 +210,9 @@ const Messages = {
   MISSING_CAPTCHA_SERVICE: 'This feature is only available for enabled captcha handler.',
 
   GUILD_FORUM_MESSAGE_REQUIRED: 'You must provide a message to create a guild forum thread',
+  NORMAL_LOGIN: 'Username and password are required for normal login',
+  LOGIN_FAILED_UNKNOWN: 'Login failed',
+  LOGIN_FAILED_2FA: 'Login failed, 2FA code is required',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

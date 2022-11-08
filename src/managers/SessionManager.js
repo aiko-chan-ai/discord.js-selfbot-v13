@@ -33,17 +33,15 @@ class SessionManager extends CachedManager {
 
   /**
    * Logout the client (remote).
-   * @param {string} password User's password
    * @param {string | null} mfaCode MFA code (if 2FA is enabled)
    * @returns {Promise<undefined>}
    */
-  logoutAllDevices(password, mfaCode) {
-    password = password || this.client.password;
-    if (!password || typeof password !== 'string') throw new Error('REQUIRE_PASSWORD');
+  logoutAllDevices(mfaCode) {
+    if (typeof this.client.password !== 'string') throw new Error('REQUIRE_PASSWORD');
     return this.client.api.auth.sessions.logout({
       data: {
         session_id_hashes: this.cache.map(session => session.id),
-        password,
+        password: this.client.password,
         code: typeof mfaCode === 'string' ? mfaCode : undefined,
       },
     });

@@ -164,7 +164,7 @@ import {
 export abstract class SessionManager extends CachedManager {
   constructor(client: Client, iterable?: Iterable<unknown>);
   public fetch(): Promise<SessionManager>;
-  public logoutAllDevices(password?: string, mfaCode?: string): Promise<undefined>;
+  public logoutAllDevices(mfaCode?: string): Promise<undefined>;
 }
 
 export abstract class Session extends Base {
@@ -173,7 +173,7 @@ export abstract class Session extends Base {
   public clientInfo?: SessionClientInfo;
   public readonly createdTimestamp: number;
   public readonly createdAt: Date;
-  public logout(password?: string, mfaCode?: string): Promise<undefined>;
+  public logout(mfaCode?: string): Promise<undefined>;
 }
 
 export interface SessionClientInfo {
@@ -865,6 +865,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public redeemNitro(code: string, channel?: TextChannelResolvable, failIfNotExists?: boolean): object;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
+  public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
@@ -4705,6 +4706,7 @@ export interface ClientOptions {
   autoCookie?: boolean;
   autoRedeemNitro?: boolean;
   patchVoice?: boolean;
+  password?: string;
   DMSync?: boolean;
   proxy?: string;
   captchaService?: string;

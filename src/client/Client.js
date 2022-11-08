@@ -229,7 +229,7 @@ class Client extends BaseClient {
      * Password cache
      * @type {?string}
      */
-    this.password = null;
+    this.password = this.options.password;
 
     /**
      * Nitro cache
@@ -389,6 +389,63 @@ class Client extends BaseClient {
     } catch (error) {
       this.destroy();
       throw error;
+    }
+  }
+
+  /**
+   * Login Discord with Username and Password
+   * @param {string} username Email or Phone Number
+   * @param {?string} password Password
+   * @param {?string} mfaCode 2FA Code / Backup Code
+   * @returns {Promise<string>}
+   */
+  async normalLogin(username, password = this.password, mfaCode) {
+    if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+      throw new Error('NORMAL_LOGIN');
+    }
+    this.emit(
+      Events.DEBUG,
+      `Connecting to Discord with: 
+      username: ${username}
+      password: ${password.replace(/./g, '*')}`,
+    );
+    const data = await this.api.auth.login.post({
+      data: {
+        login: username,
+        password: password,
+        undelete: false,
+        captcha_key: null,
+        login_source: null,
+        gift_code_sku_id: null,
+      },
+      auth: false,
+    });
+    this.password = password;
+    if (!data.token && data.ticket && data.mfa) {
+      this.emit(Events.DEBUG, `Using 2FA Code: ${mfaCode}`);
+      const normal2fa = /(\d{6})/g;
+      const backupCode = /([a-z0-9]{4})-([a-z0-9]{4})/g;
+      if (!mfaCode || typeof mfaCode !== 'string') {
+        throw new Error('LOGIN_FAILED_2FA');
+      }
+      if (normal2fa.test(mfaCode) || backupCode.test(mfaCode)) {
+        const data2 = await this.api.auth.mfa.totp.post({
+          data: {
+            code: mfaCode,
+            ticket: data.ticket,
+            login_source: null,
+            gift_code_sku_id: null,
+          },
+          auth: false,
+        });
+        return this.login(data2.token);
+      } else {
+        throw new Error('LOGIN_FAILED_2FA');
+      }
+    } else if (data.token) {
+      return this.login(data.token);
+    } else {
+      throw new Error('LOGIN_FAILED_UNKNOWN');
     }
   }
 
@@ -927,6 +984,9 @@ class Client extends BaseClient {
     }
     if (options && typeof options.patchVoice !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'patchVoice', 'a boolean');
+    }
+    if (options && options.password && typeof options.password !== 'string') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'password', 'a string');
     }
     if (options && typeof options.proxy !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');

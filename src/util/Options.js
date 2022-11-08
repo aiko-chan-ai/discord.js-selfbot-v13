@@ -154,6 +154,7 @@ class Options extends null {
       captchaKey: null,
       DMSync: false,
       patchVoice: false,
+      password: null,
       waitGuildTimeout: 15_000,
       messageCreateEventGuildTimeout: 100,
       shardCount: 1,
