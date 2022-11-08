@@ -46,12 +46,17 @@ class APIRequest {
         : `${this.client.options.http.api}/v${this.client.options.http.version}`;
     const url = API + this.path;
 
+    const chromeVersion = this.client.options.ws.properties.browser_version.split('.')[0];
+
     let headers = {
       ...this.client.options.http.headers,
       Accept: '*/*',
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
+      'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="24"`,
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
@@ -101,8 +106,8 @@ class APIRequest {
       headers = Object.assign(headers, body.getHeaders());
     }
 
-    if (headers['Content-Type'] === 'application/json' && captchaKey && typeof captchaKey == 'string' && body) {
-      body = JSON.parse(body);
+    if (headers['Content-Type'] === 'application/json' && captchaKey && typeof captchaKey == 'string') {
+      body = JSON.parse(body || '{}');
       body.captcha_key = captchaKey;
       body = JSON.stringify(body);
     }

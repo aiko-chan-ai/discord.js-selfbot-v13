@@ -848,6 +848,12 @@ class Client extends BaseClient {
    * @param {string} url Discord Auth URL
    * @param {Object} options Oauth2 options
    * @returns {Promise<boolean>}
+   * @example
+   * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
+      guild_id: "guildID",
+      permissions: "62221393", // your permissions
+      authorize: true
+    })
    */
   async authorizeURL(url, options = {}) {
     const reg = /(api\/)*oauth2\/authorize/gim;
@@ -893,9 +899,6 @@ class Client extends BaseClient {
    */
   _validateOptions(options = this.options) {
     const captchaService = ['2captcha'];
-    if (options && options.captchaService) {
-      options.captchaService = undefined;
-    }
     if (typeof options.intents === 'undefined') {
       throw new TypeError('CLIENT_MISSING_INTENTS');
     } else {

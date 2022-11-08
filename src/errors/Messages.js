@@ -207,6 +207,7 @@ const Messages = {
   NITRO_REQUIRED: 'This feature is only available for Nitro users.',
   NITRO_BOOST_REQUIRED: feature => `This feature (${feature}) is only available for Nitro Boost users.`,
   ONLY_ME: 'This feature is only available for self.',
+  MISSING_CAPTCHA_SERVICE: 'This feature is only available for enabled captcha handler.',
 
   GUILD_FORUM_MESSAGE_REQUIRED: 'You must provide a message to create a guild forum thread',
 };

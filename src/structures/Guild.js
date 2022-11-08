@@ -10,7 +10,6 @@ const Integration = require('./Integration');
 const Webhook = require('./Webhook');
 const WelcomeScreen = require('./WelcomeScreen');
 const { Error } = require('../errors');
-// Disable: const GuildApplicationCommandManager = require('../managers/GuildApplicationCommandManager');
 const GuildBanManager = require('../managers/GuildBanManager');
 const GuildChannelManager = require('../managers/GuildChannelManager');
 const GuildEmojiManager = require('../managers/GuildEmojiManager');
@@ -33,6 +32,7 @@ const {
   PremiumTiers,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const Permissions = require('../util/Permissions');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
 const Util = require('../util/Util');
 
@@ -1494,8 +1494,39 @@ class Guild extends AnonymousGuild {
     });
   }
 
-  addBot() {
-    console.log('Test only (Addbot)');
+  /**
+   * Add Bot to the guild
+   * @param {UserResolvable} bot Bot user / BotId / ApplicationId
+   * @param {?PermissionsResolvable} permissions Permissions
+   * @returns {Promise<boolean>}
+   */
+  addBot(bot, permissions) {
+    if (!this.me.permissions.has('MANAGE_WEBHOOKS')) {
+      throw new Error('MISSING_PERMISSIONS', 'MANAGE_WEBHOOKS');
+    }
+    if (!this.me.permissions.has('MANAGE_GUILD')) {
+      throw new Error('MISSING_PERMISSIONS', 'MANAGE_GUILD');
+    }
+    if (!this.client.options.captchaService) throw new Error('MISSING_CAPTCHA_SERVICE');
+    const botId = this.client.users.resolveId(bot);
+    const permission = new Permissions(Permissions.resolve(permissions ?? 0n));
+    if (!botId) throw new TypeError('INVALID_BOT_ID');
+    // Check permission
+    const selfPerm = this.me.permissions.toArray();
+    for (const perm of permission.toArray()) {
+      if (!selfPerm.includes(perm)) {
+        throw new Error('MISSING_PERMISSIONS', perm);
+      }
+    }
+    // Add bot
+    return this.client.authorizeURL(
+      `https://discord.com/api/oauth2/authorize?client_id=${botId}&permissions=${permission.bitfield}&scope=applications.commands%20bot`,
+      {
+        guild_id: this.id,
+        permissions: `${permission.bitfield}`,
+        authorize: true,
+      },
+    );
   }
 
   toJSON() {

@@ -40,7 +40,7 @@
 - [X] Guild: Fetch Members, Join / Leave, Roles, Channels, etc.
 - [X] Interactions: Slash Commands, Click Buttons, Menu (classic), Modal, Context Menu, etc.
 - [X] Voice: Connect, Disconnect, Mute, Deafen, Call, Play Audio, etc.
-- [X] Captcha Handler (Must not use due to safety concerns)
+- [X] Captcha Handler
 - [X] Documentation
 - [ ] Video stream
 - [ ] Everything

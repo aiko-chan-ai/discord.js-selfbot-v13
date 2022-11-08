@@ -321,14 +321,13 @@ class Invite extends Base {
   /**
    * Join this Guild using this invite.
    * @param {boolean} autoVerify Whether to automatically verify member
-   * @param {string} [captcha] The captcha key to add
    * @returns {Promise<void>}
    * @example
    * await client.fetchInvite('code').then(async invite => {
    *   await invite.acceptInvite();
    * });
    */
-  async acceptInvite(autoVerify = true, captcha = null) {
+  async acceptInvite(autoVerify = true) {
     if (!this.guild) throw new Error('INVITE_NO_GUILD');
     const dataHeader = {
       location: 'Join Guild',
@@ -337,11 +336,7 @@ class Invite extends Base {
       location_channel_type: ChannelTypes[this.channel?.type] ?? 0,
     };
     await this.client.api.invites(this.code).post({
-      data: captcha
-        ? {
-            captcha_key: captcha,
-          }
-        : {},
+      data: {},
       headers: {
         'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
       },

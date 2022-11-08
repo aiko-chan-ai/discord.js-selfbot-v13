@@ -1404,6 +1404,7 @@ export class GuildAuditLogsEntry<
   public targetType: TTargetType;
   public toJSON(): unknown;
   public addIntegration(applicationId: Snowflake): Promise<void>;
+  public addBot(bot: UserResolvable | Snowflake, permissions?: PermissionResolvable): Promise<boolean>;
 }
 
 export class GuildBan extends Base {

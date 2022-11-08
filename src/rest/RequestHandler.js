@@ -10,6 +10,15 @@ const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
 
+const captchaMessage = [
+  'incorrect-captcha',
+  'response-already-used',
+  'captcha-required',
+  'invalid-input-response',
+  'invalid-response',
+  'You need to update your app',
+];
+
 function parseResponse(res) {
   if (res.headers.get('content-type').startsWith('application/json')) return res.json();
   return res.arrayBuffer(); // Cre: TheDevYellowy
@@ -343,7 +352,12 @@ class RequestHandler {
       let data;
       try {
         data = await parseResponse(res);
-        if (data?.captcha_service && this.manager.client.options.captchaService) {
+        if (
+          data?.captcha_service &&
+          this.manager.client.options.captchaService &&
+          request.retries < 4 &&
+          captchaMessage.includes(data.captcha_key[0])
+        ) {
           // Retry the request after a captcha is solved
           this.manager.client.emit(
             DEBUG,
@@ -362,6 +376,7 @@ class RequestHandler {
     Route   : ${request.route}
     Key     : ${captcha}`,
           );
+          request.retries++;
           return this.execute(request, captcha);
         }
       } catch (err) {
