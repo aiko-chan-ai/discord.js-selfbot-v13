@@ -41,6 +41,7 @@ const { randomUA } = require('../util/Constants');
  * @property {boolean} [patchVoice=false] Automatically patch @discordjs/voice module (support for call)
  * @property {string} [captchaService=null] Captcha service to use for solving captcha
  * @property {string} [captchaKey=null] Captcha service key
+ * @property {string} [password=null] Your Discord account password
  * @property {boolean} [autoRedeemNitro=false] Automaticlly redeems nitro codes <NOTE: there is no cooldown on the auto redeem>
  * @property {string} [proxy] Proxy to use for the WebSocket + REST connection (proxy-agent uri type) {@link https://www.npmjs.com/package/proxy-agent}.
  * @property {boolean} [DMSync=false] Automatically synchronize call status (DM and group) at startup (event synchronization) [Warning: May cause rate limit to gateway)
