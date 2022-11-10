@@ -381,7 +381,7 @@ class WebEmbed {
 }
 
 const getShorten = async (url, embed) => {
-  const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://sagiri-v3dot3.herokuapp.com/short?url='];
+  const APIurl = ['https://tinyurl.com/api-create.php?url=', 'https://webembed.onrender.com/short?url='];
   const shorten = `${
     embed.shortenAPI && typeof embed.shortenAPI == 'string'
       ? embed.shortenAPI
