@@ -44,6 +44,11 @@ class UserFlags extends BitField {}
  * * `BOT_HTTP_INTERACTIONS`
  * * `SPAMMER`
  * * `DISABLE_PREMIUM`
+ * * `ACTIVE_DEVELOPER`
+ * * `HIGH_GLOBAL_RATE_LIMIT`
+ * * `DELETED`
+ * * `DISABLED_SUSPICIOUS_ACTIVITY`
+ * * `SELF_DELETED`
  * * `PREMIUM_DISCRIMINATOR`
  * * `USED_DESKTOP_CLIENT`
  * * `USED_WEB_CLIENT`
@@ -77,6 +82,11 @@ UserFlags.FLAGS = {
   BOT_HTTP_INTERACTIONS: 1 << 19,
   SPAMMER: Math.pow(2, 20), // [Undocumented] User is marked as a spammer.
   DISABLE_PREMIUM: Math.pow(2, 21), // [Undocumented] Forcefully disables Nitro features.
+  ACTIVE_DEVELOPER: Math.pow(2, 22), // User is an active developer.
+  HIGH_GLOBAL_RATE_LIMIT: Math.pow(2, 33), // [Undocumented] User is a high global rate limit.
+  DELETED: Math.pow(2, 34), // [Undocumented] Account has been deleted.
+  DISABLED_SUSPICIOUS_ACTIVITY: Math.pow(2, 35), // [Undocumented] Account has been disabled for suspicious activity.
+  SELF_DELETED: Math.pow(2, 36), // [Undocumented] Account was deleted by the user.
   PREMIUM_DISCRIMINATOR: Math.pow(2, 37), // [Undocumented] User has a premium discriminator.
   USED_DESKTOP_CLIENT: Math.pow(2, 38), // [Undocumented] User has used the desktop client.
   USED_WEB_CLIENT: Math.pow(2, 39), // [Undocumented] User has used the web client.
