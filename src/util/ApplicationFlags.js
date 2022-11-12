@@ -23,6 +23,14 @@ class ApplicationFlags extends BitField {}
 
 /**
  * Numeric application flags. All available properties:
+ * * `EMBEDDED_RELEASED`
+ * * `MANAGED_EMOJI`
+ * * `GROUP_DM_CREATE`
+ * * `RPC_PRIVATE_BETA`
+ * * `ALLOW_ASSETS`
+ * * `ALLOW_ACTIVITY_ACTION_SPECTATE`
+ * * `ALLOW_ACTIVITY_ACTION_JOIN_REQUEST`
+ * * `RPC_HAS_CONNECTED`
  * * `GATEWAY_PRESENCE`
  * * `GATEWAY_PRESENCE_LIMITED`
  * * `GATEWAY_GUILD_MEMBERS`
@@ -33,10 +41,20 @@ class ApplicationFlags extends BitField {}
  * * `GATEWAY_MESSAGE_CONTENT_LIMITED`
  * * `EMBEDDED_FIRST_PARTY`
  * * `APPLICATION_COMMAND_BADGE`
+ * * `ACTIVE`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/application#application-object-application-flags}
+ * @see {@link https://flags.lewistehminerz.dev/}
  */
 ApplicationFlags.FLAGS = {
+  EMBEDDED_RELEASED: 1 << 1,
+  MANAGED_EMOJI: 1 << 2,
+  GROUP_DM_CREATE: 1 << 4,
+  RPC_PRIVATE_BETA: 1 << 5,
+  ALLOW_ASSETS: 1 << 8,
+  ALLOW_ACTIVITY_ACTION_SPECTATE: 1 << 9,
+  ALLOW_ACTIVITY_ACTION_JOIN_REQUEST: 1 << 10,
+  RPC_HAS_CONNECTED: 1 << 11,
   GATEWAY_PRESENCE: 1 << 12,
   GATEWAY_PRESENCE_LIMITED: 1 << 13,
   GATEWAY_GUILD_MEMBERS: 1 << 14,
@@ -47,6 +65,7 @@ ApplicationFlags.FLAGS = {
   GATEWAY_MESSAGE_CONTENT_LIMITED: 1 << 19,
   EMBEDDED_FIRST_PARTY: 1 << 20,
   APPLICATION_COMMAND_BADGE: 1 << 23,
+  ACTIVE: 1 << 24,
 };
 
 module.exports = ApplicationFlags;

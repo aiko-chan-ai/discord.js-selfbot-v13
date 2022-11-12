@@ -80,9 +80,9 @@ UserFlags.FLAGS = {
   EARLY_VERIFIED_BOT_DEVELOPER: 1 << 17,
   DISCORD_CERTIFIED_MODERATOR: 1 << 18,
   BOT_HTTP_INTERACTIONS: 1 << 19,
-  SPAMMER: Math.pow(2, 20), // [Undocumented] User is marked as a spammer.
-  DISABLE_PREMIUM: Math.pow(2, 21), // [Undocumented] Forcefully disables Nitro features.
-  ACTIVE_DEVELOPER: Math.pow(2, 22), // User is an active developer.
+  SPAMMER: 1 << 20, // [Undocumented] User is marked as a spammer.
+  DISABLE_PREMIUM: 1 << 21, // [Undocumented] Forcefully disables Nitro features.
+  ACTIVE_DEVELOPER: 1 << 22, // User is an active developer.
   HIGH_GLOBAL_RATE_LIMIT: Math.pow(2, 33), // [Undocumented] User is a high global rate limit.
   DELETED: Math.pow(2, 34), // [Undocumented] Account has been deleted.
   DISABLED_SUSPICIOUS_ACTIVITY: Math.pow(2, 35), // [Undocumented] Account has been disabled for suspicious activity.
