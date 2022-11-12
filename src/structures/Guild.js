@@ -1515,8 +1515,9 @@ class Guild extends AnonymousGuild {
     // Check permission
     const selfPerm = this.me.permissions.toArray();
     const missingPerms = permission.toArray().filter(x => selfPerm.indexOf(x) === -1);
-    if (missingPerms[0])
-      throw new Error('MISSING_PERMISSIONS', missingPerms.join(", "));
+    if (missingPerms[0]) {
+      throw new Error('MISSING_PERMISSIONS', missingPerms.join(', '));
+    }
     // Add bot
     return this.client.authorizeURL(
       `https://discord.com/api/oauth2/authorize?client_id=${botId}&permissions=${permission.bitfield}&scope=applications.commands%20bot`,
