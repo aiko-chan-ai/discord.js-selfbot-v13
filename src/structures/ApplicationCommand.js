@@ -3,8 +3,8 @@
 const { setTimeout } = require('node:timers');
 const { findBestMatch } = require('string-similarity');
 const Base = require('./Base');
+const MessagePayload = require('./MessagePayload');
 const ApplicationCommandPermissionsManager = require('../managers/ApplicationCommandPermissionsManager');
-const MessageAttachment = require('../structures/MessageAttachment');
 const {
   ApplicationCommandOptionTypes,
   ApplicationCommandTypes,
@@ -12,7 +12,6 @@ const {
   Events,
   InteractionTypes,
 } = require('../util/Constants');
-const DataResolver = require('../util/DataResolver');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const { lazy } = require('../util/Util');
@@ -602,7 +601,7 @@ class ApplicationCommand extends Base {
    * Send Slash command to channel
    * @param {Message} message Discord Message
    * @param {Array<string>} subCommandArray SubCommand Array
-   * @param {Array<string>} options The options to Slash Command
+   * @param {Array<any>} options The options to Slash Command
    * @returns {Promise<InteractionResponse>}
    */
   // eslint-disable-next-line consistent-return
@@ -786,16 +785,18 @@ class ApplicationCommand extends Base {
       };
     };
     async function addDataFromAttachment(data) {
-      if (!(data instanceof MessageAttachment)) {
-        throw new TypeError('The attachment data must be a Discord.MessageAttachment');
+      const data_ = await MessagePayload.resolveFile(data);
+      if (!data_.file) {
+        throw new TypeError(
+          'The attachment data must be a BufferResolvable or Stream or FileOptions of MessageAttachment',
+        );
       }
       const id = attachments.length;
       attachments.push({
         id: id,
-        filename: data.name,
+        filename: data_.name,
       });
-      const resource = await DataResolver.resolveFile(data.attachment);
-      attachmentsBuffer.push({ attachment: data.attachment, name: data.name, file: resource });
+      attachmentsBuffer.push(data_);
       return id;
     }
     const getDataPost = (dataAdd = [], nonce, autocomplete = false) => {

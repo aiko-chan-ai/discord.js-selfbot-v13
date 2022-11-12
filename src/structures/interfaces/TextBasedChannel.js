@@ -439,7 +439,7 @@ class TextBasedChannel {
    * Send Slash to this channel
    * @param {UserResolvable} bot Bot user
    * @param {string} commandString Command name (and sub / group formats)
-   * @param {...?string|string[]} args Command arguments
+   * @param {...?any|any[]} args Command arguments
    * @returns {Promise<InteractionResponse>}
    * @example
    * // Send Slash to this channel

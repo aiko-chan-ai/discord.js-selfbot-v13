@@ -510,7 +510,7 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
   public static sendSlashCommand(
     message: Message,
     subCommandArray?: string[],
-    options?: string[],
+    options?: any[],
   ): Promise<InteractionResponse>;
   public static sendContextMenu(message: Message): Promise<InteractionResponse>;
 }
