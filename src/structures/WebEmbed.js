@@ -371,31 +371,31 @@ class WebEmbed {
     }
     const fullURL = `${this.baseURL}${arrayQuery.join('&')}`;
     if (this.shorten) {
-      const url = await getShorten(fullURL, this);
+      const url = await this.constructor.getShorten(fullURL, this);
       if (!url) console.log('Cannot shorten URL in WebEmbed');
       return this.hidden ? `${hiddenCharter} ${url || fullURL}` : url || fullURL;
     } else {
       return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
     }
   }
-}
 
-const getShorten = async (url, embed) => {
-  const APIurl = ['https://tinyurl.com/api-create.php?url='];
-  const shorten = `${
-    embed.shortenAPI && typeof embed.shortenAPI == 'string'
-      ? embed.shortenAPI
-      : APIurl[Math.floor(Math.random() * APIurl.length)]
-  }${encodeURIComponent(url)}`;
-  try {
-    const res = await axios.get(`${shorten}`);
-    if (typeof res.data === 'string') return res.data;
-    else if (typeof res.data === 'object') return res.data.shorten;
-    else throw new Error('Unknown error');
-  } catch {
-    return undefined;
+  static async getShorten(url, embed) {
+    const APIurl = ['https://tinyurl.com/api-create.php?url='];
+    const shorten = `${
+      embed.shortenAPI && typeof embed.shortenAPI == 'string'
+        ? embed.shortenAPI
+        : APIurl[Math.floor(Math.random() * APIurl.length)]
+    }${encodeURIComponent(url)}`;
+    try {
+      const res = await axios.get(`${shorten}`);
+      if (typeof res.data === 'string') return res.data;
+      else if (typeof res.data === 'object') return res.data.shorten;
+      else throw new Error('Unknown error');
+    } catch {
+      return undefined;
+    }
   }
-};
+}
 
 module.exports = WebEmbed;
 module.exports.hiddenEmbed = hiddenCharter;
