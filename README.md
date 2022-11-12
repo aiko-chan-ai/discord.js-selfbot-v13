@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.8`, based on `discord.js@13.12`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.9`, based on `discord.js@13.12`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -61,7 +61,11 @@ npm install discord.js-selfbot-v13@latest
 
 ```js
 const { Client } = require('discord.js-selfbot-v13');
-const client = new Client(); // All partials are loaded automatically
+const client = new Client({
+	// See other options here
+	// https://discordjs-self-v13.netlify.app/#/docs/docs/main/typedef/ClientOptions
+	// All partials are loaded automatically
+});
 
 client.on('ready', async () => {
   console.log(`${client.user.username} is ready!`);
@@ -69,8 +73,6 @@ client.on('ready', async () => {
 
 client.login('token');
 ```
-
-<strong>Github Repo (Play Youtube music) [Here](https://github.com/aiko-chan-ai/Selfbot-Example)</strong>
 
 ## Get Token ?
 
@@ -108,6 +110,8 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 
 ## Need help?
 Contact me in Discord: [Elysia#1782](https://discord.com/users/721746046543331449)
+
+Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions)
 
 ## Credits
 - [Discord.js](https://github.com/discordjs/discord.js)
