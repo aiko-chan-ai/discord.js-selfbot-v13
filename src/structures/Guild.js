@@ -58,63 +58,64 @@ class Guild extends AnonymousGuild {
     super(client, data, false);
 
     /**
-     * A manager of the members belonging to this guild
+     * A manager of the members belonging to this guild.
      * @type {GuildMemberManager}
      */
     this.members = new GuildMemberManager(this);
 
     /**
-     * A manager of the channels belonging to this guild
+     * A manager of the channels belonging to this guild.
      * @type {GuildChannelManager}
      */
     this.channels = new GuildChannelManager(this);
 
     /**
-     * A manager of the bans belonging to this guild
+     * A manager of the bans belonging to this guild.
      * @type {GuildBanManager}
      */
     this.bans = new GuildBanManager(this);
 
     /**
-     * A manager of the roles belonging to this guild
+     * A manager of the roles belonging to this guild.
      * @type {RoleManager}
      */
     this.roles = new RoleManager(this);
 
     /**
-     * A manager of the presences belonging to this guild
+     * A manager of the presences belonging to this guild.
      * @type {PresenceManager}
      */
     this.presences = new PresenceManager(this.client);
 
     /**
-     * A manager of the voice states of this guild
+     * A manager of the voice states of this guild.
      * @type {VoiceStateManager}
      */
     this.voiceStates = new VoiceStateManager(this);
 
     /**
-     * A manager of the stage instances of this guild
+     * A manager of the stage instances of this guild.
      * @type {StageInstanceManager}
      */
     this.stageInstances = new StageInstanceManager(this);
 
     /**
-     * A manager of the invites of this guild
+     * A manager of the invites of this guild.
      * @type {GuildInviteManager}
      */
     this.invites = new GuildInviteManager(this);
 
     /**
-     * A manager of the scheduled events of this guild
+     * A manager of the scheduled events of this guild.
      * @type {GuildScheduledEventManager}
      */
     this.scheduledEvents = new GuildScheduledEventManager(this);
 
     if (!data) return;
+
     if (data.unavailable) {
       /**
-       * Whether the guild is available to access. If it is not available, it indicates a server outage
+       * Whether the guild is available to access. If it is not available, it indicates a server outage.
        * @type {boolean}
        */
       this.available = false;
@@ -131,7 +132,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Whether or not the structure has been deleted
+   * Whether or not the structure has been deleted.
    * @type {boolean}
    * @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091
    */
@@ -182,7 +183,7 @@ class Guild extends AnonymousGuild {
 
     if ('discovery_splash' in data) {
       /**
-       * The hash of the guild discovery splash image
+       * The hash of the guild discovery splash image.
        * @type {?string}
        */
       this.discoverySplash = data.discovery_splash;
@@ -190,7 +191,7 @@ class Guild extends AnonymousGuild {
 
     if ('member_count' in data) {
       /**
-       * The full amount of members in this guild
+       * The full amount of members in this guild.
        * @type {number}
        */
       this.memberCount = data.member_count;
@@ -198,7 +199,7 @@ class Guild extends AnonymousGuild {
 
     if ('large' in data) {
       /**
-       * Whether the guild is "large" (has more than {@link WebsocketOptions large_threshold} members, 50 by default)
+       * Whether the guild is "large" (has more than {@link WebsocketOptions large_threshold} members, 50 by default).
        * @type {boolean}
        */
       this.large = Boolean(data.large);
@@ -206,7 +207,7 @@ class Guild extends AnonymousGuild {
 
     if ('premium_progress_bar_enabled' in data) {
       /**
-       * Whether this guild has its premium (boost) progress bar enabled
+       * Whether this guild has its premium (boost) progress bar enabled.
        * @type {boolean}
        */
       this.premiumProgressBarEnabled = data.premium_progress_bar_enabled;
@@ -243,7 +244,7 @@ class Guild extends AnonymousGuild {
 
     if ('application_id' in data) {
       /**
-       * The id of the application that created this guild (if applicable)
+       * The id of the application that created this guild (if applicable).
        * @type {?Snowflake}
        */
       this.applicationId = data.application_id;
@@ -251,7 +252,7 @@ class Guild extends AnonymousGuild {
 
     if ('afk_timeout' in data) {
       /**
-       * The time in seconds before a user is counted as "away from keyboard"
+       * The time in seconds before a user is counted as "away from keyboard".
        * @type {?number}
        */
       this.afkTimeout = data.afk_timeout;
@@ -259,7 +260,7 @@ class Guild extends AnonymousGuild {
 
     if ('afk_channel_id' in data) {
       /**
-       * The id of the voice channel where AFK members are moved
+       * The id of the voice channel where AFK members are moved.
        * @type {?Snowflake}
        */
       this.afkChannelId = data.afk_channel_id;
@@ -267,7 +268,7 @@ class Guild extends AnonymousGuild {
 
     if ('system_channel_id' in data) {
       /**
-       * The system channel's id
+       * The system channel's id.
        * @type {?Snowflake}
        */
       this.systemChannelId = data.system_channel_id;
@@ -275,7 +276,7 @@ class Guild extends AnonymousGuild {
 
     if ('premium_tier' in data) {
       /**
-       * The premium tier of this guild
+       * The premium tier of this guild.
        * @type {PremiumTier}
        */
       this.premiumTier = PremiumTiers[data.premium_tier];
@@ -283,7 +284,7 @@ class Guild extends AnonymousGuild {
 
     if ('widget_enabled' in data) {
       /**
-       * Whether widget images are enabled on this guild
+       * Whether widget images are enabled on this guild.
        * @type {?boolean}
        */
       this.widgetEnabled = data.widget_enabled;
@@ -291,7 +292,7 @@ class Guild extends AnonymousGuild {
 
     if ('widget_channel_id' in data) {
       /**
-       * The widget channel's id, if enabled
+       * The widget channel's id, if enabled.
        * @type {?string}
        */
       this.widgetChannelId = data.widget_channel_id;
@@ -299,7 +300,7 @@ class Guild extends AnonymousGuild {
 
     if ('explicit_content_filter' in data) {
       /**
-       * The explicit content filter level of the guild
+       * The explicit content filter level of the guild.
        * @type {ExplicitContentFilterLevel}
        */
       this.explicitContentFilter = ExplicitContentFilterLevels[data.explicit_content_filter];
@@ -307,7 +308,7 @@ class Guild extends AnonymousGuild {
 
     if ('mfa_level' in data) {
       /**
-       * The required MFA level for this guild
+       * The required MFA level for this guild.
        * @type {MFALevel}
        */
       this.mfaLevel = MFALevels[data.mfa_level];
@@ -315,7 +316,7 @@ class Guild extends AnonymousGuild {
 
     if ('joined_at' in data) {
       /**
-       * The timestamp the client user joined the guild at
+       * The timestamp the client user joined the guild at.
        * @type {number}
        */
       this.joinedTimestamp = new Date(data.joined_at).getTime();
@@ -323,7 +324,7 @@ class Guild extends AnonymousGuild {
 
     if ('default_message_notifications' in data) {
       /**
-       * The default message notification level of the guild
+       * The default message notification level of the guild.
        * @type {DefaultMessageNotificationLevel}
        */
       this.defaultMessageNotifications = DefaultMessageNotificationLevels[data.default_message_notifications];
@@ -331,7 +332,7 @@ class Guild extends AnonymousGuild {
 
     if ('system_channel_flags' in data) {
       /**
-       * The value set for the guild's system channel flags
+       * The value set for the guild's system channel flags.
        * @type {Readonly<SystemChannelFlags>}
        */
       this.systemChannelFlags = new SystemChannelFlags(data.system_channel_flags).freeze();
@@ -339,7 +340,7 @@ class Guild extends AnonymousGuild {
 
     if ('max_members' in data) {
       /**
-       * The maximum amount of members the guild can have
+       * The maximum amount of members the guild can have.
        * @type {?number}
        */
       this.maximumMembers = data.max_members;
@@ -349,8 +350,8 @@ class Guild extends AnonymousGuild {
 
     if ('max_presences' in data) {
       /**
-       * The maximum amount of presences the guild can have
-       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter</info>
+       * The maximum amount of presences the guild can have.
+       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter.</info>
        * @type {?number}
        */
       this.maximumPresences = data.max_presences ?? 25_000;
@@ -370,8 +371,8 @@ class Guild extends AnonymousGuild {
 
     if ('approximate_member_count' in data) {
       /**
-       * The approximate amount of members the guild has
-       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter</info>
+       * The approximate amount of members the guild has.
+       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter.</info>
        * @type {?number}
        */
       this.approximateMemberCount = data.approximate_member_count;
@@ -381,8 +382,8 @@ class Guild extends AnonymousGuild {
 
     if ('approximate_presence_count' in data) {
       /**
-       * The approximate amount of presences the guild has
-       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter</info>
+       * The approximate amount of presences the guild has.
+       * <info>You will need to fetch the guild using {@link Guild#fetch} if you want to receive this parameter.</info>
        * @type {?number}
        */
       this.approximatePresenceCount = data.approximate_presence_count;
@@ -391,15 +392,15 @@ class Guild extends AnonymousGuild {
     }
 
     /**
-     * The use count of the vanity URL code of the guild, if any
-     * <info>You will need to fetch this parameter using {@link Guild#fetchVanityData} if you want to receive it</info>
+     * The use count of the vanity URL code of the guild, if any.
+     * <info>You will need to fetch this parameter using {@link Guild#fetchVanityData} if you want to receive it.</info>
      * @type {?number}
      */
     this.vanityURLUses ??= null;
 
     if ('rules_channel_id' in data) {
       /**
-       * The rules channel's id for the guild
+       * The rules channel's id for the guild.
        * @type {?Snowflake}
        */
       this.rulesChannelId = data.rules_channel_id;
@@ -407,7 +408,7 @@ class Guild extends AnonymousGuild {
 
     if ('public_updates_channel_id' in data) {
       /**
-       * The community updates channel's id for the guild
+       * The community updates channel's id for the guild.
        * @type {?Snowflake}
        */
       this.publicUpdatesChannelId = data.public_updates_channel_id;
@@ -415,7 +416,7 @@ class Guild extends AnonymousGuild {
 
     if ('preferred_locale' in data) {
       /**
-       * The preferred locale of the guild, defaults to `en-US`
+       * The preferred locale of the guild, defaults to `en-US`.
        * @type {Locale}
        * @see {@link https://discord.com/developers/docs/reference#locales}
        */
@@ -447,7 +448,7 @@ class Guild extends AnonymousGuild {
 
     if ('owner_id' in data) {
       /**
-       * The user id of this guild's owner
+       * The user id of this guild's owner.
        * @type {Snowflake}
        */
       this.ownerId = data.owner_id;
@@ -482,7 +483,7 @@ class Guild extends AnonymousGuild {
 
     if (!this.emojis) {
       /**
-       * A manager of the emojis belonging to this guild
+       * A manager of the emojis belonging to this guild.
        * @type {GuildEmojiManager}
        */
       this.emojis = new GuildEmojiManager(this);
@@ -496,7 +497,7 @@ class Guild extends AnonymousGuild {
 
     if (!this.stickers) {
       /**
-       * A manager of the stickers belonging to this guild
+       * A manager of the stickers belonging to this guild.
        * @type {GuildStickerManager}
        */
       this.stickers = new GuildStickerManager(this);
@@ -512,7 +513,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * The time the client user joined the guild
+   * The time the client user joined the guild.
    * @type {Date}
    * @readonly
    */
@@ -540,7 +541,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * AFK voice channel for this guild
+   * AFK voice channel for this guild.
    * @type {?VoiceChannel}
    * @readonly
    */
@@ -549,7 +550,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * System channel for this guild
+   * System channel for this guild.
    * @type {?TextChannel}
    * @readonly
    */
@@ -558,7 +559,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Widget channel for this guild
+   * Widget channel for this guild.
    * @type {?(TextChannel|NewsChannel|VoiceChannel|StageChannel|ForumChannel)}
    * @readonly
    */
@@ -567,7 +568,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Rules channel for this guild
+   * Rules channel for this guild.
    * @type {?TextChannel}
    * @readonly
    */
@@ -576,7 +577,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Public updates channel for this guild
+   * Public updates channel for this guild.
    * @type {?TextChannel}
    * @readonly
    */
@@ -585,7 +586,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * The client user as a GuildMember of this guild
+   * The client user as a GuildMember of this guild.
    * @type {?GuildMember}
    * @readonly
    */
@@ -599,7 +600,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * The maximum bitrate available for this guild
+   * The maximum bitrate available for this guild.
    * @type {number}
    * @readonly
    */
@@ -686,7 +687,7 @@ class Guild extends AnonymousGuild {
 
   /**
    * Fetches the vanity URL invite object to this guild.
-   * Resolves with an object containing the vanity URL invite code and the use count
+   * Resolves with an object containing the vanity URL invite code and the use count.
    * @returns {Promise<Vanity>}
    * @example
    * // Fetch invite data
@@ -739,14 +740,14 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Data for the Guild Widget Settings object
+   * Data for the Guild Widget Settings object.
    * @typedef {Object} GuildWidgetSettings
    * @property {boolean} enabled Whether the widget is enabled
    * @property {?GuildChannel} channel The widget invite channel
    */
 
   /**
-   * The Guild Widget Settings object
+   * The Guild Widget Settings object.
    * @typedef {Object} GuildWidgetSettingsData
    * @property {boolean} enabled Whether the widget is enabled
    * @property {?GuildChannelResolvable} channel The widget invite channel
@@ -926,7 +927,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Welcome channel data
+   * Welcome channel data.
    * @typedef {Object} WelcomeChannelData
    * @property {string} description The description to show for this welcome channel
    * @property {TextChannel|NewsChannel|StoreChannel|Snowflake} channel The channel to link for this welcome channel
@@ -934,7 +935,7 @@ class Guild extends AnonymousGuild {
    */
 
   /**
-   * Welcome screen edit data
+   * Welcome screen edit data.
    * @typedef {Object} WelcomeScreenEditData
    * @property {boolean} [enabled] Whether the welcome screen is enabled
    * @property {string} [description] The description for the welcome screen
@@ -958,7 +959,7 @@ class Guild extends AnonymousGuild {
    */
 
   /**
-   * Updates the guild's welcome screen
+   * Updates the guild's welcome screen.
    * @param {WelcomeScreenEditData} data Data to edit the welcome screen with
    * @returns {Promise<WelcomeScreen>}
    * @example
@@ -1164,7 +1165,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Sets a new guild banner.
+   * Sets a new guild's banner.
    * @param {?(Base64Resolvable|BufferResolvable)} banner The new banner of the guild
    * @param {string} [reason] Reason for changing the guild's banner
    * @returns {Promise<Guild>}
@@ -1192,7 +1193,7 @@ class Guild extends AnonymousGuild {
     return this.edit({ rulesChannel }, reason);
   }
   /**
-   * Change Guild Position (from * to Folder or Home)
+   * Change Guild Position (from * to Folder or Home).
    * @param {number} position  Guild Position
    * * **WARNING**: Type = `FOLDER`, newPosition is the guild's index in the Folder.
    * @param {string|number} type Move to folder or home
@@ -1264,7 +1265,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Edits the enabled state of the guild's premium progress bar
+   * Edits the enabled state of the guild's premium progress bar.
    * @param {boolean} [enabled=true] The new enabled state of the guild's premium progress bar
    * @param {string} [reason] Reason for changing the state of the guild's premium progress bar
    * @returns {Promise<Guild>}
@@ -1291,7 +1292,7 @@ class Guild extends AnonymousGuild {
 
   /**
    * Batch-updates the guild's channels' positions.
-   * <info>Only one channel's parent can be changed at a time</info>
+   * <info>Only one channel's parent can be changed at a time.</info>
    * @param {ChannelPosition[]} channelPositions Channel positions to update
    * @returns {Promise<Guild>}
    * @deprecated Use {@link GuildChannelManager#setPositions} instead
@@ -1314,14 +1315,14 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * The data needed for updating a guild role's position
+   * The data needed for updating a guild role's position.
    * @typedef {Object} GuildRolePosition
    * @property {RoleResolvable} role The role's id
    * @property {number} position The position to update
    */
 
   /**
-   * Batch-updates the guild's role positions
+   * Batch-updates the guild's role positions.
    * @param {GuildRolePosition[]} rolePositions Role positions to update
    * @returns {Promise<Guild>}
    * @deprecated Use {@link RoleManager#setPositions} instead
@@ -1376,7 +1377,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Marks the guild as read
+   * Marks the guild as read.
    * @returns {Promise<undefined>} nothing :)
    * @example
    * const guild = client.guilds.fetch('222078108977594368');
@@ -1428,7 +1429,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Set Community Feature
+   * Set Community Feature.
    * @param {boolean} stats True / False to enable / disable Community Feature
    * @param {TextChannelResolvable} publicUpdatesChannel The community updates channel of the guild
    * @param {TextChannelResolvable} rulesChannel The new rules channel
@@ -1468,7 +1469,7 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Add Integrations to the guild
+   * Add Integrations to the guild.
    * @param {Snowflake} applicationId Application (ID) target
    * @returns {Promise<void>}
    */
@@ -1495,9 +1496,9 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Add Bot to the guild
-   * @param {UserResolvable} bot Bot user / BotId / ApplicationId
-   * @param {?PermissionsResolvable} permissions Permissions
+   * Add Bot to the guild.
+   * @param {UserResolvable} bot BotId / ApplicationId
+   * @param {?PermissionResolvable} permissions Permissions
    * @returns {Promise<boolean>}
    */
   addBot(bot, permissions) {
@@ -1513,10 +1514,9 @@ class Guild extends AnonymousGuild {
     if (!botId) throw new TypeError('INVALID_BOT_ID');
     // Check permission
     const selfPerm = this.me.permissions.toArray();
-    for (const perm of permission.toArray()) {
-      if (!selfPerm.includes(perm)) {
-        throw new Error('MISSING_PERMISSIONS', perm);
-      }
+    const missingPerms = permission.toArray().filter(x => selfPerm.indexOf(x) === -1);
+    if (missingPerms[0]) {
+      throw new Error('MISSING_PERMISSIONS', missingPerms.join(', '));
     }
     // Add bot
     return this.client.authorizeURL(
