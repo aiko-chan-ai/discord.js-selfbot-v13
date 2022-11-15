@@ -697,6 +697,12 @@ class WebSocketShard extends EventEmitter {
     client.options.ws.properties = Object.assign(client.options.ws.properties, {
       browser_user_agent: client.options.http.headers['User-Agent'],
     });
+    Object.keys(client.options.ws.properties)
+      .filter(k => k.startsWith('$'))
+      .forEach(k => {
+        client.options.ws.properties[k.slice(1)] = client.options.ws.properties[k];
+        delete client.options.ws.properties[k];
+      });
     const d = {
       ...client.options.ws,
       // Remove, Req by dolfies_person [Reddit]: intents: Intents.resolve(client.options.intents),
