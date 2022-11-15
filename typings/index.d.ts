@@ -257,6 +257,7 @@ export abstract class RichPresence {
   ): Promise<ExternalAssets[]>;
   public static getUUID(): string;
   public toJSON(): object;
+  public toString(): string;
 }
 
 export interface ExternalAssets {
@@ -305,6 +306,7 @@ export abstract class CustomStatus {
   public setEmoji(emoji?: EmojiIdentifierResolvable): this;
   public setState(state: string): this;
   public toJSON(): object;
+  public toString(): string;
 }
 
 export class Activity {
@@ -852,6 +854,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
   public password: string | null;
+  public readonly sessionId: string | null;
   public destroy(): void;
   public logout(): Promise<void>;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
@@ -869,6 +872,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
+  public checkUpdate(): Promise<this>;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
@@ -4205,7 +4209,7 @@ export type ActivityFlagsString =
   | 'PARTY_PRIVACY_VOICE_CHANNEL'
   | 'EMBEDDED';
 
-export type ActivitiesOptions = Omit<ActivityOptions, 'shardId'>;
+export type ActivitiesOptions = Omit<ActivityOptions | CustomStatus | RichPresence | SpotifyRPC, 'shardId'>;
 
 export interface ActivityOptions {
   name?: string;

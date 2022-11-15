@@ -2,33 +2,51 @@
 
 let ClientUser;
 const { VoiceConnection } = require('@discordjs/voice');
-const axios = require('axios');
 const chalk = require('chalk');
-const Discord = require('../../../index');
 const { Events, Opcodes } = require('../../../util/Constants');
 const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
-let running = false;
-/**
- * Emitted whenever clientOptions.checkUpdate = false
- * @event Client#update
- * @param {string} oldVersion Current version
- * @param {string} newVersion Latest version
- */
+let firstReady = false;
 
-async function checkUpdate(client) {
-  const res_ = await axios
-    .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
-    .catch(() => {});
-  if (!res_) {
-    return client.emit(Events.DEBUG, `${chalk.redBright('[Fail]')} Check Update error`);
+function patchVoice(client) {
+  try {
+    /* eslint-disable */
+    VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
+    client.emit(
+      'debug',
+      `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(
+        'VoiceConnection.prototype.configureNetworking',
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
+    );
+    /* eslint-enable */
+  } catch (e) {
+    client.emit(
+      'debug',
+      `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
+        'VoiceConnection.prototype.configureNetworking',
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]\n${e.stack}`,
+    );
+    client.emit(
+      Events.ERROR,
+      `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
+        'VoiceConnection.prototype.configureNetworking',
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
+    );
+    client.emit(
+      Events.ERROR,
+      `${chalk.redBright('[Error]')} Please install ${chalk.bgMagentaBright(
+        '@discordjs/voice',
+      )} version ${chalk.redBright('v0.13.0')}`,
+    );
   }
-  const latest_tag = res_.data['dist-tags'].latest;
-  if (client.options.checkUpdate) {
-    if (latest_tag !== Discord.version && Discord.version.includes('-') == false) {
-      if (!running) {
+}
+
+module.exports = async (client, { d: data }, shard) => {
+  if (!firstReady) {
+    client.once('update', (currentVersion, newVersion) => {
+      if (!newVersion) {
         console.log(`
-      ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
-      Current: ${chalk.redBright(Discord.version)} => Latest: ${chalk.greenBright(latest_tag)}
+      ${chalk.redBright('[WARNING]')} Cannot check new Discord.js-selfbot-v13 version.
+      Current: ${chalk.blueBright(currentVersion)}
   
       If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
@@ -38,11 +56,23 @@ async function checkUpdate(client) {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`);
-      }
-    } else if (!running) {
-      console.log(
-        `
-      ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(Discord.version)}
+      } else if (currentVersion !== newVersion && !currentVersion.includes('-')) {
+        console.log(`
+      ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
+      Current: ${chalk.redBright(currentVersion)} => Latest: ${chalk.greenBright(newVersion)}
+  
+      If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
+  
+      const client = new Client({
+          checkUpdate: false,
+      });
+  
+      and using event update
+      https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`);
+      } else {
+        console.log(
+          `
+      ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(currentVersion)}
   
       If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
   
@@ -52,49 +82,22 @@ async function checkUpdate(client) {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`,
-      );
-    }
-  } else {
-    client.emit('update', Discord.version, latest_tag);
-  }
-  running = true;
-  return undefined;
-}
+        );
+      }
+    });
 
-module.exports = async (client, { d: data }, shard) => {
-  checkUpdate(client);
-
-  if (client.options.patchVoice && !running) {
-    try {
-      /* eslint-disable */
-      VoiceConnection.prototype.configureNetworking = VoiceConnection_patch.prototype.configureNetworking;
-      client.emit(
-        Events.DEBUG,
-        `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(
-          'VoiceConnection.prototype.configureNetworking',
-        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
-      );
-      /* eslint-enable */
-    } catch (e) {
-      client.emit(
-        Events.DEBUG,
-        `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
-          'VoiceConnection.prototype.configureNetworking',
-        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]\n${e.stack}`,
-      );
-      client.emit(
-        Events.ERROR,
-        `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
-          'VoiceConnection.prototype.configureNetworking',
-        )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.13.0')}]`,
-      );
-      client.emit(
-        Events.ERROR,
-        `${chalk.redBright('[Error]')} Please install ${chalk.bgMagentaBright(
-          '@discordjs/voice',
-        )} version ${chalk.redBright('v0.13.0')}`,
-      );
+    if (client.options.checkUpdate) {
+      client.checkUpdate();
     }
+
+    if (client.options.patchVoice) {
+      patchVoice(client);
+    }
+
+    if (client.options.readyStatus) {
+      client.customStatusAuto(client);
+    }
+    firstReady = true;
   }
 
   client.session_id = data.session_id;
@@ -133,10 +136,6 @@ module.exports = async (client, { d: data }, shard) => {
     console.warn(
       `Gateway Rate Limit Warning: Sending ${data.private_channels.length} Requests / ${Date.now() - syncTime || 1} ms`,
     );
-  }
-
-  if (client.options.readyStatus && !running) {
-    client.customStatusAuto(client);
   }
 
   for (const guild of data.guilds) {

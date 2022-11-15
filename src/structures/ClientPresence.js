@@ -1,6 +1,7 @@
 'use strict';
 
 const { Presence } = require('./Presence');
+const { CustomStatus } = require('./RichPresence');
 const { TypeError } = require('../errors');
 const { Opcodes, ActivityTypes } = require('../util/Constants');
 
@@ -48,7 +49,9 @@ class ClientPresence extends Presence {
     };
     if (activities?.length) {
       for (const [i, activity] of activities.entries()) {
-        if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
+        if (!(activity instanceof CustomStatus) && typeof activity.name !== 'string') {
+          throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
+        }
         activity.type ??= 0;
         data.activities.push(
           Object.assign(activity, {

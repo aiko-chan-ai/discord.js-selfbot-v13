@@ -4,11 +4,14 @@ const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const { getVoiceConnection } = require('@discordjs/voice');
+const axios = require('axios');
+const chalk = require('chalk');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
 const WebSocketManager = require('./websocket/WebSocketManager');
 const { Error, TypeError, RangeError } = require('../errors');
+const Discord = require('../index');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const ChannelManager = require('../managers/ChannelManager');
 const ClientSettingManager = require('../managers/ClientSettingManager');
@@ -237,10 +240,6 @@ class Client extends BaseClient {
      */
     this.usedCodes = [];
 
-    /**
-     * Session ID
-     * @type {?string}
-     */
     this.session_id = null;
 
     if (this.options.messageSweepInterval > 0) {
@@ -258,6 +257,15 @@ class Client extends BaseClient {
       this.usedCodes = [];
       // 1 hours
     }, 3_600_000);
+  }
+
+  /**
+   * Session ID
+   * @type {?string}
+   * @readonly
+   */
+  get sessionId() {
+    return this.session_id;
   }
 
   /**
@@ -537,6 +545,29 @@ class Client extends BaseClient {
 
       QR.connect();
     });
+  }
+
+  /**
+   * Emitted whenever clientOptions.checkUpdate = false
+   * @event Client#update
+   * @param {string} oldVersion Current version
+   * @param {string} newVersion Latest version
+   */
+
+  /**
+   * Check for updates
+   * @returns {Promise<Client>}
+   */
+  async checkUpdate() {
+    const res_ = await axios
+      .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
+      .catch(() => {});
+    if (!res_) {
+      return this.emit('debug', `${chalk.redBright('[Fail]')} Check Update error`);
+    }
+    const latest_tag = res_.data['dist-tags'].latest;
+    this.emit('update', Discord.version, latest_tag);
+    return this;
   }
 
   /**

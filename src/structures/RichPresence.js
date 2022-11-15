@@ -77,6 +77,18 @@ class CustomStatus {
       state: this.state,
     };
   }
+
+  /**
+   * When concatenated with a string, this automatically returns the activities' name instead of the Activity object.
+   * @returns {string}
+   */
+  toString() {
+    return this.name;
+  }
+
+  _clone() {
+    return Object.assign(Object.create(this), this);
+  }
 }
 
 class RichPresence {
@@ -519,6 +531,18 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       },
     });
     return res;
+  }
+
+  /**
+   * When concatenated with a string, this automatically returns the activities' name instead of the Activity object.
+   * @returns {string}
+   */
+  toString() {
+    return this.name;
+  }
+
+  _clone() {
+    return Object.assign(Object.create(this), this);
   }
 }
 
