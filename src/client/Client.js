@@ -985,6 +985,7 @@ class Client extends BaseClient {
   sleep(miliseconds) {
     return new Promise(r => setTimeout(r, miliseconds));
   }
+  
   /**
    * Validates the client options.
    * @param {ClientOptions} [options=this.options] Options to validate
