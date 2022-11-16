@@ -878,6 +878,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sweepMessages(lifetime?: number): number;
   public customStatusAuto(client?: this): undefined;
   public authorizeURL(url: string, options?: object): Promise<boolean>;
+  public sleep(milliseconds: number): Promise<void>;
   public toJSON(): unknown;
 
   public on<K extends keyof ClientEvents>(event: K, listener: (...args: ClientEvents[K]) => Awaitable<void>): this;

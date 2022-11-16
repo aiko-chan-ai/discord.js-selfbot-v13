@@ -636,7 +636,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Automatically Redeem Nitro from raw message
+   * Automatically Redeem Nitro from raw message.
    * @param {Message} message Discord Message
    */
   async autoRedeemNitro(message) {
@@ -645,7 +645,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Redeem nitro from code or url
+   * Redeem nitro from code or url.
    * @param {string} nitro Nitro url or code
    * @param {TextChannelResolvable} channel Channel that the code was sent in
    * @param {boolean} failIfNotExists Whether to fail if the code doesn't exist
@@ -910,7 +910,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Sets the client's presence. (Sync Setting)
+   * Sets the client's presence. (Sync Setting).
    * @param {Client} client Discord Client
    */
   customStatusAuto(client) {
@@ -932,7 +932,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Authorize URL
+   * Authorize an URL.
    * @param {string} url Discord Auth URL
    * @param {Object} options Oauth2 options
    * @returns {Promise<boolean>}
@@ -977,6 +977,11 @@ class Client extends BaseClient {
     return true;
   }
 
+  /**
+   * Makes waiting time for Client.
+   * @param {number} miliseconds Sleeping time as milliseconds.
+   * @returns {Promise<void>}
+   */
   sleep(miliseconds) {
     return new Promise(r => setTimeout(r, miliseconds));
   }
