@@ -437,21 +437,21 @@ class TextBasedChannel {
 
   /**
    * Send Slash to this channel
-   * @param {UserResolvable} bot Bot user
+   * @param {UserResolvable} bot Bot user (BotID, not applicationID)
    * @param {string} commandString Command name (and sub / group formats)
    * @param {...?any|any[]} args Command arguments
    * @returns {Promise<InteractionResponse>}
    * @example
-   * // Send Slash to this channel
-   * // Demo:
-   * // + BotID: "123456789012345678"
-   * // + CommandName: "embed"
-   * // + Args: "title", "description", "author", 'color' (Optional)
-   * channel.sendSlash('123456789012345678', 'embed', 'title', 'description', 'author', '#00ff00')
-   * // Send embed with Title and Color:
-   * channel.sendSlash('123456789012345678', 'embed', 'title', undefined, undefined, '#00ff00')
-   * // CommandName is Group Command / Sub Command
-   * channel.sendSlash('123456789012345678', 'embed title', 'description', 'author', '#00ff00')
+   * // Send a basic slash
+   * channel.sendSlash('botid', 'ping)
+   *   .then(console.log)
+   *   .catch(console.error);
+   * @example
+   * // Send a remote file
+   * channel.send('botid', 'emoji upload', 'https://cdn.discordapp.com/icons/222078108977594368/6e1019b3179d71046e463a75915e7244.png?size=2048', 'test')
+   *   .then(console.log)
+   *   .catch(console.error);
+   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md}
    */
   async sendSlash(bot, commandString, ...args) {
     const perms =
@@ -462,7 +462,7 @@ class TextBasedChannel {
       throw new Error(
         'INTERACTION_SEND_FAILURE',
         `Cannot send Slash to ${this.toString()} ${
-          this.recipient ? 'because user has been blocked' : 'due to missing SEND_MESSAGES permission'
+          this.recipient ? 'because bot has been blocked' : 'due to missing SEND_MESSAGES permission'
         }`,
       );
     }
@@ -485,7 +485,6 @@ class TextBasedChannel {
     }
     if (!bot) throw new Error('MUST_SPECIFY_BOT');
     const botId = this.client.users.resolveId(bot);
-    // ? maybe ...
     const user = await this.client.users.fetch(botId).catch(() => {});
     if (!user || !user.bot || !user.application) {
       throw new Error('botId is not a bot or does not have an application slash command');

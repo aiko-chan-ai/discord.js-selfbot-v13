@@ -173,6 +173,7 @@ class GuildMemberManager extends CachedManager {
    * guild.members.fetch({ query: 'hydra', limit: 1 })
    *   .then(console.log)
    *   .catch(console.error);
+   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md}
    */
   fetch(options) {
     if (!options || !options?.query) {

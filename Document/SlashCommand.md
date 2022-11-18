@@ -1,10 +1,4 @@
-# Slash command demo 
-- Support Autocomplete feature (half)
-- Unused `guild.searchInteraction()` (Deleted)
-
-# <strong>BREAKING CHANGE: Using Slash Command (Sub Command / Sub Group Command) will not accept subCommand argument in args. That means Command Name needs to be changed same as Discord Client</strong>
-
-# All image demo : v2.3
+# Slash command
 
 # Slash Command (no options)
 
@@ -12,38 +6,25 @@
 
 ![image](https://user-images.githubusercontent.com/71698422/173344527-86520c60-64cd-459c-ba3b-d35f14279f93.png)
 
-`vietnamese .-.`
-
-### Code test
+### Code
 
 ```js
 await message.channel.sendSlash('botid', 'aiko')
 ```
 
-### Result
-
-![image](https://user-images.githubusercontent.com/71698422/173346835-c747daa5-cd99-41df-9d28-fecf3b7e1ac9.png)
-
 # Slash Command + Sub option (group)
 
-### Demo (v2.5)
+### Demo
 
 ![image](https://user-images.githubusercontent.com/71698422/173346438-678009a1-870c-49a2-97fe-8ceed4f1ab64.png)
 
 ### Code test
 
-```diff
-   v2.5
-- await message.channel.sendSlash('450323683840491530', 'animal', 'chat', 'bye')
-   v2.6+
-+ await message.channel.sendSlash('450323683840491530', 'animal chat', 'bye')
+```js
+await message.channel.sendSlash('450323683840491530', 'animal chat', 'bye')
 ```
 
-### Result
-
-![image](https://user-images.githubusercontent.com/71698422/173346620-ba54f0d8-efc6-4f40-9093-34feda171a3c.png)
-
-# Slash Command with Attachment (must use MessageAttachment)
+# Slash Command with Attachment
 
 ### Demo
 

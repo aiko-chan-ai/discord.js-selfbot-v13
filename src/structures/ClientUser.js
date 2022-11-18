@@ -375,6 +375,7 @@ class ClientUser extends User {
    * @example
    * // Set the client user's presence
    * client.user.setPresence({ activities: [{ name: 'with discord.js' }], status: 'idle' });
+   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/RichPresence.md}
    */
   setPresence(data) {
     return this.client.presence.set(data);
@@ -419,6 +420,7 @@ class ClientUser extends User {
    * @example
    * // Set the client user's activity
    * client.user.setActivity('discord.js', { type: 'WATCHING' });
+   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/RichPresence.md}
    */
   setActivity(name, options = {}) {
     if (!name) {
@@ -444,21 +446,21 @@ class ClientUser extends User {
 
   /**
    * Create an invite [Friend Invites]
-   * @param {CreateInviteOptions} [options={}] The options for creating the invite [maxAge and maxUses are available]
+   * maxAge: 86400 | maxUses: 0
    * @returns {Promise<Invite>}
-   * @see https://github.com/13-05/hidden-disc-docs#js-snippet-for-creating-friend-invites
+   * @see {@link https://github.com/13-05/hidden-disc-docs#js-snippet-for-creating-friend-invites}
    * @example
    * // Options not working
    * client.user.getInvite();
    *   .then(console.log)
    *   .catch(console.error);
    */
-  async getInvite({ maxAge = 86400, maxUses = 0 } = {}) {
+  async getInvite() {
     const data = await this.client.api.users['@me'].invites.post({
       data: {
         validate: null,
-        max_age: maxAge,
-        max_uses: maxUses,
+        max_age: 86400,
+        max_uses: 0,
         target_type: 2,
         temporary: false,
       },
