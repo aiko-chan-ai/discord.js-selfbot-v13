@@ -742,7 +742,9 @@ class ApplicationCommand extends Base {
     };
     const parseSubCommand = async (subCommandName, options, subGroup) => {
       const options_sub = subGroup ? subGroup.options : this.options;
-      const subCommand = options_sub.find(o => o.name == subCommandName && o.type == 'SUB_COMMAND');
+      const subCommand = options_sub.find(
+        o => (o.name == subCommandName || o.nameLocalized == subCommandName) && o.type == 'SUB_COMMAND',
+      );
       if (!subCommand) {
         throw buildError(
           'SubCommand',
@@ -768,7 +770,9 @@ class ApplicationCommand extends Base {
       };
     };
     const parseSubGroupCommand = async (subGroupName, subName) => {
-      const subGroup = this.options.find(o => o.name == subGroupName && o.type == 'SUB_COMMAND_GROUP');
+      const subGroup = this.options.find(
+        o => (o.name == subGroupName || o.nameLocalized == subGroupName) && o.type == 'SUB_COMMAND_GROUP',
+      );
       if (!subGroup) {
         throw buildError(
           'SubGroupCommand',
