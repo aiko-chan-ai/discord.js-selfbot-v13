@@ -425,7 +425,7 @@ class WebSocketShard extends EventEmitter {
         this.emit(ShardEvents.READY);
 
         this.sessionId = packet.d.session_id;
-        this.expectedGuilds = new Set(packet.d.guilds.map(d => d.id));
+        this.expectedGuilds = new Set(packet.d.guilds.filter(d => d.unavailable).map(d => d.id));
         this.status = Status.WAITING_FOR_GUILDS;
         this.debug(`[READY] Session ${this.sessionId}.`);
         this.lastHeartbeatAcked = true;
@@ -528,23 +528,20 @@ class WebSocketShard extends EventEmitter {
 
     const { waitGuildTimeout } = this.manager.client.options;
 
-    this.readyTimeout = setTimeout(
-      () => {
-        this.debug(
-          `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
-            `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
-              this.expectedGuilds.size
-            }`,
-        );
+    this.readyTimeout = setTimeout(() => {
+      this.debug(
+        `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
+          `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
+            this.expectedGuilds.size
+          }`,
+      );
 
-        this.readyTimeout = null;
+      this.readyTimeout = null;
 
-        this.status = Status.READY;
+      this.status = Status.READY;
 
-        this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
-      },
-      hasGuildsIntent && this.manager.client.user.bot ? waitGuildTimeout : 0,
-    ).unref();
+      this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
+    }, hasGuildsIntent && waitGuildTimeout).unref();
   }
 
   /**
