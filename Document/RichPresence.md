@@ -1,3 +1,10 @@
+## Setup
+```js
+const client = new Client({
+  readyStatus: false,
+});
+```
+
 ## Custom Status and RPC
 
 <strong>Custom Status</strong>
@@ -6,7 +13,7 @@
 const r = new Discord.CustomStatus()
 	.setState('Discord')
 	.setEmoji('💬')
-client.user.setActivity(r.toJSON());
+client.user.setActivity(r);
 ```
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/994318117243203758/unknown.png'>
@@ -31,7 +38,7 @@ const r = new Discord.RichPresence()
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
 	.addButton('name', 'https://link.com/')
-client.user.setActivity(r.toJSON());
+client.user.setActivity(r);
 ```
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/994300662378676264/unknown.png'>
 
@@ -46,7 +53,7 @@ const r = new Discord.SpotifyRPC(client)
 	.setStartTimestamp(Date.now())
 	.setEndTimestamp(Date.now() + 1_000 * (2 * 60 + 56)) // Song length = 2m56s
 	.setSongId('667eE4CFfNtJloC6Lvmgrx'); // Song ID
-client.user.setActivity(r.toJSON());
+client.user.setActivity(r);
 ```
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/994512257914515456/unknown.png'>
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/994512258128420944/unknown.png'>
@@ -102,7 +109,7 @@ const r = new Discord.RichPresence()
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
 	.addButton('name', 'https://link.com/')
-client.user.setActivity(r.toJSON());
+client.user.setActivity(r);
 ```
 
 ## Method 2: (Discord URL, 2.3.78+)
@@ -126,7 +133,7 @@ const r = new Discord.RichPresence()
 	.setAssetsSmallImage('895316294222635008')
 	.setAssetsSmallText('Bot')
 	.addButton('name', 'https://link.com/')
-client.user.setActivity(r.toJSON());
+client.user.setActivity(r);
 ```
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995301015257616414/unknown.png'>
@@ -144,7 +151,7 @@ rpc
 	.setDetails('Hard - Lvl.8')
 	.setAssetsLargeImage(imageSet[0].external_asset_path)
 	.setAssetsSmallImage(imageSet[1].external_asset_path)
-client.user.setActivity(rpc.toJSON());
+client.user.setActivity(rpc);
 ```
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/997781209998434355/unknown.png'>
