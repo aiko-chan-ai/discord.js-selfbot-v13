@@ -980,7 +980,7 @@ class Client extends BaseClient {
   /**
    * Makes waiting time for Client.
    * @param {number} miliseconds Sleeping time as milliseconds.
-   * @returns {Promise<void>}
+   * @returns {Promise<void> | null}
    */
   sleep(miliseconds) {
     return typeof miliseconds === 'number' ? new Promise(r => setTimeout(r, miliseconds)) : null;
