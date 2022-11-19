@@ -4716,6 +4716,7 @@ export interface ClientOptions {
   proxy?: string;
   captchaService?: string;
   captchaKey?: string;
+  interactionTimeout?: number;
 }
 
 // end copy

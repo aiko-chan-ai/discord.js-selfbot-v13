@@ -858,7 +858,7 @@ class ApplicationCommand extends Base {
           this.client.removeListener(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
           this.client.decrementMaxListeners();
           resolve(value);
-        }, 15_000).unref();
+        }, this.client.options.interactionTimeout).unref();
         this.client.incrementMaxListeners();
         this.client.on(Events.APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE, handler);
       });
@@ -896,7 +896,7 @@ class ApplicationCommand extends Base {
           this.client.removeListener('interactionResponse', handler);
           this.client.decrementMaxListeners();
           reject(new Error('INTERACTION_TIMEOUT'));
-        }, 15_000).unref();
+        }, this.client.options.interactionTimeout).unref();
         this.client.incrementMaxListeners();
         this.client.on('interactionResponse', handler);
       });
@@ -987,7 +987,7 @@ class ApplicationCommand extends Base {
         this.client.removeListener('interactionResponse', handler);
         this.client.decrementMaxListeners();
         reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
+      }, this.client.options.interactionTimeout).unref();
       this.client.incrementMaxListeners();
       this.client.on('interactionResponse', handler);
     });
