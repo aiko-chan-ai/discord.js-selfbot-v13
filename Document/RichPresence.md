@@ -101,7 +101,7 @@ const r = new Discord.RichPresence()
 	.setParty({
 		max: 9,
 		current: 1,
-		id: Discord.RichPresence.getUUID(),
+		id: Discord.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
 	.setAssetsLargeImage('mp:attachments/820557032016969751/991172011483218010/unknown.png')
@@ -125,7 +125,7 @@ const r = new Discord.RichPresence()
 	.setParty({
 		max: 9,
 		current: 1,
-		id: Discord.RichPresence.getUUID(),
+		id: Discord.getUUID(),
 	})
 	.setStartTimestamp(Date.now())
 	.setAssetsLargeImage('https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png')
