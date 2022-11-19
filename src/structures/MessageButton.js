@@ -217,7 +217,7 @@ class MessageButton extends BaseMessageComponent {
         message.client.removeListener('interactionResponse', handler);
         message.client.decrementMaxListeners();
         reject(new Error('INTERACTION_TIMEOUT'));
-      }, 15_000).unref();
+      }, message.client.options.interactionTimeout).unref();
       message.client.incrementMaxListeners();
       message.client.on('interactionResponse', handler);
     });

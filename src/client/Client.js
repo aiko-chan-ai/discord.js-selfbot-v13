@@ -32,7 +32,7 @@ const StickerPack = require('../structures/StickerPack');
 const VoiceRegion = require('../structures/VoiceRegion');
 const Webhook = require('../structures/Webhook');
 const Widget = require('../structures/Widget');
-const { Events, InviteScopes, Status } = require('../util/Constants');
+const { Events, InviteScopes, Status, captchaServices } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
 const Options = require('../util/Options');
@@ -992,7 +992,6 @@ class Client extends BaseClient {
    * @private
    */
   _validateOptions(options = this.options) {
-    const captchaService = ['2captcha'];
     if (typeof options.intents === 'undefined') {
       throw new TypeError('CLIENT_MISSING_INTENTS');
     } else {
@@ -1010,10 +1009,10 @@ class Client extends BaseClient {
     if (options && typeof options.autoRedeemNitro !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
     }
-    if (options && options.captchaService && !captchaService.includes(options.captchaService)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaService.join(', '));
+    if (options && options.captchaService && !captchaServices.includes(options.captchaService)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaServices.join(', '));
     }
-    if (options && captchaService.includes(options.captchaService) && typeof options.captchaKey !== 'string') {
+    if (options && captchaServices.includes(options.captchaService) && typeof options.captchaKey !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
     }
     if (options && typeof options.DMSync !== 'boolean') {
@@ -1024,6 +1023,9 @@ class Client extends BaseClient {
     }
     if (options && options.password && typeof options.password !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'password', 'a string');
+    }
+    if (options && options.interactionTimeout && typeof options.interactionTimeout !== 'number') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'interactionTimeout', 'a number');
     }
     if (options && typeof options.proxy !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
