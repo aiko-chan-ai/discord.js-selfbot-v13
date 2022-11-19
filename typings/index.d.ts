@@ -161,13 +161,13 @@ import {
 // @ts-ignore
 //#region Classes
 
-export abstract class SessionManager extends CachedManager {
+export class SessionManager extends CachedManager {
   constructor(client: Client, iterable?: Iterable<unknown>);
   public fetch(): Promise<SessionManager>;
   public logoutAllDevices(mfaCode?: string): Promise<undefined>;
 }
 
-export abstract class Session extends Base {
+export class Session extends Base {
   constructor(client: Client);
   public id?: string;
   public clientInfo?: SessionClientInfo;
@@ -182,7 +182,7 @@ export interface SessionClientInfo {
   os?: string;
 }
 
-export abstract class DiscordAuthWebsocket extends EventEmitter {
+export class DiscordAuthWebsocket extends EventEmitter {
   constructor(options?: DiscordAuthWebsocketOptions);
   public fingerprint?: string;
   public heartbeatInterval?: number;
@@ -215,7 +215,7 @@ export interface RichButton {
   url: string;
 }
 
-export abstract class RichPresence {
+export class RichPresence {
   public constructor(client?: Client, data?: object, IPC?: boolean);
   public application_id: Snowflake | null;
   public assets: RichPresenceAssets | null;
@@ -265,7 +265,7 @@ export interface ExternalAssets {
   external_asset_path: string;
 }
 
-export abstract class SpotifyRPC extends RichPresence {
+export class SpotifyRPC extends RichPresence {
   public constructor(client: Client, data?: object);
   public application_id: Snowflake | null;
   public client: Client;
@@ -299,7 +299,7 @@ export abstract class SpotifyRPC extends RichPresence {
   public setSongId(id: string): this;
 }
 
-export abstract class CustomStatus {
+export class CustomStatus {
   public constructor(data?: object);
   public emoji: EmojiIdentifierResolvable;
   public state: string;
