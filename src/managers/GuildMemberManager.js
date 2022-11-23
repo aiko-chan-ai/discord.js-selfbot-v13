@@ -490,8 +490,23 @@ class GuildMemberManager extends CachedManager {
    * @param {boolean} [double=false] Whether to use double range
    * @param {number} [retryMax=3] Number of retries
    * @param {number} [time=10e3] Timeout for receipt of members
-   * @see https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md
    * @returns {Collection<Snowflake, GuildMember>} Members in the guild
+   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md}
+   * @example
+   * const guild = client.guilds.cache.get('id');
+   * const channel = guild.channels.cache.get('id');
+   * const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+   * // Overlap (slow)
+   * for (let index = 0; index <= guild.memberCount; index += 100) {
+   *   await guild.members.fetchMemberList(channel, index, index !== 100).catch(() => {});
+   *   await delay(500);
+   * }
+   * // Non-overlap (fast)
+   * for (let index = 0; index <= guild.memberCount; index += 200) {
+   *   await guild.members.fetchMemberList(channel, index == 0 ? 100 : index, index !== 100).catch(() => {});
+   *   await delay(500);
+   * }
+   * console.log(guild.members.cache.size); // will print the number of members in the guild
    */
   fetchMemberList(channel, offset = 0, double = false, retryMax = 3, time = 10_000) {
     const channel_ = this.guild.channels.resolve(channel);
