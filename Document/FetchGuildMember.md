@@ -69,8 +69,14 @@ all examples shown use the "overlap" method
 const guild = client.guilds.cache.get('id');
 const channel = guild.channels.cache.get('id');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+// Overlap (slow)
 for (let index = 0; index <= guild.memberCount; index += 100) {
-  await guild.members.fetchMemberList(channel, index);
+  await guild.members.fetchMemberList(channel, index, index !== 100).catch(() => {});
+  await delay(500);
+}
+// Non-overlap (fast)
+for (let index = 0; index <= guild.memberCount; index += 200) {
+  await guild.members.fetchMemberList(channel, index == 0 ? 100 : index, index !== 100).catch(() => {});
   await delay(500);
 }
 console.log(guild.members.cache.size); // will print the number of members in the guild
@@ -80,7 +86,7 @@ It's possible that fetchMembers doesn't fetch all not-offline members due to rat
 ```js
 const guild = client.guilds.cache.get('id');
 const channel = guild.channels.cache.get('id');
-// Fetch member #5000
+// Fetch member range 5000-5099
 await guild.members.fetchMemberList(channel, 5000);
 ```
 

@@ -213,6 +213,7 @@ const Messages = {
   NORMAL_LOGIN: 'Username and password are required for normal login',
   LOGIN_FAILED_UNKNOWN: 'Login failed',
   LOGIN_FAILED_2FA: 'Login failed, 2FA code is required',
+  GUILD_IS_LARGE: 'This guild is too large to fetch all members with this method',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

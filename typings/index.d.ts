@@ -3848,6 +3848,8 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
   public fetchMemberList(
     channel: GuildTextChannelResolvable,
     offset?: number,
+    double?: boolean,
+    retryMax?: number,
     time?: number,
   ): Promise<Collection<Snowflake, GuildMember>>;
   public fetchBruteforce(options?: BruteforceOptions): Promise<Collection<Snowflake, GuildMember>>;

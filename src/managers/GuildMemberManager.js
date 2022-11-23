@@ -487,45 +487,58 @@ class GuildMemberManager extends CachedManager {
    * Fetches multiple members from the guild.
    * @param {GuildTextChannelResolvable} channel The channel to get members from (Members has VIEW_CHANNEL permission)
    * @param {number} [offset=0] Start index of the members to get
+   * @param {boolean} [double=false] Whether to use double range
+   * @param {number} [retryMax=3] Number of retries
    * @param {number} [time=10e3] Timeout for receipt of members
    * @see https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md
    * @returns {Collection<Snowflake, GuildMember>} Members in the guild
    */
-  fetchMemberList(channel, offset = 0, time = 10_000) {
+  fetchMemberList(channel, offset = 0, double = false, retryMax = 3, time = 10_000) {
     const channel_ = this.guild.channels.resolve(channel);
     if (!channel_?.isText()) throw new TypeError('INVALID_TYPE', 'channel', 'GuildTextChannelResolvable');
     if (typeof offset !== 'number') throw new TypeError('INVALID_TYPE', 'offset', 'Number');
     if (typeof time !== 'number') throw new TypeError('INVALID_TYPE', 'time', 'Number');
+    if (typeof retryMax !== 'number') throw new TypeError('INVALID_TYPE', 'retryMax', 'Number');
+    if (retryMax < 1) throw new RangeError('INVALID_RANGE_RETRY');
+    if (typeof double !== 'boolean') throw new TypeError('INVALID_TYPE', 'double', 'Boolean');
+    // TODO: if (this.guild.large) throw new Error('GUILD_IS_LARGE');
     return new Promise((resolve, reject) => {
       const default_ = [[0, 99]];
       const fetchedMembers = new Collection();
-      if (offset === 0) {
-        default_.push([100, 199]);
-      } else {
-        default_.push([offset, offset + 99], [offset + 100, offset + 199]);
+      if (offset > 99) {
+        // eslint-disable-next-line no-unused-expressions
+        double
+          ? default_.push([offset, offset + 99], [offset + 100, offset + 199])
+          : default_.push([offset, offset + 99]);
       }
-      this.guild.shard.send({
-        op: Opcodes.LAZY_REQUEST,
-        d: {
-          guild_id: this.guild.id,
-          typing: true,
-          threads: true,
-          activities: true,
-          channels: {
-            [channel_.id]: default_,
-          },
-          thread_member_lists: [],
-          members: [],
-        },
-      });
+      let retry = 0;
       const handler = (members, guild, type, raw) => {
         timeout.refresh();
         if (guild.id !== this.guild.id) return;
         if (type == 'INVALIDATE' && offset > 100) {
-          clearTimeout(timeout);
-          this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
-          this.client.decrementMaxListeners();
-          reject(new Error('INVALIDATE_MEMBER', raw.ops[0].range));
+          if (retry < retryMax) {
+            console.log('Retrying...');
+            this.guild.shard.send({
+              op: Opcodes.LAZY_REQUEST,
+              d: {
+                guild_id: this.guild.id,
+                typing: true,
+                threads: true,
+                activities: true,
+                channels: {
+                  [channel_.id]: default_,
+                },
+                thread_member_lists: [],
+                members: [],
+              },
+            });
+            retry++;
+          } else {
+            clearTimeout(timeout);
+            this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+            this.client.decrementMaxListeners();
+            reject(new Error('INVALIDATE_MEMBER', raw.ops[0].range));
+          }
         } else {
           for (const member of members.values()) {
             fetchedMembers.set(member.id, member);
@@ -543,6 +556,20 @@ class GuildMemberManager extends CachedManager {
       }, time).unref();
       this.client.incrementMaxListeners();
       this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+      this.guild.shard.send({
+        op: Opcodes.LAZY_REQUEST,
+        d: {
+          guild_id: this.guild.id,
+          typing: true,
+          threads: true,
+          activities: true,
+          channels: {
+            [channel_.id]: default_,
+          },
+          thread_member_lists: [],
+          members: [],
+        },
+      });
     });
   }
 
