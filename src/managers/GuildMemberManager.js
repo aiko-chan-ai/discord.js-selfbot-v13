@@ -532,7 +532,6 @@ class GuildMemberManager extends CachedManager {
         if (guild.id !== this.guild.id) return;
         if (type == 'INVALIDATE' && offset > 100) {
           if (retry < retryMax) {
-            console.log('Retrying...');
             this.guild.shard.send({
               op: Opcodes.LAZY_REQUEST,
               d: {
