@@ -562,11 +562,13 @@ class Client extends BaseClient {
     const res_ = await axios
       .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
       .catch(() => {});
-    if (!res_) {
-      return this.emit('debug', `${chalk.redBright('[Fail]')} Check Update error`);
+    try {
+      const latest_tag = res_.data['dist-tags'].latest;
+      this.emit('update', Discord.version, latest_tag);
+    } catch {
+      this.emit('debug', `${chalk.redBright('[Fail]')} Check Update error`);
+      this.emit('update', Discord.version, false);
     }
-    const latest_tag = res_.data['dist-tags'].latest;
-    this.emit('update', Discord.version, latest_tag);
     return this;
   }
 
