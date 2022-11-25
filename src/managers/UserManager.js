@@ -86,9 +86,10 @@ class UserManager extends CachedManager {
    * Obtains a user from Discord, or the user cache if it's already available.
    * @param {UserResolvable} user The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
+   * @param {?Snowflake} [options.guildId] The guild ID to fetch the member for
    * @returns {Promise<User>}
    */
-  async fetch(user, { cache = true, force = false } = {}) {
+  async fetch(user, { cache = true, force = false, guildId = null } = {}) {
     const id = this.resolveId(user);
     if (!force) {
       const existing = this.cache.get(id);
@@ -97,8 +98,7 @@ class UserManager extends CachedManager {
 
     const data = await this.client.api.users(id).get();
     const userObject = this._add(data, cache);
-    await userObject.getProfile().catch(() => {});
-    // Clear not because event emitted .-. Bug report by https://github.com/aSashaaa
+    await userObject.getProfile(guildId ?? null).catch(() => {});
     return userObject;
   }
 
