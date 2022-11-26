@@ -82,6 +82,9 @@ import {
   MessageTypes,
   ModalComponentTypes,
   MFALevels,
+  NitroType as NitroTypes,
+  HypeSquadType as HypeSquadTypes,
+  localeSetting as localeSettings,
   NSFWLevels,
   OverwriteTypes,
   PremiumTiers,
@@ -1903,6 +1906,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public applicationId: Snowflake | null;
   public attachments: Collection<Snowflake, MessageAttachment>;
   public author: User;
+  public readonly bulkDeletable: boolean;
   public readonly channel: If<Cached, GuildTextBasedChannel, TextBasedChannel>;
   public channelId: Snowflake;
   public readonly cleanContent: string;
@@ -3402,9 +3406,10 @@ export const Constants: {
     devDependencies: Record<string, string>;
     [key: string]: unknown;
   };
+  MaxBulkDeletableMessageAge: 1_209_600_000;
+  UserAgent: string;
   Endpoints: {
     botGateway: string;
-    userGateway: string;
     invite: (root: string, code: string, eventId?: Snowflake) => string;
     scheduledEvent: (root: string, guildId: Snowflake, eventId: Snowflake) => string;
     CDN: (root: string) => {
@@ -3507,6 +3512,8 @@ export const Constants: {
   InteractionResponseTypes: EnumHolder<typeof InteractionResponseTypes>;
   MessageComponentTypes: EnumHolder<typeof MessageComponentTypes>;
   MessageButtonStyles: EnumHolder<typeof MessageButtonStyles>;
+  ModalComponentTypes: EnumHolder<typeof ModalComponentTypes>;
+  TextInputStyles: EnumHolder<typeof TextInputStyles>;
   MFALevels: EnumHolder<typeof MFALevels>;
   NSFWLevels: EnumHolder<typeof NSFWLevels>;
   PrivacyLevels: EnumHolder<typeof PrivacyLevels>;
@@ -3516,7 +3523,17 @@ export const Constants: {
   GuildScheduledEventEntityTypes: EnumHolder<typeof GuildScheduledEventEntityTypes>;
   GuildScheduledEventStatuses: EnumHolder<typeof GuildScheduledEventStatuses>;
   GuildScheduledEventPrivacyLevels: EnumHolder<typeof GuildScheduledEventPrivacyLevels>;
+  VideoQualityModes: EnumHolder<typeof VideoQualityModes>;
+  SweeperKeys: SweeperKey[];
+  // Add
   randomUA: () => string;
+  captchaServices: string[];
+  DMScanLevel: EnumHolder<typeof DMScanLevel>;
+  stickerAnimationMode: EnumHolder<typeof stickerAnimationMode>;
+  NitroType: EnumHolder<typeof NitroTypes>;
+  HypeSquadType: EnumHolder<typeof HypeSquadTypes>;
+  localeSetting: EnumHolder<typeof localeSettings>;
+  userGateway: string;
 };
 
 export const version: string;

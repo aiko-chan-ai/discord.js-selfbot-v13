@@ -31,6 +31,12 @@ const listUserAgent = [
 ];
 
 /**
+ * Max bulk deletable message age
+ * @typedef {number} MaxBulkDeletableMessageAge
+ */
+exports.MaxBulkDeletableMessageAge = 1_209_600_000;
+
+/**
  * API captcha solver
  * * `2captcha` - 2captcha.com
  * @typedef {string[]} captchaServices
@@ -1738,6 +1744,7 @@ function createEnum(keys) {
  * @property {SweeperKey[]} SweeperKeys The name of an item to be swept in Sweepers.
  * @property {SystemMessageType[]} SystemMessageTypes The types of messages that are `System`.
  * @property {Object<TextInputStyle, number>} TextInputStyles The style of a text input component.
+ * @property {number} MaxBulkDeletableMessageAge Max bulk deletable message age
  * @property {string} UserAgent The user agent used for requests.
  * @property {Object<VerificationLevel, number>} VerificationLevels
  * The value set for the verification levels for a guild.
