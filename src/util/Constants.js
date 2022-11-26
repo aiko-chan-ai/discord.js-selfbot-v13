@@ -110,6 +110,7 @@ exports.HypeSquadType = createEnum(['LEAVE', 'HOUSE_BRAVERY', 'HOUSE_BRILLIANCE'
  * * `TAIWAN_CHINESE`
  * * `KOREAN`
  * @typedef {Object<string, string>} localeSetting
+ * @see {@link https://discord.com/developers/docs/reference#locales}
  */
 exports.localeSetting = {
   da: 'DANISH',
