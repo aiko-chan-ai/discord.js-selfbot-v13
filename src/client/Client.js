@@ -1036,6 +1036,9 @@ class Client extends BaseClient {
     if (options && options.password && typeof options.password !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'password', 'a string');
     }
+    if (options && options.usingNewAttachmentAPI && typeof options.usingNewAttachmentAPI !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'usingNewAttachmentAPI', 'a boolean');
+    }
     if (options && options.interactionTimeout && typeof options.interactionTimeout !== 'number') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'interactionTimeout', 'a number');
     }

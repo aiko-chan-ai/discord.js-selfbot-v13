@@ -42,6 +42,7 @@ const { randomUA } = require('../util/Constants');
  * @property {string} [captchaService=null] Captcha service to use for solving captcha {@link captchaServices}
  * @property {string} [captchaKey=null] Captcha service key
  * @property {string} [password=null] Your Discord account password
+ * @property {boolean} [usingNewAttachmentAPI=true] Use new attachment API
  * @property {string} [interactionTimeout=15000] The amount of time in milliseconds to wait for an interaction response, before rejecting
  * @property {boolean} [autoRedeemNitro=false] Automaticlly redeems nitro codes <NOTE: there is no cooldown on the auto redeem>
  * @property {string} [proxy] Proxy to use for the WebSocket + REST connection (proxy-agent uri type) {@link https://www.npmjs.com/package/proxy-agent}.
@@ -157,6 +158,7 @@ class Options extends null {
       DMSync: false,
       patchVoice: false,
       password: null,
+      usingNewAttachmentAPI: true,
       interactionTimeout: 15_000,
       waitGuildTimeout: 15_000,
       messageCreateEventGuildTimeout: 100,

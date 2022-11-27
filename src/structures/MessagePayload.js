@@ -52,6 +52,15 @@ class MessagePayload {
   }
 
   /**
+   * Whether or not using new API to upload files
+   * @type {boolean}
+   * @readonly
+   */
+  get usingNewAttachmentAPI() {
+    return Boolean(this.options?.usingNewAttachmentAPI);
+  }
+
+  /**
    * Whether or not the target is a {@link Webhook} or a {@link WebhookClient}
    * @type {boolean}
    * @readonly

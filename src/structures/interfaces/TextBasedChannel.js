@@ -9,7 +9,7 @@ const { Collection } = require('@discordjs/collection');
 const { InteractionTypes, MaxBulkDeletableMessageAge } = require('../../util/Constants');
 const { TypeError, Error } = require('../../errors');
 const InteractionCollector = require('../InteractionCollector');
-const { lazy } = require('../../util/Util');
+const { lazy, getAttachments, uploadFile } = require('../../util/Util');
 const Message = lazy(() => require('../Message').Message);
 const { s } = require('@sapphire/shapeshift');
 const validateName = stringName =>
@@ -84,6 +84,7 @@ class TextBasedChannel {
    * @property {MessageActionRow[]|MessageActionRowOptions[]} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {MessageAttachment[]} [attachments] Attachments to send in the message
+   * @property {boolean} [usingNewAttachmentAPI] Whether to use the new attachment API (`channels/:id/attachments`)
    */
 
   /**
@@ -190,7 +191,28 @@ class TextBasedChannel {
       messagePayload = await MessagePayload.create(this, options).resolveData();
     }
 
-    const { data, files } = await messagePayload.resolveFiles();
+    let { data, files } = await messagePayload.resolveFiles();
+
+    if (typeof options == 'object' && typeof options.usingNewAttachmentAPI !== 'boolean') {
+      options.usingNewAttachmentAPI = this.client.options.usingNewAttachmentAPI;
+    }
+
+    if (options?.usingNewAttachmentAPI === true) {
+      const attachments = await getAttachments(this.client, this.id, ...files);
+      const requestPromises = attachments.map(async attachment => {
+        await uploadFile(files[attachment.id].file, attachment.upload_url);
+        return {
+          id: attachment.id,
+          filename: files[attachment.id].name,
+          uploaded_filename: attachment.upload_filename,
+        };
+      });
+      const attachmentsData = await Promise.all(requestPromises);
+      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      data.attachments = attachmentsData;
+      files = [];
+    }
+
     const d = await this.client.api.channels[this.id].messages.post({ data, files });
 
     return this.messages.cache.get(d.id) ?? this.messages._add(d);

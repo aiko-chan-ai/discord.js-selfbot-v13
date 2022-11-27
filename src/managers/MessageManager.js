@@ -130,7 +130,28 @@ class MessageManager extends CachedManager {
     } else {
       messagePayload = await MessagePayload.create(message instanceof Message ? message : this, options).resolveData();
     }
-    const { data, files } = await messagePayload.resolveFiles();
+    let { data, files } = await messagePayload.resolveFiles();
+
+    if (typeof options == 'object' && typeof options.usingNewAttachmentAPI !== 'boolean') {
+      options.usingNewAttachmentAPI = this.client.options.usingNewAttachmentAPI;
+    }
+
+    if (options?.usingNewAttachmentAPI === true) {
+      const attachments = await Util.getAttachments(this.client, this.channel.id, ...files);
+      const requestPromises = attachments.map(async attachment => {
+        await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
+        return {
+          id: attachment.id,
+          filename: files[attachment.id].name,
+          uploaded_filename: attachment.upload_filename,
+        };
+      });
+      const attachmentsData = await Promise.all(requestPromises);
+      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      data.attachments = attachmentsData;
+      files = [];
+    }
+
     const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data, files });
 
     const existing = this.cache.get(messageId);

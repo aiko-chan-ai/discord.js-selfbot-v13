@@ -2220,6 +2220,7 @@ export class MessageMentions {
 export class MessagePayload {
   public constructor(target: MessageTarget, options: MessageOptions | WebhookMessageOptions);
   public data: RawMessagePayloadData | null;
+  public readonly usingNewAttachmentAPI: boolean;
   public readonly isUser: boolean;
   public readonly isWebhook: boolean;
   public readonly isMessage: boolean;
@@ -4736,6 +4737,7 @@ export interface ClientOptions {
   captchaService?: string;
   captchaKey?: string;
   interactionTimeout?: number;
+  usingNewAttachmentAPI?: boolean;
 }
 
 // end copy
@@ -6265,6 +6267,7 @@ export interface MessageOptions {
   stickers?: StickerResolvable[];
   attachments?: MessageAttachment[];
   flags?: BitFieldResolvable<'SUPPRESS_EMBEDS', number>;
+  usingNewAttachmentAPI?: boolean;
 }
 
 export type MessageReactionResolvable =

@@ -3,6 +3,7 @@
 const { parse } = require('node:path');
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
+const axios = require('axios');
 const fetch = require('node-fetch');
 const { Colors, Endpoints } = require('./Constants');
 const Options = require('./Options');
@@ -727,6 +728,25 @@ class Util extends null {
       emoji_id: defaultReaction.id,
       emoji_name: defaultReaction.name,
     };
+  }
+
+  static async getAttachments(client, channelId, ...files) {
+    files = files.flat(2).map((file, i) => ({
+      filename: file.name ?? file.attachment?.name ?? file.attachment?.filename ?? 'file.jpg',
+      // 8MB = 8388608 bytes
+      file_size: Math.floor((8_388_608 / 10) * Math.random()),
+      id: `${i}`,
+    }));
+    const { attachments } = await client.api.channels[channelId].attachments.post({
+      data: {
+        files,
+      },
+    });
+    return attachments;
+  }
+
+  static uploadFile(data, url) {
+    return axios.put(url, data);
   }
 }
 
