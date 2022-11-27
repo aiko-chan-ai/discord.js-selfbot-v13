@@ -111,6 +111,9 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 ## Need help?
 Contact me in Discord: [Elysia#1782](https://discord.com/users/721746046543331449)
 
+> **Note**
+> Because too many people open DMs with me, I won't support via Discord
+
 Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions)
 
 ## Credits

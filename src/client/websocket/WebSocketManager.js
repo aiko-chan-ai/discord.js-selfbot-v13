@@ -358,8 +358,6 @@ class WebSocketManager extends EventEmitter {
     if (packet && PacketHandlers[packet.t]) {
       PacketHandlers[packet.t](this.client, packet, shard);
     } else if (packet) {
-      /* Debug mode */
-      // console.log(`Unhandled packet: ${packet.t}`, packet);
       /**
        * Emitted whenever a packet isn't handled.
        * @event Client#unhandledPacket

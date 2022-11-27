@@ -180,6 +180,7 @@ class Options extends null {
       proxy: '',
       ws: {
         compress: false,
+        // https://discord-user-api.cf/api/v1/properties/web
         properties: {
           os: 'Windows',
           browser: 'Chrome',
@@ -192,10 +193,10 @@ class Options extends null {
           referrer_current: 'https://discord.com/channels/@me',
           referring_domain_current: 'discord.com',
           release_channel: 'stable',
-          client_build_number: 160480,
+          client_build_number: 160645,
           client_event_source: null,
         },
-        // ? capabilities: 4093,
+        // ! capabilities: 4093,
         version: 9,
         client_state: {
           api_code_version: 0,
