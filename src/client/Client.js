@@ -1014,8 +1014,18 @@ class Client extends BaseClient {
     if (options && options.captchaService && !captchaServices.includes(options.captchaService)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaServices.join(', '));
     }
-    if (options && captchaServices.includes(options.captchaService) && typeof options.captchaKey !== 'string') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
+    // Parse captcha key
+    if (options && captchaServices.includes(options.captchaService)) {
+      if (typeof options.captchaKey !== 'string') {
+        throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
+      }
+      switch (options.captchaService) {
+        case '2captcha':
+          if (options.captchaKey.length !== 32) {
+            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
+          }
+          break;
+      }
     }
     if (options && typeof options.DMSync !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');
