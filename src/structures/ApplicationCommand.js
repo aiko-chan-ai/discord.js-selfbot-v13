@@ -14,7 +14,7 @@ const {
 } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-const { lazy } = require('../util/Util');
+const { lazy, getAttachments, uploadFile } = require('../util/Util');
 const Message = lazy(() => require('../structures/Message').Message);
 
 /**
@@ -657,7 +657,7 @@ class ApplicationCommand extends Base {
             break;
           }
           case 'ATTACHMENT': {
-            data.value = await addDataFromAttachment(value);
+            data.value = await addDataFromAttachment(value, this.client);
             break;
           }
           case 'SUB_COMMAND_GROUP': {
@@ -788,20 +788,32 @@ class ApplicationCommand extends Base {
         options: [data],
       };
     };
-    async function addDataFromAttachment(data) {
+    async function addDataFromAttachment(data, client) {
       const data_ = await MessagePayload.resolveFile(data);
       if (!data_.file) {
         throw new TypeError(
           'The attachment data must be a BufferResolvable or Stream or FileOptions of MessageAttachment',
         );
       }
-      const id = attachments.length;
-      attachments.push({
-        id: id,
-        filename: data_.name,
-      });
-      attachmentsBuffer.push(data_);
-      return id;
+      if (client.options.usingNewAttachmentAPI === true) {
+        const attachments_ = await getAttachments(client, message.channelId, data_);
+        await uploadFile(data_.file, attachments_[0].upload_url);
+        const id = attachments.length;
+        attachments.push({
+          id: id,
+          filename: data_.name,
+          uploaded_filename: attachments_[0].upload_filename,
+        });
+        return id;
+      } else {
+        const id = attachments.length;
+        attachments.push({
+          id: id,
+          filename: data_.name,
+        });
+        attachmentsBuffer.push(data_);
+        return id;
+      }
     }
     const getDataPost = (dataAdd = [], nonce, autocomplete = false) => {
       if (!Array.isArray(dataAdd) && typeof dataAdd == 'object') {
