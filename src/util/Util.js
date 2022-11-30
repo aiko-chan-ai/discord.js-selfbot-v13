@@ -731,7 +731,9 @@ class Util extends null {
   }
 
   static async getAttachments(client, channelId, ...files) {
-    files = files.flat(2).map((file, i) => ({
+    files = files.flat(2);
+    if (!files.length) return [];
+    files.map((file, i) => ({
       filename: file.name ?? file.attachment?.name ?? file.attachment?.filename ?? 'file.jpg',
       // 8MB = 8388608 bytes
       file_size: Math.floor((8_388_608 / 10) * Math.random()),
