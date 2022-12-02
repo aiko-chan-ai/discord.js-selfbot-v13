@@ -1060,12 +1060,19 @@ class Message extends Base {
   }
 
   /**
-   * Click specific button
-   * @param {MessageButton|string} button Button ID
+   * Click specific button or automatically if only one.
+   * @param {MessageButton|string|null} button Button ID
    * @returns {Promise<InteractionResponse>}
    */
   clickButton(button) {
     let buttonID;
+    if (!button) {
+      if (this.components.length == 1 && this.components[0].type == 'ACTION_ROW') {
+        if (this.components[0].components.length == 1) {
+          buttonID = this.components[0].components[0].customId;
+        }
+      }
+    }
     if (button instanceof MessageButton) button = button.customId;
     if (typeof button === 'string') buttonID = button;
     if (!buttonID) {
