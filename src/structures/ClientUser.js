@@ -84,7 +84,7 @@ class ClientUser extends User {
      * @type {Collection<Snowflake, string>}
      * @private
      */
-    this.friendNicknames = new Collection();
+    if (!this.friendNicknames?.size) this.friendNicknames = new Collection();
   }
 
   /**
