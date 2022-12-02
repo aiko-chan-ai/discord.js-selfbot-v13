@@ -1974,7 +1974,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   // Added
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
-  public clickButton(button: MessageButton | string): Promise<InteractionResponse>;
+  public clickButton(button: MessageButton | string | null): Promise<InteractionResponse>;
   public selectMenu(menuID: string, options: string[]): Promise<InteractionResponse>;
   public selectMenu(options: string[]): Promise<InteractionResponse>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponse>;
