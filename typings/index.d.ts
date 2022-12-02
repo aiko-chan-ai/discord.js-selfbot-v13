@@ -1974,7 +1974,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   // Added
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
-  public clickButton(button: MessageButton | string | null): Promise<InteractionResponse>;
+  public clickButton(button?: MessageButton | MessageButtonLocation | string): Promise<InteractionResponse>;
   public selectMenu(menuID: string, options: string[]): Promise<InteractionResponse>;
   public selectMenu(options: string[]): Promise<InteractionResponse>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponse>;
@@ -6623,6 +6623,11 @@ export interface StartThreadOptions {
   autoArchiveDuration?: ThreadAutoArchiveDuration | 'MAX';
   reason?: string;
   rateLimitPerUser?: number;
+}
+
+export interface MessageButtonLocation {
+  row: number;
+  colunm: number;
 }
 
 export type Status = number;

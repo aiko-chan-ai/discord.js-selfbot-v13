@@ -1060,33 +1060,45 @@ class Message extends Base {
   }
 
   /**
-   * Click specific button or automatically if only one.
-   * @param {MessageButton|string|null} button Button ID
+   * @typedef {Object} MessageButtonLocation
+   * @property {number} row Index of the row
+   * @property {number} column Index of the column
+   */
+
+  /**
+   * Click specific button or automatically click first button if no button is specified.
+   * @param {MessageButton|MessageButtonLocation|string} button Button ID
    * @returns {Promise<InteractionResponse>}
+   * @example
+   * client.on('messageCreate', async message => {
+   *  if (message.components.length) {
+   *    // Find first button and click it
+   *    await message.clickButton();
+   *    // Click with button ID
+   *    await message.clickButton('button-id');
+   *    // Click with button location
+   *    await message.clickButton({ row: 0, column: 0 });
+   *    // Click with class MessageButton
+   *    const button = message.components[0].components[0];
+   *    await message.clickButton(button);
+   *    // Click with class MessageButton (2)
+   *    button.click(message);
+   *  }
+   * });
    */
   clickButton(button) {
-    let buttonID;
     if (!button) {
-      if (this.components.length == 1 && this.components[0].type == 'ACTION_ROW') {
-        if (this.components[0].components.length == 1) {
-          buttonID = this.components[0].components[0].customId;
-        }
-      }
+      button = this.components.flatMap(row => row.components).find(b => b.type === 'BUTTON')?.customId;
     }
-    if (button instanceof MessageButton) button = button.customId;
-    if (typeof button === 'string') buttonID = button;
-    if (!buttonID) {
-      throw new TypeError('BUTTON_ID_NOT_STRING');
+    if (button instanceof MessageButton) {
+      button = button.customId;
     }
-    if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    for (const components of this.components) {
-      for (const interactionComponent of components.components) {
-        if (interactionComponent.type == 'BUTTON' && interactionComponent.customId == buttonID) {
-          return interactionComponent.click(this);
-        }
-      }
+    if (typeof button === 'object') {
+      if (!button.row || !button.column) throw new TypeError('INVALID_BUTTON_LOCATION');
+      button = this.components[button.row]?.components[button.column]?.customId;
     }
-    throw new TypeError('BUTTON_NOT_FOUND');
+    button = this.components.flatMap(row => row.components).find(b => b.customId === button && b.type === 'BUTTON');
+    return button ? button.click(this) : Promise.reject(new TypeError('BUTTON_NOT_FOUND'));
   }
   /**
    * Select specific menu or First Menu
@@ -1134,18 +1146,8 @@ class Message extends Base {
     if (!commandName || typeof commandName !== 'string') {
       throw new Error('Command name is required');
     }
-    // https://discord.com/api/v9/channels/817671035813888030/application-commands/search?type=3&application_id=817229550684471297
     let contextCMD;
-    const data = await this.client.api.channels[this.channelId]['application-commands'].search.get({
-      query: {
-        type: 3, // MESSAGE,
-        // include_applications: false,
-        // query: commandName,
-        limit: 25,
-        // Shet
-        application_id: botId,
-      },
-    });
+    const data = await this.channel.searchInteraction(botId, 'MESSAGE');
     for (const command of data.application_commands) {
       user.application?.commands?._add(command, true);
     }
