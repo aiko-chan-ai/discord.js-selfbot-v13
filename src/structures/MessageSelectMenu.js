@@ -280,7 +280,7 @@ class MessageSelectMenu extends BaseMessageComponent {
   /**
    * Mesage select menu
    * @param {Message} message The message this select menu is for
-   * @param {Array<string>} values The values of the select menu
+   * @param {Array<any>} values The values of the select menu
    * @returns {Promise<InteractionResponse>}
    */
   async select(message, values = []) {

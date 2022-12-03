@@ -1975,8 +1975,8 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
   public clickButton(button?: MessageButton | MessageButtonLocation | string): Promise<InteractionResponse>;
-  public selectMenu(menuID: string, options: string[]): Promise<InteractionResponse>;
-  public selectMenu(options: string[]): Promise<InteractionResponse>;
+  public selectMenu(menuID: string, options: any[]): Promise<InteractionResponse>;
+  public selectMenu(options: any[]): Promise<InteractionResponse>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponse>;
 }
 
@@ -2286,7 +2286,7 @@ export class MessageSelectMenu extends BaseMessageComponent {
     ...options: MessageSelectOptionData[] | MessageSelectOptionData[][]
   ): this;
   public toJSON(): APISelectMenuComponent;
-  public select(message: Message, values?: string[]): Promise<InteractionResponse>;
+  public select(message: Message, values?: any[]): Promise<InteractionResponse>;
 }
 
 // Todo
@@ -6627,7 +6627,7 @@ export interface StartThreadOptions {
 
 export interface MessageButtonLocation {
   row: number;
-  colunm: number;
+  col: number;
 }
 
 export type Status = number;

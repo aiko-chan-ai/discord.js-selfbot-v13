@@ -1062,7 +1062,7 @@ class Message extends Base {
   /**
    * @typedef {Object} MessageButtonLocation
    * @property {number} row Index of the row
-   * @property {number} column Index of the column
+   * @property {number} col Index of the column
    */
 
   /**
@@ -1077,7 +1077,7 @@ class Message extends Base {
    *    // Click with button ID
    *    await message.clickButton('button-id');
    *    // Click with button location
-   *    await message.clickButton({ row: 0, column: 0 });
+   *    await message.clickButton({ row: 0, col: 0 });
    *    // Click with class MessageButton
    *    const button = message.components[0].components[0];
    *    await message.clickButton(button);
@@ -1094,41 +1094,37 @@ class Message extends Base {
       button = button.customId;
     }
     if (typeof button === 'object') {
-      if (!button.row || !button.column) throw new TypeError('INVALID_BUTTON_LOCATION');
-      button = this.components[button.row]?.components[button.column]?.customId;
+      if (!('row' in button) || !('col' in button)) throw new TypeError('INVALID_BUTTON_LOCATION');
+      button = this.components[button.row]?.components[button.col]?.customId;
     }
     button = this.components.flatMap(row => row.components).find(b => b.customId === button && b.type === 'BUTTON');
     return button ? button.click(this) : Promise.reject(new TypeError('BUTTON_NOT_FOUND'));
   }
   /**
    * Select specific menu or First Menu
-   * @param {string|Array<string>} menuID Select Menu specific id or auto select first Menu
-   * @param {Array<string>} options Menu Options
+   * @param {string|number|Array<string>} menuID Select Menu specific id or row / auto select first Menu
+   * @param {Array<any>} options Menu Options
    * @returns {Promise<InteractionResponse>}
    */
   selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    const menuAll = [];
-    for (const row of this.components) {
-      for (const component of row.components) {
-        if (
-          ['STRING_SELECT', 'USER_SELECT', 'ROLE_SELECT', 'MENTIONABLE_SELECT', 'CHANNEL_SELECT'].includes(
-            component.type,
-          )
-        ) {
-          menuAll.push(component);
-        }
+    if (/[0-4]/.test(menuID)) {
+      menuID = this.components[menuID]?.components[0];
+    } else {
+      const menuAll = this.components
+        .flatMap(row => row.components)
+        .filter(b =>
+          ['STRING_SELECT', 'USER_SELECT', 'ROLE_SELECT', 'MENTIONABLE_SELECT', 'CHANNEL_SELECT'].includes(b.type),
+        );
+      if (menuAll.length == 0) throw new TypeError('MENU_NOT_FOUND');
+      if (menuID) {
+        menuID = menuAll.find(b => b.customId === menuID);
+      } else {
+        menuID = menuAll[0];
       }
     }
-    if (menuAll.length == 0) throw new TypeError('MENU_NOT_FOUND');
-    if (menuAll.length == 1) {
-      return menuAll[0].select(this, Array.isArray(menuID) ? menuID : options);
-    } else {
-      if (typeof menuID !== 'string') throw new TypeError('MENU_ID_NOT_STRING');
-      const menuCorrect = menuAll.find(menu => menu.customId == menuID);
-      if (!menuCorrect) throw new TypeError('MENU_NOT_FOUND');
-      return menuCorrect.select(this, Array.isArray(menuID) ? menuID : options);
-    }
+    if (!menuID.type.includes('_SELECT')) throw new TypeError('MENU_NOT_FOUND');
+    return menuID.select(this, Array.isArray(menuID) ? menuID : options);
   }
   //
   /**
