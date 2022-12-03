@@ -195,7 +195,7 @@ class Options extends null {
           referrer_current: 'https://discord.com/channels/@me',
           referring_domain_current: 'discord.com',
           release_channel: 'stable',
-          client_build_number: 160771,
+          client_build_number: 162224,
           client_event_source: null,
         },
         // ! capabilities: 4093,

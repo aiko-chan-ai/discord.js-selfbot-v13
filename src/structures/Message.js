@@ -11,6 +11,7 @@ const MessageButton = require('./MessageButton');
 const Embed = require('./MessageEmbed');
 const Mentions = require('./MessageMentions');
 const MessagePayload = require('./MessagePayload');
+const MessageSelectMenu = require('./MessageSelectMenu');
 const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
 const { Error } = require('../errors');
@@ -1089,26 +1090,43 @@ class Message extends Base {
   clickButton(button) {
     if (!button) {
       button = this.components.flatMap(row => row.components).find(b => b.type === 'BUTTON')?.customId;
-    }
-    if (button instanceof MessageButton) {
+    } else if (button instanceof MessageButton) {
       button = button.customId;
-    }
-    if (typeof button === 'object') {
+    } else if (typeof button === 'object') {
       if (!('row' in button) || !('col' in button)) throw new TypeError('INVALID_BUTTON_LOCATION');
       button = this.components[button.row]?.components[button.col]?.customId;
     }
+    if (!button) throw new TypeError('BUTTON_NOT_FOUND');
     button = this.components.flatMap(row => row.components).find(b => b.customId === button && b.type === 'BUTTON');
     return button ? button.click(this) : Promise.reject(new TypeError('BUTTON_NOT_FOUND'));
   }
   /**
    * Select specific menu or First Menu
-   * @param {string|number|Array<string>} menuID Select Menu specific id or row / auto select first Menu
-   * @param {Array<any>} options Menu Options
+   * @param {MessageSelectMenu|string|number|Array<any>} menuID MenuId / MessageSelectMenu / Row of Menu / Array of Values (first menu)
+   * @param {Array<any>} options Array of Values
    * @returns {Promise<InteractionResponse>}
+   * @example
+   * client.on('messageCreate', async message => {
+   *  if (message.components.length) {
+   *    // Row
+   *    await message.selectMenu(1, [message.channel]); // row 1, type: Channel, multi: false
+   *    // Id
+   *    await message.selectMenu('menu-id', ['uid1', client.user, message.member]); // MenuId, type: User, multi: true
+   *    // First Menu
+   *    await message.selectMenu(['role-id']); // First Menu, type: role, multi: false
+   *    // class MessageSelectMenu
+   *    const menu = message.components[0].components[0];
+   *    await message.selectMenu(menu, ['option1', 'option2']);
+   *    // MessageSelectMenu (2)
+   *    menu.select(message, ['option1', 'option2']);
+   *  }
+   * });
    */
   selectMenu(menuID, options = []) {
     if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    if (/[0-4]/.test(menuID)) {
+    if (menuID instanceof MessageSelectMenu) {
+      //
+    } else if (/[0-4]/.test(menuID)) {
       menuID = this.components[menuID]?.components[0];
     } else {
       const menuAll = this.components

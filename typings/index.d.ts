@@ -1975,7 +1975,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public markUnread(): Promise<boolean>;
   public markRead(): Promise<boolean>;
   public clickButton(button?: MessageButton | MessageButtonLocation | string): Promise<InteractionResponse>;
-  public selectMenu(menuID: string, options: any[]): Promise<InteractionResponse>;
+  public selectMenu(menuID: MessageSelectMenu|Snowflake|number, options: any[]): Promise<InteractionResponse>;
   public selectMenu(options: any[]): Promise<InteractionResponse>;
   public contextMenu(botID: Snowflake, commandName: string): Promise<InteractionResponse>;
 }
@@ -4954,7 +4954,9 @@ export type ApplicationFlagsString =
   | 'VERIFICATION_PENDING_GUILD_LIMIT'
   | 'EMBEDDED'
   | 'GATEWAY_MESSAGE_CONTENT'
-  | 'GATEWAY_MESSAGE_CONTENT_LIMITED';
+  | 'GATEWAY_MESSAGE_CONTENT_LIMITED'
+  | 'EMBEDDED_FIRST_PARTY'
+  | 'APPLICATION_COMMAND_BADGE';
 
 export interface AuditLogChange {
   key: APIAuditLogChange['key'];
@@ -6229,7 +6231,8 @@ export type MessageFlagsString =
   | 'URGENT'
   | 'HAS_THREAD'
   | 'EPHEMERAL'
-  | 'LOADING';
+  | 'LOADING'
+  | 'FAILED_TO_MENTION_SOME_ROLES_IN_THREAD';
 
 export interface MessageInteraction {
   id: Snowflake;
