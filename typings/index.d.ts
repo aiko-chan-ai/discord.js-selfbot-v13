@@ -3528,7 +3528,7 @@ export const Constants: {
   SweeperKeys: SweeperKey[];
   // Add
   randomUA: () => string;
-  captchaServices: string[];
+  captchaServices: captchaServices[];
   DMScanLevel: EnumHolder<typeof DMScanLevel>;
   stickerAnimationMode: EnumHolder<typeof stickerAnimationMode>;
   NitroType: EnumHolder<typeof NitroTypes>;
@@ -4734,11 +4734,13 @@ export interface ClientOptions {
   password?: string;
   DMSync?: boolean;
   proxy?: string;
-  captchaService?: string;
+  captchaService?: captchaServices;
   captchaKey?: string;
   interactionTimeout?: number;
   usingNewAttachmentAPI?: boolean;
 }
+
+export type captchaServices = '2captcha' | 'nopecha';
 
 // end copy
 

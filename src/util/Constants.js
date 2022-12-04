@@ -39,9 +39,10 @@ exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 /**
  * API captcha solver
  * * `2captcha` - 2captcha.com
+ * * `nopecha` - nopecha.com
  * @typedef {string[]} captchaServices
  */
-exports.captchaServices = ['2captcha'];
+exports.captchaServices = ['2captcha', 'nopecha'];
 
 /**
  * Automatically scan and delete direct messages you receive that contain explicit media content.

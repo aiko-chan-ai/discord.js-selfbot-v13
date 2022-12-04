@@ -1025,6 +1025,9 @@ class Client extends BaseClient {
             throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
           }
           break;
+        case 'nopecha': {
+          break;
+        }
       }
     }
     if (options && typeof options.DMSync !== 'boolean') {
