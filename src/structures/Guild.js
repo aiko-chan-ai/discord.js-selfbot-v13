@@ -1497,7 +1497,7 @@ class Guild extends AnonymousGuild {
    * @param {?PermissionResolvable} permissions Permissions
    * @returns {Promise<boolean>}
    */
-  addBot(bot, permissions = 0n) {
+  addBot(bot, permissions) {
     if (!this.me.permissions.has('MANAGE_WEBHOOKS')) {
       throw new Error('MISSING_PERMISSIONS', 'MANAGE_WEBHOOKS');
     }
