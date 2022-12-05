@@ -4,7 +4,6 @@ const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
-const JSONBig = require('json-bigint');
 const fetch = require('node-fetch');
 const proxy = require('proxy-agent');
 
@@ -61,9 +60,10 @@ class APIRequest {
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
       'X-Debug-Options': 'bugReporterEnabled',
-      'X-Super-Properties': `${Buffer.from(JSONBig.stringify(this.client.options.ws.properties), 'ascii').toString(
-        'base64',
-      )}`,
+      'X-Super-Properties': `${Buffer.from(
+        this.client.options.jsonTransformer(this.client.options.ws.properties),
+        'ascii',
+      ).toString('base64')}`,
       'X-Discord-Locale': 'en-US',
       'User-Agent': this.client.options.http.headers['User-Agent'],
     };

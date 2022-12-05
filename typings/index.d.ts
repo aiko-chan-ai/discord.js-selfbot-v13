@@ -1412,7 +1412,7 @@ export class GuildAuditLogsEntry<
     : Role | GuildEmoji | { id: Snowflake } | null;
   public targetType: TTargetType;
   public toJSON(): unknown;
-  public addIntegration(applicationId: Snowflake): Promise<void>;
+  public addIntegration(applicationId: Snowflake): Promise<boolean>;
   public addBot(bot: UserResolvable | Snowflake, permissions?: PermissionResolvable): Promise<boolean>;
 }
 
@@ -1813,7 +1813,7 @@ export class Invite extends Base {
   public delete(reason?: string): Promise<Invite>;
   public toJSON(): unknown;
   public toString(): string;
-  public acceptInvite(autoVerify?: boolean): Promise<void>;
+  public acceptInvite(autoVerify?: boolean): Promise<Guild>;
   public static INVITES_PATTERN: RegExp;
   public stageInstance: InviteStageInstance | null;
   public guildScheduledEvent: GuildScheduledEvent | null;

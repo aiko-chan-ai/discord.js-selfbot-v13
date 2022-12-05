@@ -407,10 +407,6 @@ class PartialGroupDMChannel extends Channel {
       this.client.voice.adapters.set(this.id, methods);
       return {
         sendPayload: data => {
-          data.d = {
-            ...data.d,
-            self_video: false,
-          };
           if (this.shard.status !== Status.READY) return false;
           this.shard.send(data);
           return true;

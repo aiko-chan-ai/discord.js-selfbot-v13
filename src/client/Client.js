@@ -1026,6 +1026,9 @@ class Client extends BaseClient {
           }
           break;
         case 'nopecha': {
+          if (options.captchaKey.length !== 16) {
+            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 16 character string');
+          }
           break;
         }
       }

@@ -321,7 +321,7 @@ class Invite extends Base {
   /**
    * Join this Guild using this invite.
    * @param {boolean} autoVerify Whether to automatically verify member
-   * @returns {Promise<void>}
+   * @returns {Promise<Guild>}
    * @example
    * await client.fetchInvite('code').then(async invite => {
    *   await invite.acceptInvite();
@@ -329,6 +329,7 @@ class Invite extends Base {
    */
   async acceptInvite(autoVerify = true) {
     if (!this.guild) throw new Error('INVITE_NO_GUILD');
+    if (this.client.guilds.cache.get(this.guild.id)) return this.guild;
     const dataHeader = {
       location: 'Join Guild',
       location_guild_id: this.guild?.id,
@@ -341,18 +342,19 @@ class Invite extends Base {
         'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
       },
     });
+    const guild = this.client.guilds.cache.get(this.guild.id);
     if (autoVerify) {
       const getForm = await this.client.api
         .guilds(this.guild.id)
         ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
         .catch(() => {});
-      if (!getForm) return undefined;
+      if (!getForm) return guild;
       const form = Object.assign(getForm.form_fields[0], { response: true });
       // Respond to the form
       // https://discord.com/api/v9/guilds/:id/requests/@me
       await this.client.api.guilds(this.guild.id).requests['@me'].put({ data: { form_fields: [form] } });
     }
-    return undefined;
+    return guild;
   }
 }
 

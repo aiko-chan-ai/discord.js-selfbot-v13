@@ -1,7 +1,6 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const BigNumber = require('bignumber.js');
 const CachedManager = require('./CachedManager');
 const { TypeError, Error } = require('../errors');
 const { Message } = require('../structures/Message');
@@ -246,8 +245,8 @@ class MessageManager extends CachedManager {
         await this.client.api.guilds[this.channel.guild.id].messages.search.get({
           query: {
             channel_id: this.channel.id,
-            max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-            min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+            max_id: `${BigInt(messageId) + 1n}`,
+            min_id: `${BigInt(messageId) - 1n}`,
             include_nsfw: true,
           },
         })
@@ -258,8 +257,8 @@ class MessageManager extends CachedManager {
       const data = (
         await this.client.api.channels[this.channel.id].messages.search.get({
           query: {
-            max_id: new BigNumber.BigNumber(messageId).plus(1).toString(),
-            min_id: new BigNumber.BigNumber(messageId).minus(1).toString(),
+            max_id: `${BigInt(messageId) + 1n}`,
+            min_id: `${BigInt(messageId) - 1n}`,
           },
         })
       ).messages[0];

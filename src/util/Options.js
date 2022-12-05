@@ -188,7 +188,7 @@ class Options extends null {
           browser: 'Chrome',
           device: '',
           system_locale: 'en-US',
-          browser_version: '107.0.0.0',
+          browser_version: '108.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',

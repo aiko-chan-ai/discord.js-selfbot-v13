@@ -144,8 +144,8 @@ class WebSocketManager extends EventEmitter {
     });
     const recommendedShards = 1;
     const sessionStartLimit = {
-      total: 1000000000,
-      remaining: 1000000000,
+      total: Infinity,
+      remaining: Infinity,
     };
 
     const { total, remaining } = sessionStartLimit;

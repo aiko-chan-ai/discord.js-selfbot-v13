@@ -1471,9 +1471,9 @@ class Guild extends AnonymousGuild {
   /**
    * Add Integrations to the guild.
    * @param {Snowflake} applicationId Application (ID) target
-   * @returns {Promise<void>}
+   * @returns {Promise<boolean>}
    */
-  async addIntegration(applicationId) {
+  addIntegration(applicationId) {
     if (!this.me.permissions.has('MANAGE_WEBHOOKS')) {
       throw new Error('MISSING_PERMISSIONS', 'MANAGE_WEBHOOKS');
     }
@@ -1481,18 +1481,14 @@ class Guild extends AnonymousGuild {
       throw new Error('MISSING_PERMISSIONS', 'MANAGE_GUILD');
     }
     if (!applicationId || typeof applicationId !== 'string') throw new TypeError('INVALID_APPLICATION_ID');
-    // Check permission
-    await this.client.api.oauth2.authorize.post({
-      query: {
-        client_id: applicationId,
-        scope: 'applications.commands',
-      },
-      data: {
+    return this.client.authorizeURL(
+      `https://discord.com/api/oauth2/authorize?client_id=${applicationId}&scope=applications.commands`,
+      {
         guild_id: this.id,
-        permissions: '0',
+        permissions: `0`,
         authorize: true,
       },
-    });
+    );
   }
 
   /**
@@ -1501,7 +1497,7 @@ class Guild extends AnonymousGuild {
    * @param {?PermissionResolvable} permissions Permissions
    * @returns {Promise<boolean>}
    */
-  addBot(bot, permissions) {
+  addBot(bot, permissions = 0n) {
     if (!this.me.permissions.has('MANAGE_WEBHOOKS')) {
       throw new Error('MISSING_PERMISSIONS', 'MANAGE_WEBHOOKS');
     }
@@ -1514,8 +1510,8 @@ class Guild extends AnonymousGuild {
     if (!botId) throw new TypeError('INVALID_BOT_ID');
     // Check permission
     const selfPerm = this.me.permissions.toArray();
-    const missingPerms = permission.toArray().filter(x => selfPerm.indexOf(x) === -1);
-    if (missingPerms[0]) {
+    const missingPerms = permission.toArray().filter(x => selfPerm.includes(x));
+    if (missingPerms.length) {
       throw new Error('MISSING_PERMISSIONS', missingPerms.join(', '));
     }
     // Add bot

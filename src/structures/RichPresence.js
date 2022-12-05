@@ -294,7 +294,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
    * @returns {RichPresence}
    */
   setType(type) {
-    this.type = ActivityTypes[type?.toUpperCase()];
+    this.type = ActivityTypes[type];
     if (typeof this.type == 'string') this.type = ActivityTypes[this.type];
     if (typeof this.type != 'number') throw new Error('Type must be a valid ActivityType');
     return this;
@@ -471,11 +471,9 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       delete obj.name;
       delete obj.url;
       obj.type = 0;
-      let buttonData = [];
-      if (obj.buttons) {
-        buttonData = obj.buttons.map((b, i) => ({ label: b, url: obj.metadata.button_urls[i] }));
+      if (obj.buttons?.length) {
+        obj.buttons = obj.buttons.map((b, i) => ({ label: b, url: obj.metadata.button_urls[i] }));
         delete obj.metadata;
-        obj.buttons = buttonData;
       }
       return obj;
     }
@@ -566,6 +564,10 @@ class SpotifyRPC extends RichPresence {
    * @private
    */
   setup(options) {
+    this.name = options.name || 'Spotify';
+
+    this.type = ActivityTypes.LISTENING;
+
     this.party = {
       id: `spotify:${this.client.user.id}`,
     };
@@ -638,8 +640,8 @@ class SpotifyRPC extends RichPresence {
   toJSON() {
     if (!this.sync_id) throw new Error('Song id is required');
     const obj = {
-      name: 'Spotify',
-      type: ActivityTypes.LISTENING,
+      name: this.name,
+      type: this.type,
       application_id: this.application_id,
       url: this.url,
       state: this.state,

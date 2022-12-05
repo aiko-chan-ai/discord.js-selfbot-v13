@@ -31,7 +31,7 @@ module.exports = class CaptchaSolver {
         }
       }
       case 'nopecha': {
-        if (!key || typeof key !== 'string') throw new Error('Nopecha key is not provided');
+        if (!key || typeof key !== 'string') throw new Error('NopeCHA key is not provided');
         try {
           const { Configuration, NopeCHAApi } = require('nopecha');
           const configuration = new Configuration({

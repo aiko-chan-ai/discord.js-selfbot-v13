@@ -2,10 +2,11 @@
 
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { Message } = require('./Message');
 const { MessageComponentTypes, InteractionTypes, ChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
+const { lazy } = require('../util/Util');
+const Message = lazy(() => require('./Message').Message);
 
 /**
  * Represents a select menu message component
@@ -284,7 +285,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @returns {Promise<InteractionResponse>}
    */
   async select(message, values = []) {
-    if (!(message instanceof Message)) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
+    if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!Array.isArray(values)) throw new TypeError('[INVALID_VALUES] Please pass an array of values');
     if (!this.customId || this.disabled) return false; // Disabled or null customID
     // Check value is invalid [Max options is 20] => For loop
