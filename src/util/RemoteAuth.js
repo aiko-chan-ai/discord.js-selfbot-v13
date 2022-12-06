@@ -203,6 +203,7 @@ class DiscordAuthWebsocket extends EventEmitter {
         this.emit(Event.SUCCESS, this.user, message.ticket);
         this.token = message.ticket;
         this._findRealToken();
+        this._logger('default', 'Get token success.');
         break;
       }
       default: {
@@ -371,11 +372,9 @@ class DiscordAuthWebsocket extends EventEmitter {
    */
   generateQR() {
     if (!this.fingerprint) this._throwError(new Error('Fingerprint is not created.'));
-    if (this.options.generateQR) {
-      require('@aikochan2k6/qrcode-terminal').generate(`${baseURL}${this.fingerprint}`, {
-        small: true,
-      });
-    }
+    require('@aikochan2k6/qrcode-terminal').generate(`${baseURL}${this.fingerprint}`, {
+      small: true,
+    });
     this._logger('default', `Please scan the QR code to continue.\nQR Code will expire in ${this.exprireTime}`);
   }
 
