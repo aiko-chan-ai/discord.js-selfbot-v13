@@ -171,7 +171,9 @@ class Modal {
    *             customId: 'message',
    *             value: 'hello'
    *         }
-   *     ]
+   *     ],
+   *    channel: 'id', // optional
+   *    guild: 'id', // optional
    *  })
    * })
    */
@@ -182,46 +184,41 @@ class Modal {
     const data_cache = this.sendFromInteraction;
     const guild = this.client.guilds.resolveId(data.guild) || data_cache.guildId || null;
     const channel = this.client.channels.resolveId(data.channel) || data_cache.channelId;
+    if (!channel) throw new Error('Modal cannot reply (Missing data)');
     // Add data to components
     // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
     // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow
     for (let i = 0; i < this.components.length; i++) {
       const value = data.data.find(d => d.customId == this.components[i].components[0].customId);
-      if (this.components[i].components[0].required == true) {
-        if (!value) {
-          throw new Error(
-            'MODAL_REQUIRED_FIELD_MISSING\n' +
-              `Required fieldId ${this.components[i].components[0].customId} missing value`,
-          );
-        }
-        if (!(typeof value?.value == 'string')) {
-          throw new Error(
-            'MODAL_REPLY_DATA_INVALID\n' +
-              `Data (Required) must be strings, got ${typeof value.value} [Custom ID: ${value.customId}]`,
-          );
-        }
+      if (this.components[i].components[0].required == true && !value) {
+        throw new Error(
+          'MODAL_REQUIRED_FIELD_MISSING\n' +
+            `Required fieldId ${this.components[i].components[0].customId} missing value`,
+        );
       }
       if (value) {
-        if (!(typeof value?.value == 'string')) {
-          console.warn(
-            'Warning: MODAL_REPLY_DATA_INVALID',
-            `Data (Not required) must be strings, got ${typeof value.value} [Custom ID: ${value.customId}]`,
+        if (value?.value?.includes('\n') && this.components[i].components[0].style == 'SHORT') {
+          throw new Error(
+            'MODAL_REPLY_DATA_INVALID\n' +
+              `value must be a single line, got multiple lines [Custom ID: ${value.customId}]`,
           );
-          continue;
         }
-        this.components[i].components[0].value = value.value;
+        this.components[i].components[0].setValue(value.value);
       }
-      delete this.components[i].components[0].maxLength;
-      delete this.components[i].components[0].minLength;
-      delete this.components[i].components[0].required;
-      delete this.components[i].components[0].placeholder;
-      delete this.components[i].components[0].label;
-      delete this.components[i].components[0].style;
     }
-    // Filter
-    this.components = this.components.filter(c => c.components[0].value && c.components[0].value !== '');
     // Get Object
     const dataFinal = this.toJSON();
+    dataFinal.components = dataFinal.components
+      .map(c => {
+        delete c.components[0].max_length;
+        delete c.components[0].min_length;
+        delete c.components[0].required;
+        delete c.components[0].placeholder;
+        delete c.components[0].label;
+        delete c.components[0].style;
+        return c;
+      })
+      .filter(c => c.components[0].value && c.components[0].value !== '');
     delete dataFinal.title;
     const nonce = SnowflakeUtil.generate();
     const postData = {

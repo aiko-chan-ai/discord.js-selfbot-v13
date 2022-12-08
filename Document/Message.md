@@ -11,6 +11,10 @@
 await Button.click(Message);
 //
 await message.clickButton(buttonID);
+//
+await message.clickButton(); // first button
+//
+await message.clickButton({ row: 0, col: 0})
 ```
 </details>
 <details open>
@@ -26,18 +30,8 @@ await message.selectMenu(options) // If message has 1 menu
 <details open>
 <summary>Slash Command</summary>
 
-<strong>[Demo](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md)</strong>
+### [Click here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md)
 
-```js
-// v2
-await Channel.sendSlash(botID, commandName, 'option1', 123, true, new MessageAttachment(buffer, 'test.png'));
-// Eg /addrole roleID: 12345678987654321 userID: 98765432123456789
-// => await Channel.sendSlash(botID, 'addrole', ['12345678987654321', '98765432123456789']);
-// Command group
-await Channel.sendSlash(botID, commandName, 'sub command', 'option1', 'option2');
-// Eg: /role add roleID: 12345678987654321 userID: 98765432123456789
-// => await Channel.sendSlash(botID, 'role', ['add', '12345678987654321', '98765432123456789']);
-```
 </details>
 <details open>
 <summary>Message Context Command</summary>
