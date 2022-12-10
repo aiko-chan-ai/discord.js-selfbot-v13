@@ -2,6 +2,7 @@
 
 const { setTimeout } = require('node:timers');
 const { setTimeout: sleep } = require('node:timers/promises');
+const { inspect } = require('util');
 const { AsyncQueue } = require('@sapphire/async-queue');
 const DiscordAPIError = require('./DiscordAPIError');
 const HTTPError = require('./HTTPError');
@@ -112,7 +113,7 @@ class RequestHandler {
     }
   }
 
-  async execute(request, captchaKey) {
+  async execute(request, captchaKey, captchaToken) {
     /*
      * After calculations have been done, pre-emptively stop further requests
      * Potentially loop until this task can run if e.g. the global rate limit is hit twice
@@ -203,7 +204,7 @@ class RequestHandler {
     // Perform the request
     let res;
     try {
-      res = await request.make(captchaKey);
+      res = await request.make(captchaKey, captchaToken);
     } catch (error) {
       // Retry the specified number of times for request abortions
       if (request.retries === this.manager.client.options.retryLimit) {
@@ -365,7 +366,7 @@ class RequestHandler {
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Sitekey : ${data.captcha_sitekey}`,
+    Info    : ${inspect(data, { depth: null })}`,
           );
           const captcha = await this.manager.captchaService.solve(data.captcha_sitekey);
           this.manager.client.emit(
@@ -374,10 +375,10 @@ class RequestHandler {
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Key     : ${captcha}`,
+    Key     : ${captcha.slice(0, 50)}...`,
           );
           request.retries++;
-          return this.execute(request, captcha);
+          return this.execute(request, captcha, data.captcha_rqtoken);
         }
       } catch (err) {
         throw new HTTPError(err.message, err.constructor.name, err.status, request);

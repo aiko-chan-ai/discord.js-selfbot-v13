@@ -33,7 +33,7 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  make(captchaKey = undefined) {
+  make(captchaKey = undefined, captchaRqtoken = undefined) {
     agent ??=
       typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0
         ? new proxy(this.client.options.proxy)
@@ -53,7 +53,7 @@ class APIRequest {
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
-      'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="24"`,
+      'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="8"`,
       'Sec-Ch-Ua-Mobile': '?0',
       'Sec-Ch-Ua-Platform': '"Windows"',
       'Sec-Fetch-Dest': 'empty',
@@ -109,6 +109,7 @@ class APIRequest {
     if (headers['Content-Type'] === 'application/json' && captchaKey && typeof captchaKey == 'string') {
       body = JSON.parse(body || '{}');
       body.captcha_key = captchaKey;
+      if (captchaRqtoken) body.captcha_rqtoken = captchaRqtoken;
       body = JSON.stringify(body);
     }
 
