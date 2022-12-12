@@ -2,6 +2,7 @@
 
 const Base = require('./Base');
 const { Emoji } = require('./Emoji');
+const { CustomStatus, SpotifyRPC, RichPresence } = require('./RichPresence');
 const ActivityFlags = require('../util/ActivityFlags');
 const { ActivityTypes } = require('../util/Constants');
 const Util = require('../util/Util');
@@ -76,7 +77,7 @@ class Presence extends Base {
     return this.guild.members.resolve(this.userId);
   }
 
-  _patch(data) {
+  _patch(data, fromClient) {
     if ('status' in data) {
       /**
        * The status of this presence
@@ -92,7 +93,19 @@ class Presence extends Base {
        * The activities of this presence
        * @type {Activity[]}
        */
-      this.activities = data.activities.map(activity => new Activity(this, activity));
+      this.activities = data.activities.map(activity => {
+        if (fromClient === true) {
+          if ([ActivityTypes.CUSTOM, 'CUSTOM'].includes(activity.type)) {
+            return new CustomStatus(activity, this);
+          } else if (activity.id == 'spotify:1') {
+            return new SpotifyRPC(this.client, activity, this);
+          } else {
+            return new RichPresence(this.client, activity, this);
+          }
+        } else {
+          return new Activity(this, activity);
+        }
+      });
     } else {
       this.activities ??= [];
     }

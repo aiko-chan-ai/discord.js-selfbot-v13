@@ -19,8 +19,10 @@ class CustomStatus {
 
   /**
    * @param {CustomStatus|CustomStatusOptions} [data={}] CustomStatus to clone or raw data
+   * @param {Presence} [presence] The presence this activity is part of
    */
-  constructor(data = {}) {
+  constructor(data = {}, presence) {
+    Object.defineProperty(this, 'presence', { value: presence });
     this.name = 'Custom Status';
     /**
      * The emoji to be displayed
@@ -96,9 +98,11 @@ class RichPresence {
    * @param {Client} [client] Discord client
    * @param {RichPresence} [data={}] RichPresence to clone or raw data
    * @param {boolean} [IPC=false] Whether to use IPC (RPC for Discord Apps)
+   * @param {Presence} [presence] The presence this activity is part of
    */
-  constructor(client = {}, data = {}, IPC = false) {
+  constructor(client = {}, data = {}, IPC = false, presence) {
     Object.defineProperty(this, 'client', { value: client });
+    Object.defineProperty(this, 'presence', { value: presence });
     /**
      * The activity's name
      * @type {string}
@@ -552,10 +556,11 @@ class SpotifyRPC extends RichPresence {
    * Create a new RichPresence (Spotify style)
    * @param {Client} client Discord Client
    * @param {SpotifyRPC} options Options for the Spotify RPC
+   * @param {Presence} presence Presence
    */
-  constructor(client, options = {}) {
+  constructor(client, options = {}, presence) {
     if (!client) throw new Error('Client must be set');
-    super(client, options);
+    super(client, options, false, presence);
     this.setup(options);
   }
   /**
