@@ -266,7 +266,7 @@ class Modal {
         this.client.decrementMaxListeners();
         reject(
           new Error('INTERACTION_TIMEOUT', {
-            cause: data,
+            cause: postData,
           }),
         );
       }, this.client.options.interactionTimeout).unref();
