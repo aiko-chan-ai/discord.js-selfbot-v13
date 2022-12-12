@@ -7,10 +7,10 @@ const { Events } = require('../../../util/Constants');
  * @property {Snowflake} nonce nonce in POST /interactions
  */
 
-module.exports = (client, packet) => {
+module.exports = (client, { d: data }) => {
   if (client.user.bot) {
-    client.actions.InteractionCreate.handle(packet.d);
+    client.actions.InteractionCreate.handle(data);
   } else {
-    client.emit(Events.INTERACTION_CREATE, packet.d);
+    client.emit(Events.INTERACTION_CREATE, data);
   }
 };

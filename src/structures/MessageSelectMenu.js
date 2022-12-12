@@ -396,7 +396,11 @@ class MessageSelectMenu extends BaseMessageComponent {
       const timeout = setTimeout(() => {
         message.client.removeListener('interactionResponse', handler);
         message.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
+        reject(
+          new Error('INTERACTION_TIMEOUT', {
+            cause: data,
+          }),
+        );
       }, message.client.options.interactionTimeout).unref();
       message.client.incrementMaxListeners();
       message.client.on('interactionResponse', handler);

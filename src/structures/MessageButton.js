@@ -173,7 +173,7 @@ class MessageButton extends BaseMessageComponent {
   async click(message) {
     const nonce = SnowflakeUtil.generate();
     if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
-    if (!this.customId || this.style == 5 || this.disabled) return false; // Button URL, Disabled
+    if (!this.customId || this.style == MessageButtonStyles.LINK || this.disabled) return false;
     const data = {
       type: InteractionTypes.MESSAGE_COMPONENT,
       nonce,
@@ -216,7 +216,11 @@ class MessageButton extends BaseMessageComponent {
       const timeout = setTimeout(() => {
         message.client.removeListener('interactionResponse', handler);
         message.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
+        reject(
+          new Error('INTERACTION_TIMEOUT', {
+            cause: data,
+          }),
+        );
       }, message.client.options.interactionTimeout).unref();
       message.client.incrementMaxListeners();
       message.client.on('interactionResponse', handler);

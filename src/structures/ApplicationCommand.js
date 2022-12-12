@@ -907,7 +907,11 @@ class ApplicationCommand extends Base {
         const timeout = setTimeout(() => {
           this.client.removeListener('interactionResponse', handler);
           this.client.decrementMaxListeners();
-          reject(new Error('INTERACTION_TIMEOUT'));
+          reject(
+            new Error('INTERACTION_TIMEOUT', {
+              cause: data,
+            }),
+          );
         }, this.client.options.interactionTimeout).unref();
         this.client.incrementMaxListeners();
         this.client.on('interactionResponse', handler);
@@ -998,7 +1002,11 @@ class ApplicationCommand extends Base {
       const timeout = setTimeout(() => {
         this.client.removeListener('interactionResponse', handler);
         this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_TIMEOUT'));
+        reject(
+          new Error('INTERACTION_TIMEOUT', {
+            cause: data,
+          }),
+        );
       }, this.client.options.interactionTimeout).unref();
       this.client.incrementMaxListeners();
       this.client.on('interactionResponse', handler);
