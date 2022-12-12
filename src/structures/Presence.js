@@ -100,7 +100,7 @@ class Presence extends Base {
           } else if (activity.id == 'spotify:1') {
             return new SpotifyRPC(this.client, activity, this);
           } else {
-            return new RichPresence(this.client, activity, this);
+            return new RichPresence(this.client, activity, false, this);
           }
         } else {
           return new Activity(this, activity);
