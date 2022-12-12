@@ -18,11 +18,6 @@ class APIRequest {
     this.options = options;
     this.retries = 0;
 
-    /* Remove
-    const { userAgentSuffix } = this.client.options;
-    this.fullUserAgent = `${randomUA()}${userAgentSuffix.length ? `, ${userAgentSuffix.join(', ')}` : ''}`;
-    */
-
     let queryString = '';
     if (options.query) {
       const query = Object.entries(options.query)
