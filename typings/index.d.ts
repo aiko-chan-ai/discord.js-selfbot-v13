@@ -2328,7 +2328,7 @@ export class Modal {
 export interface ModalReplyData {
   guild?: GuildResolvable;
   channel?: TextChannelResolvable;
-  data: TextInputComponentReplyData[];
+  data?: TextInputComponentReplyData[];
 }
 
 export interface TextInputComponentReplyData {
@@ -3994,7 +3994,7 @@ export class InteractionResponse extends Base {
   public id: Snowflake;
   public nonce: Snowflake;
   public sendData: object;
-  public awaitModal(time?: number): Modal;
+  public awaitModal(time: number): Modal;
 }
 
 export interface MessageSearchOptions {

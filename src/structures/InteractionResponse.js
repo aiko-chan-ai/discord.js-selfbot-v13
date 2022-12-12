@@ -86,10 +86,11 @@ class InteractionResponse extends Base {
 
   /**
    * Get Modal send from interaction
-   * @param {?number} time Time to wait for modal (Default: 120000)
+   * @param {number} time Time to wait for modal
    * @returns {Modal}
    */
-  awaitModal(time = 120_000) {
+  awaitModal(time) {
+    if (!time || typeof time !== 'number' || time < 0) throw new Error('INVALID_TIME');
     return new Promise((resolve, reject) => {
       const handler = modal => {
         timeout.refresh();
@@ -103,7 +104,7 @@ class InteractionResponse extends Base {
         this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
         this.client.decrementMaxListeners();
         reject(new Error('MODAL_TIMEOUT'));
-      }, time || 120_000).unref();
+      }, time).unref();
       this.client.incrementMaxListeners();
       this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
     });

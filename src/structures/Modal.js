@@ -1,5 +1,6 @@
 'use strict';
 
+const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const User = require('./User');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -153,7 +154,7 @@ class Modal {
    * @typedef {Object} ModalReplyData
    * @property {?GuildResolvable} [guild] Guild to send the modal to
    * @property {?TextChannelResolvable} [channel] User to send the modal to
-   * @property {TextInputComponentReplyData[]} [data] Reply data
+   * @property {?TextInputComponentReplyData[]} [data] Reply data
    */
 
   /**
@@ -162,6 +163,7 @@ class Modal {
    * @returns {Promise<InteractionResponse>}
    * @example
    * client.on('interactionModalCreate', modal => {
+   * // 1.
    *  modal.reply({
    *     data: [
    *         {
@@ -175,35 +177,39 @@ class Modal {
    *    channel: 'id', // optional
    *    guild: 'id', // optional
    *  })
+   * // or 2.
+   * modal.components[0].components[0].setValue('1+1');
+   * modal.components[1].components[0].setValue('hello');
+   * modal.reply();
    * })
    */
-  async reply(data) {
-    if (typeof data !== 'object') throw new TypeError('ModalReplyData must be an object');
-    if (!Array.isArray(data.data)) throw new TypeError('ModalReplyData.data must be an array');
+  async reply(data = {}) {
     if (!this.application) throw new Error('Modal cannot reply (Missing Application)');
     const data_cache = this.sendFromInteraction;
-    const guild = this.client.guilds.resolveId(data.guild) || data_cache.guildId || null;
-    const channel = this.client.channels.resolveId(data.channel) || data_cache.channelId;
+    const guild = this.client.guilds.resolveId(data?.guild) || data_cache.guildId || null;
+    const channel = this.client.channels.resolveId(data?.channel) || data_cache.channelId;
     if (!channel) throw new Error('Modal cannot reply (Missing data)');
     // Add data to components
     // this.components = [ MessageActionRow.components = [ TextInputComponent ] ]
     // 5 MessageActionRow / Modal, 1 TextInputComponent / 1 MessageActionRow
-    for (let i = 0; i < this.components.length; i++) {
-      const value = data.data.find(d => d.customId == this.components[i].components[0].customId);
-      if (this.components[i].components[0].required == true && !value) {
-        throw new Error(
-          'MODAL_REQUIRED_FIELD_MISSING\n' +
-            `Required fieldId ${this.components[i].components[0].customId} missing value`,
-        );
-      }
-      if (value) {
-        if (value?.value?.includes('\n') && this.components[i].components[0].style == 'SHORT') {
+    if (Array.isArray(data?.data) && data?.data?.length > 0) {
+      for (let i = 0; i < this.components.length; i++) {
+        const value = data.data.find(d => d.customId == this.components[i].components[0].customId);
+        if (this.components[i].components[0].required == true && !value) {
           throw new Error(
-            'MODAL_REPLY_DATA_INVALID\n' +
-              `value must be a single line, got multiple lines [Custom ID: ${value.customId}]`,
+            'MODAL_REQUIRED_FIELD_MISSING\n' +
+              `Required fieldId ${this.components[i].components[0].customId} missing value`,
           );
         }
-        this.components[i].components[0].setValue(value.value);
+        if (value) {
+          if (value?.value?.includes('\n') && this.components[i].components[0].style == 'SHORT') {
+            throw new Error(
+              'MODAL_REPLY_DATA_INVALID\n' +
+                `value must be a single line, got multiple lines [Custom ID: ${value.customId}]`,
+            );
+          }
+          this.components[i].components[0].setValue(value.value);
+        }
       }
     }
     // Get Object
@@ -233,10 +239,40 @@ class Modal {
     await this.client.api.interactions.post({
       data: postData,
     });
-    return {
-      nonce,
-      id: this.id,
-    };
+    this.client._interactionCache.set(nonce, {
+      channelId: channel,
+      guildId: guild,
+      metadata: postData,
+    });
+    return new Promise((resolve, reject) => {
+      const handler = data => {
+        timeout.refresh();
+        if (data.metadata.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        if (data.status) {
+          resolve(data.metadata);
+        } else {
+          reject(
+            new Error('INTERACTION_ERROR', {
+              cause: data,
+            }),
+          );
+        }
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener('interactionResponse', handler);
+        this.client.decrementMaxListeners();
+        reject(
+          new Error('INTERACTION_TIMEOUT', {
+            cause: data,
+          }),
+        );
+      }, this.client.options.interactionTimeout).unref();
+      this.client.incrementMaxListeners();
+      this.client.on('interactionResponse', handler);
+    });
   }
 }
 
