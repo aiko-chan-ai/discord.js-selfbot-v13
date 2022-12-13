@@ -23,7 +23,7 @@ module.exports = (client, { d: data }) => {
   client.emit('interactionResponse', {
     status: true,
     metadata: data_,
-    error: '',
+    error: 'Success',
   });
   // Delete cache
   // client._interactionCache.delete(data.nonce);

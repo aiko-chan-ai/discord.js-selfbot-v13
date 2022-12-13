@@ -10,7 +10,7 @@ module.exports = (client, { d: data }) => {
   client.emit(Events.INTERACTION_FAILURE, data);
   client.emit('interactionResponse', {
     status: false,
-    metadata: data,
+    metadata: client._interactionCache.get(data.nonce),
     error: 'No response from bot',
   });
   // Delete cache
