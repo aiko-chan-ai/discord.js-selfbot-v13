@@ -178,7 +178,25 @@ class User extends Base {
   }
 
   /**
-   * Check relationship status
+   * Get all mutual friends (Client -> User)
+   * @type {Promise<Collection<Snowflake, User>>}
+   * @readonly
+   */
+  get mutualFriends() {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async resolve => {
+      const all = new Collection();
+      if (this.bot || this.client.user.id === this.id) return resolve(all);
+      const data = await this.client.api.users(this.id).relationships.get();
+      for (const u of data) {
+        all.set(u.id, this.client.users._add(u));
+      }
+      return resolve(all);
+    });
+  }
+
+  /**
+   * Check relationship status (Client -> User)
    * @type {RelationshipTypes}
    * @readonly
    */

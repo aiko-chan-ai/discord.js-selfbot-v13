@@ -3044,6 +3044,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly premiumGuildSince: Date;
   public readonly bio: string | null;
   public readonly mutualGuilds: Collection<Snowflake, object>;
+  public readonly mutualFriends: Promise<Collection<Snowflake, User>>;
   public readonly voice: VoiceState;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
