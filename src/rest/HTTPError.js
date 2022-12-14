@@ -54,6 +54,7 @@ class HTTPError extends Error {
     this.requestData = {
       json: request.options.data,
       files: request.options.files ?? [],
+      headers: request.options.headers,
     };
   }
 }
