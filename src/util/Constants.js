@@ -1532,6 +1532,26 @@ exports.MessageComponentTypes = createEnum([
 ]);
 
 /**
+ * The types of components that are select menus. The available types are:
+ * * STRING_MENU
+ * * USER_SELECT
+ * * ROLE_SELECT
+ * * MENTIONABLE_SELECT
+ * * CHANNEL_SELECT
+ * @typedef {string} SelectMenuComponentType
+ * @see {@link https://discord.com/developers/docs/interactions/message-components#component-object-component-types}
+ */
+exports.SelectMenuComponentTypes = createEnum([
+  ...new Array(3).fill(null),
+  'STRING_MENU',
+  null,
+  'USER_SELECT',
+  'ROLE_SELECT',
+  'MENTIONABLE_SELECT',
+  'CHANNEL_SELECT',
+]);
+
+/**
  * The style of a message button
  * * PRIMARY
  * * SECONDARY
@@ -1712,6 +1732,7 @@ function createEnum(keys) {
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
  * @property {Object<MessageComponentType, number>} MessageComponentTypes The type of a message component.
+ * @property {Object<SelectMenuComponentType, number>} SelectMenuComponentTypes The type of any select menu
  * @property {Object<MFALevel, number>} MFALevels The required MFA level for a guild.
  * @property {Object<NSFWLevel, number>} NSFWLevels NSFW level of a guild.
  * @property {Opcodes} Opcodes The types of Opcodes sent to the Gateway.

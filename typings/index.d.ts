@@ -100,6 +100,7 @@ import {
   HypeSquadType,
   VideoQualityModes,
   SortOrderType,
+  SelectMenuComponentTypes,
 } from './enums';
 import {
   RawActivityData,
@@ -1873,8 +1874,8 @@ export type AwaitMessageCollectorOptionsParams<
 
 export interface StringMappedInteractionTypes<Cached extends CacheType = CacheType> {
   BUTTON: ButtonInteraction<Cached>;
-  STRING_SELECT: SelectMenuInteraction<Cached>;
   ACTION_ROW: MessageComponentInteraction<Cached>;
+  STRING_SELECT: SelectMenuInteraction<Cached>;
   USER_SELECT: SelectMenuInteraction<Cached>;
   ROLE_SELECT: SelectMenuInteraction<Cached>;
   MENTIONABLE_SELECT: SelectMenuInteraction<Cached>;
@@ -1887,9 +1888,9 @@ export type MappedInteractionTypes<Cached extends boolean = boolean> = EnumValue
   typeof MessageComponentTypes,
   {
     BUTTON: ButtonInteraction<WrapBooleanCache<Cached>>;
-    STRING_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     ACTION_ROW: MessageComponentInteraction<WrapBooleanCache<Cached>>;
     TEXT_INPUT: ModalSubmitInteraction<WrapBooleanCache<Cached>>;
+    STRING_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     USER_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     ROLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
     MENTIONABLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
@@ -2268,11 +2269,11 @@ export class MessageSelectMenu extends BaseMessageComponent {
   public minValues: number | null;
   public options: MessageSelectOption[];
   public placeholder: string | null;
-  public type: SelectMenuTypes;
+  public type: SelectMenuComponentType;
   public channelTypes: ChannelTypes[];
   public addOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
   public setOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
-  public setType(type: SelectMenuTypes): this;
+  public setType(type: SelectMenuComponentType | SelectMenuComponentTypes): this;
   public addChannelTypes(...channelTypes: ChannelTypes[]): this;
   public setChannelTypes(...channelTypes: ChannelTypes[]): this;
   public setCustomId(customId: string): this;
@@ -2568,8 +2569,6 @@ export class Role extends Base {
   public static comparePositions(role1: Role, role2: Role): number;
 }
 
-export type SelectMenuTypes = 'STRING_SELECT' | 'USER_SELECT' | 'ROLE_SELECT' | 'MENTIONABLE_SELECT' | 'CHANNEL_SELECT';
-
 export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
   public constructor(client: Client, data: RawMessageSelectMenuInteractionData);
   public readonly component: CacheTypeReducer<
@@ -2579,7 +2578,7 @@ export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends
     MessageSelectMenu | APISelectMenuComponent,
     MessageSelectMenu | APISelectMenuComponent
   >;
-  public componentType: SelectMenuTypes;
+  public componentType: SelectMenuComponentType;
   public values: string[];
   public inGuild(): this is SelectMenuInteraction<'raw' | 'cached'>;
   public inCachedGuild(): this is SelectMenuInteraction<'cached'>;
@@ -3513,6 +3512,7 @@ export const Constants: {
   InteractionTypes: EnumHolder<typeof InteractionTypes>;
   InteractionResponseTypes: EnumHolder<typeof InteractionResponseTypes>;
   MessageComponentTypes: EnumHolder<typeof MessageComponentTypes>;
+  SelectMenuComponentTypes: EnumHolder<typeof SelectMenuComponentTypes>;
   MessageButtonStyles: EnumHolder<typeof MessageButtonStyles>;
   ModalComponentTypes: EnumHolder<typeof ModalComponentTypes>;
   TextInputStyles: EnumHolder<typeof TextInputStyles>;
@@ -6292,14 +6292,34 @@ export interface MessageReference {
 
 export type MessageResolvable = Message | Snowflake;
 
-export interface MessageSelectMenuOptions extends BaseMessageComponentOptions {
-  type?: SelectMenuTypes;
+export interface BaseMessageSelectMenuOptions {
+  type?: SelectMenuComponentType | SelectMenuComponentTypes;
   customId?: string;
   disabled?: boolean;
   maxValues?: number;
   minValues?: number;
   placeholder?: string;
 }
+export interface StringMessageSelectMenuOptions extends BaseMessageSelectMenuOptions {
+  type?:
+    | 'STRING_SELECT'
+    | SelectMenuComponentTypes.STRING_SELECT;
+  options?: MessageSelectOptionData[];
+}
+
+export interface ChannelMessageSelectMenuOptions extends BaseMessageSelectMenuOptions {
+  type?: 'CHANNEL_SELECT' | SelectMenuComponentTypes.CHANNEL_SELECT;
+  channelTypes?: ChannelTypes[];
+}
+
+export interface OtherMessageSelectMenuOptions extends BaseMessageSelectMenuOptions {
+  type?: ExcludeEnum<typeof SelectMenuComponentTypes, 'CHANNEL_SELECT' | 'STRING_SELECT'>;
+}
+
+export type MessageSelectMenuOptions =
+  | StringMessageSelectMenuOptions
+  | ChannelMessageSelectMenuOptions
+  | OtherMessageSelectMenuOptions;
 
 export interface MessageSelectOption {
   default: boolean;
@@ -6821,6 +6841,8 @@ export interface Vanity {
 export type VerificationLevel = keyof typeof VerificationLevels;
 
 export type VideoQualityMode = keyof typeof VideoQualityModes;
+
+export type SelectMenuComponentType = keyof typeof SelectMenuComponentTypes;
 
 export type VoiceBasedChannelTypes = VoiceBasedChannel['type'];
 
