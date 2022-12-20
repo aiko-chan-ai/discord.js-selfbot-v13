@@ -45,7 +45,7 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @param {MessageSelectMenu|MessageSelectMenuOptions} [data={}] MessageSelectMenu to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: data?.type ? MessageComponentTypes[data.type] : 'STRING_SELECT' });
+    super({ type: BaseMessageComponent.resolveType(data.type) ?? 'STRING_SELECT' });
 
     this.setup(data);
   }
