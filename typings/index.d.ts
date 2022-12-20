@@ -6301,9 +6301,7 @@ export interface BaseMessageSelectMenuOptions {
   placeholder?: string;
 }
 export interface StringMessageSelectMenuOptions extends BaseMessageSelectMenuOptions {
-  type?:
-    | 'STRING_SELECT'
-    | SelectMenuComponentTypes.STRING_SELECT;
+  type?: 'STRING_SELECT' | SelectMenuComponentTypes.STRING_SELECT;
   options?: MessageSelectOptionData[];
 }
 

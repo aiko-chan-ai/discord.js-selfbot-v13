@@ -63,16 +63,6 @@ class VoiceState extends Base {
       this.selfMute ??= null;
     }
 
-    if ('self_stream' in data) {
-      /**
-       * Whether this member is streaming using "Go Live"
-       * @type {?boolean}
-       */
-      this.streaming = data.self_stream;
-    } else {
-      this.streaming ??= null;
-    }
-
     if ('self_video' in data) {
       /**
        * Whether this member's camera is enabled
@@ -92,6 +82,14 @@ class VoiceState extends Base {
     } else {
       this.sessionId ??= null;
     }
+
+    // The self_stream is property is omitted if false, check for another property
+    // here to avoid incorrectly clearing this when partial data is specified
+    /**
+     * Whether this member is streaming using "Screen Share"
+     * @type {boolean}
+     */
+    this.streaming = data.self_stream ?? false;
 
     if ('channel_id' in data) {
       /**
