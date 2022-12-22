@@ -131,6 +131,16 @@ class Team extends Base {
   }
 
   /**
+   * Delete this team
+   * @param {string} code The 2fa code
+   * @returns {Promise<boolean>}
+   */
+  async delete(code) {
+    await this.client.api.teams[this.id].delete({ data: { code: code } });
+    return this.client.developerPortal.teams.delete(this.id);
+  }
+
+  /**
    * When concatenated with a string, this automatically returns the Team's name instead of the
    * Team object.
    * @returns {string}
