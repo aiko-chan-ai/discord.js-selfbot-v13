@@ -215,6 +215,8 @@ const Messages = {
   LOGIN_FAILED_UNKNOWN: 'Login failed',
   LOGIN_FAILED_2FA: 'Login failed, 2FA code is required',
   GUILD_IS_LARGE: 'This guild is too large to fetch all members with this method',
+
+  TEAM_MEMBER_FORMAT: 'The member provided is either not real or not of the User class',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
