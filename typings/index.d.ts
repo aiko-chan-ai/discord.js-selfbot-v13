@@ -457,6 +457,7 @@ export class DeveloperPortalManager extends BaseManager {
   public applications: Collection<Snowflake, DeveloperPortalApplication>;
   public teams: Collection<Snowflake, Team>;
   public fetch(): Promise<DeveloperPortalManager>;
+  public createTeam(name: string): Promise<Team>;
   public createApplication(name: string, teamId?: Team | Snowflake): Promise<DeveloperPortalApplication>;
   public deleteApplication(id: Snowflake, MFACode?: number): Promise<undefined>;
 }
@@ -2889,6 +2890,9 @@ export class Team extends Base {
   public readonly createdTimestamp: number;
 
   public iconURL(options?: StaticImageURLOptions): string | null;
+  public inviteMemeber(user: User, MFACode: number): Promise<TeamMember>;
+  public removeMemeber(userID: Snowflake): boolean;
+  public delete(MFACode: string): Promise<boolean>;
   public toJSON(): unknown;
   public toString(): string;
 }

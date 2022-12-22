@@ -103,15 +103,18 @@ class Team extends Base {
   /**
    * Invite a team member to the team
    * @param {User} user The user to invite to the team
-   * @param {string} MFACode The mfa code
+   * @param {number} MFACode The mfa code
    * @returns {Promise<TeamMember>}
    */
   async inviteMember(user, MFACode) {
     if (!(user instanceof User)) return new Error('TEAM_MEMBER_FORMAT');
+    const regex = /([0-9]{6})/g;
+
     const payload = {
       username: user.username,
       discriminator: user.discriminator,
     };
+    if (MFACode && !regex.test(MFACode)) return new Error('MFA_INVALID');
     if (MFACode) payload.code = MFACode;
 
     const member = await this.client.api.teams(this.id).members.post({
@@ -125,18 +128,22 @@ class Team extends Base {
   /**
    * Remove a member from the team
    * @param {Snowflake} userID The ID of the user you want to remove
+   * @returns {boolean}
    */
   async removeMember(userID) {
     await this.client.api.teams[this.id].members[userID].delete();
+    return this.members.delete(userID);
   }
 
   /**
    * Delete this team
-   * @param {string} code The 2fa code
+   * @param {number} MFACode The 2fa code
    * @returns {Promise<boolean>}
    */
-  async delete(code) {
-    await this.client.api.teams[this.id].delete({ data: { code: code } });
+  async delete(MFACode) {
+    const regex = /([0-9]{6})/g;
+    if (!regex.test(MFACode)) return new Error('MFA_INVALID');
+    await this.client.api.teams[this.id].delete({ data: { code: MFACode } });
     return this.client.developerPortal.teams.delete(this.id);
   }
 
