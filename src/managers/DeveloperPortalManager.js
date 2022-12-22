@@ -47,6 +47,22 @@ class DeveloperPortalManager extends BaseManager {
   }
 
   /**
+   * Creates a new Team.
+   * @param {string} name Name of the team
+   * @returns {Promise<Team>}
+   */
+  async createTeam(name) {
+    const team = await this.client.api.teams.post({
+      data: {
+        name: name,
+      },
+    });
+
+    this.teams.set(team.id, new Team(this.client, team));
+    return this.teams.get(team.id);
+  }
+
+  /**
    * Creates a new application.
    * @param {string} name Name of the application
    * @param {?Snowflake | Team} teamId The team to create the application in

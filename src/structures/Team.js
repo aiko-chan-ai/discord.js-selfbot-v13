@@ -3,6 +3,8 @@
 const { Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const TeamMember = require('./TeamMember');
+const User = require('./User');
+const { Error } = require('../errors');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 /**
@@ -96,6 +98,36 @@ class Team extends Base {
   iconURL({ format, size } = {}) {
     if (!this.icon) return null;
     return this.client.rest.cdn.TeamIcon(this.id, this.icon, { format, size });
+  }
+
+  /**
+   * Invite a team member to the team
+   * @param {User} user The user to invite to the team
+   * @param {string} MFACode The mfa code
+   * @returns {Promise<TeamMember>}
+   */
+  async inviteMember(user, MFACode) {
+    if (!(user instanceof User)) return new Error('TEAM_MEMBER_FORMAT');
+    const payload = {
+      username: user.username,
+      discriminator: user.discriminator,
+    };
+    if (MFACode) payload.code = MFACode;
+
+    const member = await this.client.api.teams(this.id).members.post({
+      data: payload,
+    });
+
+    this.members.set(member.user.id, new TeamMember(this, member));
+    return this.members.get(member.user.id);
+  }
+
+  /**
+   * Remove a member from the team
+   * @param {Snowflake} userID The ID of the user you want to remove
+   */
+  async removeMember(userID) {
+    await this.client.api.teams[this.id].members[userID].delete();
   }
 
   /**
