@@ -99,6 +99,38 @@ class DiscordAuthWebsocket extends EventEmitter {
      * @type {?string}
      */
     this.fingerprint = null;
+
+    /**
+     * Captcha Handler
+     * @type {Function}
+     * @param {Captcha} data hcaptcha data
+     * @returns {Promise<string>} Captcha token
+     */
+    // eslint-disable-next-line no-unused-vars
+    this.captchaHandler = data =>
+      new Promise((resolve, reject) => {
+        reject(
+          new Error(`
+Captcha Handler not found - Please set captchaHandler option
+Example captchaHandler function:
+
+new DiscordAuthWebsocket({
+  captchaHandler: async (data) => {
+    const token = await hcaptchaSolver(data.captcha_sitekey, 'discord.com');
+    return token;
+  }
+});
+
+`),
+        );
+      });
+
+    /**
+     * Captcha Cache
+     * @type {?Captcha}
+     */
+    this.captchaCache = null;
+
     this._validateOptions(options);
   }
   /**
@@ -133,6 +165,7 @@ class DiscordAuthWebsocket extends EventEmitter {
       if (typeof options.apiVersion == 'number') this.options.apiVersion = options.apiVersion;
       if (typeof options.userAgent == 'string') this.options.userAgent = options.userAgent;
       if (typeof options.wsProperties == 'object') this.options.wsProperties = options.wsProperties;
+      if (typeof options.captchaHandler == 'function') this.captchaHandler = options.captchaHandler;
     }
   }
   _createWebSocket(url) {
@@ -378,35 +411,57 @@ class DiscordAuthWebsocket extends EventEmitter {
     this._logger('default', `Please scan the QR code to continue.\nQR Code will expire in ${this.exprireTime}`);
   }
 
-  async _findRealToken() {
+  async _findRealToken(captchaSolveData) {
     if (!this.token) this._throwError(new Error('Token is not created.'));
     const chromeVersion = defaultClientOptions.ws.properties.browser_version.split('.')[0];
-    const res = await axios.post(
-      `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
-      {
-        ticket: this.token,
-      },
-      {
-        headers: {
-          Accept: '*/*',
-          'Content-Type': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="24"`,
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-origin',
-          'X-Debug-Options': 'bugReporterEnabled',
-          'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString('base64')}`,
-          'X-Discord-Locale': 'en-US',
-          'User-Agent': this.options.userAgent,
-        },
-      },
-    );
     this._logger('debug', 'Find real token...', res.data);
+    const res = await axios
+      .post(
+        `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
+        captchaSolveData
+          ? {
+              ticket: this.token,
+              captcha_rqtoken: this.captchaCache.captcha_rqtoken,
+              captcha_key: captchaSolveData,
+            }
+          : {
+              ticket: this.token,
+            },
+        {
+          headers: {
+            Accept: '*/*',
+            'Content-Type': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+            'Sec-Ch-Ua': `"Google Chrome";v="${chromeVersion}", "Chromium";v="${chromeVersion}", "Not=A?Brand";v="24"`,
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'X-Debug-Options': 'bugReporterEnabled',
+            'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString(
+              'base64',
+            )}`,
+            'X-Discord-Locale': 'en-US',
+            'User-Agent': this.options.userAgent,
+          },
+        },
+      )
+      .catch(e => {
+        if (e.response.data?.captcha_key) {
+          this.captchaCache = e.response.data;
+        } else {
+          this._throwError(e);
+          this.captchaCache = null;
+        }
+      });
+    if (!res && this.captchaCache) {
+      this._logger('debug', 'Detect captcha... Try call captchaHandler()', this.captchaCache);
+      const token = await this.options.captchaHandler(this.captchaCache);
+      return this._findRealToken(token);
+    }
     this.realToken = this._decryptPayload(res.data.encrypted_token).toString();
     /**
      * Emitted whenever a real token is found.
@@ -415,6 +470,7 @@ class DiscordAuthWebsocket extends EventEmitter {
      * @param {string} token Real token
      */
     this.emit(Event.FINISH, this.user, this.realToken);
+    return this;
   }
 }
 

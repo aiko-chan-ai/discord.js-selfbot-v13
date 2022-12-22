@@ -200,6 +200,8 @@ export class DiscordAuthWebsocket extends EventEmitter {
   public token?: string;
   public realToken?: string;
   public user?: RawUserData;
+  public captchaCache?: Captcha;
+  public captchaHandler(data: Captcha): Promise<string>;
   public readonly exprireTime: string;
   public connect(client?: Client): void;
   public destroy(): void;
