@@ -47,9 +47,7 @@ module.exports = class CaptchaSolver {
                   sitekey: siteKey,
                   url: 'https://discord.com',
                 })
-                .then(res => {
-                  resolve(res);
-                })
+                .then(res => (res ? resolve(res) : reject(new Error('Captcha could not be solved'))))
                 .catch(reject);
             });
           break;
