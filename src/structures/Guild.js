@@ -1517,7 +1517,7 @@ class Guild extends AnonymousGuild {
     if (!botId) throw new TypeError('INVALID_BOT_ID');
     // Check permission
     const selfPerm = this.me.permissions.toArray();
-    const missingPerms = permission.toArray().filter(x => selfPerm.includes(x));
+    const missingPerms = permission.toArray().filter(x => !selfPerm.includes(x));
     if (missingPerms.length) {
       throw new Error('MISSING_PERMISSIONS', missingPerms.join(', '));
     }
