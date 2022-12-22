@@ -8,6 +8,7 @@ const { Util } = require('..');
 const { Error: Error_ } = require('../errors');
 const { Opcodes, NitroType, HypeSquadType } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const PremiumUsageFlags = require('../util/PremiumUsageFlags');
 const PurchasedFlags = require('../util/PurchasedFlags');
 /**
  * Represents the logged in client's Discord user.
@@ -52,6 +53,13 @@ class ClientUser extends User {
        * @type {?PurchasedFlags}
        */
       this.purchasedFlags = new PurchasedFlags(data.purchased_flags || 0);
+    }
+    if ('premium_usage_flags' in data) {
+      /**
+       * Premium usage state of the client user.
+       * @type {?PremiumUsageFlags}
+       */
+      this.premiumUsageFlags = new PremiumUsageFlags(data.premium_usage_flags || 0);
     }
     // Key: premium = boolean;
     if ('phone' in data) {

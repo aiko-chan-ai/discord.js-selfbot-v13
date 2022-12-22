@@ -109,8 +109,6 @@ module.exports = async (client, { d: data }, shard) => {
     client.users.cache.set(client.user.id, client.user);
   }
 
-  client.user.setAFK(false);
-
   client.settings._patch(data.user_settings);
 
   client.user.connectedAccounts = data.connected_accounts ?? [];

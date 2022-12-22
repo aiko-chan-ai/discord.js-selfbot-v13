@@ -360,6 +360,11 @@ export class PurchasedFlags extends BitField<PurchasedFlagsString> {
   public static resolve(bit?: BitFieldResolvable<PurchasedFlagsString, number>): number;
 }
 
+export class PremiumUsageFlags extends BitField<PremiumUsageFlagsString> {
+  public static FLAGS: Record<PremiumUsageFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<PremiumUsageFlagsString, number>): number;
+}
+
 export abstract class AnonymousGuild extends BaseGuild {
   protected constructor(client: Client, data: RawAnonymousGuildData, immediatePatch?: boolean);
   public banner: string | null;
@@ -951,6 +956,8 @@ export class ClientUser extends User {
   public verified: boolean;
   public notes: Collection<Snowflake, string>;
   public friendNicknames: Collection<Snowflake, string>;
+  public purchasedFlags: PurchasedFlags;
+  public premiumUsageFlags: PremiumUsageFlags;
   public setThemeColors(primary?: ColorResolvable, accent?: ColorResolvable): ClientUser;
   public edit(data: ClientUserEditData): Promise<this>;
   public setActivity(options?: ActivityOptions): ClientPresence;
@@ -4239,6 +4246,8 @@ export interface WebhookFields extends PartialWebhookFields {
 
 //#region Typedefs
 export type PurchasedFlagsString = 'NITRO_CLASSIC' | 'NITRO' | 'GUILD_BOOST';
+
+export type PremiumUsageFlagsString = 'ANIMATED_AVATAR' | 'BANNER' | 'CUSTOM_DISCRIMINATOR';
 
 export type ActivityFlagsString =
   | 'INSTANCE'
