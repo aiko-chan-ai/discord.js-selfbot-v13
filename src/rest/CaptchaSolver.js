@@ -39,12 +39,12 @@ module.exports = class CaptchaSolver {
           });
           this.service = 'nopecha';
           this.solver = new NopeCHAApi(configuration);
-          this.solve = siteKey =>
+          this.solve = sitekey =>
             new Promise((resolve, reject) => {
               this.solver
                 .solveToken({
                   type: 'hcaptcha',
-                  sitekey: siteKey,
+                  sitekey,
                   url: 'https://discord.com',
                 })
                 .then(res => (res ? resolve(res) : reject(new Error('Captcha could not be solved'))))
