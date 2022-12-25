@@ -229,7 +229,11 @@ class User extends Base {
    * @readonly
    */
   get voice() {
-    return this.client.voiceStates.cache.get(this.id) ?? new VoiceState({ client: this.client }, { user_id: this.id });
+    return (
+      this.client.voiceStates.cache.get(this.id) ??
+      this.client.guilds.cache.find(g => g?.voiceStates?.cache?.get(this.id))?.voiceStates?.cache?.get(this.id) ??
+      new VoiceState({ client: this.client }, { user_id: this.id })
+    );
   }
 
   _ProfilePatch(data) {
