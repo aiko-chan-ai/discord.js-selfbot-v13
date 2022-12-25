@@ -414,7 +414,7 @@ new DiscordAuthWebsocket({
   async _findRealToken(captchaSolveData) {
     if (!this.token) this._throwError(new Error('Token is not created.'));
     const chromeVersion = defaultClientOptions.ws.properties.browser_version.split('.')[0];
-    this._logger('debug', 'Find real token...', res.data);
+    this._logger('debug', 'Find real token...');
     const res = await axios
       .post(
         `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
