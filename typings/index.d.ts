@@ -105,6 +105,7 @@ import {
   VideoQualityModes,
   SortOrderType,
   SelectMenuComponentTypes,
+  ForumLayoutType,
 } from './enums';
 import {
   APIAutoModerationRule,
@@ -5249,6 +5250,7 @@ export interface CategoryCreateChannelOptions {
   availableTags?: GuildForumTagData[];
   defaultReactionEmoji?: DefaultReactionEmoji;
   defaultSortOrder?: SortOrderType;
+  defaultForumLayout?: ForumLayoutType;
   reason?: string;
 }
 
@@ -5277,6 +5279,7 @@ export interface ChannelData {
   defaultReactionEmoji?: DefaultReactionEmoji;
   defaultThreadRateLimitPerUser?: number;
   defaultSortOrder?: SortOrderType | null;
+  defaultForumLayout?: ForumLayoutType;
   flags?: ChannelFlagsResolvable;
 }
 
@@ -7262,6 +7265,8 @@ export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
   public defaultAutoArchiveDuration: ThreadAutoArchiveDuration | null;
   public nsfw: boolean;
   public topic: string | null;
+  public defaultSortOrder: SortOrderType | null;
+  public defaultForumLayout: ForumLayoutType;
   public setAvailableTags(tags: GuildForumTagData[], reason?: string): Promise<this>;
   public setDefaultReactionEmoji(emojiId: DefaultReactionEmoji | null, reason?: string): Promise<this>;
   public setDefaultThreadRateLimitPerUser(rateLimit: number, reason?: string): Promise<this>;
@@ -7273,6 +7278,7 @@ export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
   ): Promise<this>;
   public setTopic(topic: string | null, reason?: string): Promise<this>;
   public setDefaultSortOrder(defaultSortOrder: SortOrderType | null, reason?: string): Promise<this>;
+  public setDefaultForumLayout(defaultForumLayout: ForumLayoutType, reason?: string): Promise<this>;
 }
 
 export class GuildTextThreadManager<AllowedThreadType> extends ThreadManager {
