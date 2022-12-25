@@ -69,4 +69,6 @@ Intents.FLAGS = {
   AUTO_MODERATION_EXECUTION: 1 << 21,
 };
 
+Intents.ALL = Object.values(Intents.FLAGS).reduce((all, p) => all | p, 0);
+
 module.exports = Intents;

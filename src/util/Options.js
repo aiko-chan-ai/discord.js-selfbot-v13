@@ -1,6 +1,7 @@
 'use strict';
 
 const JSONBig = require('json-bigint');
+const Intents = require('./Intents');
 const { randomUA } = require('../util/Constants');
 /**
  * Rate limit data
@@ -167,7 +168,7 @@ class Options extends null {
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
-      intents: 131071,
+      intents: Intents.ALL,
       partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT'], // Enable the partials
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,
@@ -195,7 +196,7 @@ class Options extends null {
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 163275,
+          client_build_number: 165485,
           client_event_source: null,
         },
         // ! capabilities: 4093,

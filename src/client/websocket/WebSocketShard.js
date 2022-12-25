@@ -425,7 +425,7 @@ class WebSocketShard extends EventEmitter {
         this.emit(ShardEvents.READY);
 
         this.sessionId = packet.d.session_id;
-        this.expectedGuilds = new Set(packet.d.guilds.filter(d => d.unavailable).map(d => d.id));
+        this.expectedGuilds = new Set(packet.d.guilds.filter(d => d?.unavailable == true).map(d => d.id));
         this.status = Status.WAITING_FOR_GUILDS;
         this.debug(`[READY] Session ${this.sessionId}.`);
         this.lastHeartbeatAcked = true;
