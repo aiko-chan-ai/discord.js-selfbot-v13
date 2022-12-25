@@ -141,8 +141,12 @@ module.exports = async (client, { d: data }, shard) => {
     client.guilds._add(guild);
   }
 
+  const largeGuilds = data.guilds.filter(g => g.large);
+
+  client.emit('debug', `Received ${data.guilds.length} guilds, ${largeGuilds.length} large guilds`);
+
   // Receive messages in large guilds
-  for (const guild of data.guilds) {
+  for (const guild of largeGuilds) {
     await client.sleep(client.options.messageCreateEventGuildTimeout);
     client.ws.broadcast({
       op: Opcodes.LAZY_REQUEST,

@@ -4,6 +4,7 @@ const { Events, Opcodes, Status } = require('../../../util/Constants');
 
 // Receive messages in large guilds
 const run = (client, guild) => {
+  if (!guild.large) return;
   client.ws.broadcast({
     op: Opcodes.LAZY_REQUEST,
     d: {
