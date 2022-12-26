@@ -648,13 +648,11 @@ class Util extends null {
 
   /**
    * Resolves the maximum time a guild's thread channels should automatcally archive in case of no recent activity.
-   * @param {Guild} guild The guild to resolve this limit from.
+   * @deprecated
    * @returns {number}
    */
-  static resolveAutoArchiveMaxLimit({ features }) {
-    if (features.includes('SEVEN_DAY_THREAD_ARCHIVE')) return 10080;
-    if (features.includes('THREE_DAY_THREAD_ARCHIVE')) return 4320;
-    return 1440;
+  static resolveAutoArchiveMaxLimit() {
+    return 10080;
   }
 
   /**
