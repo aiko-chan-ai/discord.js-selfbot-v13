@@ -71,7 +71,7 @@ class AutoModerationRule extends Base {
        * @property {AutoModerationRuleKeywordPresetType[]} presets
        * The internally pre-defined wordsets which will be searched for in the content
        * @property {string[]} allowList The substrings that will be exempt from triggering
-       * {@link AutoModerationRuleTriggerTypes.Keyword} and {@link AutoModerationRuleTriggerTypes.KeywordPreset}
+       * {@link AutoModerationRuleTriggerTypes.KEYWORD} and {@link AutoModerationRuleTriggerTypes.KEYWORD_PRESET}
        * @property {?number} mentionTotalLimit The total number of role & user mentions allowed per message
        */
 
@@ -190,7 +190,7 @@ class AutoModerationRule extends Base {
    * @returns {Promise<AutoModerationRule>}
    */
   setKeywordFilter(keywordFilter, reason) {
-    return this.edit({ triggerMetadata: { ...this.triggerMetadata, keywordFilter }, reason });
+    return this.edit({ triggerMetadata: { keywordFilter }, reason });
   }
 
   /**
@@ -201,7 +201,7 @@ class AutoModerationRule extends Base {
    * @returns {Promise<AutoModerationRule>}
    */
   setRegexPatterns(regexPatterns, reason) {
-    return this.edit({ triggerMetadata: { ...this.triggerMetadata, regexPatterns }, reason });
+    return this.edit({ triggerMetadata: { regexPatterns }, reason });
   }
 
   /**
@@ -211,7 +211,7 @@ class AutoModerationRule extends Base {
    * @returns {Promise<AutoModerationRule>}
    */
   setPresets(presets, reason) {
-    return this.edit({ triggerMetadata: { ...this.triggerMetadata, presets }, reason });
+    return this.edit({ triggerMetadata: { presets }, reason });
   }
 
   /**
@@ -221,7 +221,7 @@ class AutoModerationRule extends Base {
    * @returns {Promise<AutoModerationRule>}
    */
   setAllowList(allowList, reason) {
-    return this.edit({ triggerMetadata: { ...this.triggerMetadata, allowList }, reason });
+    return this.edit({ triggerMetadata: { allowList }, reason });
   }
 
   /**
@@ -231,7 +231,7 @@ class AutoModerationRule extends Base {
    * @returns {Promise<AutoModerationRule>}
    */
   setMentionTotalLimit(mentionTotalLimit, reason) {
-    return this.edit({ triggerMetadata: { ...this.triggerMetadata, mentionTotalLimit }, reason });
+    return this.edit({ triggerMetadata: { mentionTotalLimit }, reason });
   }
 
   /**
