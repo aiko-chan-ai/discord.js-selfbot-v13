@@ -343,10 +343,12 @@ class Invite extends Base {
       },
     });
     const guild = this.client.guilds.cache.get(this.guild.id);
+    /*
+    //
     if (autoVerify) {
       console.warn('Feature is under maintenance - Invite#acceptInvite(true)');
     }
-    /* Disabled
+    */
     if (autoVerify) {
       const getForm = await this.client.api
         .guilds(this.guild.id)
@@ -358,7 +360,6 @@ class Invite extends Base {
       // https://discord.com/api/v9/guilds/:id/requests/@me
       await this.client.api.guilds(this.guild.id).requests['@me'].put({ data: { form_fields: [form] } });
     }
-    */
     return guild;
   }
 }

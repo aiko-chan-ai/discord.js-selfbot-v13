@@ -48,26 +48,32 @@ class APIRequest {
       'Accept-Language': 'en-US,en;q=0.9',
       'Sec-Ch-Ua': `"Not?A_Brand";v="8", "Chromium";v="${chromeVersion}", "Google Chrome";v="${chromeVersion}"`,
       'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"Windows"',
+      'Sec-Ch-Ua-Platform': 'Windows',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
       'X-Debug-Options': 'bugReporterEnabled',
       'X-Super-Properties': `${Buffer.from(
-        this.client.options.jsonTransformer(this.client.options.ws.properties),
+        this.client.options.jsonTransformer({
+          ...this.client.options.ws.properties,
+          browser_user_agent: this.client.options.http.headers['User-Agent'],
+        }),
         'ascii',
       ).toString('base64')}`,
       'X-Discord-Locale': 'en-US',
       'User-Agent': this.client.options.http.headers['User-Agent'],
+      Origin: 'https://discord.com',
+      Connection: 'keep-alive',
     };
-
-    /* Remove
-    this.client.options.http.headers['User-Agent'] = this.fullUserAgent;
-    */
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
     if (this.options.reason) headers['X-Audit-Log-Reason'] = encodeURIComponent(this.options.reason);
     if (this.options.headers) headers = Object.assign(headers, this.options.headers);
+    if (this.options.webhook === true) {
+      headers = {
+        'User-Agent': this.client.options.http.headers['User-Agent'],
+      };
+    }
 
     let body;
     if (this.options.files?.length) {

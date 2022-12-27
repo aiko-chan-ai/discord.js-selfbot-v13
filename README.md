@@ -48,7 +48,6 @@
 ### Optional packages
 
 - [2captcha](https://www.npmjs.com/package/2captcha) for solving captcha (`npm install 2captcha`)
-- [nopecha](https://www.npmjs.com/package/nopecha) for solving captcha (`npm install nopecha`)
 
 ## Installation
 

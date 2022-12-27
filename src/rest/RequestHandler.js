@@ -11,6 +11,25 @@ const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
 
+const cookieFilter = str => {
+  const blackList = ['expires', 'path', 'domain', 'httponly', 'secure', 'max-age', 'samesite'];
+  if (blackList.some(s => str.toLowerCase().includes(`${s}`))) return false;
+  return true;
+};
+
+function parseCookie(str, old) {
+  const oldProps = old.split(';').filter(cookieFilter);
+  const allProps = str.split(';').filter(cookieFilter);
+  // Update data from all to old
+  allProps.forEach(prop => {
+    const key = prop.split('=')[0];
+    const index = oldProps.findIndex(s => s.startsWith(key));
+    if (index !== -1) oldProps[index] = prop;
+    else oldProps.push(prop);
+  });
+  return oldProps.filter(s => s).join('; ');
+}
+
 const captchaMessage = [
   'incorrect-captcha',
   'response-already-used',
@@ -240,6 +259,20 @@ class RequestHandler {
 
     let sublimitTimeout;
     if (res.headers) {
+      // Cookie:
+      const cookie = res.headers.get('set-cookie');
+      if (cookie) {
+        if (typeof cookie == 'string') {
+          this.manager.client.options.http.headers.Cookie = parseCookie(
+            cookie,
+            this.manager.client.options.http.headers.Cookie || '',
+          );
+          this.manager.client.emit(
+            'debug',
+            `[REST] Set new cookie: ${this.manager.client.options.http.headers.Cookie}`,
+          );
+        }
+      }
       const serverDate = res.headers.get('date');
       const limit = res.headers.get('x-ratelimit-limit');
       const remaining = res.headers.get('x-ratelimit-remaining');
@@ -368,7 +401,10 @@ class RequestHandler {
     Route   : ${request.route}
     Info    : ${inspect(data, { depth: null })}`,
           );
-          const captcha = await this.manager.captchaService.solve(data.captcha_sitekey);
+          const captcha = await this.manager.captchaService.solve(
+            data,
+            this.manager.client.options.http.headers['User-Agent'],
+          );
           this.manager.client.emit(
             DEBUG,
             `Captcha solved.

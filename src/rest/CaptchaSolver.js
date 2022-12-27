@@ -16,10 +16,17 @@ module.exports = class CaptchaSolver {
           const lib = require('2captcha');
           this.service = '2captcha';
           this.solver = new lib.Solver(key);
-          this.solve = siteKey =>
+          this.solve = (data, userAgent) =>
             new Promise((resolve, reject) => {
+              const siteKey = data.captcha_sitekey;
+              const postD = data.captcha_rqdata
+                ? {
+                    data: data.captcha_rqdata,
+                    userAgent,
+                  }
+                : undefined;
               this.solver
-                .hcaptcha(siteKey, 'discord.com')
+                .hcaptcha(siteKey, 'https://discord.com/channels/@me', postD)
                 .then(res => {
                   resolve(res.data);
                 })
@@ -28,31 +35,6 @@ module.exports = class CaptchaSolver {
           break;
         } catch (e) {
           throw this._missingModule('2captcha');
-        }
-      }
-      case 'nopecha': {
-        if (!key || typeof key !== 'string') throw new Error('NopeCHA key is not provided');
-        try {
-          const { Configuration, NopeCHAApi } = require('nopecha');
-          const configuration = new Configuration({
-            apiKey: key,
-          });
-          this.service = 'nopecha';
-          this.solver = new NopeCHAApi(configuration);
-          this.solve = sitekey =>
-            new Promise((resolve, reject) => {
-              this.solver
-                .solveToken({
-                  type: 'hcaptcha',
-                  sitekey,
-                  url: 'https://discord.com',
-                })
-                .then(res => (res ? resolve(res) : reject(new Error('Captcha could not be solved'))))
-                .catch(reject);
-            });
-          break;
-        } catch (e) {
-          throw this._missingModule('nopecha');
         }
       }
     }

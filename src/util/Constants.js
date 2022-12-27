@@ -21,10 +21,9 @@ exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 /**
  * API captcha solver
  * * `2captcha` - 2captcha.com
- * * `nopecha` - nopecha.com
  * @typedef {string[]} captchaServices
  */
-exports.captchaServices = ['2captcha', 'nopecha'];
+exports.captchaServices = ['2captcha'];
 
 /**
  * Automatically scan and delete direct messages you receive that contain explicit media content.
@@ -1770,10 +1769,13 @@ function createEnum(keys) {
  * @property {Object<ApplicationCommandType, number>} ApplicationCommandTypes
  * The type of an {@link ApplicationCommand} object.
  * @property {Object<AutoModerationRuleTriggerType, number>} AutoModerationRuleTriggerTypes Characterizes the type
- * of contentwhich can trigger the rule.
+ * of content which can trigger the rule.
  * @property {Object<AutoModerationActionType, number>} AutoModerationActionTypes
+ * A type of an action which executes whenever a rule is triggered.
  * @property {Object<AutoModerationRuleKeywordPresetType, number>} AutoModerationRuleKeywordPresetTypes
- * @property {Object<AutoModerationRuleEventType, number>} AutoModerationRuleEventTypes
+ * The internally pre-defined wordsetswhich will be searched for in content
+ * @property {Object<AutoModerationRuleEventType, number>} AutoModerationRuleEventTypes Indicates in what event context
+ *  a rule should be checked.
  * @property {Object<ChannelType, number>} ChannelTypes All available channel types.
  * @property {ClientApplicationAssetTypes} ClientApplicationAssetTypes The types of an {@link ApplicationAsset} object.
  * @property {Object<Color, number>} Colors An object with regularly used colors.

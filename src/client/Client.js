@@ -313,48 +313,6 @@ class Client extends BaseClient {
   }
 
   /**
-   * Update Cloudflare Cookie and Discord Fingerprint
-   */
-  async updateCookie() {
-    /* Auto find fingerprint and add Cookie */
-    let cookie = '';
-    await require('axios')({
-      method: 'get',
-      url: 'https://discord.com/api/v9/experiments',
-      headers: this.options.http.headers,
-    })
-      .then(res => {
-        if (!('set-cookie' in res.headers)) return;
-        res.headers['set-cookie'].map(line => {
-          line.split('; ').map(arr => {
-            if (
-              arr.startsWith('Expires') ||
-              arr.startsWith('Path') ||
-              arr.startsWith('Domain') ||
-              arr.startsWith('HttpOnly') ||
-              arr.startsWith('Secure') ||
-              arr.startsWith('Max-Age') ||
-              arr.startsWith('SameSite')
-            ) {
-              return null;
-            } else {
-              cookie += `${arr}; `;
-              return true;
-            }
-          });
-          return true;
-        });
-        this.options.http.headers.Cookie = `${cookie}locale=en`;
-        this.options.http.headers['x-fingerprint'] = res.data.fingerprint;
-        this.emit(Events.DEBUG, `Added Cookie: ${cookie}`);
-        this.emit(Events.DEBUG, `Added Fingerprint: ${res.data.fingerprint}`);
-      })
-      .catch(err => {
-        this.emit(Events.DEBUG, `Update Cookie and Fingerprint failed: ${err.message}`);
-      });
-  }
-
-  /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
    * @returns {Promise<string>} Token of the account used
@@ -380,10 +338,6 @@ class Client extends BaseClient {
         .map((val, i) => (i > 1 ? val.replace(/./g, '*') : val))
         .join('.')}`,
     );
-
-    if (this.options.autoCookie) {
-      await this.updateCookie();
-    }
 
     if (this.options.presence) {
       this.options.ws.presence = this.presence._parse(this.options.presence);
@@ -522,7 +476,7 @@ class Client extends BaseClient {
 
   /**
    * Create a new token based on the current token
-   * @returns {Promise<string>} Discord Token
+   * @returns {Promise<string>} New Discord Token
    */
   createToken() {
     return new Promise(resolve => {
@@ -537,12 +491,12 @@ class Client extends BaseClient {
         wsProperties: this.options.ws.properties,
       });
       // Step 2: Add event
-      QR.on('ready', async (_, url) => {
+      QR.once('ready', async (_, url) => {
         await this.remoteAuth(url, true);
-      }).on('finish', (user, token) => {
+      }).once('finish', (user, token) => {
         resolve(token);
       });
-
+      // Step 3: Connect
       QR.connect();
     });
   }
@@ -635,6 +589,24 @@ class Client extends BaseClient {
       query: { with_counts: true, with_expiration: true, guild_scheduled_event_id: options?.guildScheduledEventId },
     });
     return new Invite(this, data);
+  }
+
+  /**
+   * Join this Guild using this invite (Use with caution)
+   * @param {InviteResolvable} invite Invite code or URL
+   * @deprecated
+   * @returns {Promise<undefined>}
+   */
+  async acceptInvite(invite) {
+    const code = DataResolver.resolveInviteCode(invite);
+    if (!code) throw new Error('INVITE_RESOLVE_CODE');
+    if (invite instanceof Invite) {
+      await invite.acceptInvite();
+    } else {
+      await this.api.invites(code).post({
+        data: {},
+      });
+    }
   }
 
   /**
@@ -1005,9 +977,6 @@ class Client extends BaseClient {
     if (options && typeof options.readyStatus !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'readyStatus', 'a boolean');
     }
-    if (options && typeof options.autoCookie !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'autoCookie', 'a boolean');
-    }
     if (options && typeof options.autoRedeemNitro !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
     }
@@ -1025,12 +994,6 @@ class Client extends BaseClient {
             throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
           }
           break;
-        case 'nopecha': {
-          if (options.captchaKey.length !== 16) {
-            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 16 character string');
-          }
-          break;
-        }
       }
     }
     if (options && typeof options.DMSync !== 'boolean') {

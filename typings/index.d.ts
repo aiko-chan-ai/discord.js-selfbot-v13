@@ -856,7 +856,6 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   // Added
   public settings: ClientSettingManager;
   public relationships: RelationshipManager;
-  public updateCookie(): Promise<void>;
   public readonly callVoice?: VoiceConnection;
   public voiceStates: VoiceStateManager;
   // End
@@ -4767,7 +4766,6 @@ export interface ClientOptions {
   // add
   checkUpdate?: boolean;
   readyStatus?: boolean;
-  autoCookie?: boolean;
   autoRedeemNitro?: boolean;
   patchVoice?: boolean;
   password?: string;
@@ -4779,7 +4777,7 @@ export interface ClientOptions {
   usingNewAttachmentAPI?: boolean;
 }
 
-export type captchaServices = '2captcha' | 'nopecha';
+export type captchaServices = '2captcha';
 
 // end copy
 

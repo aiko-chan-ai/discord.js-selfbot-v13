@@ -38,7 +38,6 @@ const { randomUA } = require('../util/Constants');
  * from the WebSocket. Don't have this too high/low. Its best to have it between 2_000-6_000 ms.
  * @property {boolean} [checkUpdate=true] Display module update information on the screen
  * @property {boolean} [readyStatus=true] Sync state with Discord Client
- * @property {boolean} [autoCookie=true] Automatically add Cookies to Request on startup
  * @property {boolean} [patchVoice=false] Automatically patch @discordjs/voice module (support for call)
  * @property {string} [captchaService=null] Captcha service to use for solving captcha {@link captchaServices}
  * @property {string} [captchaKey=null] Captcha service key
@@ -152,7 +151,6 @@ class Options extends null {
       closeTimeout: 5_000,
       checkUpdate: true,
       readyStatus: true,
-      autoCookie: true,
       autoRedeemNitro: false,
       captchaService: '',
       captchaKey: null,
