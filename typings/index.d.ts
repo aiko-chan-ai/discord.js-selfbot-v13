@@ -4773,6 +4773,7 @@ export interface ClientOptions {
   proxy?: string;
   captchaService?: captchaServices;
   captchaKey?: string;
+  captchaSolver?: (data: Captcha, userAgent: string) => Promise<string>;
   interactionTimeout?: number;
   usingNewAttachmentAPI?: boolean;
 }

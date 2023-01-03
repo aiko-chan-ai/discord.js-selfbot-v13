@@ -984,7 +984,7 @@ class Client extends BaseClient {
       throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaServices.join(', '));
     }
     // Parse captcha key
-    if (options && captchaServices.includes(options.captchaService)) {
+    if (options && captchaServices.includes(options.captchaService) && options.captchaService !== 'custom') {
       if (typeof options.captchaKey !== 'string') {
         throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
       }
@@ -995,6 +995,9 @@ class Client extends BaseClient {
           }
           break;
       }
+    }
+    if (options && typeof options.captchaSolver !== 'function') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaSolver', 'a function');
     }
     if (options && typeof options.DMSync !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');

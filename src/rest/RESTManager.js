@@ -28,7 +28,11 @@ class RESTManager {
   }
 
   setup() {
-    this.captchaService = new CaptchaSolver(this.client.options.captchaService, this.client.options.captchaKey);
+    this.captchaService = new CaptchaSolver(
+      this.client.options.captchaService,
+      this.client.options.captchaKey,
+      this.client.options.captchaSolver,
+    );
   }
 
   get api() {

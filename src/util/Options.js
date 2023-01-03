@@ -92,6 +92,15 @@ const { randomUA } = require('../util/Constants');
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
  * @property {WebsocketOptions} [ws] Options for the WebSocket
  * @property {HTTPOptions} [http] HTTP options
+ * @property {CustomCaptchaSolver} [captchaSolver] Function to solve a captcha (custom)
+ */
+
+/**
+ * Function to solve a captcha
+ * @typedef {function} CustomCaptchaSolver
+ * @param {Captcha} captcha The captcha to solve
+ * @param {string} userAgent The user agent to use for the request
+ * @returns {Promise<string>} hcaptcha token
  */
 
 /**
@@ -148,6 +157,7 @@ class Options extends null {
   static createDefault() {
     return {
       jsonTransformer: object => JSONBig.stringify(object),
+      captchaSolver: captcha => Promise.reject(new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED', captcha)),
       closeTimeout: 5_000,
       checkUpdate: true,
       readyStatus: true,

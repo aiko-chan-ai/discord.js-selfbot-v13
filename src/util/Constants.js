@@ -23,7 +23,7 @@ exports.MaxBulkDeletableMessageAge = 1_209_600_000;
  * * `2captcha` - 2captcha.com
  * @typedef {string[]} captchaServices
  */
-exports.captchaServices = ['2captcha'];
+exports.captchaServices = ['2captcha', 'custom'];
 
 /**
  * Automatically scan and delete direct messages you receive that contain explicit media content.

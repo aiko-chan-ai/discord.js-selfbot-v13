@@ -1,8 +1,9 @@
 'use strict';
 module.exports = class CaptchaSolver {
-  constructor(service, key) {
-    this.service = '';
+  constructor(service, key, defaultCaptchaSolver) {
+    this.service = 'custom';
     this.solver = undefined;
+    this.defaultCaptchaSolver = defaultCaptchaSolver;
     this._setup(service, key);
   }
   _missingModule(name) {
@@ -36,6 +37,9 @@ module.exports = class CaptchaSolver {
         } catch (e) {
           throw this._missingModule('2captcha');
         }
+      }
+      default: {
+        this.solve = this.defaultCaptchaSolver;
       }
     }
   }

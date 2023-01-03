@@ -16,6 +16,9 @@ class BaseClient extends EventEmitter {
     if (options.intents) {
       process.emitWarning('Intents is not available.', 'DeprecationWarning');
     }
+    if (typeof options.captchaSolver === 'function') {
+      options.captchaService = 'custom';
+    }
     /**
      * The options the client was instantiated with
      * @type {ClientOptions}
