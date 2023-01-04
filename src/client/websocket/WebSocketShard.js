@@ -262,7 +262,7 @@ class WebSocketShard extends EventEmitter {
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
-    Proxy      : ${client.options.ws.proxy || 'none'}`,
+    Proxy      : ${client.options.proxy || 'none'}`,
       );
 
       this.status = this.status === Status.DISCONNECTED ? Status.RECONNECTING : Status.CONNECTING;
@@ -271,7 +271,7 @@ class WebSocketShard extends EventEmitter {
       this.connectedAt = Date.now();
 
       let args = { handshakeTimeout: 30_000 };
-      if (typeof client.options.proxy && client.options.proxy.length > 0) {
+      if (client.options.proxy.length > 0) {
         args.agent = new proxy(client.options.proxy);
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
