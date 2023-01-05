@@ -13,6 +13,7 @@ const WebSocketManager = require('./websocket/WebSocketManager');
 const { Error, TypeError, RangeError } = require('../errors');
 const Discord = require('../index');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
+const BillingManager = require('../managers/BillingManager');
 const ChannelManager = require('../managers/ChannelManager');
 const ClientSettingManager = require('../managers/ClientSettingManager');
 const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
@@ -159,6 +160,12 @@ class Client extends BaseClient {
      * @type {GuildManager}
      */
     this.guilds = new GuildManager(this);
+
+    /**
+     * Manages the API methods
+     * @type {BillingManager}
+     */
+    this.billing = new BillingManager(this);
 
     /**
      * All of the sessions of the client

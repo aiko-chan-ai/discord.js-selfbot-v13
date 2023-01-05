@@ -178,6 +178,30 @@ export class SessionManager extends CachedManager {
   public logoutAllDevices(mfaCode?: string): Promise<undefined>;
 }
 
+export class BillingManager extends BaseManager {
+  constructor(client: Client);
+  public paymentSources: Collection<Snowflake, object>;
+  public fetchPaymentSources(): Promise<Collection<Snowflake, object>>;
+  public guildBoosts: Collection<Snowflake, GuildBoost>;
+  public fetchGuildBoosts(): Promise<Collection<Snowflake, GuildBoost>>;
+  public currentSubscription: Collection<Snowflake, object>;
+  public fetchCurrentSubscription(): Promise<Collection<Snowflake, object>>;
+}
+
+export class GuildBoost extends Base {
+  constructor(client: Client, data: object);
+  public id: Snowflake;
+  public guildId?: Snowflake;
+  public readonly guild: Guild | null;
+  public subscriptionId: Snowflake;
+  public premiumGuildSubscriptionId?: Snowflake;
+  public ended?: boolean;
+  public canceled: boolean;
+  public cooldownEndsAt: Date;
+  public unsubscribe(): Promise<this>;
+  public subscribe(guild: GuildResolvable): Promise<this>;
+}
+
 export class Session extends Base {
   constructor(client: Client);
   public id?: string;
@@ -858,6 +882,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public relationships: RelationshipManager;
   public readonly callVoice?: VoiceConnection;
   public voiceStates: VoiceStateManager;
+  public sessions: SessionManager;
+  public billing: BillingManager;
   // End
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
