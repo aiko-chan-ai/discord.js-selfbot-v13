@@ -3478,6 +3478,7 @@ export const Constants: {
         size: AllowedImageSize,
         dynamic: boolean,
       ) => string;
+      AvatarDecoration: (userId: Snowflake, hash: string, format: AllowedImageFormat, size: AllowedImageSize) => string;
       Banner: (
         id: Snowflake,
         hash: string,
