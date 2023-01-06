@@ -63,6 +63,11 @@ class WebSocketShard extends EventEmitter {
     this.sessionId = null;
 
     /**
+     * URL to use when resuming
+     */
+    this.resumeURL = null;
+
+    /**
      * The previous heartbeat ping of the shard
      * @type {number}
      */
@@ -258,7 +263,7 @@ class WebSocketShard extends EventEmitter {
 
       this.debug(
         `[CONNECT]
-    Gateway    : ${gateway}
+    Gateway    : ${this.resumeURL ?? gateway}
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
@@ -276,7 +281,7 @@ class WebSocketShard extends EventEmitter {
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
       // Adding a handshake timeout to just make sure no zombie connection appears.
-      const ws = (this.connection = WebSocket.create(gateway, wsQuery, args));
+      const ws = (this.connection = WebSocket.create(this.resumeURL ?? gateway, wsQuery, args));
       ws.onopen = this.onOpen.bind(this);
       ws.onmessage = this.onMessage.bind(this);
       ws.onerror = this.onError.bind(this);
@@ -425,9 +430,10 @@ class WebSocketShard extends EventEmitter {
         this.emit(ShardEvents.READY);
 
         this.sessionId = packet.d.session_id;
+        this.resumeURL = packet.d.resume_gateway_url;
         this.expectedGuilds = new Set(packet.d.guilds.filter(d => d?.unavailable == true).map(d => d.id));
         this.status = Status.WAITING_FOR_GUILDS;
-        this.debug(`[READY] Session ${this.sessionId}.`);
+        this.debug(`[READY] Session ${this.sessionId} | ResumeURL ${this.resumeURL}.`);
         this.lastHeartbeatAcked = true;
         this.sendHeartbeat('ReadyHeartbeat');
         break;

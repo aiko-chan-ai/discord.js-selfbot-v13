@@ -3336,6 +3336,7 @@ export class WebSocketShard extends EventEmitter {
   private sequence: number;
   private closeSequence: number;
   private sessionId: string | null;
+  private resumeURL: string | null;
   private lastPingTimestamp: number;
   private lastHeartbeatAcked: boolean;
   private ratelimit: { queue: unknown[]; total: number; remaining: number; time: 60e3; timer: NodeJS.Timeout | null };
