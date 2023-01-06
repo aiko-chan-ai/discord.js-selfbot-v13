@@ -64,6 +64,7 @@ class WebSocketShard extends EventEmitter {
 
     /**
      * URL to use when resuming
+     * @type {?string}
      */
     this.resumeURL = null;
 
