@@ -639,6 +639,35 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * Mute a guild
+   * @param {boolean} mute Weather or not you want to mute the guild
+   * @param {?number} time The amount of time you want to mute the server for in seconds
+   * @returns {boolean} true if it worked and false if it didn't
+   * @example
+   * guild.mute(true, 3600) // mutes the guild for an hour
+   * guild.mute(true, -1) // mutes the guild forever
+   * guild.mute(false); // unmutes the guild
+   */
+  async mute(mute, time) {
+    try {
+      if (mute && time == null) return false;
+      if (time == null && !mute) await this.client.api.guilds(this.id).settings.patch({ muted: false });
+      let ms = time * 1000;
+      let date = new Date(Date.now() + ms).toISOString();
+      await this.client.api.guilds(this.id).settings.patch({
+        mute_config: {
+          end_time: date,
+          selected_time_window: time,
+        },
+        muted: true,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Fetches a collection of integrations to this guild.
    * Resolves with a collection mapping integrations by their ids.
    * @returns {Promise<Collection<Snowflake|string, Integration>>}
