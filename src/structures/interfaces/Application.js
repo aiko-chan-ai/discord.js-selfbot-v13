@@ -12,6 +12,7 @@ let deprecationEmittedForFetchAssets = false;
 
 /**
  * Represents an OAuth2 Application.
+ * @extends {Base}
  * @abstract
  */
 class Application extends Base {

@@ -11,6 +11,7 @@ const AssetTypes = Object.keys(ClientApplicationAssetTypes);
 
 /**
  * Represents an OAuth2 Application.
+ * @extends {Base}
  * @abstract
  */
 class DeveloperPortalApplication extends Base {
