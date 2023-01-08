@@ -17,6 +17,7 @@ const GuildEmojiManager = require('../managers/GuildEmojiManager');
 const GuildInviteManager = require('../managers/GuildInviteManager');
 const GuildMemberManager = require('../managers/GuildMemberManager');
 const GuildScheduledEventManager = require('../managers/GuildScheduledEventManager');
+const GuildSettingManager = require('../managers/GuildSettingManager');
 const GuildStickerManager = require('../managers/GuildStickerManager');
 const PresenceManager = require('../managers/PresenceManager');
 const RoleManager = require('../managers/RoleManager');
@@ -136,6 +137,8 @@ class Guild extends AnonymousGuild {
      * @type {number}
      */
     this.shardId = data.shardId;
+
+    this.settings = new GuildSettingManager(this.client, this.id);
   }
 
   /**
@@ -649,22 +652,17 @@ class Guild extends AnonymousGuild {
    * guild.mute(false); // unmutes the guild
    */
   async mute(mute, time) {
-    try {
-      if (mute && time == null) return false;
-      if (time == null && !mute) await this.client.api.guilds(this.id).settings.patch({ muted: false });
-      let ms = time * 1000;
-      let date = new Date(Date.now() + ms).toISOString();
-      await this.client.api.guilds(this.id).settings.patch({
-        mute_config: {
-          end_time: date,
-          selected_time_window: time,
-        },
-        muted: true,
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
+    if (mute && time == null) return false;
+    if (time == null && !mute) await this.client.api.guilds(this.id).settings.patch({ muted: false });
+    let ms = time * 1000;
+    let date = new Date(Date.now() + ms).toISOString();
+    return this.settings.edit({
+      mute_config: {
+        end_time: date,
+        selected_time_window: time,
+      },
+      muted: true,
+    });
   }
 
   /**

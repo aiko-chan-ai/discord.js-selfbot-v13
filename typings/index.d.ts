@@ -878,7 +878,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
 
   public application: If<Ready, ClientApplication>;
   // Added
-  public settings: ClientSettingManager;
+  public settings: ClientUserSettingManager;
   public relationships: RelationshipManager;
   public readonly callVoice?: VoiceConnection;
   public voiceStates: VoiceStateManager;
@@ -3760,7 +3760,7 @@ export class GuildFolder extends Base {
   public toJSON(): RawGuildFolderData;
 }
 
-export class ClientSettingManager extends BaseManager {
+export class ClientUserSettingManager extends BaseManager {
   private constructor(client: Client);
   public rawSetting: RawUserSettingsData | object;
   public locale: localeSetting | null;
@@ -3793,6 +3793,7 @@ export class ClientSettingManager extends BaseManager {
   public guildFolder: GuildFolderManager;
   public disableDMfromServer: Collection<Snowflake, boolean>;
   public fetch(): Promise<RawUserSettingsData>;
+  public edit(data: Partial<RawUserSettingsData>): Promise<this>;
   public setDisplayCompactMode(value?: boolean): Promise<this>;
   public setTheme(value?: 'dark' | 'light'): Promise<this>;
   public setLocale(value: localeSetting): Promise<this>;
@@ -3801,6 +3802,26 @@ export class ClientSettingManager extends BaseManager {
   public restrictedGuilds(status: boolean): Promise<void>;
   public addRestrictedGuild(guildId: GuildResolvable): Promise<void>;
   public removeRestrictedGuild(guildId: GuildResolvable): Promise<void>;
+}
+
+export class GuildSettingManager extends BaseManager {
+  private constructor(client: Client, guildId: Snowflake);
+  public rawSetting?: RawGuildSettingsData;
+  public suppressEveryone?: boolean;
+  public suppressRoles?: boolean;
+  public muteScheduledEvents?: boolean;
+  public messageNotifications?: number;
+  public flags?: number;
+  public mobilePush?: boolean;
+  public muted?: boolean;
+  public muteConfig?: MuteConfigData;
+  public hideMutedChannels?: boolean;
+  public channelOverrides?: object[];
+  public notifyHighlights?: number;
+  public version?: number;
+  public guildId?: Snowflake;
+  public readonly guild?: Guild;
+  public edit(data: Partial<RawGuildSettingsData>): Promise<this>;
 }
 
 export class GuildApplicationCommandManager extends ApplicationCommandManager<ApplicationCommand, {}, Guild> {
@@ -4582,6 +4603,7 @@ export interface ClientEvents extends BaseClientEvents {
   typingStart: [typing: Typing];
   userUpdate: [oldUser: User | PartialUser, newUser: User];
   userSettingsUpdate: [setting: RawUserSettingsData];
+  userGuildSettingsUpdate: [guild: Guild];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
   webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel];
   /** @deprecated Use interactionCreate instead */
@@ -4673,6 +4695,7 @@ export interface ConstantsEvents {
   THREAD_MEMBERS_UPDATE: 'threadMembersUpdate';
   USER_UPDATE: 'userUpdate';
   USER_SETTINGS_UPDATE: 'userSettingsUpdate';
+  USER_GUILD_SETTINGS_UPDATE: 'userGuildSettingsUpdate';
   PRESENCE_UPDATE: 'presenceUpdate';
   VOICE_SERVER_UPDATE: 'voiceServerUpdate';
   VOICE_STATE_UPDATE: 'voiceStateUpdate';
@@ -4765,6 +4788,40 @@ export interface RawUserSettingsData {
   theme?: 'dark' | 'light';
   timezone_offset?: number;
   view_nsfw_guilds?: boolean;
+}
+
+export interface RawGuildSettingsData {
+  guild_id: Snowflake;
+  suppress_everyone: boolean;
+  suppress_roles: boolean;
+  mute_scheduled_events: boolean;
+  message_notifications: 2;
+  flags: 0;
+  mobile_push: boolean;
+  muted: boolean;
+  mute_config?: RawMuteConfigData;
+  hide_muted_channels: boolean;
+  channel_overrides: RawGuildChannelSettingsData[];
+  notify_highlights: number;
+  version: number;
+}
+
+export interface RawGuildChannelSettingsData {
+  channel_id: Snowflake;
+  message_notifications: number;
+  muted: boolean;
+  mute_config?: RawMuteConfigData;
+  collapsed: boolean;
+}
+
+export interface RawMuteConfigData {
+  end_time: string;
+  selected_time_window: number;
+}
+
+export interface MuteConfigData {
+  endTime: Date;
+  selectedTimeWindow: number;
 }
 
 export interface ClientOptions {
@@ -5250,8 +5307,8 @@ export type CacheConstructors = {
 // Narrowing the type of `manager.name` doesn't propagate type information to `holds` and the return type.
 export type CacheFactory = (
   manager: CacheConstructors[keyof Caches],
-  holds: Caches[(typeof manager)['name']][1],
-) => (typeof manager)['prototype'] extends DataManager<infer K, infer V, any> ? Collection<K, V> : never;
+  holds: Caches[typeof manager['name']][1],
+) => typeof manager['prototype'] extends DataManager<infer K, infer V, any> ? Collection<K, V> : never;
 
 export type CacheWithLimitsOptions = {
   [K in keyof Caches]?: Caches[K][0]['prototype'] extends DataManager<infer K, infer V, any>

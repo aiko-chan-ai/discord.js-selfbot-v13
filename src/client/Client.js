@@ -15,7 +15,7 @@ const Discord = require('../index');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const BillingManager = require('../managers/BillingManager');
 const ChannelManager = require('../managers/ChannelManager');
-const ClientSettingManager = require('../managers/ClientSettingManager');
+const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
 const RelationshipManager = require('../managers/RelationshipManager');
@@ -151,9 +151,9 @@ class Client extends BaseClient {
     this.relationships = new RelationshipManager(this);
     /**
      * All of the settings {@link Object}
-     * @type {ClientSettingManager}
+     * @type {ClientUserSettingManager}
      */
-    this.settings = new ClientSettingManager(this);
+    this.settings = new ClientUserSettingManager(this);
     /**
      * All of the guilds the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* guild the bot is a member of

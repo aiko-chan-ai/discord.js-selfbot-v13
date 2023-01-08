@@ -12,7 +12,7 @@ const { localeSetting, DMScanLevel, stickerAnimationMode } = require('../util/Co
  * @extends {BaseManager}
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
  */
-class ClientSettingManager extends BaseManager {
+class ClientUserSettingManager extends BaseManager {
   constructor(client) {
     super(client);
     /**
@@ -487,4 +487,4 @@ class ClientSettingManager extends BaseManager {
   }
 }
 
-module.exports = ClientSettingManager;
+module.exports = ClientUserSettingManager;

@@ -141,6 +141,11 @@ module.exports = async (client, { d: data }, shard) => {
     client.guilds._add(guild);
   }
 
+  for (const gSetting of data.user_guild_settings) {
+    const guild = client.guilds.cache.get(gSetting.guild_id);
+    if (guild) guild.settings._patch(gSetting);
+  }
+
   const largeGuilds = data.guilds.filter(g => g.large);
 
   client.emit('debug', `Received ${data.guilds.length} guilds, ${largeGuilds.length} large guilds`);

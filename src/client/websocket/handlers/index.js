@@ -57,6 +57,7 @@ const handlers = Object.fromEntries([
   ['THREAD_MEMBER_UPDATE', require('./THREAD_MEMBER_UPDATE')],
   ['THREAD_MEMBERS_UPDATE', require('./THREAD_MEMBERS_UPDATE')],
   ['USER_SETTINGS_UPDATE', require('./USER_SETTINGS_UPDATE')], // Opcode 0
+  ['USER_GUILD_SETTINGS_UPDATE', require('./USER_GUILD_SETTINGS_UPDATE')],
   // USER_SETTINGS_PROTO_UPDATE // opcode 0
   ['USER_NOTE_UPDATE', require('./USER_NOTE_UPDATE')],
   ['USER_UPDATE', require('./USER_UPDATE')],
