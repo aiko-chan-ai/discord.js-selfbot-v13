@@ -26,7 +26,6 @@ const VoiceStateManager = require('../managers/VoiceStateManager');
 const {
   ChannelTypes,
   DefaultMessageNotificationLevels,
-  PartialTypes,
   VerificationLevels,
   ExplicitContentFilterLevels,
   Status,
@@ -41,6 +40,7 @@ const Util = require('../util/Util');
 let deprecationEmittedForSetChannelPositions = false;
 let deprecationEmittedForSetRolePositions = false;
 let deprecationEmittedForDeleted = false;
+let deprecationEmittedForMe = false;
 
 /**
  * @type {WeakSet<Guild>}
@@ -608,15 +608,16 @@ class Guild extends AnonymousGuild {
   /**
    * The client user as a GuildMember of this guild.
    * @type {?GuildMember}
+   * @deprecated Use {@link GuildMemberManager#me} instead.
    * @readonly
    */
   get me() {
-    return (
-      this.members.resolve(this.client.user.id) ??
-      (this.client.options.partials.includes(PartialTypes.GUILD_MEMBER)
-        ? this.members._add({ user: { id: this.client.user.id } }, true)
-        : null)
-    );
+    if (!deprecationEmittedForMe) {
+      process.emitWarning('Guild#me is deprecated. Use Guild#members#me instead.', 'DeprecationWarning');
+      deprecationEmittedForMe = true;
+    }
+
+    return this.members.me;
   }
 
   /**

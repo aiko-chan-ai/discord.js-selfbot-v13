@@ -638,7 +638,7 @@ class Message extends Base {
     return Boolean(
       this.author.id === this.client.user.id ||
         (permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, false) &&
-          this.guild.me.communicationDisabledUntilTimestamp < Date.now()),
+          this.guild.members.me.communicationDisabledUntilTimestamp < Date.now()),
     );
   }
 
@@ -1040,7 +1040,7 @@ class Message extends Base {
           this.mentions.everyone ||
           this.mentions.repliedUser?.id === this.client.user.id ||
           this.mentions.users.has(this.client.user.id) ||
-          (this.guildId && this.mentions.roles.some(r => this.guild.me._roles?.includes(r.id)))
+          (this.guildId && this.mentions.roles.some(r => this.guild.members.me._roles?.includes(r.id)))
             ? 1
             : 0,
       },

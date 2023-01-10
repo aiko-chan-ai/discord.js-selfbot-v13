@@ -334,7 +334,7 @@ class GuildMember extends Base {
     if (this.user.id === this.client.user.id) return false;
     if (this.client.user.id === this.guild.ownerId) return true;
     if (!this.guild.me) throw new Error('GUILD_UNCACHED_ME');
-    return this.guild.me.roles.highest.comparePositionTo(this.roles.highest) > 0;
+    return this.guild.members.me.roles.highest.comparePositionTo(this.roles.highest) > 0;
   }
 
   /**
@@ -343,7 +343,7 @@ class GuildMember extends Base {
    * @readonly
    */
   get kickable() {
-    return this.manageable && this.guild.me.permissions.has(Permissions.FLAGS.KICK_MEMBERS);
+    return this.manageable && this.guild.members.me.permissions.has(Permissions.FLAGS.KICK_MEMBERS);
   }
 
   /**
@@ -352,7 +352,7 @@ class GuildMember extends Base {
    * @readonly
    */
   get bannable() {
-    return this.manageable && this.guild.me.permissions.has(Permissions.FLAGS.BAN_MEMBERS);
+    return this.manageable && this.guild.members.me.permissions.has(Permissions.FLAGS.BAN_MEMBERS);
   }
 
   /**

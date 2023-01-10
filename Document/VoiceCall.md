@@ -443,10 +443,10 @@ class Player extends EventEmitter {
                 10_000,
             );
             connection.subscribe(this._player);
-            await this.channel.guild.me.voice
+            await this.channel.guild.members.me.voice
                 .setSuppressed(false)
                 .catch(async () => {
-                    return await this.channel.guild.me.voice
+                    return await this.channel.guild.members.me.voice
                         .setRequestToSpeak(true);
                 });
         } else {
