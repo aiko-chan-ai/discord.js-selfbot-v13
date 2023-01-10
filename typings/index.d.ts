@@ -4561,7 +4561,7 @@ export interface ClientEvents extends BaseClientEvents {
   guildMembersChunk: [
     members: Collection<Snowflake, GuildMember>,
     guild: Guild,
-    data: { count: number; index: number; nonce: string | undefined },
+    data: { count: number; index: number; nonce: string | undefined; notFound: unknown[] },
   ];
   guildMemberUpdate: [oldMember: GuildMember | PartialGuildMember, newMember: GuildMember];
   guildMemberListUpdate: [
