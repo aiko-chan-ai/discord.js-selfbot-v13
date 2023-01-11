@@ -333,7 +333,7 @@ class GuildMember extends Base {
     if (this.user.id === this.guild.ownerId) return false;
     if (this.user.id === this.client.user.id) return false;
     if (this.client.user.id === this.guild.ownerId) return true;
-    if (!this.guild.me) throw new Error('GUILD_UNCACHED_ME');
+    if (!this.guild.members.me) throw new Error('GUILD_UNCACHED_ME');
     return this.guild.members.me.roles.highest.comparePositionTo(this.roles.highest) > 0;
   }
 
