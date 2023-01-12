@@ -148,7 +148,7 @@ module.exports = async (client, { d: data }, shard) => {
 
   const largeGuilds = data.guilds.filter(g => g.large);
 
-  client.emit('debug', `Received ${data.guilds.length} guilds, ${largeGuilds.length} large guilds`);
+  client.emit('debug', `[READY] Received ${data.guilds.length} guilds, ${largeGuilds.length} large guilds`);
 
   // Receive messages in large guilds
   for (const guild of largeGuilds) {
