@@ -434,7 +434,7 @@ class WebSocketShard extends EventEmitter {
         this.resumeURL = packet.d.resume_gateway_url;
         this.expectedGuilds = new Set(packet.d.guilds.filter(d => d?.unavailable == true).map(d => d.id));
         this.status = Status.WAITING_FOR_GUILDS;
-        this.debug(`[READY] Session ${this.sessionId} | ResumeURL ${this.resumeURL}.`);
+        this.debug(`[READY] Session ${this.sessionId} | ResumeURL ${this.resumeURL}`);
         this.lastHeartbeatAcked = true;
         this.sendHeartbeat('ReadyHeartbeat');
         break;
