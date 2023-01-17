@@ -1374,6 +1374,7 @@ export class Guild extends AnonymousGuild {
   public fetchWelcomeScreen(): Promise<WelcomeScreen>;
   public fetchWidget(): Promise<Widget>;
   public fetchWidgetSettings(): Promise<GuildWidgetSettings>;
+  public disableInvites(disabled?: boolean): Promise<Guild>;
   public leave(): Promise<Guild>;
   public setAFKChannel(afkChannel: VoiceChannelResolvable | null, reason?: string): Promise<Guild>;
   public setAFKTimeout(afkTimeout: number, reason?: string): Promise<Guild>;
