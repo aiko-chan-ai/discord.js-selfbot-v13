@@ -2984,6 +2984,7 @@ export class TextInputComponent extends BaseMessageComponent {
 export class ThreadChannel extends TextBasedChannelMixin(Channel, ['fetchWebhooks', 'createWebhook', 'setNSFW']) {
   private constructor(guild: Guild, data?: RawThreadChannelData, client?: Client, fromInteraction?: boolean);
   public archived: boolean | null;
+  public readonly firstMessage: Message | null;
   public readonly archivedAt: Date | null;
   public archiveTimestamp: number | null;
   public readonly createdAt: Date | null;
@@ -4186,9 +4187,9 @@ export class ThreadManager extends CachedManager<Snowflake, ThreadChannel, Threa
   protected constructor(channel: TextChannel | NewsChannel, iterable?: Iterable<RawThreadChannelData>);
   public channel: TextChannel | NewsChannel;
   public fetch(options: ThreadChannelResolvable, cacheOptions?: BaseFetchOptions): Promise<ThreadChannel | null>;
-  public fetch(options?: FetchThreadsOptions, cacheOptions?: { cache?: boolean }): Promise<FetchedThreads>;
-  public fetchArchived(options?: FetchArchivedThreadOptions, cache?: boolean): Promise<FetchedThreads>;
-  public fetchActive(cache?: boolean): Promise<FetchedThreads>;
+  public fetch(options?: FetchChannelThreadsOptions, cacheOptions?: { cache?: boolean }): Promise<FetchedThreads>;
+  public fetchArchived(options?: FetchChannelThreadsOptions, cache?: boolean): Promise<FetchedThreads>;
+  public fetchActive(cache?: boolean, options?: FetchChannelThreadsOptions): Promise<FetchedThreads>;
 }
 
 export class ThreadMemberManager extends CachedManager<Snowflake, ThreadMember, ThreadMemberResolvable> {
@@ -5714,6 +5715,14 @@ export interface FetchArchivedThreadOptions {
   fetchAll?: boolean;
   before?: ThreadChannelResolvable | DateResolvable;
   limit?: number;
+}
+
+export interface FetchChannelThreadsOptions {
+  archived?: boolean;
+  limit?: number;
+  offset?: number;
+  sort_by?: string;
+  sort_order?: string;
 }
 
 export interface FetchBanOptions extends BaseFetchOptions {
