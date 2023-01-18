@@ -868,6 +868,12 @@ export interface remoteAuthConfrim {
   no(): Promise<undefined>;
 }
 
+export interface switchUserOptions {
+  username: string;
+  password: string;
+  mfaCode?: number;
+}
+
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions); /* Bug report by Mavri#0001 [721347809667973141] */
   private actions: unknown;
@@ -915,6 +921,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;
+  public switchUser(options: string | switchUserOptions): void;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
@@ -5314,8 +5321,8 @@ export type CacheConstructors = {
 // Narrowing the type of `manager.name` doesn't propagate type information to `holds` and the return type.
 export type CacheFactory = (
   manager: CacheConstructors[keyof Caches],
-  holds: Caches[typeof manager['name']][1],
-) => typeof manager['prototype'] extends DataManager<infer K, infer V, any> ? Collection<K, V> : never;
+  holds: Caches[(typeof manager)['name']][1],
+) => (typeof manager)['prototype'] extends DataManager<infer K, infer V, any> ? Collection<K, V> : never;
 
 export type CacheWithLimitsOptions = {
   [K in keyof Caches]?: Caches[K][0]['prototype'] extends DataManager<infer K, infer V, any>

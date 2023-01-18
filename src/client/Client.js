@@ -419,6 +419,19 @@ class Client extends BaseClient {
   }
 
   /**
+   * Switch the user
+   * @param {string | switchUserOptions} options Either the token or an object with the username, password, and mfaCode
+   */
+  async switchUser(options) {
+    await this.logout();
+    if (typeof options == 'string') {
+      await this.login(options);
+    } else {
+      await this.normalLogin(options.username, options.password, options.mfaCode);
+    }
+  }
+
+  /**
    * Sign in with the QR code on your phone.
    * @param {boolean} debug Debug mode
    * @returns {DiscordAuthWebsocket}
