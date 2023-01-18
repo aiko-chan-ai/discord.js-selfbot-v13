@@ -87,12 +87,12 @@ class GuildSettingManager extends BaseManager {
        */
       this.muted = data.muted;
     }
-    if ('mute_config' in data) {
+    if ('mute_config' in data && data.mute_config !== null) {
       /**
        * Mute config (muted = true)
        * * `muteConfig.endTime`: End time (Date)
        * * `muteConfig.selectedTimeWindow`: Selected time window (seconds) (number)
-       * @type {?Date}
+       * @type {?Object}
        */
       this.muteConfig = {
         endTime: new Date(data.mute_config.end_time),
