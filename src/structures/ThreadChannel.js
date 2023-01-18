@@ -51,6 +51,15 @@ class ThreadChannel extends Channel {
     if (data) this._patch(data, fromInteraction);
   }
 
+  /**
+   * First message in the thread
+   * @type {?Message}
+   * @readonly
+   */
+  get firstMessage() {
+    return this.messages.cache.get(this.id);
+  }
+
   _patch(data, partial = false) {
     super._patch(data);
 

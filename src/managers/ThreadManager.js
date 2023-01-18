@@ -67,7 +67,7 @@ class ThreadManager extends CachedManager {
 
   /**
    * Obtains a thread from Discord, or the channel cache if it's already available.
-   * @param {ThreadChannelResolvable|FetchThreadsOptions} [options] The options to fetch threads. If it is a
+   * @param {ThreadChannelResolvable|FetchChannelThreadsOptions} [options] The options to fetch threads. If it is a
    * ThreadChannelResolvable then the specified thread will be fetched. Fetches all active threads if `undefined`
    * @param {BaseFetchOptions} [cacheOptions] Additional options for this fetch. <warn>The `force` field gets ignored
    * if `options` is not a {@link ThreadChannelResolvable}</warn>
@@ -116,38 +116,44 @@ class ThreadManager extends CachedManager {
 
   /**
    * Obtains a set of archived threads from Discord, requires `READ_MESSAGE_HISTORY` in the parent channel.
-   * @param {FetchArchivedThreadOptions} [options] The options to fetch archived threads
+   * @param {FetchChannelThreadsOptions} [options] The options to fetch archived threads
    * @param {boolean} [cache=true] Whether to cache the new thread objects if they aren't already
    * @returns {Promise<FetchedThreads>}
    */
-  async fetchArchived({ type = 'public', fetchAll = false, before, limit } = {}, cache = true) {
-    let path = this.client.api.channels(this.channel.id);
-    if (type === 'private' && !fetchAll) {
-      path = path.users('@me');
-    }
-    let timestamp;
-    let id;
-    if (typeof before !== 'undefined') {
-      if (before instanceof ThreadChannel || /^\d{16,19}$/.test(String(before))) {
-        id = this.resolveId(before);
-        timestamp = this.resolve(before)?.archivedAt?.toISOString();
-      } else {
-        try {
-          timestamp = new Date(before).toISOString();
-        } catch {
-          throw new TypeError('INVALID_TYPE', 'before', 'DateResolvable or ThreadChannelResolvable');
+  async fetchArchived(options = {}, cache = true) {
+    if (this.client.user.bot) {
+      let { type = 'public', fetchAll = false, before, limit } = options;
+      let path = this.client.api.channels(this.channel.id);
+      if (type === 'private' && !fetchAll) {
+        path = path.users('@me');
+      }
+      let timestamp;
+      let id;
+      if (typeof before !== 'undefined') {
+        if (before instanceof ThreadChannel || /^\d{16,19}$/.test(String(before))) {
+          id = this.resolveId(before);
+          timestamp = this.resolve(before)?.archivedAt?.toISOString();
+        } else {
+          try {
+            timestamp = new Date(before).toISOString();
+          } catch {
+            throw new TypeError('INVALID_TYPE', 'before', 'DateResolvable or ThreadChannelResolvable');
+          }
         }
       }
+      const raw = await path.threads
+        .archived(type)
+        .get({ query: { before: type === 'private' && !fetchAll ? id : timestamp, limit } });
+      return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
+    } else {
+      return this.fetchActive(cache, { archived: true, ...options });
     }
-    const raw = await path.threads
-      .archived(type)
-      .get({ query: { before: type === 'private' && !fetchAll ? id : timestamp, limit } });
-    return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 
   /**
    * Discord.js self-bot specific options field for fetching active threads.
    * @typedef {Object} FetchChannelThreadsOptions
+   * @property {boolean} [archived] Whether to fetch archived threads (default is false)
    * @property {string} [sortBy] The order in which the threads should be fetched in (default is last_message_time)
    * @property {string} [sortOrder] How the threads should be ordered (default is desc)
    * @property {number} [limit] The maximum number of threads to return (default is 25)
@@ -169,7 +175,7 @@ class ThreadManager extends CachedManager {
       ? await this.client.api.guilds(this.channel.guild.id).threads.active.get()
       : await this.client.api.channels(this.channel.id).threads.search.get({
           query: {
-            archived: false,
+            archived: options?.archived ?? false,
             limit: options?.limit ?? 25,
             offset: options?.offset ?? 0,
             sort_by: options?.sortBy ?? 'last_message_time',
@@ -188,6 +194,10 @@ class ThreadManager extends CachedManager {
     }, new Collection());
     // Discord sends the thread id as id in this object
     for (const rawMember of rawThreads.members) client.channels.cache.get(rawMember.id)?.members._add(rawMember);
+    // Patch firstMessage
+    for (const rawMessage of rawThreads.first_messages) {
+      client.channels.cache.get(rawMessage.id)?.messages._add(rawMessage);
+    }
     return {
       threads,
       hasMore: rawThreads.has_more ?? false,
