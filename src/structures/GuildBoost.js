@@ -27,7 +27,7 @@ class GuildBoost extends Base {
        */
       this.subscriptionId = data.subscription_id;
     }
-    if (typeof data.premium_guild_subscription === 'object') {
+    if (typeof data.premium_guild_subscription === 'object' && data.premium_guild_subscription !== null) {
       /**
        * The premium guild subscription id
        * @type {?Snowflake}
