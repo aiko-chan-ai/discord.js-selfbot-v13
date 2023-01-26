@@ -106,8 +106,10 @@ import {
   SortOrderType,
   SelectMenuComponentTypes,
   ForumLayoutType,
+  ApplicationRoleConnectionMetadataTypes,
 } from './enums';
 import {
+  APIApplicationRoleConnectionMetadata,
   APIAutoModerationRule,
   GatewayAutoModerationActionExecutionDispatchData,
   RawActivityData,
@@ -411,6 +413,7 @@ export abstract class Application extends Base {
   public icon: string | null;
   public id: Snowflake;
   public name: string | null;
+  public roleConnectionsVerificationURL: string | null;
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
   public fetchAssets(): Promise<ApplicationAsset[]>;
@@ -463,6 +466,7 @@ export class DeveloperPortalApplication extends Base {
   public testers: Collection<Snowflake, Tester>;
   public TermsOfService: string | null;
   public PrivacyPolicy: string | null;
+  public roleConnectionsVerificationURL: string | null;
   public fetch(): Promise<ClientApplication>;
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
@@ -480,6 +484,10 @@ export class DeveloperPortalApplication extends Base {
   public delete(MFACode?: number): Promise<undefined>;
   public addAsset(image: BufferResolvable | Base64Resolvable, name: string): Promise<ApplicationAsset>;
   public deleteAsset(id: string): Promise<undefined>;
+  public fetchRoleConnectionMetadataRecords(): Promise<ApplicationRoleConnectionMetadata[]>;
+  public editRoleConnectionMetadataRecords(
+    records: ApplicationRoleConnectionMetadataEditOptions[],
+  ): Promise<ApplicationRoleConnectionMetadata[]>;
 }
 
 export class DeveloperPortalManager extends BaseManager {
@@ -558,6 +566,16 @@ export class ApplicationCommand<PermissionsFetchType = {}> extends Base {
     options?: any[],
   ): Promise<InteractionResponse>;
   public static sendContextMenu(message: Message): Promise<InteractionResponse>;
+}
+
+export class ApplicationRoleConnectionMetadata {
+  private constructor(data: APIApplicationRoleConnectionMetadata);
+  public name: string;
+  public nameLocalizations: LocalizationMap | null;
+  public description: string;
+  public descriptionLocalizations: LocalizationMap | null;
+  public key: string;
+  public type: ApplicationRoleConnectionMetadataTypes;
 }
 
 export type ApplicationResolvable = Application | Activity | Snowflake;
@@ -968,6 +986,10 @@ export class ClientApplication extends Application {
   public readonly partial: boolean;
   public rpcOrigins: string[];
   public fetch(): Promise<ClientApplication>;
+  public fetchRoleConnectionMetadataRecords(): Promise<ApplicationRoleConnectionMetadata[]>;
+  public editRoleConnectionMetadataRecords(
+    records: ApplicationRoleConnectionMetadataEditOptions[],
+  ): Promise<ApplicationRoleConnectionMetadata[]>;
 }
 
 export class ClientPresence extends Presence {
@@ -5177,6 +5199,15 @@ export type ApplicationFlagsString =
   | 'GATEWAY_MESSAGE_CONTENT_LIMITED'
   | 'EMBEDDED_FIRST_PARTY'
   | 'APPLICATION_COMMAND_BADGE';
+
+export interface ApplicationRoleConnectionMetadataEditOptions {
+  name: string;
+  nameLocalizations?: LocalizationMap | null;
+  description: string;
+  descriptionLocalizations?: LocalizationMap | null;
+  key: string;
+  type: ApplicationRoleConnectionMetadataTypes;
+}
 
 export interface AutoModerationAction {
   type: AutoModerationActionType | AutoModerationActionTypes;

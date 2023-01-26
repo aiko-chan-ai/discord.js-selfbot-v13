@@ -80,6 +80,7 @@ import {
   APITextInputComponent,
   APIModalActionRowComponent,
   APIModalSubmitInteraction,
+  LocalizationMap,
 } from 'discord-api-types/v9';
 import { GuildChannel, Guild, PermissionOverwrites, InteractionType } from '.';
 
@@ -90,6 +91,7 @@ import type {
   AutoModerationRuleTriggerTypes,
   InteractionTypes,
   MessageComponentTypes,
+  ApplicationRoleConnectionMetadataTypes,
 } from './enums';
 
 export type RawActivityData = GatewayActivity;
@@ -268,4 +270,13 @@ export interface APIAutoModerationRuleTriggerMetadata {
   allow_list?: string[];
   regex_patterns?: string[];
   mention_total_limit?: number;
+}
+
+export interface APIApplicationRoleConnectionMetadata {
+  type: ApplicationRoleConnectionMetadataTypes;
+  key: string;
+  name: string;
+  name_localizations?: LocalizationMap;
+  description: string;
+  description_localizations?: LocalizationMap;
 }
