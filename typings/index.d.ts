@@ -4435,6 +4435,7 @@ export interface APIErrors {
   MAXIMUM_NUMBER_OF_STICKERS_REACHED: 30039;
   MAXIMUM_PRUNE_REQUESTS: 30040;
   MAXIMUM_GUILD_WIDGET_SETTINGS_UPDATE: 30042;
+  MAXIMUM_NUMBER_OF_PREMIUM_EMOJIS: 30056;
   UNAUTHORIZED: 40001;
   ACCOUNT_VERIFICATION_REQUIRED: 40002;
   DIRECT_MESSAGES_TOO_FAST: 40003;
@@ -4489,6 +4490,8 @@ export interface APIErrors {
   GUILD_MONETIZATION_REQUIRED: 50097;
   INSUFFICIENT_BOOSTS: 50101;
   INVALID_JSON: 50109;
+  CANNOT_MIX_SUBSCRIPTION_AND_NON_SUBSCRIPTION_ROLES_FOR_EMOJI: 50144;
+  CANNOT_CONVERT_PREMIUM_EMOJI_TO_NORMAL_EMOJI: 50145;
   TWO_FACTOR_REQUIRED: 60003;
   INVALID_TWO_FACTOR_CODE: 60008;
   NO_USERS_WITH_DISCORDTAG_EXIST: 80004;
@@ -6088,9 +6091,12 @@ export interface GuildStickerEditData {
 
 export type GuildFeatures =
   | 'ANIMATED_ICON'
+  | 'AUTO_MODERATION'
   | 'BANNER'
   | 'COMMERCE'
   | 'COMMUNITY'
+  | 'CREATOR_MONETIZABLE_PROVISIONAL'
+  | 'CREATOR_STORE_PAGE'
   | 'DISCOVERABLE'
   | 'FEATURABLE'
   | 'INVITES_DISABLED'
@@ -6104,13 +6110,13 @@ export type GuildFeatures =
   | 'VIP_REGIONS'
   | 'WELCOME_SCREEN_ENABLED'
   | 'TICKETED_EVENTS_ENABLED'
-  | 'MONETIZATION_ENABLED'
   | 'MORE_STICKERS'
   | 'THREE_DAY_THREAD_ARCHIVE'
   | 'SEVEN_DAY_THREAD_ARCHIVE'
   | 'PRIVATE_THREADS'
   | 'ROLE_ICONS'
-  | 'AUTO_MODERATION';
+  | 'ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE'
+  | 'ROLE_SUBSCRIPTIONS_ENABLED';
 
 export interface GuildMemberEditData {
   nick?: string | null;
@@ -6248,7 +6254,7 @@ export interface ImageURLOptions extends Omit<StaticImageURLOptions, 'format'> {
   format?: DynamicImageFormat;
 }
 
-export type IntegrationType = 'twitch' | 'youtube' | 'discord';
+export type IntegrationType = 'twitch' | 'youtube' | 'discord' | 'guild_subscription';
 
 export interface InteractionCollectorOptions<T extends Interaction, Cached extends CacheType = CacheType>
   extends CollectorOptions<[T]> {
@@ -6899,6 +6905,8 @@ export interface RoleTagData {
   botId?: Snowflake;
   integrationId?: Snowflake;
   premiumSubscriberRole?: true;
+  subscriptionListingId?: Snowflake;
+  availableForPurchase?: true;
 }
 
 export interface SetChannelPositionOptions {
