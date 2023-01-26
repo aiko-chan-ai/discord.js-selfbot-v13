@@ -419,6 +419,26 @@ class Client extends BaseClient {
   }
 
   /**
+   * Switch the user
+   * @param {string | switchUserOptions} options Either the token or an object with the username, password, and mfaCode
+   */
+  async switchUser(options) {
+    await this.logout();
+    // There is a better way to code this but it's a temp fix - TheDevYellowy
+    await this.clearCache(this.channels.cache);
+    await this.clearCache(this.guilds.cache);
+    await this.clearCache(this.relationships.cache);
+    await this.clearCache(this.sessions.cache);
+    await this.clearCache(this.users.cache);
+    await this.clearCache(this.voiceStates.cache);
+    if (typeof options == 'string') {
+      await this.login(options);
+    } else {
+      await this.normalLogin(options.username, options.password, options.mfaCode);
+    }
+  }
+
+  /**
    * Sign in with the QR code on your phone.
    * @param {boolean} debug Debug mode
    * @returns {DiscordAuthWebsocket}
@@ -557,6 +577,7 @@ class Client extends BaseClient {
     this.sweepers.destroy();
     this.ws.destroy();
     this.token = null;
+    this.password = null;
   }
 
   /**
@@ -570,7 +591,7 @@ class Client extends BaseClient {
         voip_provider: null,
       },
     });
-    this.destroy();
+    await this.destroy();
   }
 
   /**
@@ -750,6 +771,16 @@ class Client extends BaseClient {
     } catch {
       this.emit(Events.DEBUG, `Garbage collection failed on ${name ?? 'an unknown item'}.`);
     }
+  }
+
+  /**
+   * Clear a cache
+   * @param {Collection} cache The cache to clear
+   */
+  async clearCache(cache) {
+    await cache.forEach(async (V, K) => {
+      await cache.delete(K);
+    });
   }
 
   /**
