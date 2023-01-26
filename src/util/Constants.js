@@ -1498,7 +1498,7 @@ exports.ApplicationCommandPermissionTypes = createEnum([null, 'ROLE', 'USER']);
  * * BOOLEAN_EQUAL
  * * BOOLEAN_NOT_EQUAL
  * @typedef {string} ApplicationRoleConnectionMetadataType
- * @see{@link https://discord.com/developers/docs/resources/application-role-connection-metadata#application-role-connection-metadata-object-application-role-connection-metadata-type}
+ * @see {@link https://discord.com/developers/docs/resources/application-role-connection-metadata#application-role-connection-metadata-object-application-role-connection-metadata-type}
  */
 exports.ApplicationRoleConnectionMetadataTypes = createEnum(
   null,
@@ -1809,7 +1809,7 @@ function createEnum(keys) {
  * The type of an {@link ApplicationCommandPermissions} object.
  * @property {Object<ApplicationCommandType, number>} ApplicationCommandTypes
  * The type of an {@link ApplicationCommand} object.
- * @property {Object{ApplicationRoleConnectionMetadataType, number}} ApplicationRoleConnectionMetadataTypes
+ * @property {Object<ApplicationRoleConnectionMetadataType, number>} ApplicationRoleConnectionMetadataTypes
  * @property {Object<AutoModerationRuleTriggerType, number>} AutoModerationRuleTriggerTypes Characterizes the type
  * of content which can trigger the rule.
  * @property {Object<AutoModerationActionType, number>} AutoModerationActionTypes
