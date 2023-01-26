@@ -5,7 +5,6 @@ const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
 const fetch = require('node-fetch');
-const proxy = require('proxy-agent');
 
 let agent = null;
 
@@ -29,10 +28,14 @@ class APIRequest {
   }
 
   make(captchaKey = undefined, captchaRqtoken = undefined) {
-    agent ??=
-      typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0
-        ? new proxy(this.client.options.proxy)
-        : new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
+    if (agent === null) {
+      if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
+        const proxy = require('proxy-agent');
+        agent = new proxy(this.client.options.proxy);
+      } else {
+        agent = new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
+      }
+    }
 
     const API =
       this.options.versioned === false

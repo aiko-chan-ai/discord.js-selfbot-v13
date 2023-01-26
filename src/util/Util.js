@@ -647,7 +647,7 @@ class Util extends null {
   }
 
   /**
-   * Resolves the maximum time a guild's thread channels should automatcally archive in case of no recent activity.
+   * Resolves the maximum time a guild's thread channels should automatically archive in case of no recent activity.
    * @deprecated
    * @returns {number}
    */
@@ -752,6 +752,15 @@ class Util extends null {
 
   static uploadFile(data, url) {
     return axios.put(url, data);
+  }
+
+  static testImportModule(name) {
+    try {
+      require.resolve(name);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 

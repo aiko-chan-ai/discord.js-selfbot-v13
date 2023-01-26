@@ -1,7 +1,7 @@
 ## Setup
 ```js
 const client = new Client({
-  readyStatus: false,
+  syncStatus: false,
 });
 ```
 

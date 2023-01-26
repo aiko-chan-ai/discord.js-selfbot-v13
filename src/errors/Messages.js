@@ -219,6 +219,9 @@ const Messages = {
   GUILD_IS_LARGE: 'This guild is too large to fetch all members with this method',
 
   TEAM_MEMBER_FORMAT: 'The member provided is either not real or not of the User class',
+
+  MISSING_MODULE: (name, installCommand) =>
+    `The module "${name}" is missing. Please install it with "${installCommand}" and try again.`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

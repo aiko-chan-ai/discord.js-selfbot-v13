@@ -94,7 +94,7 @@ module.exports = async (client, { d: data }, shard) => {
       patchVoice(client);
     }
 
-    if (client.options.readyStatus) {
+    if (client.options.syncStatus) {
       client.customStatusAuto(client);
     }
     firstReady = true;

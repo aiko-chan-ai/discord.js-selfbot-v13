@@ -37,7 +37,7 @@ const { randomUA } = require('../util/Constants');
  * @property {number} [closeTimeout=5000] The amount of time in milliseconds to wait for the close frame to be received
  * from the WebSocket. Don't have this too high/low. Its best to have it between 2_000-6_000 ms.
  * @property {boolean} [checkUpdate=true] Display module update information on the screen
- * @property {boolean} [readyStatus=true] Sync state with Discord Client
+ * @property {boolean} [syncStatus=true] Sync state with Discord Client
  * @property {boolean} [patchVoice=false] Automatically patch @discordjs/voice module (support for call)
  * @property {string} [captchaService=null] Captcha service to use for solving captcha {@link captchaServices}
  * @property {string} [captchaKey=null] Captcha service key
@@ -160,7 +160,7 @@ class Options extends null {
       captchaSolver: captcha => Promise.reject(new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED', captcha)),
       closeTimeout: 5_000,
       checkUpdate: true,
-      readyStatus: true,
+      syncStatus: true,
       autoRedeemNitro: false,
       captchaService: '',
       captchaKey: null,
@@ -197,14 +197,14 @@ class Options extends null {
           browser: 'Chrome',
           device: '',
           system_locale: 'en-US',
-          browser_version: '108.0.0.0',
+          browser_version: '109.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 165485,
+          client_build_number: 169617,
           client_event_source: null,
         },
         // ! capabilities: 4093,

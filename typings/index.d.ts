@@ -867,13 +867,6 @@ export interface remoteAuthConfrim {
   yes(): Promise<undefined>;
   no(): Promise<undefined>;
 }
-
-export interface switchUserOptions {
-  username: string;
-  password: string;
-  mfaCode?: number;
-}
-
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions); /* Bug report by Mavri#0001 [721347809667973141] */
   private actions: unknown;
@@ -921,7 +914,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;
-  public switchUser(options: string | switchUserOptions): void;
+  public switchUser(token: string): void;
   public QRLogin(debug?: boolean): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
@@ -932,7 +925,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public customStatusAuto(client?: this): undefined;
   public authorizeURL(url: string, options?: object): Promise<boolean>;
   public sleep(milliseconds: number): Promise<void> | null;
-  public clearCache(cache: Collection<any, any>): void;
+  private _clearCache(cache: Collection<any, any>): void;
   public toJSON(): unknown;
 
   public on<K extends keyof ClientEvents>(event: K, listener: (...args: ClientEvents[K]) => Awaitable<void>): this;
@@ -4870,7 +4863,7 @@ export interface ClientOptions {
   rejectOnRateLimit?: string[] | ((data: RateLimitData) => boolean | Promise<boolean>);
   // add
   checkUpdate?: boolean;
-  readyStatus?: boolean;
+  syncStatus?: boolean;
   autoRedeemNitro?: boolean;
   patchVoice?: boolean;
   password?: string;

@@ -2,7 +2,6 @@
 
 const EventEmitter = require('node:events');
 const { setTimeout, setInterval, clearTimeout } = require('node:timers');
-const proxy = require('proxy-agent');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
@@ -278,6 +277,7 @@ class WebSocketShard extends EventEmitter {
 
       let args = { handshakeTimeout: 30_000 };
       if (client.options.proxy.length > 0) {
+        const proxy = require('proxy-agent');
         args.agent = new proxy(client.options.proxy);
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
@@ -548,7 +548,8 @@ class WebSocketShard extends EventEmitter {
       this.status = Status.READY;
 
       this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
-    }, hasGuildsIntent && waitGuildTimeout).unref();
+      // }, hasGuildsIntent && waitGuildTimeout).unref();
+    }, 1).unref();
   }
 
   /**

@@ -40,7 +40,7 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
-const { lazy } = require('../util/Util');
+const { lazy, testImportModule } = require('../util/Util');
 const Message = lazy(() => require('../structures/Message').Message);
 // Patch
 
@@ -420,22 +420,19 @@ class Client extends BaseClient {
 
   /**
    * Switch the user
-   * @param {string | switchUserOptions} options Either the token or an object with the username, password, and mfaCode
+   * @param {string} token User Token
+   * @returns {Promise<string>}
    */
-  async switchUser(options) {
-    await this.logout();
-    // There is a better way to code this but it's a temp fix - TheDevYellowy
-    await this.clearCache(this.channels.cache);
-    await this.clearCache(this.guilds.cache);
-    await this.clearCache(this.relationships.cache);
-    await this.clearCache(this.sessions.cache);
-    await this.clearCache(this.users.cache);
-    await this.clearCache(this.voiceStates.cache);
-    if (typeof options == 'string') {
-      await this.login(options);
-    } else {
-      await this.normalLogin(options.username, options.password, options.mfaCode);
-    }
+  switchUser(token) {
+    this._clearCache(this.emojis.cache);
+    this._clearCache(this.guilds.cache);
+    this._clearCache(this.channels.cache);
+    this._clearCache(this.users.cache);
+    this._clearCache(this.relationships.cache);
+    this._clearCache(this.sessions.cache);
+    this._clearCache(this.voiceStates.cache);
+    this.ws.status = Status.IDLE;
+    return this.login(token);
   }
 
   /**
@@ -776,11 +773,11 @@ class Client extends BaseClient {
   /**
    * Clear a cache
    * @param {Collection} cache The cache to clear
+   * @returns {number} The number of removed entries
+   * @private
    */
-  async clearCache(cache) {
-    await cache.forEach(async (V, K) => {
-      await cache.delete(K);
-    });
+  _clearCache(cache) {
+    return cache.sweep(() => true);
   }
 
   /**
@@ -924,21 +921,26 @@ class Client extends BaseClient {
   /**
    * Sets the client's presence. (Sync Setting).
    * @param {Client} client Discord Client
+   * @private
    */
   customStatusAuto(client) {
     client = client ?? this;
+    if (!client.user) return;
     const custom_status = new CustomStatus();
-    if (client.settings.rawSetting.custom_status?.text || client.settings.rawSetting.custom_status?.emoji_name) {
+    if (!client.settings.rawSetting.custom_status?.text && !client.settings.rawSetting.custom_status?.emoji_name) {
+      client.user.setPresence({
+        activities: this.presence.activities.filter(a => a.type !== 'CUSTOM'),
+        status: client.settings.rawSetting.status ?? 'invisible',
+      });
+    } else {
       custom_status.setEmoji({
         name: client.settings.rawSetting.custom_status?.emoji_name,
         id: client.settings.rawSetting.custom_status?.emoji_id,
       });
       custom_status.setState(client.settings.rawSetting.custom_status?.text);
       client.user.setPresence({
-        activities: custom_status
-          ? [custom_status.toJSON(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')]
-          : this.presence.activities.filter(a => a.type !== 'CUSTOM'),
-        status: client.settings.rawSetting.status,
+        activities: [custom_status.toJSON(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')],
+        status: client.settings.rawSetting.status ?? 'invisible',
       });
     }
   }
@@ -1012,8 +1014,8 @@ class Client extends BaseClient {
     if (options && typeof options.checkUpdate !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'checkUpdate', 'a boolean');
     }
-    if (options && typeof options.readyStatus !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'readyStatus', 'a boolean');
+    if (options && typeof options.syncStatus !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'syncStatus', 'a boolean');
     }
     if (options && typeof options.autoRedeemNitro !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
@@ -1054,6 +1056,13 @@ class Client extends BaseClient {
     }
     if (options && typeof options.proxy !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
+    } else if (
+      options &&
+      options.proxy &&
+      typeof options.proxy === 'string' &&
+      testImportModule('proxy-agent') === false
+    ) {
+      throw new Error('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent');
     }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');

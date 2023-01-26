@@ -139,8 +139,8 @@ class GuildSettingManager extends BaseManager {
    * @returns {Promise<GuildSettingManager>}
    */
   async edit(data) {
-    const data_ = await this.client.api.users('@me').settings.patch(data_);
-    this._patch(data);
+    const data_ = await this.client.api.users('@me').settings.patch(data);
+    this._patch(data_);
     return this;
   }
 }
