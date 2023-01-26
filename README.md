@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.9`, based on `discord.js@13.12`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.10`, based on `discord.js@13.12`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -109,16 +109,10 @@ Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt=
 - See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
 
 ## Need help?
-Contact me in Discord: [Elysia#1782](https://discord.com/users/721746046543331449)
-
-> **Note**
-> Because too many people open DMs with me, I won't support via Discord
-
 Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions)
 
 ## Credits
 - [Discord.js](https://github.com/discordjs/discord.js)
-- [Discord S.C.U.M](https://github.com/Merubokkusu/Discord-S.C.U.M)
 - [Discord Console Hack](https://github.com/hxr404/Discord-Console-hacks)
 
 ## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
