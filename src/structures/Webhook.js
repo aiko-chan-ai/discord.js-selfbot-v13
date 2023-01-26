@@ -73,7 +73,7 @@ class Webhook {
 
     if ('channel_id' in data) {
       /**
-       * The channel the webhook belongs to
+       * The id of the channel the webhook belongs to
        * @type {Snowflake}
        */
       this.channelId = data.channel_id;
@@ -108,6 +108,15 @@ class Webhook {
     } else {
       this.sourceChannel ??= null;
     }
+  }
+
+  /**
+   * The channel the webhook belongs to
+   * @type {?(TextChannel|VoiceChannel|NewsChannel|ForumChannel)}
+   * @readonly
+   */
+  get channel() {
+    return this.client.channels.resolve(this.channelId);
   }
 
   /**
