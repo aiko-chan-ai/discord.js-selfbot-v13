@@ -64,6 +64,7 @@ class WebSocketShard extends EventEmitter {
     /**
      * URL to use when resuming
      * @type {?string}
+     * @private
      */
     this.resumeURL = null;
 
@@ -196,7 +197,9 @@ class WebSocketShard extends EventEmitter {
    * or reject if we couldn't connect
    */
   connect() {
-    const { gateway, client } = this.manager;
+    const { client } = this.manager;
+
+    const gateway = this.resumeURL ?? this.manager.gateway;
 
     if (this.connection?.readyState === WebSocket.OPEN && this.status === Status.READY) {
       return Promise.resolve();
@@ -263,7 +266,7 @@ class WebSocketShard extends EventEmitter {
 
       this.debug(
         `[CONNECT]
-    Gateway    : ${this.resumeURL ?? gateway}
+    Gateway    : ${gateway}
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
@@ -282,7 +285,7 @@ class WebSocketShard extends EventEmitter {
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
       // Adding a handshake timeout to just make sure no zombie connection appears.
-      const ws = (this.connection = WebSocket.create(this.resumeURL ?? gateway, wsQuery, args));
+      const ws = (this.connection = WebSocket.create(gateway, wsQuery, args));
       ws.onopen = this.onOpen.bind(this);
       ws.onmessage = this.onMessage.bind(this);
       ws.onerror = this.onError.bind(this);
@@ -863,8 +866,9 @@ class WebSocketShard extends EventEmitter {
     // Step 4: Cache the old sequence (use to attempt a resume)
     if (this.sequence !== -1) this.closeSequence = this.sequence;
 
-    // Step 5: Reset the sequence and session id if requested
+    // Step 5: Reset the sequence, resume URL and session id if requested
     if (reset) {
+      this.resumeURL = null;
       this.sequence = -1;
       this.sessionId = null;
     }
