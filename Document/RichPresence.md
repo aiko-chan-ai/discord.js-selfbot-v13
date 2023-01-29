@@ -10,6 +10,7 @@ const client = new Client({
 <strong>Custom Status</strong>
 
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const r = new Discord.CustomStatus()
 	.setState('Discord')
 	.setEmoji('💬')
@@ -20,6 +21,7 @@ client.user.setActivity(r);
 
 Rich Presence [Custom]
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
 	.setType('STREAMING')
@@ -44,6 +46,7 @@ client.user.setActivity(r);
 
 Rich Presence with Spotify
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const r = new Discord.SpotifyRPC(client)
 	.setAssetsLargeImage("spotify:ab67616d00001e02768629f8bc5b39b68797d1bb") // Image ID
 	.setAssetsSmallImage("spotify:ab6761610000f178049d8aeae802c96c8208f3b7") // Image ID
@@ -91,6 +94,7 @@ Demo URL: https://cdn.discordapp.com/attachments/820557032016969751/991172011483
 + Step 4:
 
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
 	.setType('PLAYING')
@@ -115,6 +119,7 @@ client.user.setActivity(r);
 ## Method 2: (Discord URL, 2.3.78+)
 
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const r = new Discord.RichPresence()
 	.setApplicationId('817229550684471297')
 	.setType('PLAYING')
@@ -141,6 +146,7 @@ client.user.setActivity(r);
 ## Method 3 (Custom URL, 2.3.78+)
 
 ```js
+const Discord = require('discord.js-selfbot-v13');
 const rpc = new Discord.RichPresence();
 const imageSet = await Discord.RichPresence.getExternal(client, '820344593357996092', 'https://musedash.moe/covers/papipupipupipa_cover.hash.93ae31d41.png', 'https://musedash.moe/covers/lights_of_muse_cover.hash.1c18e1e22.png')
 rpc
