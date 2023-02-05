@@ -3059,14 +3059,15 @@ export class ThreadChannel extends TextBasedChannelMixin(Channel, ['fetchWebhook
   public unpin(reason?: string): Promise<ThreadChannel>;
 }
 
-export class ThreadMember extends Base {
-  private constructor(thread: ThreadChannel, data?: RawThreadMemberData);
+export class ThreadMember<HasMemberData extends boolean = boolean> extends Base {
+  private constructor(thread: ThreadChannel, data?: RawThreadMemberData, extra?: unknown);
   public flags: ThreadMemberFlags;
-  public readonly guildMember: GuildMember | null;
+  public readonly guildMember: HasMemberData extends true ? GuildMember : GuildMember | null;
   public id: Snowflake;
   public readonly joinedAt: Date | null;
   public joinedTimestamp: number | null;
   public readonly manageable: boolean;
+  private member: If<HasMemberData, GuildMember>;
   public thread: ThreadChannel;
   public readonly user: User | null;
   public remove(reason?: string): Promise<ThreadMember>;
@@ -4213,9 +4214,20 @@ export class ThreadMemberManager extends CachedManager<Snowflake, ThreadMember, 
   public thread: ThreadChannel;
   public readonly me: ThreadMember | null;
   public add(member: UserResolvable | '@me', reason?: string): Promise<Snowflake>;
-  public fetch(member?: UserResolvable, options?: BaseFetchOptions): Promise<ThreadMember>;
+  public fetch(): Promise<Collection<Snowflake, ThreadMember>>;
+  public fetch(member: ThreadMember<true>, options?: FetchMemberOptions): Promise<ThreadMember<true>>;
+  public fetch(
+    member: Snowflake,
+    options: FetchThreadMemberOptions & { withMember: true },
+  ): Promise<ThreadMember<true>>;
+  public fetch(
+    options: FetchThreadMembersWithGuildMemberDataOptions,
+  ): Promise<Collection<Snowflake, ThreadMember<true>>>;
+  public fetch(member: UserResolvable, options?: FetchThreadMemberOptions): Promise<ThreadMember>;
+  public fetch(options: FetchThreadMembersWithoutGuildMemberDataOptions): Promise<Collection<Snowflake, ThreadMember>>;
+
   /** @deprecated Use `fetch(member, options)` instead. */
-  public fetch(cache?: boolean): Promise<Collection<Snowflake, ThreadMember>>;
+  public fetch(cache: boolean, options?: FetchMembersOptions): Promise<Collection<Snowflake, ThreadMember>>;
   public fetchMe(options?: BaseFetchOptions): Promise<ThreadMember>;
   public remove(id: Snowflake | '@me', reason?: string): Promise<Snowflake>;
 }
@@ -5827,6 +5839,25 @@ export interface FetchReactionUsersOptions {
   limit?: number;
   after?: Snowflake;
 }
+
+export interface FetchThreadMemberOptions extends BaseFetchOptions {
+  withMember?: boolean;
+}
+export interface FetchThreadMembersWithGuildMemberDataOptions {
+  withMember: true;
+  after?: Snowflake;
+  limit?: number;
+  cache?: boolean;
+}
+
+export interface FetchThreadMembersWithoutGuildMemberDataOptions {
+  withMember: false;
+  cache?: boolean;
+}
+
+export type FetchThreadMembersOptions =
+  | FetchThreadMembersWithGuildMemberDataOptions
+  | FetchThreadMembersWithoutGuildMemberDataOptions;
 
 export interface FetchThreadsOptions {
   archived?: FetchArchivedThreadOptions;
