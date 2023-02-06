@@ -234,12 +234,14 @@ class MessageManager extends CachedManager {
     await this.client.api.channels(this.channel.id).messages(message).delete();
   }
 
-  async _fetchId(messageId, cache, force) {
+  _fetchId(messageId, cache, force) {
     if (!force) {
       const existing = this.cache.get(messageId);
       if (existing && !existing.partial) return existing;
     }
 
+    // Search API
+    /*
     if (this.channel.guildId) {
       const data = (
         await this.client.api.guilds[this.channel.guild.id].messages.search.get({
@@ -265,6 +267,20 @@ class MessageManager extends CachedManager {
       if (data) return this._add(data[0], cache);
       else throw new Error('MESSAGE_ID_NOT_FOUND');
     }
+    */
+
+    // Get API
+    // https://discord.com/api/v9/channels/:id/messages?limit=50&around=:msgid
+    return new Promise((resolve, reject) => {
+      this._fetchMany({
+        around: messageId,
+        limit: 50,
+      })
+        .then(data_ =>
+          data_.has(messageId) ? resolve(data_.get(messageId)) : reject(new Error('MESSAGE_ID_NOT_FOUND')),
+        )
+        .catch(reject);
+    });
   }
 
   async _fetchMany(options = {}, cache) {
