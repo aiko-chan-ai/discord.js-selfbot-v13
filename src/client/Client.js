@@ -617,7 +617,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Join this Guild using this invite (Use with caution)
+   * Join this Guild using this invite (fast)
    * @param {InviteResolvable} invite Invite code or URL
    * @returns {Promise<void>}
    * @example
