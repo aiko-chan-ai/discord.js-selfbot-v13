@@ -619,7 +619,9 @@ class Client extends BaseClient {
   /**
    * Join this Guild using this invite (Use with caution)
    * @param {InviteResolvable} invite Invite code or URL
-   * @returns {Promise<undefined>}
+   * @returns {Promise<void>}
+   * @example
+   * await client.acceptInvite('https://discord.gg/genshinimpact')
    */
   async acceptInvite(invite) {
     const code = DataResolver.resolveInviteCode(invite);
