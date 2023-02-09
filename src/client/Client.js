@@ -619,7 +619,6 @@ class Client extends BaseClient {
   /**
    * Join this Guild using this invite (Use with caution)
    * @param {InviteResolvable} invite Invite code or URL
-   * @deprecated
    * @returns {Promise<undefined>}
    */
   async acceptInvite(invite) {
@@ -629,6 +628,9 @@ class Client extends BaseClient {
       await invite.acceptInvite();
     } else {
       await this.api.invites(code).post({
+        headers: {
+          'X-Context-Properties': 'eyJsb2NhdGlvbiI6Ik1hcmtkb3duIExpbmsifQ==', // Markdown Link
+        },
         data: {},
       });
     }
@@ -661,6 +663,7 @@ class Client extends BaseClient {
     if (!nitroArray) return false;
     const codeArray = nitroArray.map(code => code.replace(regex.url, ''));
     let redeem = false;
+    this.emit('debug', `${chalk.greenBright('[Nitro]')} Redeem Nitro: ${nitroArray.join(', ')}`);
     for await (const code of codeArray) {
       if (this.usedCodes.indexOf(code) > -1) continue;
       await this.api.entitlements['gift-codes'](code)

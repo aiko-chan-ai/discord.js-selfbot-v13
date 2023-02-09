@@ -922,6 +922,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public logout(): Promise<void>;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
+  public acceptInvite(invite: InviteResolvable): Promise<undefined>;
   public fetchGuildTemplate(template: GuildTemplateResolvable): Promise<GuildTemplate>;
   public fetchVoiceRegions(): Promise<Collection<string, VoiceRegion>>;
   public fetchSticker(id: Snowflake): Promise<Sticker>;
@@ -2770,11 +2771,6 @@ export class ShardingManager extends EventEmitter {
   public once(event: 'shardCreate', listener: (shard: Shard) => Awaitable<void>): this;
 }
 
-export interface FetchRecommendedShardsOptions {
-  guildsPerShard?: number;
-  multipleOf?: number;
-}
-
 export class SnowflakeUtil extends null {
   private constructor();
   public static deconstruct(snowflake: Snowflake): DeconstructedSnowflake;
@@ -3187,7 +3183,6 @@ export class Util extends null {
   public static escapeNumberedList(text: string): string;
   public static escapeMaskedLink(text: string): string;
   public static cleanCodeBlockContent(text: string): string;
-  public static fetchRecommendedShards(token: string, options?: FetchRecommendedShardsOptions): Promise<number>;
   public static flatten(obj: unknown, ...props: Record<string, boolean | string>[]): unknown;
   public static makeError(obj: MakeErrorOptions): Error;
   public static makePlainError(err: Error): MakeErrorOptions;
@@ -3617,7 +3612,7 @@ export const Constants: {
   VideoQualityModes: EnumHolder<typeof VideoQualityModes>;
   SweeperKeys: SweeperKey[];
   // Add
-  randomUA: () => string;
+  defaultUA: string;
   captchaServices: captchaServices[];
   DMScanLevel: EnumHolder<typeof DMScanLevel>;
   stickerAnimationMode: EnumHolder<typeof stickerAnimationMode>;

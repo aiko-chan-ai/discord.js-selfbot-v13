@@ -8,7 +8,7 @@ const axios = require('axios');
 const chalk = require('chalk');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
-const { randomUA } = require('./Constants');
+const { defaultUA } = require('./Constants');
 const Options = require('./Options');
 
 const defaultClientOptions = Options.createDefault();
@@ -153,7 +153,7 @@ new DiscordAuthWebsocket({
       failIfError: true,
       generateQR: true,
       apiVersion: 9,
-      userAgent: randomUA(),
+      userAgent: defaultUA,
       wsProperties: defaultClientOptions.ws.properties,
     };
     if (typeof options == 'object') {

@@ -183,7 +183,7 @@ class ShardingManager extends EventEmitter {
   async spawn({ amount = this.totalShards, delay = 5500, timeout = 30_000 } = {}) {
     // Obtain/verify the number of shards to spawn
     if (amount === 'auto') {
-      amount = await Util.fetchRecommendedShards(this.token);
+      amount = 1;
     } else {
       if (typeof amount !== 'number' || isNaN(amount)) {
         throw new TypeError('CLIENT_INVALID_OPTION', 'Amount of shards', 'a number.');

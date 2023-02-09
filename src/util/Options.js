@@ -2,7 +2,7 @@
 
 const JSONBig = require('json-bigint');
 const Intents = require('./Intents');
-const { randomUA } = require('../util/Constants');
+const { defaultUA } = require('../util/Constants');
 /**
  * Rate limit data
  * @typedef {Object} RateLimitData
@@ -191,20 +191,16 @@ class Options extends null {
       proxy: '',
       ws: {
         compress: false,
-        // https://discord-user-api.cf/api/v1/properties/web
         properties: {
           os: 'Windows',
-          browser: 'Chrome',
-          device: '',
-          system_locale: 'en-US',
-          browser_version: '109.0.0.0',
-          os_version: '10',
-          referrer: '',
-          referring_domain: '',
-          referrer_current: '',
-          referring_domain_current: '',
+          browser: 'Discord Client',
           release_channel: 'stable',
-          client_build_number: 169617,
+          client_version: '1.0.9010',
+          os_version: '10.0.22621',
+          os_arch: 'x64',
+          system_locale: 'en-US',
+          client_build_number: 172394,
+          native_build_number: 29128,
           client_event_source: null,
         },
         // ! capabilities: 4093,
@@ -222,7 +218,7 @@ class Options extends null {
       http: {
         agent: {},
         headers: {
-          'User-Agent': randomUA(),
+          'User-Agent': defaultUA,
         },
         version: 9,
         api: 'https://discord.com/api',

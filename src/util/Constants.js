@@ -5,14 +5,8 @@ const Package = (exports.Package = require('../../package.json'));
 */
 const { Error, RangeError, TypeError } = require('../errors');
 // #88: https://jnrbsn.github.io/user-agents/user-agents.json
-const listUserAgent = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.69',
-];
+exports.defaultUA =
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9010 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36';
 
 /**
  * Max bulk deletable message age
@@ -134,8 +128,6 @@ exports.localeSetting = {
   'zh-TW': 'TAIWAN_CHINESE',
   ko: 'KOREAN',
 };
-
-exports.randomUA = () => listUserAgent[Math.floor(Math.random() * listUserAgent.length)];
 
 /**
  * The types of WebSocket error codes:
