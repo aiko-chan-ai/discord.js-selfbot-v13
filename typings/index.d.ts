@@ -1441,6 +1441,7 @@ export class Guild extends AnonymousGuild {
     reason?: string,
   ): Promise<Guild>;
   public setWidgetSettings(settings: GuildWidgetSettingsData, reason?: string): Promise<Guild>;
+  public setVanityCode(code?: string): Promise<Vanity>;
   public toJSON(): unknown;
 }
 
