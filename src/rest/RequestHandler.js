@@ -389,7 +389,7 @@ class RequestHandler {
         if (
           data?.captcha_service &&
           this.manager.client.options.captchaService &&
-          request.retries < 4 &&
+          request.retries <= this.manager.client.options.captchaRetryLimit &&
           captchaMessage.some(s => data.captcha_key[0].includes(s))
         ) {
           // Retry the request after a captcha is solved

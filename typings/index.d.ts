@@ -1273,6 +1273,7 @@ export class DiscordAPIError extends Error {
   public path: string;
   public httpStatus: number;
   public requestData: HTTPErrorData;
+  public retries: number;
 }
 
 export class DMChannel extends TextBasedChannelMixin(Channel, [
@@ -4911,6 +4912,7 @@ export interface ClientOptions {
   captchaService?: captchaServices;
   captchaKey?: string;
   captchaSolver?: (data: Captcha, userAgent: string) => Promise<string>;
+  captchaRetryLimit?: number;
   interactionTimeout?: number;
   usingNewAttachmentAPI?: boolean;
 }

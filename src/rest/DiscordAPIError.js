@@ -58,6 +58,12 @@ class DiscordAPIError extends Error {
       json: request.options.data,
       files: request.options.files ?? [],
     };
+
+    /**
+     * The number of times this request has been retried
+     * @type {number}
+     */
+    this.retries = request.retries;
   }
 
   /**
