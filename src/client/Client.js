@@ -1041,6 +1041,9 @@ class Client extends BaseClient {
           break;
       }
     }
+    if (typeof options.captchaRetryLimit !== 'number' || isNaN(options.captchaRetryLimit)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaRetryLimit', 'a number');
+    }
     if (options && typeof options.captchaSolver !== 'function') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'captchaSolver', 'a function');
     }

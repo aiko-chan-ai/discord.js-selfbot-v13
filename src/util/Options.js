@@ -41,6 +41,7 @@ const { defaultUA } = require('../util/Constants');
  * @property {boolean} [patchVoice=false] Automatically patch @discordjs/voice module (support for call)
  * @property {string} [captchaService=null] Captcha service to use for solving captcha {@link captchaServices}
  * @property {string} [captchaKey=null] Captcha service key
+ * @property {string} [captchaRetryLimit=3] Captcha retry limit
  * @property {string} [password=null] Your Discord account password
  * @property {boolean} [usingNewAttachmentAPI=true] Use new attachment API
  * @property {string} [interactionTimeout=15000] The amount of time in milliseconds to wait for an interaction response, before rejecting
@@ -164,6 +165,7 @@ class Options extends null {
       autoRedeemNitro: false,
       captchaService: '',
       captchaKey: null,
+      captchaRetryLimit: 3,
       DMSync: false,
       patchVoice: false,
       password: null,
