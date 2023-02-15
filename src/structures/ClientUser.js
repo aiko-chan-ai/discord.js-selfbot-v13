@@ -351,7 +351,7 @@ class ClientUser extends User {
     if (!password && !this.client.password) {
       throw new Error('A password is required to delete an account.');
     }
-    const data = await this.client.api.users['@me'].delete.post({
+    const data = await this.client.api.users['@me/delete'].post({
       data: {
         password: this.client.password ? this.client.password : password,
       },
