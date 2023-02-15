@@ -304,6 +304,11 @@ export interface ExternalAssets {
   external_asset_path: string;
 }
 
+export interface SpotifyMetadata {
+  album_id: string;
+  artist_ids: string[];
+}
+
 export class SpotifyRPC extends RichPresence {
   public constructor(client: Client, data?: object);
   public application_id: Snowflake | null;
@@ -314,14 +319,7 @@ export class SpotifyRPC extends RichPresence {
   public name: string;
   public sync_id: string;
   public id: string;
-  public created_at: Date;
   public flags: number;
-  public secrets: {
-    join: string;
-    spectate: string;
-    match: string;
-  };
-  public session_id: string;
   public party: {
     id: string | null;
     size: [number, number];
@@ -333,9 +331,13 @@ export class SpotifyRPC extends RichPresence {
   } | null;
   public type: ActivityType;
   public url: string | null;
+  public metadata: SpotifyMetadata;
   public setAssetsLargeImage(image?: string): this;
   public setAssetsSmallImage(image?: string): this;
   public setSongId(id: string): this;
+  public addArtistId(id: string): this;
+  public setArtistIds(...ids: string[]): this;
+  public setAlbumId(id: string): this;
 }
 
 export class CustomStatus {

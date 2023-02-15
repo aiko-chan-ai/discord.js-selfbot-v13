@@ -1,5 +1,4 @@
 'use strict';
-const crypto = require('crypto');
 const { ActivityTypes } = require('../util/Constants');
 const { resolvePartialEmoji } = require('../util/Util');
 
@@ -587,27 +586,28 @@ class SpotifyRPC extends RichPresence {
      */
     this.id = 'spotify:1';
     /**
-     * Creation date of the activity
-     * @type {number}
-     */
-    this.created_at = Date.now();
-    /**
      * Flags that describe the activity
      * @type {ActivityFlags}
      */
     this.flags = 48; // Sync + Play (ActivityFlags)
-    /**
-     * The game's or Spotify session's id
-     * @type {?string}
-     */
-    this.session_id = this.client.session_id;
 
-    this.secrets = {
-      join: crypto.randomBytes(20).toString('hex'), // SHA1 / SHA128
-      spectate: crypto.randomBytes(20).toString('hex'),
-      match: crypto.randomBytes(20).toString('hex'),
+    /**
+     * @typedef {Object} SpotifyMetadata
+     * @property {string} album_id Album id
+     * @property {Array<string>} artist_ids Artist ids
+     */
+
+    /**
+     * Spotify metadata
+     * @type {SpotifyMetadata}
+     */
+    this.metadata = {
+      album_id: options.metadata?.album_id || null,
+      artist_ids: options.metadata?.artist_ids || [],
+      context_uri: null,
     };
   }
+
   /**
    * Set the large image of this activity
    * @param {?string} image Spotify song's image ID
@@ -618,6 +618,7 @@ class SpotifyRPC extends RichPresence {
     super.setAssetsLargeImage(`spotify:${image}`);
     return this;
   }
+
   /**
    * Set the small image of this activity
    * @param {?string} image Spotify song's image ID
@@ -628,6 +629,7 @@ class SpotifyRPC extends RichPresence {
     super.setAssetsSmallImage(`spotify:${image}`);
     return this;
   }
+
   /**
    * Set Spotify song id to sync with
    * @param {string} id Song id
@@ -635,6 +637,43 @@ class SpotifyRPC extends RichPresence {
    */
   setSongId(id) {
     this.sync_id = id;
+    return this;
+  }
+
+  /**
+   * Add the artist id
+   * @param {string} id Artist id
+   * @returns {SpotifyRPC}
+   */
+  addArtistId(id) {
+    if (!this.metadata.artist_ids) this.metadata.artist_ids = [];
+    this.metadata.artist_ids.push(id);
+    return this;
+  }
+
+  /**
+   * Set the artist ids
+   * @param {string | Array<string>} ids Artist ids
+   * @returns {SpotifyRPC}
+   */
+  setArtistIds(...ids) {
+    if (!ids?.length) {
+      this.metadata.artist_ids = [];
+      return this;
+    }
+    if (!this.metadata.artist_ids) this.metadata.artist_ids = [];
+    ids.flat(2).forEach(id => this.metadata.artist_ids.push(id));
+    return this;
+  }
+
+  /**
+   * Set the album id
+   * @param {string} id Album id
+   * @returns {SpotifyRPC}
+   */
+  setAlbumId(id) {
+    this.metadata.album_id = id;
+    this.metadata.context_uri = `spotify:album:${id}`;
     return this;
   }
 
@@ -653,13 +692,9 @@ class SpotifyRPC extends RichPresence {
       details: this.details,
       party: this.party,
       timestamps: this.timestamps || {},
-      secrets: this.secrets,
       assets: this.assets || {},
-      session_id: this.session_id,
       sync_id: this.sync_id,
       flags: this.flags,
-      id: this.id,
-      created_at: this.created_at,
       metadata: this.metadata,
     };
     Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
