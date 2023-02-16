@@ -271,6 +271,8 @@ class ClientUser extends User {
    * @returns {Promise<ClientUser>}
    */
   setEmail(email, password) {
+    throw new Error('This method is not available yet. Please use the official Discord client to change your email.');
+    // eslint-disable-next-line no-unreachable
     if (!password && !this.client.password) {
       throw new Error('A password is required to change a email.');
     }
