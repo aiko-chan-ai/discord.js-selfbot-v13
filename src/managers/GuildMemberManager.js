@@ -556,7 +556,7 @@ class GuildMemberManager extends CachedManager {
         if (type == 'INVALIDATE' && offset > 100) {
           if (retry < retryMax) {
             this.guild.shard.send({
-              op: Opcodes.LAZY_REQUEST,
+              op: Opcodes.GUILD_SUBSCRIPTIONS,
               d: {
                 guild_id: this.guild.id,
                 typing: true,
@@ -594,7 +594,7 @@ class GuildMemberManager extends CachedManager {
       this.client.incrementMaxListeners();
       this.client.on(Events.GUILD_MEMBER_LIST_UPDATE, handler);
       this.guild.shard.send({
-        op: Opcodes.LAZY_REQUEST,
+        op: Opcodes.GUILD_SUBSCRIPTIONS,
         d: {
           guild_id: this.guild.id,
           typing: true,

@@ -154,7 +154,7 @@ module.exports = async (client, { d: data }, shard) => {
   for (const guild of largeGuilds) {
     await client.sleep(client.options.messageCreateEventGuildTimeout);
     client.ws.broadcast({
-      op: Opcodes.LAZY_REQUEST,
+      op: Opcodes.GUILD_SUBSCRIPTIONS,
       d: {
         guild_id: guild.id,
         typing: true,

@@ -6,7 +6,7 @@ const { Events, Opcodes, Status } = require('../../../util/Constants');
 const run = (client, guild) => {
   if (!guild.large) return;
   client.ws.broadcast({
-    op: Opcodes.LAZY_REQUEST,
+    op: Opcodes.GUILD_SUBSCRIPTIONS,
     d: {
       guild_id: guild.id,
       typing: true,
