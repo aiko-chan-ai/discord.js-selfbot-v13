@@ -6,6 +6,7 @@ const VoiceState = require('./VoiceState');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const { Error } = require('../errors');
 const GuildMemberRoleManager = require('../managers/GuildMemberRoleManager');
+const GuildMemberFlags = require('../util/GuildMemberFlags');
 const Permissions = require('../util/Permissions');
 const Util = require('../util/Util');
 
@@ -95,6 +96,16 @@ class GuildMember extends Base {
     if ('communication_disabled_until' in data) {
       this.communicationDisabledUntilTimestamp =
         data.communication_disabled_until && Date.parse(data.communication_disabled_until);
+    }
+
+    if ('flags' in data) {
+      /**
+       * The flags of this member
+       * @type {Readonly<GuildMemberFlags>}
+       */
+      this.flags = new GuildMemberFlags(data.flags).freeze();
+    } else {
+      this.flags ??= new GuildMemberFlags().freeze();
     }
   }
 
@@ -409,6 +420,16 @@ class GuildMember extends Base {
   }
 
   /**
+   * Sets the flags for this member.
+   * @param {GuildMemberFlagsResolvable} flags The flags to set
+   * @param {string} [reason] Reason for setting the flags
+   * @returns {Promise<GuildMember>}
+   */
+  setFlags(flags, reason) {
+    return this.edit({ flags, reason });
+  }
+
+  /**
    * Sets the guild avatar of the logged in client.
    * @param {?(BufferResolvable|Base64Resolvable)} avatar The new avatar
    * @returns {Promise<GuildMember>}
@@ -582,6 +603,7 @@ class GuildMember extends Base {
       this.bio === member.bio &&
       this.pending === member.pending &&
       this.communicationDisabledUntilTimestamp === member.communicationDisabledUntilTimestamp &&
+      this.flags.equals(member.flags) &&
       (this._roles === member._roles ||
         (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i])))
     );
