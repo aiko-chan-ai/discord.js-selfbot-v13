@@ -239,6 +239,20 @@ export class DiscordAuthWebsocket extends EventEmitter {
   public on(event: 'closed', listener: (token?: string) => void): this;
   public on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
 }
+
+export class DiscordRPCServer extends EventEmitter {
+  constructor(client: Client, debug?: boolean);
+  public debug?: boolean;
+  public client: Client;
+  public on(event: 'activity', listener: (data: RPCActivityData) => void): this;
+}
+
+export interface RPCActivityData {
+  activity?: RichPresence;
+  pid: number;
+  socketId: string;
+}
+
 export interface DiscordAuthWebsocketOptions {
   debug: boolean;
   hiddenLog: boolean;

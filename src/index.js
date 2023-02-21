@@ -9,6 +9,7 @@ exports.ShardingManager = require('./sharding/ShardingManager');
 exports.WebhookClient = require('./client/WebhookClient');
 
 // Utilities
+exports.DiscordRPCServer = require('./util/arRPC/index');
 exports.ActivityFlags = require('./util/ActivityFlags');
 exports.ApplicationFlags = require('./util/ApplicationFlags');
 exports.BaseManager = require('./managers/BaseManager');
