@@ -239,6 +239,20 @@ export class DiscordAuthWebsocket extends EventEmitter {
   public on(event: 'closed', listener: (token?: string) => void): this;
   public on(event: string, listener: (...args: any[]) => Awaitable<void>): this;
 }
+
+export class DiscordRPCServer extends EventEmitter {
+  constructor(client: Client, debug?: boolean);
+  public debug?: boolean;
+  public client: Client;
+  public on(event: 'activity', listener: (data: RPCActivityData) => void): this;
+}
+
+export interface RPCActivityData {
+  activity?: RichPresence;
+  pid: number;
+  socketId: string;
+}
+
 export interface DiscordAuthWebsocketOptions {
   debug: boolean;
   hiddenLog: boolean;
@@ -3913,6 +3927,11 @@ export class GuildChannelManager extends CachedManager<Snowflake, GuildBasedChan
     name: string,
     options?: ChannelWebhookCreateOptions,
   ): Promise<Webhook>;
+  public addFollower(
+    channel: NewsChannel | Snowflake,
+    targetChannel: TextChannelResolvable,
+    reason?: string,
+  ): Promise<Snowflake>;
   public edit(channel: GuildChannelResolvable, data: ChannelData, reason?: string): Promise<GuildChannel>;
   public fetch(id: Snowflake, options?: BaseFetchOptions): Promise<GuildBasedChannel | null>;
   public fetch(
