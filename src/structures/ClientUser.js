@@ -1,5 +1,6 @@
 'use strict';
 
+const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const Invite = require('./Invite');
 const { Message } = require('./Message');
@@ -93,6 +94,15 @@ class ClientUser extends User {
      * @private
      */
     if (!this.friendNicknames?.size) this.friendNicknames = new Collection();
+
+    if (!this._intervalSamsungPresence) {
+      this._intervalSamsungPresence = setInterval(() => {
+        this.client.emit('debug', `Samsung Presence: ${this._packageName}`);
+        if (!this._packageName) return;
+        this.setSamsungActivity(this._packageName, 'UPDATE');
+      }, 1000 * 60 * 10);
+      // 20 minutes max
+    }
   }
 
   /**
