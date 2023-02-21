@@ -1685,6 +1685,26 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * Get the top emojis of this guild.
+   * @returns {Promise<Collection<number, GuildEmoji>>}
+   */
+  topEmojis() {
+    return new Promise((resolve, reject) => {
+      this.client.api
+        .guilds(this.id)
+        ['top-emojis'].get()
+        .then(data => {
+          const emojis = new Collection();
+          for (const emoji of data.items) {
+            emojis.set(emoji.emoji_rank, this.emojis.cache.get(emoji.emoji_id));
+          }
+          resolve(emojis);
+        })
+        .catch(reject);
+    });
+  }
+
+  /**
    * Creates a collection of this guild's roles, sorted by their position and ids.
    * @returns {Collection<Snowflake, Role>}
    * @private

@@ -1340,6 +1340,7 @@ export class Guild extends AnonymousGuild {
   private _sortedChannels(channel: NonThreadGuildBasedChannel): Collection<Snowflake, NonThreadGuildBasedChannel>;
 
   public readonly afkChannel: VoiceChannel | null;
+  public topEmojis(): Promise<Collection<number, Emoji>>;
   public afkChannelId: Snowflake | null;
   public afkTimeout: number;
   public applicationId: Snowflake | null;
