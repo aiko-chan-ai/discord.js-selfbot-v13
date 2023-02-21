@@ -1,8 +1,6 @@
 'use strict';
 
-const { setInterval } = require('timers');
 const { Collection } = require('@discordjs/collection');
-const axios = require('axios');
 const Invite = require('./Invite');
 const { Message } = require('./Message');
 const User = require('./User');
@@ -95,10 +93,6 @@ class ClientUser extends User {
      * @private
      */
     if (!this.friendNicknames?.size) this.friendNicknames = new Collection();
-
-    this.package_name = null;
-    this.refreshInterval = null;
-    this.isSamsungActivityRunning = null;
   }
 
   /**
@@ -534,58 +528,30 @@ class ClientUser extends User {
 
   /**
    * Sets Discord Playing status to "Playing on Samsung Galaxy". Only selected gamss from discords database works
-   * @param {string} [package_name] play store package name/application id of app
+   * @param {string} packageName Android package name
+   * @param {?string} type Must be START, UPDATE, or STOP
+   * @returns {Promise<ClientUser>}
+   * @example
+   * // Set the client user's status
+   * client.user.setSamsungActivity('com.YostarJP.BlueArchive', 'START');
+   * // Update
+   * client.user.setSamsungActivity('com.miHoYo.bh3oversea', 'UPDATE');
+   * // Stop
+   * client.user.setSamsungActivity('com.miHoYo.GenshinImpact', 'STOP');
    */
-  async setSamsungActivity(package_name) {
-    if (!this.client.token) {
-      throw new Error('NO_TOKEN_PROVIDED');
-    }
-    if (!package_name) {
-      console.error('No package name set');
-      return;
-    }
-    this.package_name = package_name;
-    await this.updateStatus('START');
-    console.log('Starting Presence');
-    this.isSamsungActivityRunning = true;
-    this.createRefreshInterval();
-  }
-
-  createRefreshInterval() {
-    if (this.refreshInterval) clearInterval(this.refreshInterval);
-    this.refreshInterval = setInterval(async () => {
-      if (!this.isSamsungActivityRunning) return;
-      console.log('Updating Status');
-      await this.updateStatus('UPDATE');
-    }, 5 * 60 * 1000);
-  }
-
-  /**
-   * Sends Presence Payload to Discord api
-   * @param {string} [update_code] value representing the state of activity. Possible values are "START","STOP","UPDATE"
-   */
-  async updateStatus(update_code) {
-    if (!this.package_name) return;
-    try {
-      await axios.post(
-        `https://discord.com/api/v9/presences`,
-        {
-          package_name: this.package_name,
-          update: update_code,
-        },
-        {
-          headers: {
-            Authorization: this.client.token,
-            'User-Agent':
-              'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.127 Mobile OceanHero/6 Safari/537.36',
-            'Content-Type': 'application/json',
-            'Cache-Control': 'max-age=121',
-          },
-        },
-      );
-    } catch (err) {
-      console.error(err.message);
-    }
+  async setSamsungActivity(packageName, type = 'START') {
+    type = type.toUpperCase();
+    if (!packageName || typeof packageName !== 'string') throw new Error('Package name is required.');
+    if (!['START', 'UPDATE', 'STOP'].includes(type)) throw new Error('Invalid type (Must be START, UPDATE, or STOP)');
+    await this.client.api.presences.post({
+      data: {
+        package_name: packageName,
+        update: type,
+      },
+    });
+    if (type !== 'STOP') this._packageName = packageName;
+    else this._packageName = null;
+    return this;
   }
 }
 

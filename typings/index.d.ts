@@ -1045,6 +1045,7 @@ export class ClientUser extends User {
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
   public getInvite(options?: CreateInviteOptions): Promise<Invite>;
+  public setSamsungActivity(packageName: string, type?: 'START' | 'UPDATE' | 'STOP'): Promise<this>;
   public getMentions(
     limit?: number,
     mentionRoles?: boolean,
