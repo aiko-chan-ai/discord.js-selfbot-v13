@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.10`, based on `discord.js@13.12`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.11`, based on `discord.js@13.13`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -37,12 +37,11 @@
 ## Features (User)
 - [x] Message: Embeds (WebEmbed)
 - [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
-- [X] Guild: Fetch Members, Join / Leave, Roles, Channels, etc.
-- [X] Interactions: Slash Commands, Click Buttons, Menu (classic), Modal, Context Menu, etc.
-- [X] Voice: Connect, Disconnect, Mute, Deafen, Call, Play Audio, etc.
+- [X] Guild: Fetch Members, Join / Leave, Top emojis, ...
+- [X] Interactions: Slash Commands, Click Buttons, Menu, Modal, Context Menu, ...
 - [X] Captcha Handler
 - [X] Documentation
-- [ ] Video stream
+- [x] Voice & [Video stream](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/293)
 - [ ] Everything
 
 ### Optional packages
@@ -113,9 +112,11 @@ Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13
 
 ## Credits
 - [Discord.js](https://github.com/discordjs/discord.js)
-- [Discord Console Hack](https://github.com/hxr404/Discord-Console-hacks)
 
-## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Vietnamese</strong>
-Được tạo bởi người Việt Nam, dựa trên Discord API v9, đây là một trong những module selfbot được hỗ trợ tốt nhất.
+## <strong><img src="https://cdn.discordapp.com/attachments/820557032016969751/952436539118456882/flag-vietnam_1f1fb-1f1f3.png" alt="." width="20" height="20"/> Other project(s)
+
+- 📘 [***aiko-chan-ai/DiscordBotClient***](https://github.com/aiko-chan-ai/DiscordBotClient) <br/>
+  A patched version of discord, with bot login support
+- 📗 ...
 
 # From Github with love 💕
