@@ -192,8 +192,7 @@ class GuildMemberManager extends CachedManager {
    * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/FetchGuildMember.md}
    */
   fetch(options) {
-    if (!options || (!options?.query && !options?.user)) {
-      // Check Permissions
+    if (!options || (typeof options === 'object' && !('user' in options) && !('query' in options))) {
       if (
         this.guild.members.me.permissions.has('KICK_MEMBERS') ||
         this.guild.members.me.permissions.has('BAN_MEMBERS') ||
