@@ -485,7 +485,7 @@ class GuildMemberManager extends CachedManager {
    */
   fetchBruteforce(options = {}) {
     // eslint-disable-next-line
-    let dictionary = ' !"#$%&\'()*+,-./0123456789:;<=>?@[]^_`abcdefghijklmnopqrstuvwxyz{|}~'.split('');
+    let dictionary = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~ '.split('');
     let limit = 100;
     let delay = 500;
     if (options?.dictionary) dictionary = options?.dictionary;
