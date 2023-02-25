@@ -413,7 +413,6 @@ new DiscordAuthWebsocket({
 
   async _findRealToken(captchaSolveData) {
     if (!this.token) this._throwError(new Error('Token is not created.'));
-    const chromeVersion = defaultClientOptions.ws.properties.browser_version.split('.')[0];
     this._logger('debug', 'Find real token...');
     const res = await axios
       .post(
@@ -430,13 +429,8 @@ new DiscordAuthWebsocket({
         {
           headers: {
             Accept: '*/*',
+            'Accept-Language': 'en-US',
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Sec-Ch-Ua': `"Not?A_Brand";v="8", "Chromium";v="${chromeVersion}", "Google Chrome";v="${chromeVersion}"`,
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"Windows"',
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-origin',
@@ -446,7 +440,8 @@ new DiscordAuthWebsocket({
             )}`,
             'X-Discord-Locale': 'en-US',
             'User-Agent': this.options.userAgent,
-            Origin: 'https://discord.com',
+            Referer: 'https://discord.com/channels/@me',
+            Connection: 'keep-alive',
           },
         },
       )
