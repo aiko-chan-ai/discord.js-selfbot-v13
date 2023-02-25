@@ -538,24 +538,21 @@ class WebSocketShard extends EventEmitter {
 
     const { waitGuildTimeout } = this.manager.client.options;
 
-    this.readyTimeout = setTimeout(
-      () => {
-        this.debug(
-          `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
-            `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
-              this.expectedGuilds.size
-            }`,
-        );
+    this.readyTimeout = setTimeout(() => {
+      this.debug(
+        `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
+          `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
+            this.expectedGuilds.size
+          }`,
+      );
 
-        this.readyTimeout = null;
+      this.readyTimeout = null;
 
-        this.status = Status.READY;
+      this.status = Status.READY;
 
-        this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
-        // }, hasGuildsIntent && waitGuildTimeout).unref();
-      },
-      this.expectedGuilds.size == 0 ? 1 : waitGuildTimeout,
-    ).unref();
+      this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
+      // }, hasGuildsIntent && waitGuildTimeout).unref();
+    }, waitGuildTimeout).unref();
   }
 
   /**
