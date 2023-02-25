@@ -3,7 +3,7 @@
 
 ```js
 new Client({
-  patchVoice: true, // Enable default
+  patchVoice: true,
 })
 ```
 
