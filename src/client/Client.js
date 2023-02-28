@@ -247,6 +247,10 @@ class Client extends BaseClient {
      */
     this.usedCodes = [];
 
+    setInterval(() => {
+      this.usedCodes = [];
+    }, 1000 * 60 * 60).unref();
+
     this.session_id = null;
 
     if (this.options.messageSweepInterval > 0) {
@@ -259,11 +263,6 @@ class Client extends BaseClient {
         this.options.messageSweepInterval * 1_000,
       ).unref();
     }
-
-    setInterval(() => {
-      this.usedCodes = [];
-      // 1 hours
-    }, 3_600_000);
   }
 
   /**
@@ -667,7 +666,7 @@ class Client extends BaseClient {
     let redeem = false;
     this.emit('debug', `${chalk.greenBright('[Nitro]')} Redeem Nitro: ${nitroArray.join(', ')}`);
     for await (const code of codeArray) {
-      if (this.usedCodes.indexOf(code) > -1) continue;
+      if (this.usedCodes.includes(code)) continue;
       await this.api.entitlements['gift-codes'](code)
         .redeem.post({
           auth: true,
@@ -1002,7 +1001,7 @@ class Client extends BaseClient {
    * @returns {Promise<void> | null}
    */
   sleep(miliseconds) {
-    return typeof miliseconds === 'number' ? new Promise(r => setTimeout(r, miliseconds)) : null;
+    return typeof miliseconds === 'number' ? new Promise(r => setTimeout(r, miliseconds).unref()) : null;
   }
 
   /**

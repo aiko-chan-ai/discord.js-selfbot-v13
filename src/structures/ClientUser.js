@@ -100,7 +100,7 @@ class ClientUser extends User {
         this.client.emit('debug', `Samsung Presence: ${this._packageName}`);
         if (!this._packageName) return;
         this.setSamsungActivity(this._packageName, 'UPDATE');
-      }, 1000 * 60 * 10);
+      }, 1000 * 60 * 10).unref();
       // 20 minutes max
     }
   }

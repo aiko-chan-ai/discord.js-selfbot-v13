@@ -134,7 +134,7 @@ const socketIsAvailable = async socket => {
     // eslint-disable-next-line prefer-promise-reject-errors
     new Promise((res, rej) => socket.on('pong', () => rej('socket ponged'))), // Ponged
     // eslint-disable-next-line prefer-promise-reject-errors
-    new Promise((res, rej) => setTimeout(() => rej('timed out'), 1000)), // Timed out
+    new Promise((res, rej) => setTimeout(() => rej('timed out'), 1000).unref()), // Timed out
   ]).then(
     () => true,
     e => e,

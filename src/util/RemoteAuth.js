@@ -280,7 +280,7 @@ new DiscordAuthWebsocket({
   _heartbeatAck() {
     setTimeout(() => {
       this._heartbeat();
-    }, this.heartbeatInterval);
+    }, this.heartbeatInterval).unref();
   }
   _ready(data) {
     this._logger('debug', 'Attempting server handshake...');

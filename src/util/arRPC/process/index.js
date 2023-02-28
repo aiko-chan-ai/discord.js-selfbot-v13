@@ -22,7 +22,7 @@ module.exports = class ProcessServer {
     this.scan = this.scan.bind(this);
 
     this.scan();
-    setInterval(this.scan, 5000);
+    setInterval(this.scan, 5000).unref();
 
     if (this.debug) log('started');
   }
