@@ -53,6 +53,8 @@ import {
   RESTPostAPIApplicationCommandsJSONBody,
   Snowflake,
   LocalizationMap,
+  APIGuildMember,
+  APIChannel,
 } from 'discord-api-types/v9';
 import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -1856,7 +1858,14 @@ export class Interaction<Cached extends CacheType = CacheType> extends Base {
   public isMessageContextMenu(): this is MessageContextMenuInteraction<Cached>;
   public isMessageComponent(): this is MessageComponentInteraction<Cached>;
   public isModalSubmit(): this is ModalSubmitInteraction<Cached>;
-  public isSelectMenu(): this is SelectMenuInteraction<Cached>;
+  public isAnySelectMenu(): this is SelectMenuInteraction<Cached>;
+  /** @deprecated Use {@link Interaction#isStringSelect()} instead */
+  public isSelectMenu(): this is StringSelectInteraction<Cached>;
+  public isStringSelect(): this is StringSelectInteraction<Cached>;
+  public isUserSelect(): this is UserSelectInteraction<Cached>;
+  public isMentionableSelect(): this is MentionableSelectInteraction<Cached>;
+  public isRoleSelect(): this is RoleSelectInteraction<Cached>;
+  public isChannelSelect(): this is ChannelSelectInteraction<Cached>;
   public isRepliable(): this is this & InteractionResponseFields<Cached>;
 }
 
@@ -1980,12 +1989,14 @@ export type AwaitMessageCollectorOptionsParams<
 
 export interface StringMappedInteractionTypes<Cached extends CacheType = CacheType> {
   BUTTON: ButtonInteraction<Cached>;
-  ACTION_ROW: MessageComponentInteraction<Cached>;
+  /** @deprecated */
+  SELECT_MENU: SelectMenuInteraction<Cached>;
   STRING_SELECT: SelectMenuInteraction<Cached>;
   USER_SELECT: SelectMenuInteraction<Cached>;
   ROLE_SELECT: SelectMenuInteraction<Cached>;
   MENTIONABLE_SELECT: SelectMenuInteraction<Cached>;
   CHANNEL_SELECT: SelectMenuInteraction<Cached>;
+  ACTION_ROW: MessageComponentInteraction<Cached>;
 }
 
 export type WrapBooleanCache<T extends boolean> = If<T, 'cached', CacheType>;
@@ -1994,13 +2005,15 @@ export type MappedInteractionTypes<Cached extends boolean = boolean> = EnumValue
   typeof MessageComponentTypes,
   {
     BUTTON: ButtonInteraction<WrapBooleanCache<Cached>>;
+    /** @deprecated */
+    SELECT_MENU: StringSelectInteraction<WrapBooleanCache<Cached>>;
+    STRING_SELECT: StringSelectInteraction<WrapBooleanCache<Cached>>;
+    USER_SELECT: UserSelectInteraction<WrapBooleanCache<Cached>>;
+    ROLE_SELECT: RoleSelectInteraction<WrapBooleanCache<Cached>>;
+    MENTIONABLE_SELECT: MentionableSelectInteraction<WrapBooleanCache<Cached>>;
+    CHANNEL_SELECT: ChannelSelectInteraction<WrapBooleanCache<Cached>>;
     ACTION_ROW: MessageComponentInteraction<WrapBooleanCache<Cached>>;
     TEXT_INPUT: ModalSubmitInteraction<WrapBooleanCache<Cached>>;
-    STRING_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    USER_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    ROLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    MENTIONABLE_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
-    CHANNEL_SELECT: SelectMenuInteraction<WrapBooleanCache<Cached>>;
   }
 >;
 
@@ -2369,6 +2382,7 @@ export class MessageReaction {
 
 export class MessageSelectMenu extends BaseMessageComponent {
   public constructor(data?: MessageSelectMenu | MessageSelectMenuOptions | APISelectMenuComponent);
+  public channelTypes: ChannelTypes[];
   public customId: string | null;
   public disabled: boolean;
   public maxValues: number | null;
@@ -2376,17 +2390,16 @@ export class MessageSelectMenu extends BaseMessageComponent {
   public options: MessageSelectOption[];
   public placeholder: string | null;
   public type: SelectMenuComponentType;
-  public channelTypes: ChannelTypes[];
+  public addChannelTypes(...channelTypes: ChannelTypes[]): this;
   public addOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
   public setOptions(...options: MessageSelectOptionData[] | MessageSelectOptionData[][]): this;
-  public setType(type: SelectMenuComponentType | SelectMenuComponentTypes): this;
-  public addChannelTypes(...channelTypes: ChannelTypes[]): this;
   public setChannelTypes(...channelTypes: ChannelTypes[]): this;
   public setCustomId(customId: string): this;
   public setDisabled(disabled?: boolean): this;
   public setMaxValues(maxValues: number): this;
   public setMinValues(minValues: number): this;
   public setPlaceholder(placeholder: string): this;
+  public setType(type: SelectMenuComponentType | SelectMenuComponentTypes): this;
   public spliceOptions(
     index: number,
     deleteCount: number,
@@ -2396,7 +2409,6 @@ export class MessageSelectMenu extends BaseMessageComponent {
   public select(message: Message, values?: any[]): Promise<InteractionResponse>;
 }
 
-// Todo
 export class Modal {
   public constructor(data?: Modal | ModalOptions);
   public components: MessageActionRow<ModalActionRowComponent>[];
@@ -2675,7 +2687,7 @@ export class Role extends Base {
   public static comparePositions(role1: Role, role2: Role): number;
 }
 
-export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
+export class BaseSelectMenuInteraction<Cached extends CacheType = CacheType> extends MessageComponentInteraction<Cached> {
   public constructor(client: Client, data: RawMessageSelectMenuInteractionData);
   public readonly component: CacheTypeReducer<
     Cached,
@@ -2690,6 +2702,71 @@ export class SelectMenuInteraction<Cached extends CacheType = CacheType> extends
   public inCachedGuild(): this is SelectMenuInteraction<'cached'>;
   public inRawGuild(): this is SelectMenuInteraction<'raw'>;
 }
+
+export class ChannelSelectInteraction<Cached extends CacheType = CacheType> extends BaseSelectMenuInteraction<Cached> {
+  public componentType: 'CHANNEL_SELECT';
+  public channels: Collection<
+    Snowflake,
+    CacheTypeReducer<Cached, Channel, APIChannel, Channel | APIChannel, Channel | APIChannel>
+  >;
+  public inGuild(): this is ChannelSelectInteraction<'raw' | 'cached'>;
+  public inCachedGuild(): this is ChannelSelectInteraction<'cached'>;
+  public inRawGuild(): this is ChannelSelectInteraction<'raw'>;
+}
+
+export class MentionableSelectInteraction<
+  Cached extends CacheType = CacheType,
+> extends BaseSelectMenuInteraction<Cached> {
+  public componentType: 'MENTIONABLE_SELECT';
+  public channels?: Collection<
+    Snowflake,
+    CacheTypeReducer<Cached, Channel, APIChannel, Channel | APIChannel, Channel | APIChannel>
+  >;
+  public members?: Collection<
+    Snowflake,
+    CacheTypeReducer<Cached, GuildMember, APIGuildMember, GuildMember | APIGuildMember, GuildMember | APIGuildMember>
+  >;
+  public roles?: Collection<Snowflake, CacheTypeReducer<Cached, Role, APIRole, Role | APIRole, Role | APIRole>>;
+  public users?: Collection<Snowflake, User>;
+  public inGuild(): this is MentionableSelectInteraction<'raw' | 'cached'>;
+  public inCachedGuild(): this is MentionableSelectInteraction<'cached'>;
+  public inRawGuild(): this is MentionableSelectInteraction<'raw'>;
+}
+
+export class RoleSelectInteraction<Cached extends CacheType = CacheType> extends BaseSelectMenuInteraction<Cached> {
+  public componentType: 'ROLE_SELECT';
+  public roles: Collection<Snowflake, CacheTypeReducer<Cached, Role, APIRole, Role | APIRole, Role | APIRole>>;
+  public inGuild(): this is RoleSelectInteraction<'raw' | 'cached'>;
+  public inCachedGuild(): this is RoleSelectInteraction<'cached'>;
+  public inRawGuild(): this is RoleSelectInteraction<'raw'>;
+}
+
+export class StringSelectInteraction<Cached extends CacheType = CacheType> extends BaseSelectMenuInteraction<Cached> {
+  public componentType: 'STRING_SELECT';
+  public roles: Collection<Snowflake, CacheTypeReducer<Cached, Role, APIRole, Role | APIRole, Role | APIRole>>;
+  public inGuild(): this is StringSelectInteraction<'raw' | 'cached'>;
+  public inCachedGuild(): this is StringSelectInteraction<'cached'>;
+  public inRawGuild(): this is StringSelectInteraction<'raw'>;
+}
+
+export class UserSelectInteraction<Cached extends CacheType = CacheType> extends BaseSelectMenuInteraction<Cached> {
+  public componentType: 'USER_SELECT';
+  public members?: Collection<
+    Snowflake,
+    CacheTypeReducer<Cached, GuildMember, APIGuildMember, GuildMember | APIGuildMember, GuildMember | APIGuildMember>
+  >;
+  public users: Collection<Snowflake, User>;
+  public inGuild(): this is UserSelectInteraction<'raw' | 'cached'>;
+  public inCachedGuild(): this is UserSelectInteraction<'cached'>;
+  public inRawGuild(): this is UserSelectInteraction<'raw'>;
+}
+
+export type SelectMenuInteraction<Cached extends CacheType = CacheType> =
+  | StringSelectInteraction<Cached>
+  | ChannelSelectInteraction<Cached>
+  | MentionableSelectInteraction<Cached>
+  | RoleSelectInteraction<Cached>
+  | UserSelectInteraction<Cached>;
 
 export interface ShardEventTypes {
   spawn: [process: ChildProcess | Worker];
@@ -6742,7 +6819,11 @@ export interface BaseMessageSelectMenuOptions {
   placeholder?: string;
 }
 export interface StringMessageSelectMenuOptions extends BaseMessageSelectMenuOptions {
-  type?: 'STRING_SELECT' | SelectMenuComponentTypes.STRING_SELECT;
+  type?:
+    | 'STRING_SELECT'
+    | 'SELECT_MENU'
+    | SelectMenuComponentTypes.STRING_SELECT
+    | SelectMenuComponentTypes.SELECT_MENU;
   options?: MessageSelectOptionData[];
 }
 
@@ -7284,8 +7365,6 @@ export type VerificationLevel = keyof typeof VerificationLevels;
 
 export type VideoQualityMode = keyof typeof VideoQualityModes;
 
-export type SelectMenuComponentType = keyof typeof SelectMenuComponentTypes;
-
 export type VoiceBasedChannelTypes = VoiceBasedChannel['type'];
 
 export type VoiceChannelResolvable = Snowflake | VoiceChannel;
@@ -7545,6 +7624,8 @@ export class GuildForumThreadManager extends ThreadManager {
 export type GuildForumThreadMessageCreateOptions = MessageOptions & Pick<MessageOptions, 'flags' | 'stickers'>;
 
 export type ChannelFlagsResolvable = BitFieldResolvable<ChannelFlagsString, number>;
+
+export type SelectMenuComponentType = keyof typeof SelectMenuComponentTypes;
 
 export interface GuildForumThreadCreateOptions extends StartThreadOptions {
   message: GuildForumThreadMessageCreateOptions | MessagePayload;

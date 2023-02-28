@@ -2,11 +2,16 @@
 
 const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { MessageComponentTypes, InteractionTypes, ChannelTypes } = require('../util/Constants');
+const {
+  ChannelTypes,
+  MessageComponentTypes,
+  SelectMenuComponentTypes,
+  InteractionTypes,
+} = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-const Util = require('../util/Util');
 const { lazy } = require('../util/Util');
 const Message = lazy(() => require('./Message').Message);
+const Util = require('../util/Util');
 
 /**
  * Represents a select menu message component
@@ -99,28 +104,6 @@ class MessageSelectMenu extends BaseMessageComponent {
   }
 
   /**
-   * @typedef {string} SelectMenuTypes
-   * Must be one of:
-   * * `STRING_SELECT`
-   * * `USER_SELECT`
-   * * `ROLE_SELECT`
-   * * `MENTIONABLE_SELECT`
-   * * `CHANNEL_SELECT`
-   */
-
-  /**
-   * Set type of select menu
-   * @param {SelectMenuTypes} type Type of select menu
-   * @returns {MessageSelectMenu}
-   */
-
-  setType(type) {
-    if (!type) type = MessageComponentTypes.STRING_SELECT;
-    this.type = MessageSelectMenu.resolveType(type);
-    return this;
-  }
-
-  /**
    * Adds the channel types to the select menu
    * @param {...ChannelType[]} channelTypes Added channel types
    * @returns {MessageSelectMenu}
@@ -202,6 +185,17 @@ class MessageSelectMenu extends BaseMessageComponent {
   }
 
   /**
+   * Sets the type of the select menu
+   * @param {SelectMenuComponentType} type Type of the select menu
+   * @returns {MessageSelectMenu}
+   */
+  setType(type) {
+    if (!SelectMenuComponentTypes[type]) throw new TypeError('INVALID_TYPE', 'type', 'SelectMenuComponentType');
+    this.type = BaseMessageComponent.resolveType(type);
+    return this;
+  }
+
+  /**
    * Adds options to the select menu.
    * @param {...MessageSelectOptionData|MessageSelectOptionData[]} options The options to add
    * @returns {MessageSelectMenu}
@@ -239,13 +233,13 @@ class MessageSelectMenu extends BaseMessageComponent {
    */
   toJSON() {
     return {
+      channel_types: this.channelTypes.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)),
       custom_id: this.customId,
       disabled: this.disabled,
       placeholder: this.placeholder,
       min_values: this.minValues,
       max_values: this.maxValues ?? (this.minValues ? this.options.length : undefined),
       options: this.options,
-      channel_types: this.channelTypes.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)),
       type: typeof this.type === 'string' ? MessageComponentTypes[this.type] : this.type,
     };
   }
@@ -266,10 +260,6 @@ class MessageSelectMenu extends BaseMessageComponent {
     return { label, value, description, emoji, default: option.default ?? false };
   }
 
-  static resolveType(type) {
-    return typeof type === 'string' ? type : MessageComponentTypes[type];
-  }
-
   /**
    * Normalizes option input and resolves strings and emojis.
    * @param {...MessageSelectOptionData|MessageSelectOptionData[]} options The select menu options to normalize
@@ -278,6 +268,7 @@ class MessageSelectMenu extends BaseMessageComponent {
   static normalizeOptions(...options) {
     return options.flat(Infinity).map(option => this.normalizeOption(option));
   }
+
   // Add
   /**
    * Mesage select menu

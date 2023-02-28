@@ -151,8 +151,13 @@ exports.getUUID = require('./structures/RichPresence').getUUID;
 exports.CustomStatus = require('./structures/RichPresence').CustomStatus;
 exports.RichPresence = require('./structures/RichPresence').RichPresence;
 exports.SpotifyRPC = require('./structures/RichPresence').SpotifyRPC;
+// SelectMenu
+exports.ChannelSelectInteraction = require('./structures/SelectMenuInteraction').ChannelSelectInteraction;
+exports.MentionableSelectInteraction = require('./structures/SelectMenuInteraction').MentionableSelectInteraction;
+exports.RoleSelectInteraction = require('./structures/SelectMenuInteraction').RoleSelectInteraction;
+exports.SelectMenuInteraction = require('./structures/SelectMenuInteraction').SelectMenuInteraction;
+exports.UserSelectInteraction = require('./structures/SelectMenuInteraction').UserSelectInteraction;
 //
-exports.SelectMenuInteraction = require('./structures/SelectMenuInteraction');
 exports.StageChannel = require('./structures/StageChannel');
 exports.StageInstance = require('./structures/StageInstance').StageInstance;
 exports.Sticker = require('./structures/Sticker').Sticker;
