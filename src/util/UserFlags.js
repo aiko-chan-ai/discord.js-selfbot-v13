@@ -55,6 +55,9 @@ class UserFlags extends BitField {}
  * * `USED_MOBILE_CLIENT`
  * * `DISABLED`
  * * `VERIFIED_EMAIL`
+ * * `QUARANTINED`
+ * * `COLLABORATOR`
+ * * `RESTRICTED_COLLABORATOR`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/user#user-object-user-flags}
  * @see {@link https://github.com/LewisTehMinerz/discord-flags}
@@ -93,6 +96,9 @@ UserFlags.FLAGS = {
   USED_MOBILE_CLIENT: Math.pow(2, 40), // [Undocumented] User has used the mobile client.
   DISABLED: Math.pow(2, 41), // [Undocumented] User is currently temporarily or permanently disabled.
   VERIFIED_EMAIL: Math.pow(2, 43), // [Undocumented] User has a verified email on their account.
+  QUARANTINED: Math.pow(2, 44), // [Undocumented] User is quarantined.
+  COLLABORATOR: Math.pow(2, 50), // [Undocumented] User is a collaborator and has staff permissions.
+  RESTRICTED_COLLABORATOR: Math.pow(2, 51), // [Undocumented] User is a restricted collaborator and has staff permissions.
 };
 
 module.exports = UserFlags;
