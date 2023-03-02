@@ -6761,7 +6761,8 @@ export type MessageFlagsString =
   | 'HAS_THREAD'
   | 'EPHEMERAL'
   | 'LOADING'
-  | 'FAILED_TO_MENTION_SOME_ROLES_IN_THREAD';
+  | 'FAILED_TO_MENTION_SOME_ROLES_IN_THREAD'
+  | 'SUPPRESS_NOTIFICATIONS';
 
 export interface MessageInteraction {
   id: Snowflake;
@@ -6798,7 +6799,7 @@ export interface MessageOptions {
   reply?: ReplyOptions;
   stickers?: StickerResolvable[];
   attachments?: MessageAttachment[];
-  flags?: BitFieldResolvable<'SUPPRESS_EMBEDS', number>;
+  flags?: BitFieldResolvable<'SUPPRESS_EMBEDS' | 'SUPPRESS_NOTIFICATIONS', number>;
   usingNewAttachmentAPI?: boolean;
 }
 

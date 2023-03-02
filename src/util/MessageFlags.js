@@ -32,6 +32,7 @@ class MessageFlags extends BitField {}
  * * `EPHEMERAL`
  * * `LOADING`
  * * `FAILED_TO_MENTION_SOME_ROLES_IN_THREAD`
+ * * `SUPPRESS_NOTIFICATIONS`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/channel#message-object-message-flags}
  */
@@ -45,6 +46,7 @@ MessageFlags.FLAGS = {
   EPHEMERAL: 1 << 6,
   LOADING: 1 << 7,
   FAILED_TO_MENTION_SOME_ROLES_IN_THREAD: 1 << 8,
+  SUPPRESS_NOTIFICATIONS: 1 << 12,
 };
 
 module.exports = MessageFlags;
