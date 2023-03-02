@@ -52,6 +52,8 @@
 
 **Node.js 16.6.0 or newer is required**
 
+> Recommended Node.js version: 18 (LTS)
+
 ```sh-session
 npm install discord.js-selfbot-v13@latest
 ```
