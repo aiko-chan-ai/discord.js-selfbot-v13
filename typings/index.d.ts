@@ -952,7 +952,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public login(token?: string): Promise<string>;
   public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;
   public switchUser(token: string): void;
-  public QRLogin(debug?: boolean): DiscordAuthWebsocket;
+  public QRLogin(options?: DiscordAuthWebsocketOptions): DiscordAuthWebsocket;
   public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
   public createToken(): Promise<string>;
   public checkUpdate(): Promise<this>;
