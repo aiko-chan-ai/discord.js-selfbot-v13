@@ -17,14 +17,15 @@ class PremiumUsageFlags extends BitField {}
 
 /**
  * Numeric the Discord premium usage flags. All available properties:
+ * * `PREMIUM_DISCRIMINATOR`
  * * `ANIMATED_AVATAR`
- * * `BANNER`
- * * `CUSTOM_DISCRIMINATOR`
+ * * `PROFILE_BANNER`
  * @type {Object}
  */
 PremiumUsageFlags.FLAGS = {
+  PREMIUM_DISCRIMINATOR: 1 << 0,
   ANIMATED_AVATAR: 1 << 1,
-  BANNER: 1 << 2,
+  PROFILE_BANNER: 1 << 2,
 };
 
 module.exports = PremiumUsageFlags;

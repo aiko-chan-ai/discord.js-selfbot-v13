@@ -4460,7 +4460,7 @@ export interface WebhookFields extends PartialWebhookFields {
 //#region Typedefs
 export type PurchasedFlagsString = 'NITRO_CLASSIC' | 'NITRO' | 'GUILD_BOOST';
 
-export type PremiumUsageFlagsString = 'ANIMATED_AVATAR' | 'BANNER' | 'CUSTOM_DISCRIMINATOR';
+export type PremiumUsageFlagsString = 'PREMIUM_DISCRIMINATOR' | 'ANIMATED_AVATAR' | 'PROFILE_BANNER';
 
 export type ActivityFlagsString =
   | 'INSTANCE'
