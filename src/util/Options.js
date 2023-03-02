@@ -201,7 +201,7 @@ class Options extends null {
           os_version: '10.0.22621',
           os_arch: 'x64',
           system_locale: 'en-US',
-          client_build_number: 175517,
+          client_build_number: 177662,
           native_build_number: 29584,
           client_event_source: null,
           design_id: 0,
