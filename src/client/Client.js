@@ -1033,6 +1033,8 @@ class Client extends BaseClient {
             throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
           }
           break;
+        case 'capmonster':
+          break;
       }
     }
     if (typeof options.captchaRetryLimit !== 'number' || isNaN(options.captchaRetryLimit)) {

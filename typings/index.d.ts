@@ -5044,7 +5044,7 @@ export interface ClientOptions {
   usingNewAttachmentAPI?: boolean;
 }
 
-export type captchaServices = '2captcha';
+export type captchaServices = '2captcha' | 'capmonster';
 
 // end copy
 
