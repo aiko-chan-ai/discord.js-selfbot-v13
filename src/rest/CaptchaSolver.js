@@ -46,36 +46,49 @@ module.exports = class CaptchaSolver {
         if (!key || typeof key !== 'string') throw new Error('Capmonster key is not provided');
         this.service = 'capmonster';
         this.key = key;
-        this.solve = async (captchaData, userAgent) => {
+        this.solve = (captchaData, userAgent) =>
           // https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/548#issuecomment-1452091328
-          try {
-            const createTaskResponse = await axios.post('https://api.capmonster.cloud/createTask', {
-              clientKey: this.key,
-              task: {
-                type: 'HCaptchaTask',
-                websiteURL: 'https://discord.com/channels/@me',
-                websiteKey: captchaData.captcha_sitekey,
-                data: captchaData.captcha_rqdata,
-                isInvisible: !!captchaData.captcha_rqdata,
-                userAgent: userAgent,
-              },
-            });
-            const taskId = createTaskResponse.data.taskId;
-            let getResults = { status: 'processing' };
-            while (getResults.status === 'processing') {
-              const getResultsResponse = await axios.post('https://api.capmonster.cloud/getTaskResult', {
-                clientKey: this.key,
-                taskId,
-              });
-              getResults = getResultsResponse.data;
-              await new Promise(resolve => setTimeout(resolve, 1500).unref());
+          // eslint-disable-next-line no-async-promise-executor
+          new Promise(async (resolve, reject) => {
+            try {
+              const createTaskResponse = await axios.post(
+                'https://api.capmonster.cloud/createTask',
+                {
+                  clientKey: this.key,
+                  task: {
+                    type: 'HCaptchaTask',
+                    websiteURL: 'https://discord.com/channels/@me',
+                    websiteKey: captchaData.captcha_sitekey,
+                    data: captchaData.captcha_rqdata,
+                    isInvisible: !!captchaData.captcha_rqdata,
+                    userAgent: userAgent,
+                  },
+                },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'user-agent': userAgent,
+                  },
+                },
+              );
+              const taskId = createTaskResponse.data.taskId;
+              let getResults = { status: 'processing' };
+              while (getResults.status === 'processing') {
+                const getResultsResponse = await axios.post('https://api.capmonster.cloud/getTaskResult', {
+                  clientKey: this.key,
+                  taskId,
+                });
+                getResults = getResultsResponse.data;
+                await new Promise(resolve_ => setTimeout(resolve_, 1500).unref());
+              }
+              const solution = getResults.solution.gRecaptchaResponse;
+              return resolve(await solution);
+            } catch (e) {
+              // !console.error(e);
+              reject(new Error(`Capmonster error: ${e.message}`, e?.response?.data));
             }
-            const solution = getResults.solution.gRecaptchaResponse;
-            return await solution;
-          } catch (e) {
-            throw new Error('Capmonster API error', e);
-          }
-        };
+            return true;
+          });
         break;
       }
       default: {

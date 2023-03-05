@@ -39,7 +39,7 @@
 - [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
 - [X] Guild: Fetch Members, Join / Leave, Top emojis, ...
 - [X] Interactions: Slash Commands, Click Buttons, Menu, Modal, Context Menu, ...
-- [X] Captcha Handler
+- [X] Captcha Handler (2captcha, capmonster, custom)
 - [X] Documentation
 - [x] Voice & [Video stream](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/293)
 - [ ] Everything
