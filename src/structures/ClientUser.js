@@ -563,6 +563,19 @@ class ClientUser extends User {
     else this._packageName = null;
     return this;
   }
+
+  /**
+   * Stop ringing
+   * @param {ChannelResolvable} channel DMChannel | GroupDMChannel
+   * @returns {Promise<void>}
+   */
+  stopRinging(channel) {
+    const id = this.client.channels.resolveId(channel);
+    if (!channel) return false;
+    return this.client.api.channels(id).call['stop-ringing'].post({
+      data: {},
+    });
+  }
 }
 
 module.exports = ClientUser;

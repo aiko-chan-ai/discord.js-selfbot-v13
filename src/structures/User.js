@@ -471,7 +471,7 @@ class User extends Base {
    * @returns {Promise<boolean>}
    */
   ring() {
-    if (!this.dmChannel?.id) return Promise.reject(new Error('USER_NO_DM_CHANNEL'));
+    if (this.relationships !== 'FRIEND') return Promise.reject(new Error('USER_NOT_FRIEND'));
     if (!this.client.user.voice?.channelId || !this.client.callVoice) {
       return Promise.reject(new Error('CLIENT_NO_CALL'));
     }

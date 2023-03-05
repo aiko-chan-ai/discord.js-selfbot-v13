@@ -249,6 +249,15 @@ export class DiscordRPCServer extends EventEmitter {
   public on(event: 'activity', listener: (data: RPCActivityData) => void): this;
 }
 
+export class Call extends Base {
+  constructor(client: Client, data: object);
+  public channelId: Snowflake;
+  public ringing: Collection<Snowflake, User>;
+  public region?: string;
+  public readonly channel: PartialDMChannel | PartialGroupDMChannel;
+  public setVoiceRegion(region: string): Promise<undefined>;
+}
+
 export interface RPCActivityData {
   activity?: RichPresence;
   pid: number;
@@ -1064,6 +1073,7 @@ export class ClientUser extends User {
   public readonly phoneNumber: string;
   public readonly nsfwAllowed: boolean;
   public readonly emailAddress: string;
+  public stopRinging(channel: ChannelResolvable): Promise<void>;
 }
 
 type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST' | 'NITRO_BASIC';
@@ -4708,9 +4718,9 @@ export interface ClientEvents extends BaseClientEvents {
   emojiDelete: [emoji: GuildEmoji];
   emojiUpdate: [oldEmoji: GuildEmoji, newEmoji: GuildEmoji];
   error: [error: Error];
-  callCreate: [channelId: Snowflake, region: string, ringing?: Snowflake[]];
-  callDelete: [channelId: Snowflake];
-  callUpdate: [channelId: Snowflake, region: string, ringing?: Snowflake[]];
+  callCreate: [call: Call];
+  callDelete: [call: Call];
+  callUpdate: [call: Call];
   guildBanAdd: [ban: GuildBan];
   guildBanRemove: [ban: GuildBan];
   guildCreate: [guild: Guild];
@@ -7271,7 +7281,8 @@ export type AnyChannel =
   | TextChannel
   | ThreadChannel
   | VoiceChannel
-  | ForumChannel;
+  | ForumChannel
+  | PartialGroupDMChannel;
 
 export type TextBasedChannel = Exclude<
   Extract<AnyChannel, { messages: MessageManager; interactions: InteractionManager }>,

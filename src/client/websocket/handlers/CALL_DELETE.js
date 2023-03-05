@@ -1,10 +1,11 @@
 'use strict';
+const Call = require('../../../structures/Call');
 const { Events } = require('../../../util/Constants');
 module.exports = (client, packet) => {
   /**
    * Emitted whenever delete a call
    * @event Client#callDelete
-   * @param {Snowflake} channelId DM / Group DM channel ID
+   * @param {Call} call Call
    */
-  client.emit(Events.CALL_DELETE, packet.d.channel_id);
+  client.emit(Events.CALL_DELETE, new Call(client, packet.d));
 };
