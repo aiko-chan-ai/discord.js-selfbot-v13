@@ -21,6 +21,8 @@ class Call extends Base {
      * @type {Collection<Snowflake, User>}
      */
     this.ringing = new Collection();
+
+    this._patch(data);
   }
   _patch(data) {
     if ('region' in data) {
