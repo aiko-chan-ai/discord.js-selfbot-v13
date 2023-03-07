@@ -8,7 +8,7 @@ const DiscordAPIError = require('./DiscordAPIError');
 const HTTPError = require('./HTTPError');
 const RateLimitError = require('./RateLimitError');
 const {
-  Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
+  Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST, CAPTCHA_REQUIRED },
 } = require('../util/Constants');
 
 const cookieFilter = str => {
@@ -386,6 +386,15 @@ class RequestHandler {
       let data;
       try {
         data = await parseResponse(res);
+        if (data?.captcha_service) {
+          /**
+           * Emitted when a request is blocked by a captcha
+           * @event Client#captchaRequired
+           * @param {Request} request The request that was blocked
+           * @param {Captcha} data The data returned by Discord
+           */
+          this.manager.client.emit(CAPTCHA_REQUIRED, request, data);
+        }
         if (
           data?.captcha_service &&
           this.manager.client.options.captchaService &&

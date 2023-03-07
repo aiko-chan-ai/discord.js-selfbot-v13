@@ -517,6 +517,7 @@ exports.Events = {
   RELATIONSHIP_REMOVE: 'relationshipRemove',
   RELATIONSHIP_UPDATE: 'relationshipUpdate',
   UNHANDLED_PACKET: 'unhandledPacket',
+  CAPTCHA_REQUIRED: 'captchaRequired',
 };
 
 /**

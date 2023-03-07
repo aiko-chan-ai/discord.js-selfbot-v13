@@ -4807,6 +4807,7 @@ export interface ClientEvents extends BaseClientEvents {
   relationshipUpdate: [id: Snowflake, type: RelationshipTypes, data: object];
   unhandledPacket: [packet: { op: GatewayOpcodes | number; d?: any; s?: number; t?: string }, shard: WebSocketShard];
   update: [oldVersion: string, newVersion: string];
+  captchaRequired: [request: Request, captcha: Captcha];
 }
 
 export interface ConstantsEvents {
@@ -4907,6 +4908,7 @@ export interface ConstantsEvents {
   RELATIONSHIP_REMOVE: 'relationshipRemove';
   RELATIONSHIP_UPDATE: 'relationshipUpdate';
   UNHANDLED_PACKET: 'unhandledPacket';
+  CAPTCHA_REQUIRED: 'captchaRequired';
 }
 
 export interface WebEmbedOptions {
