@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.11`, based on `discord.js@13.13`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.12`, based on `discord.js@13.14`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -119,6 +119,8 @@ Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13
 
 - 📘 [***aiko-chan-ai/DiscordBotClient***](https://github.com/aiko-chan-ai/DiscordBotClient) <br/>
   A patched version of discord, with bot login support
+- 📕 [***aiko-chan-ai/Discord-Markdown***](https://github.com/aiko-chan-ai/Discord-Markdown) <br/>
+  Better Markdown to text chat Discord.
 - 📗 ...
 
 # From Github with love 💕
