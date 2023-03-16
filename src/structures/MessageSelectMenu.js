@@ -293,6 +293,7 @@ class MessageSelectMenu extends BaseMessageComponent {
     });
     const parseValues = value => {
       switch (this.type) {
+        case 'SELECT_MENU':
         case 'STRING_SELECT': {
           if (typeof value !== 'string') throw new TypeError('[INVALID_VALUE] Please pass a string value');
           const value_ = this.options.find(obj => obj.value === value || obj.label === value);

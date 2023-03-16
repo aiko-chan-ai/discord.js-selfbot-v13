@@ -1133,7 +1133,14 @@ class Message extends Base {
       const menuAll = this.components
         .flatMap(row => row.components)
         .filter(b =>
-          ['STRING_SELECT', 'USER_SELECT', 'ROLE_SELECT', 'MENTIONABLE_SELECT', 'CHANNEL_SELECT'].includes(b.type),
+          [
+            'STRING_SELECT',
+            'USER_SELECT',
+            'ROLE_SELECT',
+            'MENTIONABLE_SELECT',
+            'CHANNEL_SELECT',
+            'SELECT_MENU',
+          ].includes(b.type),
         );
       if (menuAll.length == 0) throw new TypeError('MENU_NOT_FOUND');
       if (menuID) {
@@ -1142,7 +1149,7 @@ class Message extends Base {
         menuID = menuAll[0];
       }
     }
-    if (!menuID.type.includes('_SELECT')) throw new TypeError('MENU_NOT_FOUND');
+    if (!menuID.type.includes('SELECT')) throw new TypeError('MENU_NOT_FOUND');
     return menuID.select(this, Array.isArray(menuID) ? menuID : options);
   }
   //
