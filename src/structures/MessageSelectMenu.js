@@ -276,21 +276,18 @@ class MessageSelectMenu extends BaseMessageComponent {
    * @param {Array<any>} values The values of the select menu
    * @returns {Promise<InteractionResponse>}
    */
-  async select(message, values = []) {
+  async select(message, values) {
     if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
     if (!Array.isArray(values)) throw new TypeError('[INVALID_VALUES] Please pass an array of values');
-    if (!this.customId || this.disabled) return false; // Disabled or null customID
-    // Check value is invalid [Max options is 20] => For loop
+    if (!this.customId || this.disabled) {
+      throw new Error('[INVALID_MENU] Menu does not contain Id or has been disabled');
+    } // Disabled or null customID
     if (values.length < this.minValues) {
       throw new RangeError(`[SELECT_MENU_MIN_VALUES] The minimum number of values is ${this.minValues}`);
     }
     if (values.length > this.maxValues) {
       throw new RangeError(`[SELECT_MENU_MAX_VALUES] The maximum number of values is ${this.maxValues}`);
     }
-    const enableCheck = {};
-    this.options.forEach(obj => {
-      enableCheck[obj.value] = obj.default;
-    });
     const parseValues = value => {
       switch (this.type) {
         case 'SELECT_MENU':
@@ -333,17 +330,6 @@ class MessageSelectMenu extends BaseMessageComponent {
       }
     };
 
-    for (const value of values) {
-      const value_ = parseValues(value);
-      if (value_ in enableCheck) {
-        enableCheck[value_] = !enableCheck[value_];
-      } else {
-        enableCheck[value_] = true;
-      }
-    }
-
-    values = values?.length ? Object.keys(enableCheck).filter(key => enableCheck[key]) : [];
-
     const nonce = SnowflakeUtil.generate();
     const data = {
       type: InteractionTypes.MESSAGE_COMPONENT,
@@ -357,10 +343,11 @@ class MessageSelectMenu extends BaseMessageComponent {
         component_type: MessageComponentTypes[this.type],
         custom_id: this.customId,
         type: MessageComponentTypes[this.type],
-        values,
+        values: values?.length ? values.map(parseValues) : [],
       },
       nonce,
     };
+
     await message.client.api.interactions.post({
       data,
     });
