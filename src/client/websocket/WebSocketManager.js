@@ -126,6 +126,7 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   async connect() {
+    // eslint-disable-next-line no-unused-vars
     const invalidToken = new Error(WSCodes[4004]);
     /*
     BOT
@@ -138,10 +139,15 @@ class WebSocketManager extends EventEmitter {
     });
     */
 
-    const { url: gatewayURL } = await this.client.api.gateway.get({ auth: false }).catch(error => {
-      // Never throw error :v
-      throw error.httpStatus === 401 ? invalidToken : error;
-    });
+    let gatewayURL = 'wss://gateway.discord.gg';
+    const { url } = await this.client.api.gateway
+      .get({ auth: false })
+      // eslint-disable-next-line no-unused-vars
+      .catch(error => {
+        // Never throw error :v
+        // throw error.httpStatus === 401 ? invalidToken : error;
+      });
+    if (url) gatewayURL = url;
     const recommendedShards = 1;
     const sessionStartLimit = {
       total: Infinity,
