@@ -27,6 +27,10 @@ var __copyProps = (to, from, except, desc) => {
 var __toESM = (mod, isNodeMode, target) => (
   (target = mod != null ? __create(__getProtoOf(mod)) : {}),
   __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
     isNodeMode || !mod || !mod.__esModule ? __defProp(target, 'default', { value: mod, enumerable: true }) : target,
     mod,
   )
@@ -78,6 +82,7 @@ var import_v10 = require('discord-api-types/v10');
 function createJoinVoiceChannelPayload(config) {
   return {
     op: import_v10.GatewayOpcodes.VoiceStateUpdate,
+    // eslint-disable-next-line id-length
     d: {
       guild_id: config.guildId,
       channel_id: config.channelId,
@@ -214,12 +219,10 @@ var libs = {
   }),
 };
 var fallbackError = /* @__PURE__ */ __name(() => {
-  throw new Error(
-    `Cannot play audio as no valid encryption package is installed.
+  throw new Error(`Cannot play audio as no valid encryption package is installed.
 - Install sodium, libsodium-wrappers, or tweetnacl.
 - Use the generateDependencyReport() function for more information.
-`,
-  );
+`);
 }, 'fallbackError');
 var methods = {
   open: fallbackError,
@@ -252,70 +255,76 @@ function parseLocalPacket(message) {
     throw new Error('Malformed IP address');
   }
   const port = packet.readUInt16BE(packet.length - 2);
-  return { ip, port };
+  return {
+    ip,
+    port,
+  };
 }
 __name(parseLocalPacket, 'parseLocalPacket');
 var KEEP_ALIVE_INTERVAL = 5e3;
-var KEEP_ALIVE_LIMIT = 12;
 var MAX_COUNTER_VALUE = 2 ** 32 - 1;
 var VoiceUDPSocket = class extends import_node_events.EventEmitter {
-  socket;
-  remote;
-  keepAlives;
+  /**
+   * The counter used in the keep alive mechanism.
+   */
   keepAliveCounter = 0;
-  keepAliveBuffer;
-  keepAliveInterval;
-  ping;
-  debug;
-  constructor(remote, debug = false) {
+  /**
+   * Creates a new VoiceUDPSocket.
+   *
+   * @param remote - Details of the remote socket
+   */
+  constructor(remote) {
     super();
     this.socket = (0, import_node_dgram.createSocket)('udp4');
     this.socket.on('error', error => this.emit('error', error));
     this.socket.on('message', buffer => this.onMessage(buffer));
     this.socket.on('close', () => this.emit('close'));
     this.remote = remote;
-    this.keepAlives = [];
     this.keepAliveBuffer = import_node_buffer2.Buffer.alloc(8);
     this.keepAliveInterval = setInterval(() => this.keepAlive(), KEEP_ALIVE_INTERVAL);
     setImmediate(() => this.keepAlive());
-    this.debug = debug ? message => this.emit('debug', message) : null;
   }
+  /**
+   * Called when a message is received on the UDP socket.
+   *
+   * @param buffer - The received buffer
+   */
   onMessage(buffer) {
-    if (buffer.length === 8) {
-      const counter = buffer.readUInt32LE(0);
-      const index = this.keepAlives.findIndex(({ value }) => value === counter);
-      if (index === -1) return;
-      this.ping = Date.now() - this.keepAlives[index].timestamp;
-      this.keepAlives.splice(0, index);
-    }
     this.emit('message', buffer);
   }
+  /**
+   * Called at a regular interval to check whether we are still able to send datagrams to Discord.
+   */
   keepAlive() {
-    if (this.keepAlives.length >= KEEP_ALIVE_LIMIT) {
-      this.debug?.('UDP socket has not received enough responses from Discord - closing socket');
-      this.destroy();
-      return;
-    }
     this.keepAliveBuffer.writeUInt32LE(this.keepAliveCounter, 0);
     this.send(this.keepAliveBuffer);
-    this.keepAlives.push({
-      value: this.keepAliveCounter,
-      timestamp: Date.now(),
-    });
     this.keepAliveCounter++;
     if (this.keepAliveCounter > MAX_COUNTER_VALUE) {
       this.keepAliveCounter = 0;
     }
   }
+  /**
+   * Sends a buffer to Discord.
+   *
+   * @param buffer - The buffer to send
+   */
   send(buffer) {
     this.socket.send(buffer, this.remote.port, this.remote.ip);
   }
+  /**
+   * Closes the socket, the instance will not be able to be reused.
+   */
   destroy() {
     try {
       this.socket.close();
     } catch {}
     clearInterval(this.keepAliveInterval);
   }
+  /**
+   * Performs IP discovery to discover the local address and port to be used for the voice connection.
+   *
+   * @param ssrc - The SSRC received from Discord
+   */
   async performIPDiscovery(ssrc) {
     return new Promise((resolve2, reject) => {
       const listener = /* @__PURE__ */ __name(message => {
@@ -343,13 +352,15 @@ var import_node_events2 = require('events');
 var import_v4 = require('discord-api-types/voice/v4');
 var import_ws = __toESM(require('ws'));
 var VoiceWebSocket = class extends import_node_events2.EventEmitter {
-  heartbeatInterval;
-  lastHeartbeatAck;
-  lastHeartbeatSend;
+  /**
+   * The number of consecutively missed heartbeats.
+   */
   missedHeartbeats = 0;
-  ping;
-  debug;
-  ws;
+  /**
+   * Creates a new VoiceWebSocket.
+   *
+   * @param address - The address to connect to
+   */
   constructor(address, debug) {
     super();
     this.ws = new import_ws.default(address);
@@ -361,6 +372,9 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
     this.lastHeartbeatSend = 0;
     this.debug = debug ? message => this.emit('debug', message) : null;
   }
+  /**
+   * Destroys the VoiceWebSocket. The heartbeat interval is cleared, and the connection is closed.
+   */
   destroy() {
     try {
       this.debug?.('destroyed');
@@ -371,6 +385,12 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
       this.emit('error', err);
     }
   }
+  /**
+   * Handles message events on the WebSocket. Attempts to JSON parse the messages and emit them
+   * as packets.
+   *
+   * @param event - The message event
+   */
   onMessage(event) {
     if (typeof event.data !== 'string') return;
     this.debug?.(`<< ${event.data}`);
@@ -389,6 +409,11 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
     }
     this.emit('packet', packet);
   }
+  /**
+   * Sends a JSON-stringifiable packet over the WebSocket.
+   *
+   * @param packet - The packet to send
+   */
   sendPacket(packet) {
     try {
       const stringified = JSON.stringify(packet);
@@ -400,15 +425,24 @@ var VoiceWebSocket = class extends import_node_events2.EventEmitter {
       this.emit('error', err);
     }
   }
+  /**
+   * Sends a heartbeat over the WebSocket.
+   */
   sendHeartbeat() {
     this.lastHeartbeatSend = Date.now();
     this.missedHeartbeats++;
     const nonce2 = this.lastHeartbeatSend;
     this.sendPacket({
       op: import_v4.VoiceOpcodes.Heartbeat,
+      // eslint-disable-next-line id-length
       d: nonce2,
     });
   }
+  /**
+   * Sets/clears an interval to send heartbeats over the WebSocket.
+   *
+   * @param ms - The interval in milliseconds. If negative, the interval will be unset
+   */
   setHeartbeatInterval(ms) {
     if (typeof this.heartbeatInterval !== 'undefined') clearInterval(this.heartbeatInterval);
     if (ms > 0) {
@@ -429,6 +463,16 @@ var CHANNELS = 2;
 var TIMESTAMP_INC = (48e3 / 100) * CHANNELS;
 var MAX_NONCE_SIZE = 2 ** 32 - 1;
 var SUPPORTED_ENCRYPTION_MODES = ['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305'];
+var NetworkingStatusCode;
+(function (NetworkingStatusCode2) {
+  NetworkingStatusCode2[(NetworkingStatusCode2['OpeningWs'] = 0)] = 'OpeningWs';
+  NetworkingStatusCode2[(NetworkingStatusCode2['Identifying'] = 1)] = 'Identifying';
+  NetworkingStatusCode2[(NetworkingStatusCode2['UdpHandshaking'] = 2)] = 'UdpHandshaking';
+  NetworkingStatusCode2[(NetworkingStatusCode2['SelectingProtocol'] = 3)] = 'SelectingProtocol';
+  NetworkingStatusCode2[(NetworkingStatusCode2['Ready'] = 4)] = 'Ready';
+  NetworkingStatusCode2[(NetworkingStatusCode2['Resuming'] = 5)] = 'Resuming';
+  NetworkingStatusCode2[(NetworkingStatusCode2['Closed'] = 6)] = 'Closed';
+})(NetworkingStatusCode || (NetworkingStatusCode = {}));
 var nonce = import_node_buffer3.Buffer.alloc(24);
 function stringifyState(state) {
   return JSON.stringify({
@@ -451,8 +495,9 @@ function randomNBit(numberOfBits) {
 }
 __name(randomNBit, 'randomNBit');
 var Networking = class extends import_node_events3.EventEmitter {
-  _state;
-  debug;
+  /**
+   * Creates a new Networking instance.
+   */
   constructor(options, debug) {
     super();
     this.onWsOpen = this.onWsOpen.bind(this);
@@ -464,19 +509,28 @@ var Networking = class extends import_node_events3.EventEmitter {
     this.onUdpClose = this.onUdpClose.bind(this);
     this.debug = debug ? message => this.emit('debug', message) : null;
     this._state = {
-      code: 0 /* OpeningWs */,
+      code: NetworkingStatusCode.OpeningWs,
       ws: this.createWebSocket(options.endpoint),
       connectionOptions: options,
     };
   }
+  /**
+   * Destroys the Networking instance, transitioning it into the Closed state.
+   */
   destroy() {
     this.state = {
-      code: 6 /* Closed */,
+      code: NetworkingStatusCode.Closed,
     };
   }
+  /**
+   * The current state of the networking instance.
+   */
   get state() {
     return this._state;
   }
+  /**
+   * Sets a new state for the networking instance, performing clean-up operations where necessary.
+   */
   set state(newState) {
     const oldWs = Reflect.get(this._state, 'ws');
     const newWs = Reflect.get(newState, 'ws');
@@ -505,6 +559,11 @@ var Networking = class extends import_node_events3.EventEmitter {
 from ${stringifyState(oldState)}
 to ${stringifyState(newState)}`);
   }
+  /**
+   * Creates a new WebSocket to a Discord Voice gateway.
+   *
+   * @param endpoint - The endpoint to connect to
+   */
   createWebSocket(endpoint) {
     const ws = new VoiceWebSocket(`wss://${endpoint}?v=4`, Boolean(this.debug));
     ws.on('error', this.onChildError);
@@ -514,11 +573,20 @@ to ${stringifyState(newState)}`);
     ws.on('debug', this.onWsDebug);
     return ws;
   }
+  /**
+   * Propagates errors from the children VoiceWebSocket and VoiceUDPSocket.
+   *
+   * @param error - The error that was emitted by a child
+   */
   onChildError(error) {
     this.emit('error', error);
   }
+  /**
+   * Called when the WebSocket opens. Depending on the state that the instance is in,
+   * it will either identify with a new session, or it will attempt to resume an existing session.
+   */
   onWsOpen() {
-    if (this.state.code === 0 /* OpeningWs */) {
+    if (this.state.code === NetworkingStatusCode.OpeningWs) {
       const packet = {
         op: import_v42.VoiceOpcodes.Identify,
         d: {
@@ -531,9 +599,9 @@ to ${stringifyState(newState)}`);
       this.state.ws.sendPacket(packet);
       this.state = {
         ...this.state,
-        code: 1 /* Identifying */,
+        code: NetworkingStatusCode.Identifying,
       };
-    } else if (this.state.code === 5 /* Resuming */) {
+    } else if (this.state.code === NetworkingStatusCode.Resuming) {
       const packet = {
         op: import_v42.VoiceOpcodes.Resume,
         d: {
@@ -545,41 +613,59 @@ to ${stringifyState(newState)}`);
       this.state.ws.sendPacket(packet);
     }
   }
+  /**
+   * Called when the WebSocket closes. Based on the reason for closing (given by the code parameter),
+   * the instance will either attempt to resume, or enter the closed state and emit a 'close' event
+   * with the close code, allowing the user to decide whether or not they would like to reconnect.
+   *
+   * @param code - The close code
+   */
   onWsClose({ code }) {
     const canResume = code === 4015 || code < 4e3;
-    if (canResume && this.state.code === 4 /* Ready */) {
+    if (canResume && this.state.code === NetworkingStatusCode.Ready) {
       this.state = {
         ...this.state,
-        code: 5 /* Resuming */,
+        code: NetworkingStatusCode.Resuming,
         ws: this.createWebSocket(this.state.connectionOptions.endpoint),
       };
-    } else if (this.state.code !== 6 /* Closed */) {
+    } else if (this.state.code !== NetworkingStatusCode.Closed) {
       this.destroy();
       this.emit('close', code);
     }
   }
+  /**
+   * Called when the UDP socket has closed itself if it has stopped receiving replies from Discord.
+   */
   onUdpClose() {
-    if (this.state.code === 4 /* Ready */) {
+    if (this.state.code === NetworkingStatusCode.Ready) {
       this.state = {
         ...this.state,
-        code: 5 /* Resuming */,
+        code: NetworkingStatusCode.Resuming,
         ws: this.createWebSocket(this.state.connectionOptions.endpoint),
       };
     }
   }
+  /**
+   * Called when a packet is received on the connection's WebSocket.
+   *
+   * @param packet - The received packet
+   */
   onWsPacket(packet) {
-    if (packet.op === import_v42.VoiceOpcodes.Hello && this.state.code !== 6 /* Closed */) {
+    if (packet.op === import_v42.VoiceOpcodes.Hello && this.state.code !== NetworkingStatusCode.Closed) {
       this.state.ws.setHeartbeatInterval(packet.d.heartbeat_interval);
-    } else if (packet.op === import_v42.VoiceOpcodes.Ready && this.state.code === 1 /* Identifying */) {
+    } else if (packet.op === import_v42.VoiceOpcodes.Ready && this.state.code === NetworkingStatusCode.Identifying) {
       const { ip, port, ssrc, modes } = packet.d;
-      const udp = new VoiceUDPSocket({ ip, port });
+      const udp = new VoiceUDPSocket({
+        ip,
+        port,
+      });
       udp.on('error', this.onChildError);
       udp.on('debug', this.onUdpDebug);
       udp.once('close', this.onUdpClose);
       udp
         .performIPDiscovery(ssrc)
         .then(localConfig => {
-          if (this.state.code !== 2 /* UdpHandshaking */) return;
+          if (this.state.code !== NetworkingStatusCode.UdpHandshaking) return;
           this.state.ws.sendPacket({
             op: import_v42.VoiceOpcodes.SelectProtocol,
             d: {
@@ -593,13 +679,13 @@ to ${stringifyState(newState)}`);
           });
           this.state = {
             ...this.state,
-            code: 3 /* SelectingProtocol */,
+            code: NetworkingStatusCode.SelectingProtocol,
           };
         })
         .catch(error => this.emit('error', error));
       this.state = {
         ...this.state,
-        code: 2 /* UdpHandshaking */,
+        code: NetworkingStatusCode.UdpHandshaking,
         udp,
         connectionData: {
           ssrc,
@@ -607,12 +693,12 @@ to ${stringifyState(newState)}`);
       };
     } else if (
       packet.op === import_v42.VoiceOpcodes.SessionDescription &&
-      this.state.code === 3 /* SelectingProtocol */
+      this.state.code === NetworkingStatusCode.SelectingProtocol
     ) {
       const { mode: encryptionMode, secret_key: secretKey } = packet.d;
       this.state = {
         ...this.state,
-        code: 4 /* Ready */,
+        code: NetworkingStatusCode.Ready,
         connectionData: {
           ...this.state.connectionData,
           encryptionMode,
@@ -625,29 +711,53 @@ to ${stringifyState(newState)}`);
           packetsPlayed: 0,
         },
       };
-    } else if (packet.op === import_v42.VoiceOpcodes.Resumed && this.state.code === 5 /* Resuming */) {
+    } else if (packet.op === import_v42.VoiceOpcodes.Resumed && this.state.code === NetworkingStatusCode.Resuming) {
       this.state = {
         ...this.state,
-        code: 4 /* Ready */,
+        code: NetworkingStatusCode.Ready,
       };
       this.state.connectionData.speaking = false;
     }
   }
+  /**
+   * Propagates debug messages from the child WebSocket.
+   *
+   * @param message - The emitted debug message
+   */
   onWsDebug(message) {
     this.debug?.(`[WS] ${message}`);
   }
+  /**
+   * Propagates debug messages from the child UDPSocket.
+   *
+   * @param message - The emitted debug message
+   */
   onUdpDebug(message) {
     this.debug?.(`[UDP] ${message}`);
   }
+  /**
+   * Prepares an Opus packet for playback. This includes attaching metadata to it and encrypting it.
+   * It will be stored within the instance, and can be played by dispatchAudio()
+   *
+   * @remarks
+   * Calling this method while there is already a prepared audio packet that has not yet been dispatched
+   * will overwrite the existing audio packet. This should be avoided.
+   * @param opusPacket - The Opus packet to encrypt
+   * @returns The audio packet that was prepared
+   */
   prepareAudioPacket(opusPacket) {
     const state = this.state;
-    if (state.code !== 4 /* Ready */) return;
+    if (state.code !== NetworkingStatusCode.Ready) return;
     state.preparedPacket = this.createAudioPacket(opusPacket, state.connectionData);
     return state.preparedPacket;
   }
+  /**
+   * Dispatches the audio packet previously prepared by prepareAudioPacket(opusPacket). The audio packet
+   * is consumed and cannot be dispatched again.
+   */
   dispatchAudio() {
     const state = this.state;
-    if (state.code !== 4 /* Ready */) return false;
+    if (state.code !== NetworkingStatusCode.Ready) return false;
     if (typeof state.preparedPacket !== 'undefined') {
       this.playAudioPacket(state.preparedPacket);
       state.preparedPacket = void 0;
@@ -655,9 +765,14 @@ to ${stringifyState(newState)}`);
     }
     return false;
   }
+  /**
+   * Plays an audio packet, updating timing metadata used for playback.
+   *
+   * @param audioPacket - The audio packet to play
+   */
   playAudioPacket(audioPacket) {
     const state = this.state;
-    if (state.code !== 4 /* Ready */) return;
+    if (state.code !== NetworkingStatusCode.Ready) return;
     const { connectionData } = state;
     connectionData.packetsPlayed++;
     connectionData.sequence++;
@@ -667,9 +782,15 @@ to ${stringifyState(newState)}`);
     this.setSpeaking(true);
     state.udp.send(audioPacket);
   }
+  /**
+   * Sends a packet to the voice gateway indicating that the client has start/stopped sending
+   * audio.
+   *
+   * @param speaking - Whether or not the client should be shown as speaking
+   */
   setSpeaking(speaking) {
     const state = this.state;
-    if (state.code !== 4 /* Ready */) return;
+    if (state.code !== NetworkingStatusCode.Ready) return;
     if (state.connectionData.speaking === speaking) return;
     state.connectionData.speaking = speaking;
     state.ws.sendPacket({
@@ -681,6 +802,13 @@ to ${stringifyState(newState)}`);
       },
     });
   }
+  /**
+   * Creates a new audio packet from an Opus packet. This involves encrypting the packet,
+   * then prepending a header that includes metadata.
+   *
+   * @param opusPacket - The Opus packet to prepare
+   * @param connectionData - The current connection data of the instance
+   */
   createAudioPacket(opusPacket, connectionData) {
     const packetBuffer = import_node_buffer3.Buffer.alloc(12);
     packetBuffer[0] = 128;
@@ -692,6 +820,12 @@ to ${stringifyState(newState)}`);
     packetBuffer.copy(nonce, 0, 0, 12);
     return import_node_buffer3.Buffer.concat([packetBuffer, ...this.encryptOpusPacket(opusPacket, connectionData)]);
   }
+  /**
+   * Encrypts an Opus packet using the format agreed upon by the instance and Discord.
+   *
+   * @param opusPacket - The Opus packet to encrypt
+   * @param connectionData - The current connection data of the instance
+   */
   encryptOpusPacket(opusPacket, connectionData) {
     const { secretKey, encryptionMode } = connectionData;
     if (encryptionMode === 'xsalsa20_poly1305_lite') {
@@ -721,7 +855,6 @@ var import_node_events4 = require('events');
 
 // src/audio/AudioPlayerError.ts
 var AudioPlayerError = class extends Error {
-  resource;
   constructor(error, resource) {
     super(error.message);
     this.resource = resource;
@@ -733,12 +866,14 @@ __name(AudioPlayerError, 'AudioPlayerError');
 
 // src/audio/PlayerSubscription.ts
 var PlayerSubscription = class {
-  connection;
-  player;
   constructor(connection, player) {
     this.connection = connection;
     this.player = player;
   }
+  /**
+   * Unsubscribes the connection from the audio player, meaning that the
+   * audio player cannot stream audio to it until a new subscription is made.
+   */
   unsubscribe() {
     this.connection['onSubscriptionRemoved'](this);
     this.player['unsubscribe'](this);
@@ -748,20 +883,60 @@ __name(PlayerSubscription, 'PlayerSubscription');
 
 // src/audio/AudioPlayer.ts
 var SILENCE_FRAME = import_node_buffer4.Buffer.from([248, 255, 254]);
-var NoSubscriberBehavior = /* @__PURE__ */ (NoSubscriberBehavior2 => {
-  NoSubscriberBehavior2['Pause'] = 'pause';
-  NoSubscriberBehavior2['Play'] = 'play';
-  NoSubscriberBehavior2['Stop'] = 'stop';
-  return NoSubscriberBehavior2;
-})(NoSubscriberBehavior || {});
-var AudioPlayerStatus = /* @__PURE__ */ (AudioPlayerStatus2 => {
-  AudioPlayerStatus2['AutoPaused'] = 'autopaused';
-  AudioPlayerStatus2['Buffering'] = 'buffering';
-  AudioPlayerStatus2['Idle'] = 'idle';
-  AudioPlayerStatus2['Paused'] = 'paused';
-  AudioPlayerStatus2['Playing'] = 'playing';
-  return AudioPlayerStatus2;
-})(AudioPlayerStatus || {});
+var NoSubscriberBehavior;
+(function (NoSubscriberBehavior2) {
+  NoSubscriberBehavior2[
+    /**
+     * Pauses playing the stream until a voice connection becomes available.
+     */
+    'Pause'
+  ] = 'pause';
+  NoSubscriberBehavior2[
+    /**
+     * Continues to play through the resource regardless.
+     */
+    'Play'
+  ] = 'play';
+  NoSubscriberBehavior2[
+    /**
+     * The player stops and enters the Idle state.
+     */
+    'Stop'
+  ] = 'stop';
+})(NoSubscriberBehavior || (NoSubscriberBehavior = {}));
+var AudioPlayerStatus;
+(function (AudioPlayerStatus2) {
+  AudioPlayerStatus2[
+    /**
+     * When the player has paused itself. Only possible with the "pause" no subscriber behavior.
+     */
+    'AutoPaused'
+  ] = 'autopaused';
+  AudioPlayerStatus2[
+    /**
+     * When the player is waiting for an audio resource to become readable before transitioning to Playing.
+     */
+    'Buffering'
+  ] = 'buffering';
+  AudioPlayerStatus2[
+    /**
+     * When there is currently no resource for the player to be playing.
+     */
+    'Idle'
+  ] = 'idle';
+  AudioPlayerStatus2[
+    /**
+     * When the player has been manually paused.
+     */
+    'Paused'
+  ] = 'paused';
+  AudioPlayerStatus2[
+    /**
+     * When the player is actively playing an audio resource.
+     */
+    'Playing'
+  ] = 'playing';
+})(AudioPlayerStatus || (AudioPlayerStatus = {}));
 function stringifyState2(state) {
   return JSON.stringify({
     ...state,
@@ -771,25 +946,44 @@ function stringifyState2(state) {
 }
 __name(stringifyState2, 'stringifyState');
 var AudioPlayer = class extends import_node_events4.EventEmitter {
-  _state;
+  /**
+   * A list of VoiceConnections that are registered to this AudioPlayer. The player will attempt to play audio
+   * to the streams in this list.
+   */
   subscribers = [];
-  behaviors;
-  debug;
+  /**
+   * Creates a new AudioPlayer.
+   */
   constructor(options = {}) {
     super();
-    this._state = { status: 'idle' /* Idle */ };
+    this._state = {
+      status: AudioPlayerStatus.Idle,
+    };
     this.behaviors = {
-      noSubscriber: 'pause' /* Pause */,
+      noSubscriber: NoSubscriberBehavior.Pause,
       maxMissedFrames: 5,
       ...options.behaviors,
     };
     this.debug = options.debug === false ? null : message => this.emit('debug', message);
   }
+  /**
+   * A list of subscribed voice connections that can currently receive audio to play.
+   */
   get playable() {
     return this.subscribers
-      .filter(({ connection }) => connection.state.status === 'ready' /* Ready */)
+      .filter(({ connection }) => connection.state.status === VoiceConnectionStatus.Ready)
       .map(({ connection }) => connection);
   }
+  /**
+   * Subscribes a VoiceConnection to the audio player's play list. If the VoiceConnection is already subscribed,
+   * then the existing subscription is used.
+   *
+   * @remarks
+   * This method should not be directly called. Instead, use VoiceConnection#subscribe.
+   * @param connection - The connection to subscribe
+   * @returns The new subscription if the voice connection is not yet subscribed, otherwise the existing subscription
+   */
+  // @ts-ignore
   subscribe(connection) {
     const existingSubscription = this.subscribers.find(subscription => subscription.connection === connection);
     if (!existingSubscription) {
@@ -800,6 +994,15 @@ var AudioPlayer = class extends import_node_events4.EventEmitter {
     }
     return existingSubscription;
   }
+  /**
+   * Unsubscribes a subscription - i.e. removes a voice connection from the play list of the audio player.
+   *
+   * @remarks
+   * This method should not be directly called. Instead, use PlayerSubscription#unsubscribe.
+   * @param subscription - The subscription to remove
+   * @returns Whether or not the subscription existed on the player and was removed
+   */
+  // @ts-ignore
   unsubscribe(subscription) {
     const index = this.subscribers.indexOf(subscription);
     const exists = index !== -1;
@@ -810,13 +1013,19 @@ var AudioPlayer = class extends import_node_events4.EventEmitter {
     }
     return exists;
   }
+  /**
+   * The state that the player is in.
+   */
   get state() {
     return this._state;
   }
+  /**
+   * Sets a new state for the player, performing clean-up operations where necessary.
+   */
   set state(newState) {
     const oldState = this._state;
     const newResource = Reflect.get(newState, 'resource');
-    if (oldState.status !== 'idle' /* Idle */ && oldState.resource !== newResource) {
+    if (oldState.status !== AudioPlayerStatus.Idle && oldState.resource !== newResource) {
       oldState.resource.playStream.on('error', noop);
       oldState.resource.playStream.off('error', oldState.onStreamError);
       oldState.resource.audioPlayer = void 0;
@@ -824,15 +1033,15 @@ var AudioPlayer = class extends import_node_events4.EventEmitter {
       oldState.resource.playStream.read();
     }
     if (
-      oldState.status === 'buffering' /* Buffering */ &&
-      (newState.status !== 'buffering' /* Buffering */ || newState.resource !== oldState.resource)
+      oldState.status === AudioPlayerStatus.Buffering &&
+      (newState.status !== AudioPlayerStatus.Buffering || newState.resource !== oldState.resource)
     ) {
       oldState.resource.playStream.off('end', oldState.onFailureCallback);
       oldState.resource.playStream.off('close', oldState.onFailureCallback);
       oldState.resource.playStream.off('finish', oldState.onFailureCallback);
       oldState.resource.playStream.off('readable', oldState.onReadableCallback);
     }
-    if (newState.status === 'idle' /* Idle */) {
+    if (newState.status === AudioPlayerStatus.Idle) {
       this._signalStopSpeaking();
       deleteAudioPlayer(this);
     }
@@ -840,8 +1049,8 @@ var AudioPlayer = class extends import_node_events4.EventEmitter {
       addAudioPlayer(this);
     }
     const didChangeResources =
-      oldState.status !== 'idle' /* Idle */ &&
-      newState.status === 'playing' /* Playing */ &&
+      oldState.status !== AudioPlayerStatus.Idle &&
+      newState.status === AudioPlayerStatus.Playing &&
       oldState.resource !== newState.resource;
     this._state = newState;
     this.emit('stateChange', oldState, this._state);
@@ -852,6 +1061,19 @@ var AudioPlayer = class extends import_node_events4.EventEmitter {
 from ${stringifyState2(oldState)}
 to ${stringifyState2(newState)}`);
   }
+  /**
+   * Plays a new resource on the player. If the player is already playing a resource, the existing resource is destroyed
+   * (it cannot be reused, even in another player) and is replaced with the new resource.
+   *
+   * @remarks
+   * The player will transition to the Playing state once playback begins, and will return to the Idle state once
+   * playback is ended.
+   *
+   * If the player was previously playing a resource and this method is called, the player will not transition to the
+   * Idle state during the swap over.
+   * @param resource - The resource to play
+   * @throws Will throw if attempting to play an audio resource that has already ended, or is being played by another player
+   */
   play(resource) {
     if (resource.ended) {
       throw new Error('Cannot play a resource that has already ended.');
@@ -864,19 +1086,19 @@ to ${stringifyState2(newState)}`);
     }
     resource.audioPlayer = this;
     const onStreamError = /* @__PURE__ */ __name(error => {
-      if (this.state.status !== 'idle' /* Idle */) {
+      if (this.state.status !== AudioPlayerStatus.Idle) {
         this.emit('error', new AudioPlayerError(error, this.state.resource));
       }
-      if (this.state.status !== 'idle' /* Idle */ && this.state.resource === resource) {
+      if (this.state.status !== AudioPlayerStatus.Idle && this.state.resource === resource) {
         this.state = {
-          status: 'idle' /* Idle */,
+          status: AudioPlayerStatus.Idle,
         };
       }
     }, 'onStreamError');
     resource.playStream.once('error', onStreamError);
     if (resource.started) {
       this.state = {
-        status: 'playing' /* Playing */,
+        status: AudioPlayerStatus.Playing,
         missedFrames: 0,
         playbackDuration: 0,
         resource,
@@ -884,9 +1106,9 @@ to ${stringifyState2(newState)}`);
       };
     } else {
       const onReadableCallback = /* @__PURE__ */ __name(() => {
-        if (this.state.status === 'buffering' /* Buffering */ && this.state.resource === resource) {
+        if (this.state.status === AudioPlayerStatus.Buffering && this.state.resource === resource) {
           this.state = {
-            status: 'playing' /* Playing */,
+            status: AudioPlayerStatus.Playing,
             missedFrames: 0,
             playbackDuration: 0,
             resource,
@@ -895,9 +1117,9 @@ to ${stringifyState2(newState)}`);
         }
       }, 'onReadableCallback');
       const onFailureCallback = /* @__PURE__ */ __name(() => {
-        if (this.state.status === 'buffering' /* Buffering */ && this.state.resource === resource) {
+        if (this.state.status === AudioPlayerStatus.Buffering && this.state.resource === resource) {
           this.state = {
-            status: 'idle' /* Idle */,
+            status: AudioPlayerStatus.Idle,
           };
         }
       }, 'onFailureCallback');
@@ -906,7 +1128,7 @@ to ${stringifyState2(newState)}`);
       resource.playStream.once('close', onFailureCallback);
       resource.playStream.once('finish', onFailureCallback);
       this.state = {
-        status: 'buffering' /* Buffering */,
+        status: AudioPlayerStatus.Buffering,
         resource,
         onReadableCallback,
         onFailureCallback,
@@ -914,65 +1136,99 @@ to ${stringifyState2(newState)}`);
       };
     }
   }
+  /**
+   * Pauses playback of the current resource, if any.
+   *
+   * @param interpolateSilence - If true, the player will play 5 packets of silence after pausing to prevent audio glitches
+   * @returns `true` if the player was successfully paused, otherwise `false`
+   */
   pause(interpolateSilence = true) {
-    if (this.state.status !== 'playing' /* Playing */) return false;
+    if (this.state.status !== AudioPlayerStatus.Playing) return false;
     this.state = {
       ...this.state,
-      status: 'paused' /* Paused */,
+      status: AudioPlayerStatus.Paused,
       silencePacketsRemaining: interpolateSilence ? 5 : 0,
     };
     return true;
   }
+  /**
+   * Unpauses playback of the current resource, if any.
+   *
+   * @returns `true` if the player was successfully unpaused, otherwise `false`
+   */
   unpause() {
-    if (this.state.status !== 'paused' /* Paused */) return false;
+    if (this.state.status !== AudioPlayerStatus.Paused) return false;
     this.state = {
       ...this.state,
-      status: 'playing' /* Playing */,
+      status: AudioPlayerStatus.Playing,
       missedFrames: 0,
     };
     return true;
   }
+  /**
+   * Stops playback of the current resource and destroys the resource. The player will either transition to the Idle state,
+   * or remain in its current state until the silence padding frames of the resource have been played.
+   *
+   * @param force - If true, will force the player to enter the Idle state even if the resource has silence padding frames
+   * @returns `true` if the player will come to a stop, otherwise `false`
+   */
   stop(force = false) {
-    if (this.state.status === 'idle' /* Idle */) return false;
+    if (this.state.status === AudioPlayerStatus.Idle) return false;
     if (force || this.state.resource.silencePaddingFrames === 0) {
       this.state = {
-        status: 'idle' /* Idle */,
+        status: AudioPlayerStatus.Idle,
       };
     } else if (this.state.resource.silenceRemaining === -1) {
       this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames;
     }
     return true;
   }
+  /**
+   * Checks whether the underlying resource (if any) is playable (readable)
+   *
+   * @returns `true` if the resource is playable, otherwise `false`
+   */
   checkPlayable() {
     const state = this._state;
-    if (state.status === 'idle' /* Idle */ || state.status === 'buffering' /* Buffering */) return false;
+    if (state.status === AudioPlayerStatus.Idle || state.status === AudioPlayerStatus.Buffering) return false;
     if (!state.resource.readable) {
       this.state = {
-        status: 'idle' /* Idle */,
+        status: AudioPlayerStatus.Idle,
       };
       return false;
     }
     return true;
   }
+  /**
+   * Called roughly every 20ms by the global audio player timer. Dispatches any audio packets that are buffered
+   * by the active connections of this audio player.
+   */
+  // @ts-ignore
   _stepDispatch() {
     const state = this._state;
-    if (state.status === 'idle' /* Idle */ || state.status === 'buffering' /* Buffering */) return;
+    if (state.status === AudioPlayerStatus.Idle || state.status === AudioPlayerStatus.Buffering) return;
     for (const connection of this.playable) {
       connection.dispatchAudio();
     }
   }
+  /**
+   * Called roughly every 20ms by the global audio player timer. Attempts to read an audio packet from the
+   * underlying resource of the stream, and then has all the active connections of the audio player prepare it
+   * (encrypt it, append header data) so that it is ready to play at the start of the next cycle.
+   */
+  // @ts-ignore
   _stepPrepare() {
     const state = this._state;
-    if (state.status === 'idle' /* Idle */ || state.status === 'buffering' /* Buffering */) return;
+    if (state.status === AudioPlayerStatus.Idle || state.status === AudioPlayerStatus.Buffering) return;
     const playable = this.playable;
-    if (state.status === 'autopaused' /* AutoPaused */ && playable.length > 0) {
+    if (state.status === AudioPlayerStatus.AutoPaused && playable.length > 0) {
       this.state = {
         ...state,
-        status: 'playing' /* Playing */,
+        status: AudioPlayerStatus.Playing,
         missedFrames: 0,
       };
     }
-    if (state.status === 'paused' /* Paused */ || state.status === 'autopaused' /* AutoPaused */) {
+    if (state.status === AudioPlayerStatus.Paused || state.status === AudioPlayerStatus.AutoPaused) {
       if (state.silencePacketsRemaining > 0) {
         state.silencePacketsRemaining--;
         this._preparePacket(SILENCE_FRAME, playable, state);
@@ -983,19 +1239,19 @@ to ${stringifyState2(newState)}`);
       return;
     }
     if (playable.length === 0) {
-      if (this.behaviors.noSubscriber === 'pause' /* Pause */) {
+      if (this.behaviors.noSubscriber === NoSubscriberBehavior.Pause) {
         this.state = {
           ...state,
-          status: 'autopaused' /* AutoPaused */,
+          status: AudioPlayerStatus.AutoPaused,
           silencePacketsRemaining: 5,
         };
         return;
-      } else if (this.behaviors.noSubscriber === 'stop' /* Stop */) {
+      } else if (this.behaviors.noSubscriber === NoSubscriberBehavior.Stop) {
         this.stop(true);
       }
     }
     const packet = state.resource.read();
-    if (state.status === 'playing' /* Playing */) {
+    if (state.status === AudioPlayerStatus.Playing) {
       if (packet) {
         this._preparePacket(packet, playable, state);
         state.missedFrames = 0;
@@ -1008,11 +1264,22 @@ to ${stringifyState2(newState)}`);
       }
     }
   }
+  /**
+   * Signals to all the subscribed connections that they should send a packet to Discord indicating
+   * they are no longer speaking. Called once playback of a resource ends.
+   */
   _signalStopSpeaking() {
     for (const { connection } of this.subscribers) {
       connection.setSpeaking(false);
     }
   }
+  /**
+   * Instructs the given connections to each prepare this packet to be played at the start of the
+   * next cycle.
+   *
+   * @param packet - The Opus packet to be prepared by each receiver
+   * @param receivers - The connections that should play this packet
+   */
   _preparePacket(packet, receivers, state) {
     state.playbackDuration += 20;
     for (const connection of receivers) {
@@ -1027,23 +1294,42 @@ function createAudioPlayer(options) {
 __name(createAudioPlayer, 'createAudioPlayer');
 
 // src/receive/AudioReceiveStream.ts
-var EndBehaviorType = /* @__PURE__ */ (EndBehaviorType2 => {
-  EndBehaviorType2[(EndBehaviorType2['Manual'] = 0)] = 'Manual';
-  EndBehaviorType2[(EndBehaviorType2['AfterSilence'] = 1)] = 'AfterSilence';
-  EndBehaviorType2[(EndBehaviorType2['AfterInactivity'] = 2)] = 'AfterInactivity';
-  return EndBehaviorType2;
-})(EndBehaviorType || {});
+var EndBehaviorType;
+(function (EndBehaviorType2) {
+  EndBehaviorType2[
+    (EndBehaviorType2[
+      /**
+       * The stream will only end when manually destroyed.
+       */
+      'Manual'
+    ] = 0)
+  ] = 'Manual';
+  EndBehaviorType2[
+    (EndBehaviorType2[
+      /**
+       * The stream will end after a given time period of silence/no audio packets.
+       */
+      'AfterSilence'
+    ] = 1)
+  ] = 'AfterSilence';
+  EndBehaviorType2[
+    (EndBehaviorType2[
+      /**
+       * The stream will end after a given time period of no audio packets.
+       */
+      'AfterInactivity'
+    ] = 2)
+  ] = 'AfterInactivity';
+})(EndBehaviorType || (EndBehaviorType = {}));
 function createDefaultAudioReceiveStreamOptions() {
   return {
     end: {
-      behavior: 0 /* Manual */,
+      behavior: EndBehaviorType.Manual,
     },
   };
 }
 __name(createDefaultAudioReceiveStreamOptions, 'createDefaultAudioReceiveStreamOptions');
 var AudioReceiveStream = class extends import_node_stream.Readable {
-  end;
-  endTimeout;
   constructor({ end, ...options }) {
     super({
       ...options,
@@ -1054,8 +1340,8 @@ var AudioReceiveStream = class extends import_node_stream.Readable {
   push(buffer) {
     if (
       buffer &&
-      (this.end.behavior === 2 /* AfterInactivity */ ||
-        (this.end.behavior === 1 /* AfterSilence */ &&
+      (this.end.behavior === EndBehaviorType.AfterInactivity ||
+        (this.end.behavior === EndBehaviorType.AfterSilence &&
           (buffer.compare(SILENCE_FRAME) !== 0 || typeof this.endTimeout === 'undefined')))
     ) {
       this.renewEndTimeout(this.end);
@@ -1075,11 +1361,15 @@ __name(AudioReceiveStream, 'AudioReceiveStream');
 // src/receive/SSRCMap.ts
 var import_node_events5 = require('events');
 var SSRCMap = class extends import_node_events5.EventEmitter {
-  map;
   constructor() {
     super();
     this.map = /* @__PURE__ */ new Map();
   }
+  /**
+   * Updates the map with new user data
+   *
+   * @param data - The data to update with
+   */
   update(data) {
     const existing = this.map.get(data.audioSSRC);
     const newValue = {
@@ -1090,6 +1380,11 @@ var SSRCMap = class extends import_node_events5.EventEmitter {
     if (!existing) this.emit('create', newValue);
     this.emit('update', existing, newValue);
   }
+  /**
+   * Gets the stored voice data of a user.
+   *
+   * @param target - The target, either their user id or audio SSRC
+   */
   get(target) {
     if (typeof target === 'number') {
       return this.map.get(target);
@@ -1101,6 +1396,12 @@ var SSRCMap = class extends import_node_events5.EventEmitter {
     }
     return void 0;
   }
+  /**
+   * Deletes the stored voice data about a user.
+   *
+   * @param target - The target of the delete operation, either their audio SSRC or user id
+   * @returns The data that was deleted, if any
+   */
   delete(target) {
     if (typeof target === 'number') {
       const existing = this.map.get(target);
@@ -1125,8 +1426,6 @@ __name(SSRCMap, 'SSRCMap');
 // src/receive/SpeakingMap.ts
 var import_node_events6 = require('events');
 var _SpeakingMap = class extends import_node_events6.EventEmitter {
-  users;
-  speakingTimeouts;
   constructor() {
     super();
     this.users = /* @__PURE__ */ new Map();
@@ -1155,15 +1454,13 @@ var _SpeakingMap = class extends import_node_events6.EventEmitter {
 };
 var SpeakingMap = _SpeakingMap;
 __name(SpeakingMap, 'SpeakingMap');
+/**
+ * The delay after a packet is received from a user until they're marked as not speaking anymore.
+ */
 __publicField(SpeakingMap, 'DELAY', 100);
 
 // src/receive/VoiceReceiver.ts
 var VoiceReceiver = class {
-  voiceConnection;
-  ssrcMap;
-  subscriptions;
-  connectionData;
-  speaking;
   constructor(voiceConnection) {
     this.voiceConnection = voiceConnection;
     this.ssrcMap = new SSRCMap();
@@ -1173,6 +1470,12 @@ var VoiceReceiver = class {
     this.onWsPacket = this.onWsPacket.bind(this);
     this.onUdpMessage = this.onUdpMessage.bind(this);
   }
+  /**
+   * Called when a packet is received on the attached connection's WebSocket.
+   *
+   * @param packet - The received packet
+   * @internal
+   */
   onWsPacket(packet) {
     if (packet.op === import_v43.VoiceOpcodes.ClientDisconnect && typeof packet.d?.user_id === 'string') {
       this.ssrcMap.delete(packet.d.user_id);
@@ -1181,7 +1484,10 @@ var VoiceReceiver = class {
       typeof packet.d?.user_id === 'string' &&
       typeof packet.d?.ssrc === 'number'
     ) {
-      this.ssrcMap.update({ userId: packet.d.user_id, audioSSRC: packet.d.ssrc });
+      this.ssrcMap.update({
+        userId: packet.d.user_id,
+        audioSSRC: packet.d.ssrc,
+      });
     } else if (
       packet.op === import_v43.VoiceOpcodes.ClientConnect &&
       typeof packet.d?.user_id === 'string' &&
@@ -1209,6 +1515,15 @@ var VoiceReceiver = class {
     if (!decrypted) return;
     return import_node_buffer5.Buffer.from(decrypted);
   }
+  /**
+   * Parses an audio packet, decrypting it to yield an Opus packet.
+   *
+   * @param buffer - The buffer to parse
+   * @param mode - The encryption mode
+   * @param nonce - The nonce buffer used by the connection for encryption
+   * @param secretKey - The secret key used by the connection for encryption
+   * @returns The parsed Opus packet
+   */
   parsePacket(buffer, mode, nonce2, secretKey) {
     let packet = this.decrypt(buffer, mode, nonce2, secretKey);
     if (!packet) return;
@@ -1218,6 +1533,12 @@ var VoiceReceiver = class {
     }
     return packet;
   }
+  /**
+   * Called when the UDP socket of the attached connection receives a message.
+   *
+   * @param msg - The received message
+   * @internal
+   */
   onUdpMessage(msg) {
     if (msg.length <= 8) return;
     const ssrc = msg.readUInt32BE(8);
@@ -1240,6 +1561,12 @@ var VoiceReceiver = class {
       }
     }
   }
+  /**
+   * Creates a subscription for the given user id.
+   *
+   * @param target - The id of the user to subscribe to
+   * @returns A readable stream of Opus packets received from the target
+   */
   subscribe(userId, options) {
     const existing = this.subscriptions.get(userId);
     if (existing) return existing;
@@ -1255,28 +1582,81 @@ var VoiceReceiver = class {
 __name(VoiceReceiver, 'VoiceReceiver');
 
 // src/VoiceConnection.ts
-var VoiceConnectionStatus = /* @__PURE__ */ (VoiceConnectionStatus2 => {
-  VoiceConnectionStatus2['Connecting'] = 'connecting';
-  VoiceConnectionStatus2['Destroyed'] = 'destroyed';
-  VoiceConnectionStatus2['Disconnected'] = 'disconnected';
-  VoiceConnectionStatus2['Ready'] = 'ready';
-  VoiceConnectionStatus2['Signalling'] = 'signalling';
-  return VoiceConnectionStatus2;
-})(VoiceConnectionStatus || {});
-var VoiceConnectionDisconnectReason = /* @__PURE__ */ (VoiceConnectionDisconnectReason2 => {
-  VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2['WebSocketClose'] = 0)] = 'WebSocketClose';
-  VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2['AdapterUnavailable'] = 1)] = 'AdapterUnavailable';
-  VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2['EndpointRemoved'] = 2)] = 'EndpointRemoved';
-  VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2['Manual'] = 3)] = 'Manual';
-  return VoiceConnectionDisconnectReason2;
-})(VoiceConnectionDisconnectReason || {});
+var VoiceConnectionStatus;
+(function (VoiceConnectionStatus2) {
+  VoiceConnectionStatus2[
+    /**
+     * The `VOICE_SERVER_UPDATE` and `VOICE_STATE_UPDATE` packets have been received, now attempting to establish a voice connection.
+     */
+    'Connecting'
+  ] = 'connecting';
+  VoiceConnectionStatus2[
+    /**
+     * The voice connection has been destroyed and untracked, it cannot be reused.
+     */
+    'Destroyed'
+  ] = 'destroyed';
+  VoiceConnectionStatus2[
+    /**
+     * The voice connection has either been severed or not established.
+     */
+    'Disconnected'
+  ] = 'disconnected';
+  VoiceConnectionStatus2[
+    /**
+     * A voice connection has been established, and is ready to be used.
+     */
+    'Ready'
+  ] = 'ready';
+  VoiceConnectionStatus2[
+    /**
+     * Sending a packet to the main Discord gateway to indicate we want to change our voice state.
+     */
+    'Signalling'
+  ] = 'signalling';
+})(VoiceConnectionStatus || (VoiceConnectionStatus = {}));
+var VoiceConnectionDisconnectReason;
+(function (VoiceConnectionDisconnectReason2) {
+  VoiceConnectionDisconnectReason2[
+    (VoiceConnectionDisconnectReason2[
+      /**
+       * When the WebSocket connection has been closed.
+       */
+      'WebSocketClose'
+    ] = 0)
+  ] = 'WebSocketClose';
+  VoiceConnectionDisconnectReason2[
+    (VoiceConnectionDisconnectReason2[
+      /**
+       * When the adapter was unable to send a message requested by the VoiceConnection.
+       */
+      'AdapterUnavailable'
+    ] = 1)
+  ] = 'AdapterUnavailable';
+  VoiceConnectionDisconnectReason2[
+    (VoiceConnectionDisconnectReason2[
+      /**
+       * When a VOICE_SERVER_UPDATE packet is received with a null endpoint, causing the connection to be severed.
+       */
+      'EndpointRemoved'
+    ] = 2)
+  ] = 'EndpointRemoved';
+  VoiceConnectionDisconnectReason2[
+    (VoiceConnectionDisconnectReason2[
+      /**
+       * When a manual disconnect was requested.
+       */
+      'Manual'
+    ] = 3)
+  ] = 'Manual';
+})(VoiceConnectionDisconnectReason || (VoiceConnectionDisconnectReason = {}));
 var VoiceConnection = class extends import_node_events7.EventEmitter {
-  rejoinAttempts;
-  _state;
-  joinConfig;
-  packets;
-  receiver;
-  debug;
+  /**
+   * Creates a new voice connection.
+   *
+   * @param joinConfig - The data required to establish the voice connection
+   * @param options - The options used to create this voice connection
+   */
   constructor(joinConfig, options) {
     super();
     this.debug = options.debug ? message => this.emit('debug', message) : null;
@@ -1291,16 +1671,25 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
       onVoiceStateUpdate: data => this.addStatePacket(data),
       destroy: () => this.destroy(false),
     });
-    this._state = { status: 'signalling' /* Signalling */, adapter };
+    this._state = {
+      status: VoiceConnectionStatus.Signalling,
+      adapter,
+    };
     this.packets = {
       server: void 0,
       state: void 0,
     };
     this.joinConfig = joinConfig;
   }
+  /**
+   * The current state of the voice connection.
+   */
   get state() {
     return this._state;
   }
+  /**
+   * Updates the state of the voice connection, performing clean-up operations where necessary.
+   */
   set state(newState) {
     const oldState = this._state;
     const oldNetworking = Reflect.get(oldState, 'networking');
@@ -1318,14 +1707,14 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
       }
       if (newNetworking) this.updateReceiveBindings(newNetworking.state, oldNetworking?.state);
     }
-    if (newState.status === 'ready' /* Ready */) {
+    if (newState.status === VoiceConnectionStatus.Ready) {
       this.rejoinAttempts = 0;
-    } else if (newState.status === 'destroyed' /* Destroyed */) {
+    } else if (newState.status === VoiceConnectionStatus.Destroyed) {
       for (const stream of this.receiver.subscriptions.values()) {
         if (!stream.destroyed) stream.destroy();
       }
     }
-    if (oldState.status !== 'destroyed' /* Destroyed */ && newState.status === 'destroyed' /* Destroyed */) {
+    if (oldState.status !== VoiceConnectionStatus.Destroyed && newState.status === VoiceConnectionStatus.Destroyed) {
       oldState.adapter.destroy();
     }
     this._state = newState;
@@ -1337,24 +1726,43 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
       this.emit(newState.status, oldState, newState);
     }
   }
+  /**
+   * Registers a `VOICE_SERVER_UPDATE` packet to the voice connection. This will cause it to reconnect using the
+   * new data provided in the packet.
+   *
+   * @param packet - The received `VOICE_SERVER_UPDATE` packet
+   */
   addServerPacket(packet) {
     this.packets.server = packet;
     if (packet.endpoint) {
       this.configureNetworking();
-    } else if (this.state.status !== 'destroyed' /* Destroyed */) {
+    } else if (this.state.status !== VoiceConnectionStatus.Destroyed) {
       this.state = {
         ...this.state,
-        status: 'disconnected' /* Disconnected */,
-        reason: 2 /* EndpointRemoved */,
+        status: VoiceConnectionStatus.Disconnected,
+        reason: VoiceConnectionDisconnectReason.EndpointRemoved,
       };
     }
   }
+  /**
+   * Registers a `VOICE_STATE_UPDATE` packet to the voice connection. Most importantly, it stores the id of the
+   * channel that the client is connected to.
+   *
+   * @param packet - The received `VOICE_STATE_UPDATE` packet
+   */
   addStatePacket(packet) {
     this.packets.state = packet;
     if (typeof packet.self_deaf !== 'undefined') this.joinConfig.selfDeaf = packet.self_deaf;
     if (typeof packet.self_mute !== 'undefined') this.joinConfig.selfMute = packet.self_mute;
     if (packet.channel_id) this.joinConfig.channelId = packet.channel_id;
   }
+  /**
+   * Called when the networking state changes, and the new ws/udp packet/message handlers need to be rebound
+   * to the new instances.
+   *
+   * @param newState - The new networking state
+   * @param oldState - The old networking state, if there is one
+   */
   updateReceiveBindings(newState, oldState) {
     const oldWs = Reflect.get(oldState ?? {}, 'ws');
     const newWs = Reflect.get(newState, 'ws');
@@ -1370,9 +1778,20 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
     }
     this.receiver.connectionData = Reflect.get(newState, 'connectionData') ?? {};
   }
+  /**
+   * Attempts to configure a networking instance for this voice connection using the received packets.
+   * Both packets are required, and any existing networking instance will be destroyed.
+   *
+   * @remarks
+   * This is called when the voice server of the connection changes, e.g. if the bot is moved into a
+   * different channel in the same guild but has a different voice server. In this instance, the connection
+   * needs to be re-established to the new voice server.
+   *
+   * The connection will transition to the Connecting state when this is called.
+   */
   configureNetworking() {
     const { server, state } = this.packets;
-    if (!server || !state || this.state.status === 'destroyed' /* Destroyed */ || !server.endpoint) return;
+    if (!server || !state || this.state.status === VoiceConnectionStatus.Destroyed || !server.endpoint) return;
     const networking = new Networking(
       {
         endpoint: server.endpoint,
@@ -1389,88 +1808,149 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
     networking.on('debug', this.onNetworkingDebug);
     this.state = {
       ...this.state,
-      status: 'connecting' /* Connecting */,
+      status: VoiceConnectionStatus.Connecting,
       networking,
     };
   }
+  /**
+   * Called when the networking instance for this connection closes. If the close code is 4014 (do not reconnect),
+   * the voice connection will transition to the Disconnected state which will store the close code. You can
+   * decide whether or not to reconnect when this occurs by listening for the state change and calling reconnect().
+   *
+   * @remarks
+   * If the close code was anything other than 4014, it is likely that the closing was not intended, and so the
+   * VoiceConnection will signal to Discord that it would like to rejoin the channel. This automatically attempts
+   * to re-establish the connection. This would be seen as a transition from the Ready state to the Signalling state.
+   * @param code - The close code
+   */
   onNetworkingClose(code) {
-    if (this.state.status === 'destroyed' /* Destroyed */) return;
+    if (this.state.status === VoiceConnectionStatus.Destroyed) return;
     if (code === 4014) {
       this.state = {
         ...this.state,
-        status: 'disconnected' /* Disconnected */,
-        reason: 0 /* WebSocketClose */,
+        status: VoiceConnectionStatus.Disconnected,
+        reason: VoiceConnectionDisconnectReason.WebSocketClose,
         closeCode: code,
       };
     } else {
       this.state = {
         ...this.state,
-        status: 'signalling' /* Signalling */,
+        status: VoiceConnectionStatus.Signalling,
       };
       this.rejoinAttempts++;
       if (!this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig))) {
         this.state = {
           ...this.state,
-          status: 'disconnected' /* Disconnected */,
-          reason: 1 /* AdapterUnavailable */,
+          status: VoiceConnectionStatus.Disconnected,
+          reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
         };
       }
     }
   }
+  /**
+   * Called when the state of the networking instance changes. This is used to derive the state of the voice connection.
+   *
+   * @param oldState - The previous state
+   * @param newState - The new state
+   */
   onNetworkingStateChange(oldState, newState) {
     this.updateReceiveBindings(newState, oldState);
     if (oldState.code === newState.code) return;
-    if (this.state.status !== 'connecting' /* Connecting */ && this.state.status !== 'ready' /* Ready */) return;
-    if (newState.code === 4 /* Ready */) {
+    if (this.state.status !== VoiceConnectionStatus.Connecting && this.state.status !== VoiceConnectionStatus.Ready)
+      return;
+    if (newState.code === NetworkingStatusCode.Ready) {
       this.state = {
         ...this.state,
-        status: 'ready' /* Ready */,
+        status: VoiceConnectionStatus.Ready,
       };
-    } else if (newState.code !== 6 /* Closed */) {
+    } else if (newState.code !== NetworkingStatusCode.Closed) {
       this.state = {
         ...this.state,
-        status: 'connecting' /* Connecting */,
+        status: VoiceConnectionStatus.Connecting,
       };
     }
   }
+  /**
+   * Propagates errors from the underlying network instance.
+   *
+   * @param error - The error to propagate
+   */
   onNetworkingError(error) {
     this.emit('error', error);
   }
+  /**
+   * Propagates debug messages from the underlying network instance.
+   *
+   * @param message - The debug message to propagate
+   */
   onNetworkingDebug(message) {
     this.debug?.(`[NW] ${message}`);
   }
+  /**
+   * Prepares an audio packet for dispatch.
+   *
+   * @param buffer - The Opus packet to prepare
+   */
   prepareAudioPacket(buffer) {
     const state = this.state;
-    if (state.status !== 'ready' /* Ready */) return;
+    if (state.status !== VoiceConnectionStatus.Ready) return;
     return state.networking.prepareAudioPacket(buffer);
   }
+  /**
+   * Dispatches the previously prepared audio packet (if any)
+   */
   dispatchAudio() {
     const state = this.state;
-    if (state.status !== 'ready' /* Ready */) return;
+    if (state.status !== VoiceConnectionStatus.Ready) return;
     return state.networking.dispatchAudio();
   }
+  /**
+   * Prepares an audio packet and dispatches it immediately.
+   *
+   * @param buffer - The Opus packet to play
+   */
   playOpusPacket(buffer) {
     const state = this.state;
-    if (state.status !== 'ready' /* Ready */) return;
+    if (state.status !== VoiceConnectionStatus.Ready) return;
     state.networking.prepareAudioPacket(buffer);
     return state.networking.dispatchAudio();
   }
+  /**
+   * Destroys the VoiceConnection, preventing it from connecting to voice again.
+   * This method should be called when you no longer require the VoiceConnection to
+   * prevent memory leaks.
+   *
+   * @param adapterAvailable - Whether the adapter can be used
+   */
   destroy(adapterAvailable = true) {
-    if (this.state.status === 'destroyed' /* Destroyed */) {
+    if (this.state.status === VoiceConnectionStatus.Destroyed) {
       throw new Error('Cannot destroy VoiceConnection - it has already been destroyed');
     }
     if (getVoiceConnection(this.joinConfig.guildId, this.joinConfig.group) === this) {
       untrackVoiceConnection(this);
     }
     if (adapterAvailable) {
-      this.state.adapter.sendPayload(createJoinVoiceChannelPayload({ ...this.joinConfig, channelId: null }));
+      this.state.adapter.sendPayload(
+        createJoinVoiceChannelPayload({
+          ...this.joinConfig,
+          channelId: null,
+        }),
+      );
     }
     this.state = {
-      status: 'destroyed' /* Destroyed */,
+      status: VoiceConnectionStatus.Destroyed,
     };
   }
+  /**
+   * Disconnects the VoiceConnection, allowing the possibility of rejoining later on.
+   *
+   * @returns `true` if the connection was successfully disconnected
+   */
   disconnect() {
-    if (this.state.status === 'destroyed' /* Destroyed */ || this.state.status === 'signalling' /* Signalling */) {
+    if (
+      this.state.status === VoiceConnectionStatus.Destroyed ||
+      this.state.status === VoiceConnectionStatus.Signalling
+    ) {
       return false;
     }
     this.joinConfig.channelId = null;
@@ -1478,30 +1958,40 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
       this.state = {
         adapter: this.state.adapter,
         subscription: this.state.subscription,
-        status: 'disconnected' /* Disconnected */,
-        reason: 1 /* AdapterUnavailable */,
+        status: VoiceConnectionStatus.Disconnected,
+        reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
       };
       return false;
     }
     this.state = {
       adapter: this.state.adapter,
-      reason: 3 /* Manual */,
-      status: 'disconnected' /* Disconnected */,
+      reason: VoiceConnectionDisconnectReason.Manual,
+      status: VoiceConnectionStatus.Disconnected,
     };
     return true;
   }
+  /**
+   * Attempts to rejoin (better explanation soon:tm:)
+   *
+   * @remarks
+   * Calling this method successfully will automatically increment the `rejoinAttempts` counter,
+   * which you can use to inform whether or not you'd like to keep attempting to reconnect your
+   * voice connection.
+   *
+   * A state transition from Disconnected to Signalling will be observed when this is called.
+   */
   rejoin(joinConfig) {
-    if (this.state.status === 'destroyed' /* Destroyed */) {
+    if (this.state.status === VoiceConnectionStatus.Destroyed) {
       return false;
     }
-    const notReady = this.state.status !== 'ready'; /* Ready */
+    const notReady = this.state.status !== VoiceConnectionStatus.Ready;
     if (notReady) this.rejoinAttempts++;
     Object.assign(this.joinConfig, joinConfig);
     if (this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig))) {
       if (notReady) {
         this.state = {
           ...this.state,
-          status: 'signalling' /* Signalling */,
+          status: VoiceConnectionStatus.Signalling,
         };
       }
       return true;
@@ -1509,17 +1999,29 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
     this.state = {
       adapter: this.state.adapter,
       subscription: this.state.subscription,
-      status: 'disconnected' /* Disconnected */,
-      reason: 1 /* AdapterUnavailable */,
+      status: VoiceConnectionStatus.Disconnected,
+      reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
     };
     return false;
   }
+  /**
+   * Updates the speaking status of the voice connection. This is used when audio players are done playing audio,
+   * and need to signal that the connection is no longer playing audio.
+   *
+   * @param enabled - Whether or not to show as speaking
+   */
   setSpeaking(enabled) {
-    if (this.state.status !== 'ready' /* Ready */) return false;
+    if (this.state.status !== VoiceConnectionStatus.Ready) return false;
     return this.state.networking.setSpeaking(enabled);
   }
+  /**
+   * Subscribes to an audio player, allowing the player to play audio on this voice connection.
+   *
+   * @param player - The audio player to subscribe to
+   * @returns The created subscription
+   */
   subscribe(player) {
-    if (this.state.status === 'destroyed' /* Destroyed */) return;
+    if (this.state.status === VoiceConnectionStatus.Destroyed) return;
     const subscription = player['subscribe'](this);
     this.state = {
       ...this.state,
@@ -1527,8 +2029,19 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
     };
     return subscription;
   }
+  /**
+   * The latest ping (in milliseconds) for the WebSocket connection and audio playback for this voice
+   * connection, if this data is available.
+   *
+   * @remarks
+   * For this data to be available, the VoiceConnection must be in the Ready state, and its underlying
+   * WebSocket connection and UDP socket must have had at least one ping-pong exchange.
+   */
   get ping() {
-    if (this.state.status === 'ready' /* Ready */ && this.state.networking.state.code === 4 /* Ready */) {
+    if (
+      this.state.status === VoiceConnectionStatus.Ready &&
+      this.state.networking.state.code === NetworkingStatusCode.Ready
+    ) {
       return {
         ws: this.state.networking.state.ws.ping,
         udp: this.state.networking.state.udp.ping,
@@ -1539,8 +2052,13 @@ var VoiceConnection = class extends import_node_events7.EventEmitter {
       udp: void 0,
     };
   }
+  /**
+   * Called when a subscription of this voice connection to an audio player is removed.
+   *
+   * @param subscription - The removed subscription
+   */
   onSubscriptionRemoved(subscription) {
-    if (this.state.status !== 'destroyed' /* Destroyed */ && this.state.subscription === subscription) {
+    if (this.state.status !== VoiceConnectionStatus.Destroyed && this.state.subscription === subscription) {
       this.state = {
         ...this.state,
         subscription: void 0,
@@ -1552,8 +2070,8 @@ __name(VoiceConnection, 'VoiceConnection');
 function createVoiceConnection(joinConfig, options) {
   const payload = createJoinVoiceChannelPayload(joinConfig);
   const existing = getVoiceConnection(joinConfig.guildId, joinConfig.group);
-  if (existing && existing.state.status !== 'destroyed' /* Destroyed */) {
-    if (existing.state.status === 'disconnected' /* Disconnected */) {
+  if (existing && existing.state.status !== VoiceConnectionStatus.Destroyed) {
+    if (existing.state.status === VoiceConnectionStatus.Disconnected) {
       existing.rejoin({
         channelId: joinConfig.channelId,
         selfDeaf: joinConfig.selfDeaf,
@@ -1562,8 +2080,8 @@ function createVoiceConnection(joinConfig, options) {
     } else if (!existing.state.adapter.sendPayload(payload)) {
       existing.state = {
         ...existing.state,
-        status: 'disconnected' /* Disconnected */,
-        reason: 1 /* AdapterUnavailable */,
+        status: VoiceConnectionStatus.Disconnected,
+        reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
       };
     }
     return existing;
@@ -1571,13 +2089,13 @@ function createVoiceConnection(joinConfig, options) {
   const voiceConnection = new VoiceConnection(joinConfig, options);
   trackVoiceConnection(voiceConnection);
   if (
-    voiceConnection.state.status !== 'destroyed' /* Destroyed */ &&
+    voiceConnection.state.status !== VoiceConnectionStatus.Destroyed &&
     !voiceConnection.state.adapter.sendPayload(payload)
   ) {
     voiceConnection.state = {
       ...voiceConnection.state,
-      status: 'disconnected' /* Disconnected */,
-      reason: 1 /* AdapterUnavailable */,
+      status: VoiceConnectionStatus.Disconnected,
+      reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
     };
   }
   return voiceConnection;
@@ -1620,22 +2138,42 @@ var FFMPEG_OPUS_ARGUMENTS = [
   '-ac',
   '2',
 ];
-var StreamType = /* @__PURE__ */ (StreamType2 => {
+var StreamType;
+(function (StreamType2) {
   StreamType2['Arbitrary'] = 'arbitrary';
   StreamType2['OggOpus'] = 'ogg/opus';
   StreamType2['Opus'] = 'opus';
   StreamType2['Raw'] = 'raw';
   StreamType2['WebmOpus'] = 'webm/opus';
-  return StreamType2;
-})(StreamType || {});
+})(StreamType || (StreamType = {}));
+var TransformerType;
+(function (TransformerType2) {
+  TransformerType2['FFmpegOgg'] = 'ffmpeg ogg';
+  TransformerType2['FFmpegPCM'] = 'ffmpeg pcm';
+  TransformerType2['InlineVolume'] = 'volume transformer';
+  TransformerType2['OggOpusDemuxer'] = 'ogg/opus demuxer';
+  TransformerType2['OpusDecoder'] = 'opus decoder';
+  TransformerType2['OpusEncoder'] = 'opus encoder';
+  TransformerType2['WebmOpusDemuxer'] = 'webm/opus demuxer';
+})(TransformerType || (TransformerType = {}));
 var Node = class {
+  /**
+   * The outbound edges from this node.
+   */
   edges = [];
-  type;
   constructor(type) {
     this.type = type;
   }
+  /**
+   * Creates an outbound edge from this node.
+   *
+   * @param edge - The edge to create
+   */
   addEdge(edge) {
-    this.edges.push({ ...edge, from: this });
+    this.edges.push({
+      ...edge,
+      from: this,
+    });
   }
 };
 __name(Node, 'Node');
@@ -1649,47 +2187,60 @@ function getNode(type) {
   return node;
 }
 __name(getNode, 'getNode');
-getNode('raw' /* Raw */).addEdge({
-  type: 'opus encoder' /* OpusEncoder */,
-  to: getNode('opus' /* Opus */),
+getNode(StreamType.Raw).addEdge({
+  type: TransformerType.OpusEncoder,
+  to: getNode(StreamType.Opus),
   cost: 1.5,
-  transformer: () => new import_prism_media.default.opus.Encoder({ rate: 48e3, channels: 2, frameSize: 960 }),
+  transformer: () =>
+    new import_prism_media.default.opus.Encoder({
+      rate: 48e3,
+      channels: 2,
+      frameSize: 960,
+    }),
 });
-getNode('opus' /* Opus */).addEdge({
-  type: 'opus decoder' /* OpusDecoder */,
-  to: getNode('raw' /* Raw */),
+getNode(StreamType.Opus).addEdge({
+  type: TransformerType.OpusDecoder,
+  to: getNode(StreamType.Raw),
   cost: 1.5,
-  transformer: () => new import_prism_media.default.opus.Decoder({ rate: 48e3, channels: 2, frameSize: 960 }),
+  transformer: () =>
+    new import_prism_media.default.opus.Decoder({
+      rate: 48e3,
+      channels: 2,
+      frameSize: 960,
+    }),
 });
-getNode('ogg/opus' /* OggOpus */).addEdge({
-  type: 'ogg/opus demuxer' /* OggOpusDemuxer */,
-  to: getNode('opus' /* Opus */),
+getNode(StreamType.OggOpus).addEdge({
+  type: TransformerType.OggOpusDemuxer,
+  to: getNode(StreamType.Opus),
   cost: 1,
   transformer: () => new import_prism_media.default.opus.OggDemuxer(),
 });
-getNode('webm/opus' /* WebmOpus */).addEdge({
-  type: 'webm/opus demuxer' /* WebmOpusDemuxer */,
-  to: getNode('opus' /* Opus */),
+getNode(StreamType.WebmOpus).addEdge({
+  type: TransformerType.WebmOpusDemuxer,
+  to: getNode(StreamType.Opus),
   cost: 1,
   transformer: () => new import_prism_media.default.opus.WebmDemuxer(),
 });
 var FFMPEG_PCM_EDGE = {
-  type: 'ffmpeg pcm' /* FFmpegPCM */,
-  to: getNode('raw' /* Raw */),
+  type: TransformerType.FFmpegPCM,
+  to: getNode(StreamType.Raw),
   cost: 2,
   transformer: input =>
     new import_prism_media.default.FFmpeg({
       args: typeof input === 'string' ? ['-i', input, ...FFMPEG_PCM_ARGUMENTS] : FFMPEG_PCM_ARGUMENTS,
     }),
 };
-getNode('arbitrary' /* Arbitrary */).addEdge(FFMPEG_PCM_EDGE);
-getNode('ogg/opus' /* OggOpus */).addEdge(FFMPEG_PCM_EDGE);
-getNode('webm/opus' /* WebmOpus */).addEdge(FFMPEG_PCM_EDGE);
-getNode('raw' /* Raw */).addEdge({
-  type: 'volume transformer' /* InlineVolume */,
-  to: getNode('raw' /* Raw */),
+getNode(StreamType.Arbitrary).addEdge(FFMPEG_PCM_EDGE);
+getNode(StreamType.OggOpus).addEdge(FFMPEG_PCM_EDGE);
+getNode(StreamType.WebmOpus).addEdge(FFMPEG_PCM_EDGE);
+getNode(StreamType.Raw).addEdge({
+  type: TransformerType.InlineVolume,
+  to: getNode(StreamType.Raw),
   cost: 0.5,
-  transformer: () => new import_prism_media.default.VolumeTransformer({ type: 's16le' }),
+  transformer: () =>
+    new import_prism_media.default.VolumeTransformer({
+      type: 's16le',
+    }),
 });
 function canEnableFFmpegOptimizations() {
   try {
@@ -1700,23 +2251,27 @@ function canEnableFFmpegOptimizations() {
 __name(canEnableFFmpegOptimizations, 'canEnableFFmpegOptimizations');
 if (canEnableFFmpegOptimizations()) {
   const FFMPEG_OGG_EDGE = {
-    type: 'ffmpeg ogg' /* FFmpegOgg */,
-    to: getNode('ogg/opus' /* OggOpus */),
+    type: TransformerType.FFmpegOgg,
+    to: getNode(StreamType.OggOpus),
     cost: 2,
     transformer: input =>
       new import_prism_media.default.FFmpeg({
         args: typeof input === 'string' ? ['-i', input, ...FFMPEG_OPUS_ARGUMENTS] : FFMPEG_OPUS_ARGUMENTS,
       }),
   };
-  getNode('arbitrary' /* Arbitrary */).addEdge(FFMPEG_OGG_EDGE);
-  getNode('ogg/opus' /* OggOpus */).addEdge(FFMPEG_OGG_EDGE);
-  getNode('webm/opus' /* WebmOpus */).addEdge(FFMPEG_OGG_EDGE);
+  getNode(StreamType.Arbitrary).addEdge(FFMPEG_OGG_EDGE);
+  getNode(StreamType.OggOpus).addEdge(FFMPEG_OGG_EDGE);
+  getNode(StreamType.WebmOpus).addEdge(FFMPEG_OGG_EDGE);
 }
-function findPath(from, constraints, goal = getNode('opus' /* Opus */), path = [], depth = 5) {
+function findPath(from, constraints, goal = getNode(StreamType.Opus), path = [], depth = 5) {
   if (from === goal && constraints(path)) {
-    return { cost: 0 };
+    return {
+      cost: 0,
+    };
   } else if (depth === 0) {
-    return { cost: Number.POSITIVE_INFINITY };
+    return {
+      cost: Number.POSITIVE_INFINITY,
+    };
   }
   let currentBest;
   for (const edge of from.edges) {
@@ -1724,10 +2279,18 @@ function findPath(from, constraints, goal = getNode('opus' /* Opus */), path = [
     const next = findPath(edge.to, constraints, goal, [...path, edge], depth - 1);
     const cost = edge.cost + next.cost;
     if (!currentBest || cost < currentBest.cost) {
-      currentBest = { cost, edge, next };
+      currentBest = {
+        cost,
+        edge,
+        next,
+      };
     }
   }
-  return currentBest ?? { cost: Number.POSITIVE_INFINITY };
+  return (
+    currentBest ?? {
+      cost: Number.POSITIVE_INFINITY,
+    }
+  );
 }
 __name(findPath, 'findPath');
 function constructPipeline(step) {
@@ -1747,15 +2310,17 @@ __name(findPipeline, 'findPipeline');
 
 // src/audio/AudioResource.ts
 var AudioResource = class {
-  playStream;
-  edges;
-  metadata;
-  volume;
-  encoder;
-  audioPlayer;
+  /**
+   * The playback duration of this audio resource, given in milliseconds.
+   */
   playbackDuration = 0;
+  /**
+   * Whether or not the stream for this resource has started (data has become readable)
+   */
   started = false;
-  silencePaddingFrames;
+  /**
+   * The number of remaining silence frames to play. If -1, the frames have not yet started playing.
+   */
   silenceRemaining = -1;
   constructor(edges, streams, metadata, silencePaddingFrames) {
     this.edges = edges;
@@ -1771,6 +2336,10 @@ var AudioResource = class {
     }
     this.playStream.once('readable', () => (this.started = true));
   }
+  /**
+   * Whether this resource is readable. If the underlying resource is no longer readable, this will still return true
+   * while there are silence padding frames left to play.
+   */
   get readable() {
     if (this.silenceRemaining === 0) return false;
     const real = this.playStream.readable;
@@ -1780,9 +2349,22 @@ var AudioResource = class {
     }
     return real;
   }
+  /**
+   * Whether this resource has ended or not.
+   */
   get ended() {
     return this.playStream.readableEnded || this.playStream.destroyed || this.silenceRemaining === 0;
   }
+  /**
+   * Attempts to read an Opus packet from the audio resource. If a packet is available, the playbackDuration
+   * is incremented.
+   *
+   * @remarks
+   * It is advisable to check that the playStream is readable before calling this method. While no runtime
+   * errors will be thrown, you should check that the resource is still available before attempting to
+   * read from it.
+   * @internal
+   */
   read() {
     if (this.silenceRemaining === 0) {
       return null;
@@ -1799,30 +2381,48 @@ var AudioResource = class {
 };
 __name(AudioResource, 'AudioResource');
 var VOLUME_CONSTRAINT = /* @__PURE__ */ __name(
-  path => path.some(edge => edge.type === 'volume transformer' /* InlineVolume */),
+  path => path.some(edge => edge.type === TransformerType.InlineVolume),
   'VOLUME_CONSTRAINT',
 );
 var NO_CONSTRAINT = /* @__PURE__ */ __name(() => true, 'NO_CONSTRAINT');
 function inferStreamType(stream) {
   if (stream instanceof import_prism_media2.default.opus.Encoder) {
-    return { streamType: 'opus' /* Opus */, hasVolume: false };
+    return {
+      streamType: StreamType.Opus,
+      hasVolume: false,
+    };
   } else if (stream instanceof import_prism_media2.default.opus.Decoder) {
-    return { streamType: 'raw' /* Raw */, hasVolume: false };
+    return {
+      streamType: StreamType.Raw,
+      hasVolume: false,
+    };
   } else if (stream instanceof import_prism_media2.default.VolumeTransformer) {
-    return { streamType: 'raw' /* Raw */, hasVolume: true };
+    return {
+      streamType: StreamType.Raw,
+      hasVolume: true,
+    };
   } else if (stream instanceof import_prism_media2.default.opus.OggDemuxer) {
-    return { streamType: 'opus' /* Opus */, hasVolume: false };
+    return {
+      streamType: StreamType.Opus,
+      hasVolume: false,
+    };
   } else if (stream instanceof import_prism_media2.default.opus.WebmDemuxer) {
-    return { streamType: 'opus' /* Opus */, hasVolume: false };
+    return {
+      streamType: StreamType.Opus,
+      hasVolume: false,
+    };
   }
-  return { streamType: 'arbitrary' /* Arbitrary */, hasVolume: false };
+  return {
+    streamType: StreamType.Arbitrary,
+    hasVolume: false,
+  };
 }
 __name(inferStreamType, 'inferStreamType');
 function createAudioResource(input, options = {}) {
   let inputType = options.inputType;
   let needsInlineVolume = Boolean(options.inlineVolume);
   if (typeof input === 'string') {
-    inputType = 'arbitrary' /* Arbitrary */;
+    inputType = StreamType.Arbitrary;
   } else if (typeof inputType === 'undefined') {
     const analysis = inferStreamType(input);
     inputType = analysis.streamType;
@@ -1857,7 +2457,7 @@ __name(findPackageJSON, 'findPackageJSON');
 function version(name) {
   try {
     if (name === '@discordjs/voice') {
-      return '0.14.0';
+      return '[VI]{{inject}}[/VI]';
     }
     const pkg = findPackageJSON((0, import_node_path.dirname)(require.resolve(name)), name, 3);
     return pkg?.version ?? 'not found';
@@ -1912,7 +2512,9 @@ async function entersState(target, status, timeoutOrSignal) {
   if (target.state.status !== status) {
     const [ac, signal] = typeof timeoutOrSignal === 'number' ? abortAfter(timeoutOrSignal) : [void 0, timeoutOrSignal];
     try {
-      await (0, import_node_events8.once)(target, status, { signal });
+      await (0, import_node_events8.once)(target, status, {
+        signal,
+      });
     } finally {
       ac?.abort();
     }
@@ -1975,13 +2577,13 @@ async function demuxProbe(stream, probeSize = 1024, validator = validateDiscordO
     );
     const webm = new import_prism_media4.default.opus.WebmDemuxer();
     webm.once('error', noop);
-    webm.on('head', foundHead('webm/opus' /* WebmOpus */));
+    webm.on('head', foundHead(StreamType.WebmOpus));
     const ogg = new import_prism_media4.default.opus.OggDemuxer();
     ogg.once('error', noop);
-    ogg.on('head', foundHead('ogg/opus' /* OggOpus */));
+    ogg.on('head', foundHead(StreamType.OggOpus));
     const onClose = /* @__PURE__ */ __name(() => {
       if (!resolved) {
-        finish('arbitrary' /* Arbitrary */);
+        finish(StreamType.Arbitrary);
       }
     }, 'onClose');
     const onData = /* @__PURE__ */ __name(buffer => {
@@ -2003,7 +2605,7 @@ async function demuxProbe(stream, probeSize = 1024, validator = validateDiscordO
 __name(demuxProbe, 'demuxProbe');
 
 // src/index.ts
-var version2 = '0.14.0';
+var version2 = '[VI]{{inject}}[/VI]';
 // Annotate the CommonJS export names for ESM import in node:
 0 &&
   (module.exports = {

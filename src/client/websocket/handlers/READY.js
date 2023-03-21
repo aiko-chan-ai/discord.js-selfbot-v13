@@ -15,7 +15,7 @@ function patchVoice(client) {
       'debug',
       `${chalk.greenBright('[OK]')} Patched ${chalk.cyanBright(
         'VoiceConnection.prototype.configureNetworking',
-      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.14.0')}]`,
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.15.0')}]`,
     );
     /* eslint-enable */
   } catch (e) {
@@ -23,19 +23,19 @@ function patchVoice(client) {
       'debug',
       `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
         'VoiceConnection.prototype.configureNetworking',
-      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.14.0')}]\n${e.stack}`,
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.15.0')}]\n${e.stack}`,
     );
     client.emit(
       Events.ERROR,
       `${chalk.redBright('[Fail]')} Patched ${chalk.cyanBright(
         'VoiceConnection.prototype.configureNetworking',
-      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.14.0')}]`,
+      )} [${chalk.bgMagentaBright('@discordjs/voice')} - ${chalk.redBright('v0.15.0')}]`,
     );
     client.emit(
       Events.ERROR,
       `${chalk.redBright('[Error]')} Please install ${chalk.bgMagentaBright(
         '@discordjs/voice',
-      )} version ${chalk.redBright('v0.14.0')}`,
+      )} version ${chalk.redBright('v0.15.0')}`,
     );
   }
 }

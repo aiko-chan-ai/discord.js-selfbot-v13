@@ -9,9 +9,7 @@ const getUUID = () =>
 // eslint-disable-next-line
 const checkUrl = url => {
   try {
-    // eslint-disable-next-line no-new
-    new URL(url);
-    return true;
+    return new URL(url);
   } catch {
     return false;
   }
@@ -194,7 +192,7 @@ class RichPresence {
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image)) {
+    } else if (['http:', 'https:'].includes(checkUrl(image)?.protocol)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')
@@ -231,7 +229,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
     if (!(this.assets instanceof Object)) this.assets = {};
     if (typeof image != 'string') {
       image = null;
-    } else if (checkUrl(image)) {
+    } else if (['http:', 'https:'].includes(checkUrl(image)?.protocol)) {
       // Discord URL:
       image = image
         .replace('https://cdn.discordapp.com/', 'mp:')

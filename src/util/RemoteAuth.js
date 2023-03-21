@@ -266,7 +266,13 @@ new DiscordAuthWebsocket({
     }
   }
   _throwError(error) {
-    throw error;
+    if (error.request) {
+      // Axios error
+      console.dir(chalk.red(`[DiscordRemoteAuth] ERROR`), error);
+      throw new Error(`Request failed with status code ${error.response.status}`);
+    } else {
+      throw error;
+    }
   }
   _send(op, data) {
     if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
