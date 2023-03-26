@@ -2,6 +2,7 @@ import {
   blockQuote,
   bold,
   channelMention,
+  chatInputApplicationCommandMention,
   codeBlock,
   ContextMenuCommandBuilder,
   formatEmoji,
@@ -3331,6 +3332,7 @@ export class Formatters extends null {
   public static blockQuote: typeof blockQuote;
   public static bold: typeof bold;
   public static channelMention: typeof channelMention;
+  public static chatInputApplicationCommandMention: typeof chatInputApplicationCommandMention;
   public static codeBlock: typeof codeBlock;
   public static formatEmoji: typeof formatEmoji;
   public static hideLinkEmbed: typeof hideLinkEmbed;
