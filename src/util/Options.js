@@ -89,7 +89,7 @@ const { defaultUA } = require('../util/Constants');
  * @property {IntentsResolvable} [intents=131071] Intents to enable for this connection (but not using)
  * @property {number} [waitGuildTimeout=15000] Time in milliseconds that Clients with the GUILDS intent should wait for
  * @property {number} [messageCreateEventGuildTimeout=100] Time in milliseconds that Clients to register for messages with each guild
- * missing guilds to be received before starting the bot. If not specified, the default is 15 seconds.
+ * missing guilds to be received before starting the bot. If not specified, the default is 100 milliseconds.
  * @property {SweeperOptions} [sweepers={}] Options for cache sweeping
  * @property {WebsocketOptions} [ws] Options for the WebSocket
  * @property {HTTPOptions} [http] HTTP options
