@@ -4,31 +4,13 @@ const { setTimeout } = require('node:timers');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { inspect } = require('util');
 const { AsyncQueue } = require('@sapphire/async-queue');
+const parseCookie = require('set-cookie-parser');
 const DiscordAPIError = require('./DiscordAPIError');
 const HTTPError = require('./HTTPError');
 const RateLimitError = require('./RateLimitError');
 const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST, CAPTCHA_REQUIRED },
 } = require('../util/Constants');
-
-const cookieFilter = str => {
-  const blackList = ['expires', 'path', 'domain', 'httponly', 'secure', 'max-age', 'samesite'];
-  if (blackList.some(s => str.toLowerCase().includes(`${s}`))) return false;
-  return true;
-};
-
-function parseCookie(str, old) {
-  const oldProps = old.split(';').filter(cookieFilter);
-  const allProps = str.split(';').filter(cookieFilter);
-  // Update data from all to old
-  allProps.forEach(prop => {
-    const key = prop.split('=')[0];
-    const index = oldProps.findIndex(s => s.startsWith(key));
-    if (index !== -1) oldProps[index] = prop;
-    else oldProps.push(prop);
-  });
-  return oldProps.filter(s => s).join('; ');
-}
 
 const captchaMessage = [
   'incorrect-captcha',
@@ -259,19 +241,21 @@ class RequestHandler {
 
     let sublimitTimeout;
     if (res.headers) {
-      // Cookie:
-      const cookie = res.headers.get('set-cookie');
-      if (cookie) {
-        if (typeof cookie == 'string') {
-          this.manager.client.options.http.headers.Cookie = parseCookie(
-            cookie,
-            this.manager.client.options.http.headers.Cookie || '',
-          );
-          this.manager.client.emit(
-            'debug',
-            `[REST] Set new cookie: ${this.manager.client.options.http.headers.Cookie}`,
-          );
+      const cookie = res.headers.raw()['set-cookie'];
+      if (cookie && Array.isArray(cookie)) {
+        const oldCookie = parseCookie((this.manager.client.options.http.headers.Cookie || '').split('; '), {
+          map: true,
+        });
+        const parse = parseCookie(cookie, {
+          map: true,
+        });
+        for (const key in parse) {
+          oldCookie[key] = parse[key];
         }
+        this.manager.client.options.http.headers.Cookie = Object.entries(oldCookie)
+          .map(([key, value]) => `${key}=${value.value}`)
+          .join('; ');
+        this.manager.client.emit('debug', `[REST] Set new cookie: ${this.manager.client.options.http.headers.Cookie}`);
       }
       const serverDate = res.headers.get('date');
       const limit = res.headers.get('x-ratelimit-limit');
