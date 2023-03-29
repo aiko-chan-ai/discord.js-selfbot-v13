@@ -158,3 +158,30 @@ This algorithm can definitely be made a lot better so have at it. The brute forc
 #### How many members can I fetch?
 - a limit is posed if many users have the same nickname & username (but different discriminators). Only the 1st 100 members will be able to be fetched. There's no known way to include the discriminator # in the search.
 - also, in order to query users with fancy characters in their username/nickname, the op8 brute forcer needs to be slowed down (cause, more characters to search)
+
+#### Testing !!!
+
+- Example
+```js
+const Discord = require('discord.js-selfbot-v13');
+const client = new Discord.Client();
+client.on('debug', console.log)
+client.on('ready', () => {
+	console.log('Logged in as', client.user.tag);
+	const guild = client.guilds.cache.get('662267976984297473'); // Midjourney - 13M members
+	guild.members.fetchBruteforce({
+		depth: 2, // 2 levels of recursion
+		delay: 500, // 500ms delay between each request
+	});
+	setInterval(() => {
+		console.log('Fetching members...', guild.members.cache.size);
+	}, 1000);
+});
+client.login('token');
+```
+
+- 2000 years later...
+
+<img src='https://cdn.discordapp.com/attachments/820557032016969751/1090606227265966140/image.png'>
+
+`138k/13.8M (1%)` members fetched in `~30 mins` (with a delay of 500ms) :skull:
