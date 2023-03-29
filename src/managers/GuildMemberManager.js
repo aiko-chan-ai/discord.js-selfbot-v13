@@ -3,6 +3,8 @@
 const { Buffer } = require('node:buffer');
 const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
+require('lodash.permutations');
+const _ = require('lodash');
 const CachedManager = require('./CachedManager');
 const { Error, TypeError, RangeError } = require('../errors');
 const BaseGuildVoiceChannel = require('../structures/BaseGuildVoiceChannel');
@@ -203,6 +205,7 @@ class GuildMemberManager extends CachedManager {
         return this.fetchBruteforce({
           delay: 50,
           skipWarn: true,
+          depth: 2,
         });
       }
     }
@@ -468,9 +471,9 @@ class GuildMemberManager extends CachedManager {
   /**
    * Options used to fetch multiple members from a guild.
    * @typedef {Object} BruteforceOptions
-   * @property {Array<string>} [dictionary] Limit fetch to members with similar usernames {@link https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37}
    * @property {number} [limit=100] Maximum number of members per request
    * @property {number} [delay=500] Timeout for new requests in ms
+   * @property {number} [depth=1] Permutations length
    */
 
   /**
@@ -485,26 +488,48 @@ class GuildMemberManager extends CachedManager {
    */
   fetchBruteforce(options = {}) {
     // eslint-disable-next-line
-    let dictionary = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~ '.split('');
+    let defaultQuery = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~';
+    let dictionary;
     let limit = 100;
     let delay = 500;
-    if (options?.dictionary) dictionary = options?.dictionary;
+    let depth = 1;
     if (options?.limit) limit = options?.limit;
     if (options?.delay) delay = options?.delay;
-    if (!Array.isArray(dictionary)) throw new TypeError('INVALID_TYPE', 'dictionary', 'Array', true);
+    if (options?.depth) depth = options?.depth;
     if (typeof limit !== 'number') throw new TypeError('INVALID_TYPE', 'limit', 'Number');
     if (limit < 1 || limit > 100) throw new RangeError('INVALID_RANGE_QUERY_MEMBER');
     if (typeof delay !== 'number') throw new TypeError('INVALID_TYPE', 'delay', 'Number');
+    if (typeof depth !== 'number') throw new TypeError('INVALID_TYPE', 'depth', 'Number');
+    if (depth < 1) throw new RangeError('INVALID_RANGE_QUERY_MEMBER');
+    if (depth > 2) {
+      console.warn(`[WARNING] GuildMemberManager#fetchBruteforce: depth greater than 2, can lead to very slow speeds`);
+    }
     if (delay < 500 && !options?.skipWarn) {
       console.warn(
         `[WARNING] GuildMemberManager#fetchBruteforce: delay is less than 500ms, this may cause rate limits.`,
       );
     }
+    let skipValues = [];
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
-      for (const query of dictionary) {
-        await this._fetchMany({ query, limit }).catch(reject);
-        await this.guild.client.sleep(delay);
+      for (let i = 1; i <= depth; i++) {
+        dictionary = _(defaultQuery)
+          .permutations(i)
+          .map(v => _.join(v, ''))
+          .value();
+        for (const query of dictionary) {
+          this.client.emit(
+            'debug',
+            `[INFO] GuildMemberManager#fetchBruteforce: Querying ${query}, Skip: [${skipValues.join(', ')}]`,
+          );
+          if (skipValues.some(v => query.startsWith(v))) continue;
+          await this._fetchMany({ query, limit })
+            .then(members => {
+              if (members.size === 0) skipValues.push(query);
+            })
+            .catch(reject);
+          await this.guild.client.sleep(delay);
+        }
       }
       resolve(this.guild.members.cache);
     });

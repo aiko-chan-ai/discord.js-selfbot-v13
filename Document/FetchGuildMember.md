@@ -128,11 +128,11 @@ Suppose you're in a guild with 1000 members and want to fetch the member list ba
 ____________________________________
 ## Search for Members by Query
 #### Usage
-> Dictionary of query parameters: [Here](https://github.com/Merubokkusu/Discord-S.C.U.M/blob/master/examples/searchGuildMembers.py#L37)
 1) run the function:
   ```js
   guild.members.fetchBruteforce({
     delay: 500,
+    depth: 1, // ['a', 'b', 'c', 'd', ...] or ['aa', 'ab', 'ac', 'ad', ...] if depth is 2, ...
   })
   ```
   A wait time of at least 0.5 is needed to prevent the brute forcer from rate limiting too often. In the event that the brute forcer does get rate limited, some time will be lost reconnecting.

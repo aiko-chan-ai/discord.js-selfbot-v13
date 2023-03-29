@@ -4078,9 +4078,9 @@ export class GuildManager extends CachedManager<Snowflake, Guild, GuildResolvabl
 }
 
 export interface BruteforceOptions {
-  dictionary: string[];
-  limit: number;
-  delay: number;
+  limit?: number;
+  delay?: number;
+  depth?: number;
 }
 
 export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, GuildMemberResolvable> {
