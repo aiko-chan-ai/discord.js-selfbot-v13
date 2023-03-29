@@ -60,6 +60,11 @@ class APIRequest {
       'User-Agent': this.client.options.http.headers['User-Agent'],
       Referer: 'https://discord.com/channels/@me',
       Connection: 'keep-alive',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': 'Windows',
+      'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="${
+        /Chrome\/(\d+)/.exec(this.client.options.http.headers['User-Agent'])[1]
+      }"`,
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
