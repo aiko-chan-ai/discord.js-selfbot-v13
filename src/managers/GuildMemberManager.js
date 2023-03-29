@@ -488,7 +488,7 @@ class GuildMemberManager extends CachedManager {
    */
   fetchBruteforce(options = {}) {
     // eslint-disable-next-line
-    let defaultQuery = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~';
+    let defaultQuery = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~ ';
     let dictionary;
     let limit = 100;
     let delay = 500;
