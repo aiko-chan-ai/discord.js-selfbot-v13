@@ -518,6 +518,7 @@ class GuildMemberManager extends CachedManager {
           .map(v => _.join(v, ''))
           .value();
         for (const query of dictionary) {
+          if (this.guild.members.cache.size >= this.guild.memberCount) break;
           this.client.emit(
             'debug',
             `[INFO] GuildMemberManager#fetchBruteforce: Querying ${query}, Skip: [${skipValues.join(', ')}]`,
