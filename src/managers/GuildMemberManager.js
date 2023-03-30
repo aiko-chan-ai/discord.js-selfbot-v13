@@ -205,7 +205,7 @@ class GuildMemberManager extends CachedManager {
         return this.fetchBruteforce({
           delay: 50,
           skipWarn: true,
-          depth: 2,
+          depth: 1,
         });
       }
     }
@@ -487,8 +487,7 @@ class GuildMemberManager extends CachedManager {
    * .catch(console.error);
    */
   fetchBruteforce(options = {}) {
-    // eslint-disable-next-line
-    let defaultQuery = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~ ';
+    const defaultQuery = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~ ';
     let dictionary;
     let limit = 100;
     let delay = 500;
