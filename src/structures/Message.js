@@ -21,7 +21,6 @@ const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
-// Const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Message>}
@@ -337,10 +336,7 @@ class Message extends Base {
     }
 
     if (data.referenced_message) {
-      this.channel?.messages._add({
-        guild_id: data.message_reference?.guild_id,
-        ...data.referenced_message,
-      });
+      this.channel?.messages._add({ guild_id: data.message_reference?.guild_id, ...data.referenced_message });
     }
 
     /**
@@ -605,11 +601,17 @@ class Message extends Base {
     const precheck = Boolean(
       this.author.id === this.client.user.id && !deletedMessages.has(this) && (!this.guild || this.channel?.viewable),
     );
+
     // Regardless of permissions thread messages cannot be edited if
-    // the thread is locked.
+    // the thread is archived or the thread is locked and the bot does not have permission to manage threads.
     if (this.channel?.isThread()) {
-      return precheck && !this.channel.locked;
+      if (this.channel.archived) return false;
+      if (this.channel.locked) {
+        const permissions = this.permissionsFor(this.client.user);
+        if (!permissions?.has(Permissions.FLAGS.MANAGE_THREADS, true)) return false;
+      }
     }
+
     return precheck;
   }
 
@@ -651,13 +653,12 @@ class Message extends Base {
    * channel.bulkDelete(messages.filter(message => message.bulkDeletable));
    */
   get bulkDeletable() {
-    if (!this.client.user.bot) return false;
-    const permissions = this.channel?.permissionsFor(this.client.user);
     return (
       (this.inGuild() &&
+        this.client.user.bot &&
         Date.now() - this.createdTimestamp < MaxBulkDeletableMessageAge &&
         this.deletable &&
-        permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES, false)) ??
+        this.channel?.permissionsFor(this.client.user).has(Permissions.FLAGS.MANAGE_MESSAGES, false)) ??
       false
     );
   }
@@ -901,9 +902,7 @@ class Message extends Base {
     if (!['GUILD_TEXT', 'GUILD_NEWS'].includes(this.channel.type)) {
       return Promise.reject(new Error('MESSAGE_THREAD_PARENT'));
     }
-    if (this.hasThread) {
-      return Promise.reject(new Error('MESSAGE_EXISTING_THREAD'));
-    }
+    if (this.hasThread) return Promise.reject(new Error('MESSAGE_EXISTING_THREAD'));
     return this.channel.threads.create({ ...options, startMessage: this });
   }
 
@@ -923,9 +922,7 @@ class Message extends Base {
    */
   fetchWebhook() {
     if (!this.webhookId) return Promise.reject(new Error('WEBHOOK_MESSAGE'));
-    if (this.webhookId === this.applicationId) {
-      return Promise.reject(new Error('WEBHOOK_APPLICATION'));
-    }
+    if (this.webhookId === this.applicationId) return Promise.reject(new Error('WEBHOOK_APPLICATION'));
     return this.client.fetchWebhook(this.webhookId);
   }
 
@@ -974,9 +971,7 @@ class Message extends Base {
   equals(message, rawData) {
     if (!message) return false;
     const embedUpdate = !message.author && !message.attachments;
-    if (embedUpdate) {
-      return this.id === message.id && this.embeds.length === message.embeds.length;
-    }
+    if (embedUpdate) return this.id === message.id && this.embeds.length === message.embeds.length;
 
     let equal =
       this.id === message.id &&

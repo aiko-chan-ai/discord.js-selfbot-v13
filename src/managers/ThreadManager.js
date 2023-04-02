@@ -59,15 +59,14 @@ class ThreadManager extends CachedManager {
    */
 
   /**
-   * The options for fetching multiple threads, the properties are mutually exclusive
+   * Options for fetching multiple threads.
    * @typedef {Object} FetchThreadsOptions
    * @property {FetchArchivedThreadOptions} [archived] The options used to fetch archived threads
-   * @property {boolean} [active] When true, fetches active threads. <warn>If `archived` is set, this is ignored!</warn>
    */
 
   /**
    * Obtains a thread from Discord, or the channel cache if it's already available.
-   * @param {ThreadChannelResolvable|FetchChannelThreadsOptions} [options] The options to fetch threads. If it is a
+   * @param {ThreadChannelResolvable|FetchChannelThreadsOptions|FetchThreadsOptions} [options] The options to fetch threads. If it is a
    * ThreadChannelResolvable then the specified thread will be fetched. Fetches all active threads if `undefined`
    * @param {BaseFetchOptions} [cacheOptions] Additional options for this fetch. <warn>The `force` field gets ignored
    * if `options` is not a {@link ThreadChannelResolvable}</warn>
@@ -78,10 +77,10 @@ class ThreadManager extends CachedManager {
    *   .then(channel => console.log(channel.name))
    *   .catch(console.error);
    */
-  fetch(options, { cache = true, force = false } = {}) {
+  fetch(options, { cache, force } = {}) {
     if (!options) return this.fetchActive(cache);
     const channel = this.client.channels.resolveId(options);
-    if (channel) return this.client.channels.fetch(channel, cache, force);
+    if (channel) return this.client.channels.fetch(channel, { cache, force });
     if (options.archived) {
       return this.fetchArchived(options.archived, cache);
     }
@@ -102,7 +101,7 @@ class ThreadManager extends CachedManager {
    * @property {string} [type='public'] The type of threads to fetch, either `public` or `private`
    * @property {boolean} [fetchAll=false] Whether to fetch **all** archived threads when type is `private`.
    * Requires `MANAGE_THREADS` if true
-   * @property {DateResolvable|ThreadChannelResolvable} [before] Only return threads that were created before this Date
+   * @property {DateResolvable|ThreadChannelResolvable} [before] Only return threads that were archived before this Date
    * or Snowflake. <warn>Must be a {@link ThreadChannelResolvable} when type is `private` and fetchAll is `false`</warn>
    * @property {number} [limit] Maximum number of threads to return
    */
@@ -130,7 +129,7 @@ class ThreadManager extends CachedManager {
       let timestamp;
       let id;
       if (typeof before !== 'undefined') {
-        if (before instanceof ThreadChannel || /^\d{16,19}$/.test(String(before))) {
+        if (before instanceof ThreadChannel || /^\d{17,19}$/.test(String(before))) {
           id = this.resolveId(before);
           timestamp = this.resolve(before)?.archivedAt?.toISOString();
         } else {

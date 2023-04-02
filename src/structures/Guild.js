@@ -769,9 +769,6 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async fetchVanityData() {
-    if (!this.features.includes('VANITY_URL')) {
-      throw new Error('VANITY_URL');
-    }
     const data = await this.client.api.guilds(this.id, 'vanity-url').get();
     this.vanityURLCode = data.code;
     this.vanityURLUses = data.uses;
@@ -1462,7 +1459,7 @@ class Guild extends AnonymousGuild {
    * @example
    * // Leave a guild
    * guild.leave()
-   *   .then(g => console.log(`Left the guild ${g}`))
+   *   .then(guild => console.log(`Left the guild ${guild.name}`))
    *   .catch(console.error);
    */
   async leave() {
@@ -1488,7 +1485,7 @@ class Guild extends AnonymousGuild {
    * @example
    * // Delete a guild
    * guild.delete()
-   *   .then(g => console.log(`Deleted the guild ${g}`))
+   *   .then(guild => console.log(`Deleted the guild ${guild.name}`))
    *   .catch(console.error);
    */
   async delete() {
@@ -1634,9 +1631,6 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async setVanityCode(code = '') {
-    if (!this.features.includes('VANITY_URL')) {
-      throw new Error('VANITY_URL');
-    }
     if (typeof code !== 'string') throw new TypeError('INVALID_VANITY_URL_CODE');
     const data = await this.client.api.guilds(this.id, 'vanity-url').patch({
       data: { code },

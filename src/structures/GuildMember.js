@@ -63,6 +63,11 @@ class GuildMember extends Base {
      */
     this.communicationDisabledUntilTimestamp = null;
 
+    /**
+     * The role ids of the member
+     * @type {Snowflake[]}
+     * @private
+     */
     this._roles = [];
     if (data) this._patch(data);
   }
@@ -414,6 +419,16 @@ class GuildMember extends Base {
    * @param {?string} nick The nickname for the guild member, or `null` if you want to reset their nickname
    * @param {string} [reason] Reason for setting the nickname
    * @returns {Promise<GuildMember>}
+   * @example
+   * // Set a nickname for a guild member
+   * guildMember.setNickname('cool nickname', 'Needed a new nickname')
+   *   .then(member => console.log(`Set nickname of ${member.user.username}`))
+   *   .catch(console.error);
+   * @example
+   * // Remove a nickname for a guild member
+   * guildMember.setNickname(null, 'No nicknames allowed!')
+   *   .then(member => console.log(`Removed nickname for ${member.user.username}`))
+   *   .catch(console.error);
    */
   setNickname(nick, reason) {
     return this.edit({ nick }, reason);
@@ -539,7 +554,7 @@ class GuildMember extends Base {
    *   .catch(console.error);
    */
   ban(options) {
-    return this.guild.members.ban(this, options);
+    return this.guild.bans.create(this, options);
   }
 
   /**
@@ -552,6 +567,11 @@ class GuildMember extends Base {
    * // Time a guild member out for 5 minutes
    * guildMember.disableCommunicationUntil(Date.now() + (5 * 60 * 1000), 'They deserved it')
    *   .then(console.log)
+   *   .catch(console.error);
+   * @example
+   * // Remove the timeout of a guild member
+   * guildMember.disableCommunicationUntil(null)
+   *   .then(member => console.log(`Removed timeout for ${member.displayName}`))
    *   .catch(console.error);
    */
   disableCommunicationUntil(communicationDisabledUntil, reason) {
@@ -639,11 +659,21 @@ class GuildMember extends Base {
     json.displayAvatarURL = this.displayAvatarURL();
     return json;
   }
-
-  // These are here only for documentation purposes - they are implemented by TextBasedChannel
-  /* eslint-disable no-empty-function */
-  send() {}
 }
+
+/**
+ * Sends a message to this user.
+ * @method send
+ * @memberof GuildMember
+ * @instance
+ * @param {string|MessagePayload|MessageOptions} options The options to provide
+ * @returns {Promise<Message>}
+ * @example
+ * // Send a direct message
+ * guildMember.send('Hello!')
+ *   .then(message => console.log(`Sent message: ${message.content} to ${guildMember.displayName}`))
+ *   .catch(console.error);
+ */
 
 TextBasedChannel.applyToClass(GuildMember);
 
