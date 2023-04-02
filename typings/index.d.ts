@@ -1414,7 +1414,7 @@ export class Guild extends AnonymousGuild {
   public widgetEnabled: boolean | null;
   public readonly maximumBitrate: number;
   public createTemplate(name: string, description?: string): Promise<GuildTemplate>;
-  public delete(): Promise<Guild>;
+  public delete(mfaCode?: string): Promise<Guild>;
   public read(): Promise<undefined>;
   public discoverySplashURL(options?: StaticImageURLOptions): string | null;
   public edit(data: GuildEditData, reason?: string): Promise<Guild>;
@@ -1476,6 +1476,11 @@ export class Guild extends AnonymousGuild {
   public setWidgetSettings(settings: GuildWidgetSettingsData, reason?: string): Promise<Guild>;
   public setVanityCode(code?: string): Promise<Vanity>;
   public toJSON(): unknown;
+  // Added
+  /** @deprecated */
+  public readonly clydeSupport: boolean;
+  /** @deprecated */
+  public enableClydeAI(enabled?: boolean): Promise<Guild>;
 }
 
 export class GuildAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'> {
@@ -6313,6 +6318,7 @@ export type GuildFeatures =
   | 'ANIMATED_ICON'
   | 'AUTO_MODERATION'
   | 'BANNER'
+  | 'CLYDE_ENABLED'
   | 'COMMERCE'
   | 'COMMUNITY'
   | 'CREATOR_MONETIZABLE_PROVISIONAL'

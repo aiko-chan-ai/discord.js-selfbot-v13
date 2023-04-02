@@ -2,6 +2,7 @@
 
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
+const { v3 } = require('murmurhash');
 const AnonymousGuild = require('./AnonymousGuild');
 const GuildAuditLogs = require('./GuildAuditLogs');
 const GuildPreview = require('./GuildPreview');
@@ -228,6 +229,8 @@ class Guild extends AnonymousGuild {
      * * ANIMATED_ICON
      * * AUTO_MODERATION
      * * BANNER
+     * * CLYDE_ENABLED
+     * <warn> `CLYDE_ENABLED` is now an experimental feature of Discord</warn>
      * * COMMERCE
      * * COMMUNITY
      * * CREATOR_MONETIZABLE_PROVISIONAL
@@ -575,6 +578,26 @@ class Guild extends AnonymousGuild {
    */
   fetchOwner(options) {
     return this.members.fetch({ ...options, user: this.ownerId });
+  }
+
+  /**
+   * Check out the guild that can activate ClydeAI
+   * <info>**BETA** - This feature is currently in beta and may be changed or removed at any time.</info>
+   * @type {boolean}
+   * @readonly
+   * @deprecated
+   */
+  get clydeSupport() {
+    // **BETA** - This feature is currently in beta and may be changed or removed at any time.
+    // Cannot be enabled on guilds with more than 100 members
+    if (
+      v3(`2023-03_clyde_ai:${this.id}`) % 10e3 > 100 ||
+      this.memberCount > 100 ||
+      this.features.includes('COMMUNITY')
+    ) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -1454,6 +1477,23 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * Enables or disables Clyde AI for this guild.
+   * <info>This feature is currently in beta and may be changed or removed at any time.</info>
+   * @param {boolean} [enabled=true] Whether the guild is enabled for Clyde AI
+   * @returns {Promise<Guild>}
+   * @deprecated
+   */
+  enableClydeAI(enabled = true) {
+    if (!this.clydeSupport) return Promise.resolve(this);
+    if (enabled) {
+      if (this.features.includes('CLYDE_ENABLED')) return Promise.resolve(this);
+      return this.edit({ features: [...this.features, 'CLYDE_ENABLED'] });
+    } else {
+      return this.edit({ features: this.features.filter(f => f !== 'CLYDE_ENABLED') });
+    }
+  }
+
+  /**
    * Leaves the guild.
    * @returns {Promise<Guild>}
    * @example
@@ -1481,6 +1521,7 @@ class Guild extends AnonymousGuild {
 
   /**
    * Deletes the guild.
+   * @param {string} [mfaCode] The MFA code for the guild owner
    * @returns {Promise<Guild>}
    * @example
    * // Delete a guild
@@ -1488,8 +1529,11 @@ class Guild extends AnonymousGuild {
    *   .then(guild => console.log(`Deleted the guild ${guild.name}`))
    *   .catch(console.error);
    */
-  async delete() {
-    await this.client.api.guilds(this.id).delete();
+  async delete(mfaCode) {
+    if ((!mfaCode || typeof mfaCode !== 'string' || mfaCode.length !== 6) && this.client.user.mfaEnabled) {
+      throw new Error('MFA_INVALID');
+    }
+    await this.client.api.guilds(this.id).delete({ data: mfaCode ? { code: mfaCode } : undefined });
     return this.client.actions.GuildDelete.handle({ id: this.id }).guild;
   }
 
