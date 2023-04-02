@@ -230,7 +230,8 @@ class Guild extends AnonymousGuild {
      * * AUTO_MODERATION
      * * BANNER
      * * CLYDE_ENABLED
-     * <warn> `CLYDE_ENABLED` is now an experimental feature of Discord</warn>
+     * <warn> `CLYDE_ENABLED` is now an experimental feature of Discord.
+     * See [this](https://rollouts.advaith.io/#2023-03_clyde_ai) for more information.</warn>
      * * COMMERCE
      * * COMMUNITY
      * * CREATOR_MONETIZABLE_PROVISIONAL
