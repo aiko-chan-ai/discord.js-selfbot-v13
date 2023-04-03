@@ -12,6 +12,12 @@ class SessionManager extends CachedManager {
     super(client, Session, iterable);
   }
   /**
+   * The cache of Sessions
+   * @type {Collection<string, Session>}
+   * @name SessionManager#cache
+   */
+
+  /**
    * Fetch all sessions of the client.
    * @returns {Promise<SessionManager>}
    */

@@ -177,8 +177,8 @@ import {
 // @ts-ignore
 //#region Classes
 
-export class SessionManager extends CachedManager {
-  constructor(client: Client, iterable?: Iterable<unknown>);
+export class SessionManager extends CachedManager<string, Session, any> {
+  private constructor(client: Client, iterable: Iterable<any>);
   public fetch(): Promise<SessionManager>;
   public logoutAllDevices(mfaCode?: string): Promise<undefined>;
 }
