@@ -70,6 +70,10 @@ class APIRequest {
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
     if (this.options.reason) headers['X-Audit-Log-Reason'] = encodeURIComponent(this.options.reason);
     if (this.options.headers) headers = Object.assign(headers, this.options.headers);
+    // Delete all headers if undefined
+    for (const [key, value] of Object.entries(headers)) {
+      if (value === undefined) delete headers[key];
+    }
     if (this.options.webhook === true) {
       headers = {
         'User-Agent': this.client.options.http.headers['User-Agent'],

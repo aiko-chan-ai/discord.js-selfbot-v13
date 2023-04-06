@@ -91,33 +91,6 @@ module.exports = class CaptchaSolver {
           });
         break;
       }
-      case 'nopecha': {
-        if (!key || typeof key !== 'string') throw new Error('nopecha key is not provided');
-        try {
-          const { Configuration, NopeCHAApi } = require('nopecha');
-          this.service = 'nopecha';
-          this.key = key;
-          const configuration = new Configuration({
-            apiKey: key,
-          });
-          this.solver = new NopeCHAApi(configuration);
-          this.solve = (data, userAgent) =>
-            new Promise((resolve, reject) => {
-              if (data.captcha_rqdata) reject(new Error('nopecha does not support invisible captcha'));
-              this.solver
-                .solveToken({
-                  type: 'hcaptcha',
-                  sitekey: data.captcha_sitekey,
-                  url: 'https://discord.com/channels/@me',
-                  useragent: userAgent,
-                })
-                .then(console.log);
-            });
-          break;
-        } catch (e) {
-          throw this._missingModule('nopecha');
-        }
-      }
       default: {
         this.solve = this.defaultCaptchaSolver;
       }
