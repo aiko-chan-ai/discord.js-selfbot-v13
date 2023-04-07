@@ -106,7 +106,7 @@ class APIRequest {
       if (captchaKey && typeof captchaKey == 'string') {
         if (!this.options.data) this.options.data = {};
         // Delete cookie (https://t.me/DMDGOBugsAndFeatures/626) Wtf Unknown Message Error ???
-        // headers.Cookie = undefined;
+        headers.Cookie = undefined;
         this.options.data.captcha_key = captchaKey;
         if (captchaRqtoken) this.options.data.captcha_rqtoken = captchaRqtoken;
       }

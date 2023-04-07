@@ -398,7 +398,7 @@ class RequestHandler {
             data,
             this.manager.client.options.http.headers['User-Agent'],
           );
-          await this.manager.client.sleep(5_000);
+          // Sleep: await this.manager.client.sleep(5_000);
           this.manager.client.emit(
             DEBUG,
             `Captcha details:
