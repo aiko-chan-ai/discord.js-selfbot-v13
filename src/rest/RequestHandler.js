@@ -382,7 +382,7 @@ class RequestHandler {
         if (
           data?.captcha_service &&
           this.manager.client.options.captchaService &&
-          request.retries <= this.manager.client.options.captchaRetryLimit &&
+          request.retries < this.manager.client.options.captchaRetryLimit &&
           captchaMessage.some(s => data.captcha_key[0].includes(s))
         ) {
           // Retry the request after a captcha is solved
@@ -398,13 +398,14 @@ class RequestHandler {
             data,
             this.manager.client.options.http.headers['User-Agent'],
           );
+          await this.manager.client.sleep(5_000);
           this.manager.client.emit(
             DEBUG,
             `Captcha solved.
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Key     : ${captcha}
+    Key     : ${captcha ? `${captcha.slice(0, 30)}...` : '[Capcha not solved]'}
     rqToken : ${data.captcha_rqtoken}`,
           );
           request.retries++;
