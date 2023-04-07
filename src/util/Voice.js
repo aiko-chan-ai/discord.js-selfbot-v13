@@ -1,5 +1,12 @@
 'use strict';
-var __create = Object.create,
+var NoSubscriberBehavior2,
+  AudioPlayerStatus2,
+  EndBehaviorType2,
+  VoiceConnectionStatus2,
+  VoiceConnectionDisconnectReason2,
+  StreamType2,
+  audioCycleInterval,
+  __create = Object.create,
   __defProp = Object.defineProperty,
   __getOwnPropDesc = Object.getOwnPropertyDescriptor,
   __getOwnPropNames = Object.getOwnPropertyNames,
@@ -11,12 +18,12 @@ var __create = Object.create,
   __export = (e, t) => {
     for (var s in t) __defProp(e, s, { get: t[s], enumerable: !0 });
   },
-  __copyProps = (e, t, s, o) => {
+  __copyProps = (e, t, s, i) => {
     if ((t && 'object' == typeof t) || 'function' == typeof t)
-      for (let n of __getOwnPropNames(t))
-        __hasOwnProp.call(e, n) ||
-          n === s ||
-          __defProp(e, n, { get: () => t[n], enumerable: !(o = __getOwnPropDesc(t, n)) || o.enumerable });
+      for (let o of __getOwnPropNames(t))
+        __hasOwnProp.call(e, o) ||
+          o === s ||
+          __defProp(e, o, { get: () => t[o], enumerable: !(i = __getOwnPropDesc(t, o)) || i.enumerable });
     return e;
   },
   __toESM = (e, t, s) => (
@@ -67,9 +74,9 @@ function createJoinVoiceChannelPayload(e) {
 __name(createJoinVoiceChannelPayload, 'createJoinVoiceChannelPayload');
 var groups = new Map();
 function getOrCreateGroup(e) {
-  const t = groups.get(e);
+  let t = groups.get(e);
   if (t) return t;
-  const s = new Map();
+  let s = new Map();
   return groups.set(e, s), s;
 }
 function getGroups() {
@@ -94,22 +101,23 @@ groups.set('default', new Map()),
   __name(getVoiceConnection, 'getVoiceConnection'),
   __name(untrackVoiceConnection, 'untrackVoiceConnection'),
   __name(trackVoiceConnection, 'trackVoiceConnection');
-var audioCycleInterval,
-  FRAME_LENGTH = 20,
+var FRAME_LENGTH = 20,
   nextTime = -1,
   audioPlayers = [];
 function audioCycleStep() {
   if (-1 === nextTime) return;
   nextTime += FRAME_LENGTH;
-  const e = audioPlayers.filter(e => e.checkPlayable());
-  for (const t of e) t._stepDispatch();
+  let e = audioPlayers.filter(e => e.checkPlayable());
+  for (let t of e) t._stepDispatch();
   prepareNextAudioFrame(e);
 }
 function prepareNextAudioFrame(e) {
-  const t = e.shift();
-  t
-    ? (t._stepPrepare(), setImmediate(() => prepareNextAudioFrame(e)))
-    : -1 !== nextTime && (audioCycleInterval = setTimeout(() => audioCycleStep(), nextTime - Date.now()));
+  let t = e.shift();
+  if (!t) {
+    -1 !== nextTime && (audioCycleInterval = setTimeout(() => audioCycleStep(), nextTime - Date.now()));
+    return;
+  }
+  t._stepPrepare(), setImmediate(() => prepareNextAudioFrame(e));
 }
 function hasAudioPlayer(e) {
   return audioPlayers.includes(e);
@@ -123,7 +131,7 @@ function addAudioPlayer(e) {
   );
 }
 function deleteAudioPlayer(e) {
-  const t = audioPlayers.indexOf(e);
+  let t = audioPlayers.indexOf(e);
   -1 !== t &&
     (audioPlayers.splice(t, 1),
     0 === audioPlayers.length && ((nextTime = -1), void 0 !== audioCycleInterval && clearTimeout(audioCycleInterval)));
@@ -139,16 +147,16 @@ var import_node_buffer3 = require('buffer'),
   import_node_buffer = require('buffer'),
   libs = {
     'sodium-native': e => ({
-      open: (t, s, o) => {
+      open(t, s, i) {
         if (t) {
-          const n = import_node_buffer.Buffer.allocUnsafe(t.length - e.crypto_box_MACBYTES);
-          if (e.crypto_secretbox_open_easy(n, t, s, o)) return n;
+          let o = import_node_buffer.Buffer.allocUnsafe(t.length - e.crypto_box_MACBYTES);
+          if (e.crypto_secretbox_open_easy(o, t, s, i)) return o;
         }
         return null;
       },
-      close: (t, s, o) => {
-        const n = import_node_buffer.Buffer.allocUnsafe(t.length + e.crypto_box_MACBYTES);
-        return e.crypto_secretbox_easy(n, t, s, o), n;
+      close(t, s, i) {
+        let o = import_node_buffer.Buffer.allocUnsafe(t.length + e.crypto_box_MACBYTES);
+        return e.crypto_secretbox_easy(o, t, s, i), o;
       },
       random: (t, s = import_node_buffer.Buffer.allocUnsafe(t)) => (e.randombytes_buf(s), s),
     }),
@@ -165,15 +173,16 @@ var import_node_buffer3 = require('buffer'),
     tweetnacl: e => ({ open: e.secretbox.open, close: e.secretbox, random: e.randomBytes }),
   },
   fallbackError = __name(() => {
-    throw new Error(
-      'Cannot play audio as no valid encryption package is installed.\n- Install sodium, libsodium-wrappers, or tweetnacl.\n- Use the generateDependencyReport() function for more information.\n',
-    );
+    throw Error(`Cannot play audio as no valid encryption package is installed.
+- Install sodium, libsodium-wrappers, or tweetnacl.
+- Use the generateDependencyReport() function for more information.
+`);
   }, 'fallbackError'),
   methods = { open: fallbackError, close: fallbackError, random: fallbackError };
 (async () => {
-  for (const e of Object.keys(libs))
+  for (let e of Object.keys(libs))
     try {
-      const t = require(e);
+      let t = require(e);
       'libsodium-wrappers' === e && t.ready && (await t.ready), Object.assign(methods, libs[e](t));
       break;
     } catch {}
@@ -184,16 +193,22 @@ var noop = __name(() => {}, 'noop'),
   import_node_events = require('events'),
   import_node_net = require('net');
 function parseLocalPacket(e) {
-  const t = import_node_buffer2.Buffer.from(e),
+  let t = import_node_buffer2.Buffer.from(e),
     s = t.slice(8, t.indexOf(0, 8)).toString('utf8');
-  if (!(0, import_node_net.isIPv4)(s)) throw new Error('Malformed IP address');
-  return { ip: s, port: t.readUInt16BE(t.length - 2) };
+  if (!(0, import_node_net.isIPv4)(s)) throw Error('Malformed IP address');
+  let i = t.readUInt16BE(t.length - 2);
+  return { ip: s, port: i };
 }
 __name(parseLocalPacket, 'parseLocalPacket');
 var KEEP_ALIVE_INTERVAL = 5e3,
-  MAX_COUNTER_VALUE = 2 ** 32 - 1,
+  MAX_COUNTER_VALUE = 4294967296 - 1,
   VoiceUDPSocket = class extends import_node_events.EventEmitter {
+    socket;
+    remote;
     keepAliveCounter = 0;
+    keepAliveBuffer;
+    keepAliveInterval;
+    ping;
     constructor(e) {
       super(),
         (this.socket = (0, import_node_dgram.createSocket)('udp4')),
@@ -225,17 +240,17 @@ var KEEP_ALIVE_INTERVAL = 5e3,
     }
     async performIPDiscovery(e) {
       return new Promise((t, s) => {
-        const o = __name(e => {
+        let i = __name(e => {
           try {
             if (2 !== e.readUInt16BE(0)) return;
-            const s = parseLocalPacket(e);
-            this.socket.off('message', o), t(s);
+            let s = parseLocalPacket(e);
+            this.socket.off('message', i), t(s);
           } catch {}
         }, 'listener');
-        this.socket.on('message', o),
-          this.socket.once('close', () => s(new Error('Cannot perform IP discovery - socket closed')));
-        const n = import_node_buffer2.Buffer.alloc(74);
-        n.writeUInt16BE(1, 0), n.writeUInt16BE(70, 2), n.writeUInt32BE(e, 4), this.send(n);
+        this.socket.on('message', i),
+          this.socket.once('close', () => s(Error('Cannot perform IP discovery - socket closed')));
+        let o = import_node_buffer2.Buffer.alloc(74);
+        o.writeUInt16BE(1, 0), o.writeUInt16BE(70, 2), o.writeUInt32BE(e, 4), this.send(o);
       });
     }
   };
@@ -244,7 +259,13 @@ var import_node_events2 = require('events'),
   import_v4 = require('discord-api-types/voice/v4'),
   import_ws = __toESM(require('ws')),
   VoiceWebSocket = class extends import_node_events2.EventEmitter {
+    heartbeatInterval;
+    lastHeartbeatAck;
+    lastHeartbeatSend;
     missedHeartbeats = 0;
+    ping;
+    debug;
+    ws;
     constructor(e, t) {
       super(),
         (this.ws = new import_ws.default(e)),
@@ -260,19 +281,18 @@ var import_node_events2 = require('events'),
       try {
         this.debug?.('destroyed'), this.setHeartbeatInterval(-1), this.ws.close(1e3);
       } catch (e) {
-        const t = e;
-        this.emit('error', t);
+        this.emit('error', e);
       }
     }
     onMessage(e) {
       if ('string' != typeof e.data) return;
-      let t;
       this.debug?.(`<< ${e.data}`);
+      let t;
       try {
         t = JSON.parse(e.data);
-      } catch (e) {
-        const t = e;
-        return void this.emit('error', t);
+      } catch (s) {
+        this.emit('error', s);
+        return;
       }
       t.op === import_v4.VoiceOpcodes.HeartbeatAck &&
         ((this.lastHeartbeatAck = Date.now()),
@@ -282,16 +302,16 @@ var import_node_events2 = require('events'),
     }
     sendPacket(e) {
       try {
-        const t = JSON.stringify(e);
-        return this.debug?.(`>> ${t}`), void this.ws.send(t);
-      } catch (e) {
-        const t = e;
-        this.emit('error', t);
+        let t = JSON.stringify(e);
+        this.debug?.(`>> ${t}`), this.ws.send(t);
+        return;
+      } catch (s) {
+        this.emit('error', s);
       }
     }
     sendHeartbeat() {
       (this.lastHeartbeatSend = Date.now()), this.missedHeartbeats++;
-      const e = this.lastHeartbeatSend;
+      let e = this.lastHeartbeatSend;
       this.sendPacket({ op: import_v4.VoiceOpcodes.Heartbeat, d: e });
     }
     setHeartbeatInterval(e) {
@@ -306,27 +326,17 @@ var import_node_events2 = require('events'),
     }
   };
 __name(VoiceWebSocket, 'VoiceWebSocket');
-var NetworkingStatusCode,
-  CHANNELS = 2,
+var CHANNELS = 2,
   TIMESTAMP_INC = 480 * CHANNELS,
-  MAX_NONCE_SIZE = 2 ** 32 - 1,
-  SUPPORTED_ENCRYPTION_MODES = ['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305'];
-!(function (e) {
-  (e[(e.OpeningWs = 0)] = 'OpeningWs'),
-    (e[(e.Identifying = 1)] = 'Identifying'),
-    (e[(e.UdpHandshaking = 2)] = 'UdpHandshaking'),
-    (e[(e.SelectingProtocol = 3)] = 'SelectingProtocol'),
-    (e[(e.Ready = 4)] = 'Ready'),
-    (e[(e.Resuming = 5)] = 'Resuming'),
-    (e[(e.Closed = 6)] = 'Closed');
-})(NetworkingStatusCode || (NetworkingStatusCode = {}));
-var nonce = import_node_buffer3.Buffer.alloc(24);
+  MAX_NONCE_SIZE = 4294967296 - 1,
+  SUPPORTED_ENCRYPTION_MODES = ['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305'],
+  nonce = import_node_buffer3.Buffer.alloc(24);
 function stringifyState(e) {
   return JSON.stringify({ ...e, ws: Reflect.has(e, 'ws'), udp: Reflect.has(e, 'udp') });
 }
 function chooseEncryptionMode(e) {
-  const t = e.find(e => SUPPORTED_ENCRYPTION_MODES.includes(e));
-  if (!t) throw new Error(`No compatible encryption modes. Available include: ${e.join(', ')}`);
+  let t = e.find(e => SUPPORTED_ENCRYPTION_MODES.includes(e));
+  if (!t) throw Error(`No compatible encryption modes. Available include: ${e.join(', ')}`);
   return t;
 }
 function randomNBit(e) {
@@ -336,6 +346,8 @@ __name(stringifyState, 'stringifyState'),
   __name(chooseEncryptionMode, 'chooseEncryptionMode'),
   __name(randomNBit, 'randomNBit');
 var Networking = class extends import_node_events3.EventEmitter {
+  _state;
+  debug;
   constructor(e, t) {
     super(),
       (this.onWsOpen = this.onWsOpen.bind(this)),
@@ -346,20 +358,16 @@ var Networking = class extends import_node_events3.EventEmitter {
       (this.onUdpDebug = this.onUdpDebug.bind(this)),
       (this.onUdpClose = this.onUdpClose.bind(this)),
       (this.debug = t ? e => this.emit('debug', e) : null),
-      (this._state = {
-        code: NetworkingStatusCode.OpeningWs,
-        ws: this.createWebSocket(e.endpoint),
-        connectionOptions: e,
-      });
+      (this._state = { code: 0, ws: this.createWebSocket(e.endpoint), connectionOptions: e });
   }
   destroy() {
-    this.state = { code: NetworkingStatusCode.Closed };
+    this.state = { code: 6 };
   }
   get state() {
     return this._state;
   }
   set state(e) {
-    const t = Reflect.get(this._state, 'ws'),
+    let t = Reflect.get(this._state, 'ws'),
       s = Reflect.get(e, 'ws');
     t &&
       t !== s &&
@@ -370,22 +378,24 @@ var Networking = class extends import_node_events3.EventEmitter {
       t.off('packet', this.onWsPacket),
       t.off('close', this.onWsClose),
       t.destroy());
-    const o = Reflect.get(this._state, 'udp'),
-      n = Reflect.get(e, 'udp');
-    o &&
-      o !== n &&
-      (o.on('error', noop),
-      o.off('error', this.onChildError),
-      o.off('close', this.onUdpClose),
-      o.off('debug', this.onUdpDebug),
-      o.destroy());
-    const i = this._state;
+    let i = Reflect.get(this._state, 'udp'),
+      o = Reflect.get(e, 'udp');
+    i &&
+      i !== o &&
+      (i.on('error', noop),
+      i.off('error', this.onChildError),
+      i.off('close', this.onUdpClose),
+      i.off('debug', this.onUdpDebug),
+      i.destroy());
+    let n = this._state;
     (this._state = e),
-      this.emit('stateChange', i, e),
-      this.debug?.(`state change:\nfrom ${stringifyState(i)}\nto ${stringifyState(e)}`);
+      this.emit('stateChange', n, e),
+      this.debug?.(`state change:
+from ${stringifyState(n)}
+to ${stringifyState(e)}`);
   }
   createWebSocket(e) {
-    const t = new VoiceWebSocket(`wss://${e}?v=4`, Boolean(this.debug));
+    let t = new VoiceWebSocket(`wss://${e}?v=4`, Boolean(this.debug));
     return (
       t.on('error', this.onChildError),
       t.once('open', this.onWsOpen),
@@ -399,8 +409,8 @@ var Networking = class extends import_node_events3.EventEmitter {
     this.emit('error', e);
   }
   onWsOpen() {
-    if (this.state.code === NetworkingStatusCode.OpeningWs) {
-      const e = {
+    if (0 === this.state.code) {
+      let e = {
         op: import_v42.VoiceOpcodes.Identify,
         d: {
           server_id: this.state.connectionOptions.serverId,
@@ -409,9 +419,9 @@ var Networking = class extends import_node_events3.EventEmitter {
           token: this.state.connectionOptions.token,
         },
       };
-      this.state.ws.sendPacket(e), (this.state = { ...this.state, code: NetworkingStatusCode.Identifying });
-    } else if (this.state.code === NetworkingStatusCode.Resuming) {
-      const e = {
+      this.state.ws.sendPacket(e), (this.state = { ...this.state, code: 1 });
+    } else if (5 === this.state.code) {
+      let t = {
         op: import_v42.VoiceOpcodes.Resume,
         d: {
           server_id: this.state.connectionOptions.serverId,
@@ -419,64 +429,48 @@ var Networking = class extends import_node_events3.EventEmitter {
           token: this.state.connectionOptions.token,
         },
       };
-      this.state.ws.sendPacket(e);
+      this.state.ws.sendPacket(t);
     }
   }
   onWsClose({ code: e }) {
-    (4015 === e || e < 4e3) && this.state.code === NetworkingStatusCode.Ready
-      ? (this.state = {
-          ...this.state,
-          code: NetworkingStatusCode.Resuming,
-          ws: this.createWebSocket(this.state.connectionOptions.endpoint),
-        })
-      : this.state.code !== NetworkingStatusCode.Closed && (this.destroy(), this.emit('close', e));
+    (4015 === e || e < 4e3) && 4 === this.state.code
+      ? (this.state = { ...this.state, code: 5, ws: this.createWebSocket(this.state.connectionOptions.endpoint) })
+      : 6 !== this.state.code && (this.destroy(), this.emit('close', e));
   }
   onUdpClose() {
-    this.state.code === NetworkingStatusCode.Ready &&
-      (this.state = {
-        ...this.state,
-        code: NetworkingStatusCode.Resuming,
-        ws: this.createWebSocket(this.state.connectionOptions.endpoint),
-      });
+    4 === this.state.code &&
+      (this.state = { ...this.state, code: 5, ws: this.createWebSocket(this.state.connectionOptions.endpoint) });
   }
   onWsPacket(e) {
-    if (e.op === import_v42.VoiceOpcodes.Hello && this.state.code !== NetworkingStatusCode.Closed)
+    if (e.op === import_v42.VoiceOpcodes.Hello && 6 !== this.state.code)
       this.state.ws.setHeartbeatInterval(e.d.heartbeat_interval);
-    else if (e.op === import_v42.VoiceOpcodes.Ready && this.state.code === NetworkingStatusCode.Identifying) {
-      const { ip: t, port: s, ssrc: o, modes: n } = e.d,
-        i = new VoiceUDPSocket({ ip: t, port: s });
-      i.on('error', this.onChildError),
-        i.on('debug', this.onUdpDebug),
-        i.once('close', this.onUdpClose),
-        i
-          .performIPDiscovery(o)
+    else if (e.op === import_v42.VoiceOpcodes.Ready && 1 === this.state.code) {
+      let { ip: t, port: s, ssrc: i, modes: o } = e.d,
+        n = new VoiceUDPSocket({ ip: t, port: s });
+      n.on('error', this.onChildError),
+        n.on('debug', this.onUdpDebug),
+        n.once('close', this.onUdpClose),
+        n
+          .performIPDiscovery(i)
           .then(e => {
-            this.state.code === NetworkingStatusCode.UdpHandshaking &&
+            2 === this.state.code &&
               (this.state.ws.sendPacket({
                 op: import_v42.VoiceOpcodes.SelectProtocol,
-                d: { protocol: 'udp', data: { address: e.ip, port: e.port, mode: chooseEncryptionMode(n) } },
+                d: { protocol: 'udp', data: { address: e.ip, port: e.port, mode: chooseEncryptionMode(o) } },
               }),
-              (this.state = { ...this.state, code: NetworkingStatusCode.SelectingProtocol }));
+              (this.state = { ...this.state, code: 3 }));
           })
           .catch(e => this.emit('error', e)),
-        (this.state = {
-          ...this.state,
-          code: NetworkingStatusCode.UdpHandshaking,
-          udp: i,
-          connectionData: { ssrc: o },
-        });
-    } else if (
-      e.op === import_v42.VoiceOpcodes.SessionDescription &&
-      this.state.code === NetworkingStatusCode.SelectingProtocol
-    ) {
-      const { mode: t, secret_key: s } = e.d;
+        (this.state = { ...this.state, code: 2, udp: n, connectionData: { ssrc: i } });
+    } else if (e.op === import_v42.VoiceOpcodes.SessionDescription && 3 === this.state.code) {
+      let { mode: r, secret_key: a } = e.d;
       this.state = {
         ...this.state,
-        code: NetworkingStatusCode.Ready,
+        code: 4,
         connectionData: {
           ...this.state.connectionData,
-          encryptionMode: t,
-          secretKey: new Uint8Array(s),
+          encryptionMode: r,
+          secretKey: new Uint8Array(a),
           sequence: randomNBit(16),
           timestamp: randomNBit(32),
           nonce: 0,
@@ -487,8 +481,8 @@ var Networking = class extends import_node_events3.EventEmitter {
       };
     } else
       e.op === import_v42.VoiceOpcodes.Resumed &&
-        this.state.code === NetworkingStatusCode.Resuming &&
-        ((this.state = { ...this.state, code: NetworkingStatusCode.Ready }), (this.state.connectionData.speaking = !1));
+        5 === this.state.code &&
+        ((this.state = { ...this.state, code: 4 }), (this.state.connectionData.speaking = !1));
   }
   onWsDebug(e) {
     this.debug?.(`[WS] ${e}`);
@@ -497,33 +491,32 @@ var Networking = class extends import_node_events3.EventEmitter {
     this.debug?.(`[UDP] ${e}`);
   }
   prepareAudioPacket(e) {
-    const t = this.state;
-    if (t.code === NetworkingStatusCode.Ready)
-      return (t.preparedPacket = this.createAudioPacket(e, t.connectionData)), t.preparedPacket;
+    let t = this.state;
+    if (4 === t.code) return (t.preparedPacket = this.createAudioPacket(e, t.connectionData)), t.preparedPacket;
   }
   dispatchAudio() {
-    const e = this.state;
+    let e = this.state;
     return (
-      e.code === NetworkingStatusCode.Ready &&
+      4 === e.code &&
       void 0 !== e.preparedPacket &&
       (this.playAudioPacket(e.preparedPacket), (e.preparedPacket = void 0), !0)
     );
   }
   playAudioPacket(e) {
-    const t = this.state;
-    if (t.code !== NetworkingStatusCode.Ready) return;
-    const { connectionData: s } = t;
+    let t = this.state;
+    if (4 !== t.code) return;
+    let { connectionData: s } = t;
     s.packetsPlayed++,
       s.sequence++,
       (s.timestamp += TIMESTAMP_INC),
       s.sequence >= 65536 && (s.sequence = 0),
-      s.timestamp >= 2 ** 32 && (s.timestamp = 0),
+      s.timestamp >= 4294967296 && (s.timestamp = 0),
       this.setSpeaking(!0),
       t.udp.send(e);
   }
   setSpeaking(e) {
-    const t = this.state;
-    t.code === NetworkingStatusCode.Ready &&
+    let t = this.state;
+    4 === t.code &&
       t.connectionData.speaking !== e &&
       ((t.connectionData.speaking = e),
       t.ws.sendPacket({
@@ -532,28 +525,28 @@ var Networking = class extends import_node_events3.EventEmitter {
       }));
   }
   createAudioPacket(e, t) {
-    const s = import_node_buffer3.Buffer.alloc(12);
+    let s = import_node_buffer3.Buffer.alloc(12);
     (s[0] = 128), (s[1] = 120);
-    const { sequence: o, timestamp: n, ssrc: i } = t;
+    let { sequence: i, timestamp: o, ssrc: n } = t;
     return (
-      s.writeUIntBE(o, 2, 2),
-      s.writeUIntBE(n, 4, 4),
-      s.writeUIntBE(i, 8, 4),
+      s.writeUIntBE(i, 2, 2),
+      s.writeUIntBE(o, 4, 4),
+      s.writeUIntBE(n, 8, 4),
       s.copy(nonce, 0, 0, 12),
       import_node_buffer3.Buffer.concat([s, ...this.encryptOpusPacket(e, t)])
     );
   }
   encryptOpusPacket(e, t) {
-    const { secretKey: s, encryptionMode: o } = t;
-    if ('xsalsa20_poly1305_lite' === o)
+    let { secretKey: s, encryptionMode: i } = t;
+    if ('xsalsa20_poly1305_lite' === i)
       return (
         t.nonce++,
         t.nonce > MAX_NONCE_SIZE && (t.nonce = 0),
         t.nonceBuffer.writeUInt32BE(t.nonce, 0),
         [methods.close(e, t.nonceBuffer, s), t.nonceBuffer.slice(0, 4)]
       );
-    if ('xsalsa20_poly1305_suffix' === o) {
-      const o = methods.random(24, t.nonceBuffer);
+    if ('xsalsa20_poly1305_suffix' === i) {
+      let o = methods.random(24, t.nonceBuffer);
       return [methods.close(e, o, s), o];
     }
     return [methods.close(e, nonce, s)];
@@ -566,12 +559,15 @@ var import_node_buffer5 = require('buffer'),
   import_node_buffer4 = require('buffer'),
   import_node_events4 = require('events'),
   AudioPlayerError = class extends Error {
+    resource;
     constructor(e, t) {
       super(e.message), (this.resource = t), (this.name = e.name), (this.stack = e.stack);
     }
   };
 __name(AudioPlayerError, 'AudioPlayerError');
 var PlayerSubscription = class {
+  connection;
+  player;
   constructor(e, t) {
     (this.connection = e), (this.player = t);
   }
@@ -580,226 +576,205 @@ var PlayerSubscription = class {
   }
 };
 __name(PlayerSubscription, 'PlayerSubscription');
-var NoSubscriberBehavior,
-  AudioPlayerStatus,
-  SILENCE_FRAME = import_node_buffer4.Buffer.from([248, 255, 254]);
+var SILENCE_FRAME = import_node_buffer4.Buffer.from([248, 255, 254]),
+  NoSubscriberBehavior =
+    (((NoSubscriberBehavior2 = NoSubscriberBehavior || {}).Pause = 'pause'),
+    (NoSubscriberBehavior2.Play = 'play'),
+    (NoSubscriberBehavior2.Stop = 'stop'),
+    NoSubscriberBehavior2),
+  AudioPlayerStatus =
+    (((AudioPlayerStatus2 = AudioPlayerStatus || {}).AutoPaused = 'autopaused'),
+    (AudioPlayerStatus2.Buffering = 'buffering'),
+    (AudioPlayerStatus2.Idle = 'idle'),
+    (AudioPlayerStatus2.Paused = 'paused'),
+    (AudioPlayerStatus2.Playing = 'playing'),
+    AudioPlayerStatus2);
 function stringifyState2(e) {
   return JSON.stringify({ ...e, resource: Reflect.has(e, 'resource'), stepTimeout: Reflect.has(e, 'stepTimeout') });
 }
-!(function (e) {
-  (e.Pause = 'pause'), (e.Play = 'play'), (e.Stop = 'stop');
-})(NoSubscriberBehavior || (NoSubscriberBehavior = {})),
-  (function (e) {
-    (e.AutoPaused = 'autopaused'),
-      (e.Buffering = 'buffering'),
-      (e.Idle = 'idle'),
-      (e.Paused = 'paused'),
-      (e.Playing = 'playing');
-  })(AudioPlayerStatus || (AudioPlayerStatus = {})),
-  __name(stringifyState2, 'stringifyState');
-var EndBehaviorType,
-  AudioPlayer = class extends import_node_events4.EventEmitter {
-    subscribers = [];
-    constructor(e = {}) {
-      super(),
-        (this._state = { status: AudioPlayerStatus.Idle }),
-        (this.behaviors = { noSubscriber: NoSubscriberBehavior.Pause, maxMissedFrames: 5, ...e.behaviors }),
-        (this.debug = !1 === e.debug ? null : e => this.emit('debug', e));
+__name(stringifyState2, 'stringifyState');
+var AudioPlayer = class extends import_node_events4.EventEmitter {
+  _state;
+  subscribers = [];
+  behaviors;
+  debug;
+  constructor(e = {}) {
+    super(),
+      (this._state = { status: 'idle' }),
+      (this.behaviors = { noSubscriber: 'pause', maxMissedFrames: 5, ...e.behaviors }),
+      (this.debug = !1 === e.debug ? null : e => this.emit('debug', e));
+  }
+  get playable() {
+    return this.subscribers.filter(({ connection: e }) => 'ready' === e.state.status).map(({ connection: e }) => e);
+  }
+  subscribe(e) {
+    let t = this.subscribers.find(t => t.connection === e);
+    if (!t) {
+      let s = new PlayerSubscription(e, this);
+      return this.subscribers.push(s), setImmediate(() => this.emit('subscribe', s)), s;
     }
-    get playable() {
-      return this.subscribers
-        .filter(({ connection: e }) => e.state.status === VoiceConnectionStatus.Ready)
-        .map(({ connection: e }) => e);
+    return t;
+  }
+  unsubscribe(e) {
+    let t = this.subscribers.indexOf(e),
+      s = -1 !== t;
+    return s && (this.subscribers.splice(t, 1), e.connection.setSpeaking(!1), this.emit('unsubscribe', e)), s;
+  }
+  get state() {
+    return this._state;
+  }
+  set state(e) {
+    let t = this._state,
+      s = Reflect.get(e, 'resource');
+    'idle' !== t.status &&
+      t.resource !== s &&
+      (t.resource.playStream.on('error', noop),
+      t.resource.playStream.off('error', t.onStreamError),
+      (t.resource.audioPlayer = void 0),
+      t.resource.playStream.destroy(),
+      t.resource.playStream.read()),
+      'buffering' === t.status &&
+        ('buffering' !== e.status || e.resource !== t.resource) &&
+        (t.resource.playStream.off('end', t.onFailureCallback),
+        t.resource.playStream.off('close', t.onFailureCallback),
+        t.resource.playStream.off('finish', t.onFailureCallback),
+        t.resource.playStream.off('readable', t.onReadableCallback)),
+      'idle' === e.status && (this._signalStopSpeaking(), deleteAudioPlayer(this)),
+      s && addAudioPlayer(this);
+    let i = 'idle' !== t.status && 'playing' === e.status && t.resource !== e.resource;
+    (this._state = e),
+      this.emit('stateChange', t, this._state),
+      (t.status !== e.status || i) && this.emit(e.status, t, this._state),
+      this.debug?.(`state change:
+from ${stringifyState2(t)}
+to ${stringifyState2(e)}`);
+  }
+  play(e) {
+    if (e.ended) throw Error('Cannot play a resource that has already ended.');
+    if (e.audioPlayer) {
+      if (e.audioPlayer === this) return;
+      throw Error('Resource is already being played by another audio player.');
     }
-    subscribe(e) {
-      const t = this.subscribers.find(t => t.connection === e);
-      if (!t) {
-        const t = new PlayerSubscription(e, this);
-        return this.subscribers.push(t), setImmediate(() => this.emit('subscribe', t)), t;
-      }
-      return t;
-    }
-    unsubscribe(e) {
-      const t = this.subscribers.indexOf(e),
-        s = -1 !== t;
-      return s && (this.subscribers.splice(t, 1), e.connection.setSpeaking(!1), this.emit('unsubscribe', e)), s;
-    }
-    get state() {
-      return this._state;
-    }
-    set state(e) {
-      const t = this._state,
-        s = Reflect.get(e, 'resource');
-      t.status !== AudioPlayerStatus.Idle &&
-        t.resource !== s &&
-        (t.resource.playStream.on('error', noop),
-        t.resource.playStream.off('error', t.onStreamError),
-        (t.resource.audioPlayer = void 0),
-        t.resource.playStream.destroy(),
-        t.resource.playStream.read()),
-        t.status !== AudioPlayerStatus.Buffering ||
-          (e.status === AudioPlayerStatus.Buffering && e.resource === t.resource) ||
-          (t.resource.playStream.off('end', t.onFailureCallback),
-          t.resource.playStream.off('close', t.onFailureCallback),
-          t.resource.playStream.off('finish', t.onFailureCallback),
-          t.resource.playStream.off('readable', t.onReadableCallback)),
-        e.status === AudioPlayerStatus.Idle && (this._signalStopSpeaking(), deleteAudioPlayer(this)),
-        s && addAudioPlayer(this);
-      const o =
-        t.status !== AudioPlayerStatus.Idle && e.status === AudioPlayerStatus.Playing && t.resource !== e.resource;
-      (this._state = e),
-        this.emit('stateChange', t, this._state),
-        (t.status !== e.status || o) && this.emit(e.status, t, this._state),
-        this.debug?.(`state change:\nfrom ${stringifyState2(t)}\nto ${stringifyState2(e)}`);
-    }
-    play(e) {
-      if (e.ended) throw new Error('Cannot play a resource that has already ended.');
-      if (e.audioPlayer) {
-        if (e.audioPlayer === this) return;
-        throw new Error('Resource is already being played by another audio player.');
-      }
-      e.audioPlayer = this;
-      const t = __name(t => {
-        this.state.status !== AudioPlayerStatus.Idle &&
-          this.emit('error', new AudioPlayerError(t, this.state.resource)),
-          this.state.status !== AudioPlayerStatus.Idle &&
+    e.audioPlayer = this;
+    let t = __name(t => {
+      'idle' !== this.state.status && this.emit('error', new AudioPlayerError(t, this.state.resource)),
+        'idle' !== this.state.status && this.state.resource === e && (this.state = { status: 'idle' });
+    }, 'onStreamError');
+    if ((e.playStream.once('error', t), e.started))
+      this.state = { status: 'playing', missedFrames: 0, playbackDuration: 0, resource: e, onStreamError: t };
+    else {
+      let s = __name(() => {
+          'buffering' === this.state.status &&
             this.state.resource === e &&
-            (this.state = { status: AudioPlayerStatus.Idle });
-      }, 'onStreamError');
-      if ((e.playStream.once('error', t), e.started))
-        this.state = {
-          status: AudioPlayerStatus.Playing,
-          missedFrames: 0,
-          playbackDuration: 0,
+            (this.state = { status: 'playing', missedFrames: 0, playbackDuration: 0, resource: e, onStreamError: t });
+        }, 'onReadableCallback'),
+        i = __name(() => {
+          'buffering' === this.state.status && this.state.resource === e && (this.state = { status: 'idle' });
+        }, 'onFailureCallback');
+      e.playStream.once('readable', s),
+        e.playStream.once('end', i),
+        e.playStream.once('close', i),
+        e.playStream.once('finish', i),
+        (this.state = {
+          status: 'buffering',
           resource: e,
+          onReadableCallback: s,
+          onFailureCallback: i,
           onStreamError: t,
-        };
-      else {
-        const s = __name(() => {
-            this.state.status === AudioPlayerStatus.Buffering &&
-              this.state.resource === e &&
-              (this.state = {
-                status: AudioPlayerStatus.Playing,
-                missedFrames: 0,
-                playbackDuration: 0,
-                resource: e,
-                onStreamError: t,
-              });
-          }, 'onReadableCallback'),
-          o = __name(() => {
-            this.state.status === AudioPlayerStatus.Buffering &&
-              this.state.resource === e &&
-              (this.state = { status: AudioPlayerStatus.Idle });
-          }, 'onFailureCallback');
-        e.playStream.once('readable', s),
-          e.playStream.once('end', o),
-          e.playStream.once('close', o),
-          e.playStream.once('finish', o),
-          (this.state = {
-            status: AudioPlayerStatus.Buffering,
-            resource: e,
-            onReadableCallback: s,
-            onFailureCallback: o,
-            onStreamError: t,
-          });
+        });
+    }
+  }
+  pause(e = !0) {
+    return (
+      'playing' === this.state.status &&
+      ((this.state = { ...this.state, status: 'paused', silencePacketsRemaining: e ? 5 : 0 }), !0)
+    );
+  }
+  unpause() {
+    return 'paused' === this.state.status && ((this.state = { ...this.state, status: 'playing', missedFrames: 0 }), !0);
+  }
+  stop(e = !1) {
+    return (
+      'idle' !== this.state.status &&
+      (e || 0 === this.state.resource.silencePaddingFrames
+        ? (this.state = { status: 'idle' })
+        : -1 === this.state.resource.silenceRemaining &&
+          (this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames),
+      !0)
+    );
+  }
+  checkPlayable() {
+    let e = this._state;
+    return (
+      'idle' !== e.status &&
+      'buffering' !== e.status &&
+      (!!e.resource.readable || ((this.state = { status: 'idle' }), !1))
+    );
+  }
+  _stepDispatch() {
+    let e = this._state;
+    if ('idle' !== e.status && 'buffering' !== e.status) for (let t of this.playable) t.dispatchAudio();
+  }
+  _stepPrepare() {
+    let e = this._state;
+    if ('idle' === e.status || 'buffering' === e.status) return;
+    let t = this.playable;
+    if (
+      ('autopaused' === e.status && t.length > 0 && (this.state = { ...e, status: 'playing', missedFrames: 0 }),
+      'paused' === e.status || 'autopaused' === e.status)
+    ) {
+      e.silencePacketsRemaining > 0 &&
+        (e.silencePacketsRemaining--,
+        this._preparePacket(SILENCE_FRAME, t, e),
+        0 === e.silencePacketsRemaining && this._signalStopSpeaking());
+      return;
+    }
+    if (0 === t.length) {
+      if ('pause' === this.behaviors.noSubscriber) {
+        this.state = { ...e, status: 'autopaused', silencePacketsRemaining: 5 };
+        return;
       }
+      'stop' === this.behaviors.noSubscriber && this.stop(!0);
     }
-    pause(e = !0) {
-      return (
-        this.state.status === AudioPlayerStatus.Playing &&
-        ((this.state = { ...this.state, status: AudioPlayerStatus.Paused, silencePacketsRemaining: e ? 5 : 0 }), !0)
-      );
-    }
-    unpause() {
-      return (
-        this.state.status === AudioPlayerStatus.Paused &&
-        ((this.state = { ...this.state, status: AudioPlayerStatus.Playing, missedFrames: 0 }), !0)
-      );
-    }
-    stop(e = !1) {
-      return (
-        this.state.status !== AudioPlayerStatus.Idle &&
-        (e || 0 === this.state.resource.silencePaddingFrames
-          ? (this.state = { status: AudioPlayerStatus.Idle })
-          : -1 === this.state.resource.silenceRemaining &&
-            (this.state.resource.silenceRemaining = this.state.resource.silencePaddingFrames),
-        !0)
-      );
-    }
-    checkPlayable() {
-      const e = this._state;
-      return (
-        e.status !== AudioPlayerStatus.Idle &&
-        e.status !== AudioPlayerStatus.Buffering &&
-        (!!e.resource.readable || ((this.state = { status: AudioPlayerStatus.Idle }), !1))
-      );
-    }
-    _stepDispatch() {
-      const e = this._state;
-      if (e.status !== AudioPlayerStatus.Idle && e.status !== AudioPlayerStatus.Buffering)
-        for (const e of this.playable) e.dispatchAudio();
-    }
-    _stepPrepare() {
-      const e = this._state;
-      if (e.status === AudioPlayerStatus.Idle || e.status === AudioPlayerStatus.Buffering) return;
-      const t = this.playable;
-      if (
-        (e.status === AudioPlayerStatus.AutoPaused &&
-          t.length > 0 &&
-          (this.state = { ...e, status: AudioPlayerStatus.Playing, missedFrames: 0 }),
-        e.status === AudioPlayerStatus.Paused || e.status === AudioPlayerStatus.AutoPaused)
-      )
-        return void (
-          e.silencePacketsRemaining > 0 &&
-          (e.silencePacketsRemaining--,
-          this._preparePacket(SILENCE_FRAME, t, e),
-          0 === e.silencePacketsRemaining && this._signalStopSpeaking())
-        );
-      if (0 === t.length) {
-        if (this.behaviors.noSubscriber === NoSubscriberBehavior.Pause)
-          return void (this.state = { ...e, status: AudioPlayerStatus.AutoPaused, silencePacketsRemaining: 5 });
-        this.behaviors.noSubscriber === NoSubscriberBehavior.Stop && this.stop(!0);
-      }
-      const s = e.resource.read();
-      e.status === AudioPlayerStatus.Playing &&
-        (s
-          ? (this._preparePacket(s, t, e), (e.missedFrames = 0))
-          : (this._preparePacket(SILENCE_FRAME, t, e),
-            e.missedFrames++,
-            e.missedFrames >= this.behaviors.maxMissedFrames && this.stop()));
-    }
-    _signalStopSpeaking() {
-      for (const { connection: e } of this.subscribers) e.setSpeaking(!1);
-    }
-    _preparePacket(e, t, s) {
-      s.playbackDuration += 20;
-      for (const s of t) s.prepareAudioPacket(e);
-    }
-  };
+    let s = e.resource.read();
+    'playing' === e.status &&
+      (s
+        ? (this._preparePacket(s, t, e), (e.missedFrames = 0))
+        : (this._preparePacket(SILENCE_FRAME, t, e),
+          e.missedFrames++,
+          e.missedFrames >= this.behaviors.maxMissedFrames && this.stop()));
+  }
+  _signalStopSpeaking() {
+    for (let { connection: e } of this.subscribers) e.setSpeaking(!1);
+  }
+  _preparePacket(e, t, s) {
+    for (let i of ((s.playbackDuration += 20), t)) i.prepareAudioPacket(e);
+  }
+};
 function createAudioPlayer(e) {
   return new AudioPlayer(e);
 }
+__name(AudioPlayer, 'AudioPlayer'), __name(createAudioPlayer, 'createAudioPlayer');
+var EndBehaviorType =
+  (((EndBehaviorType2 = EndBehaviorType || {})[(EndBehaviorType2.Manual = 0)] = 'Manual'),
+  (EndBehaviorType2[(EndBehaviorType2.AfterSilence = 1)] = 'AfterSilence'),
+  (EndBehaviorType2[(EndBehaviorType2.AfterInactivity = 2)] = 'AfterInactivity'),
+  EndBehaviorType2);
 function createDefaultAudioReceiveStreamOptions() {
-  return { end: { behavior: EndBehaviorType.Manual } };
+  return { end: { behavior: 0 } };
 }
-__name(AudioPlayer, 'AudioPlayer'),
-  __name(createAudioPlayer, 'createAudioPlayer'),
-  (function (e) {
-    (e[(e.Manual = 0)] = 'Manual'),
-      (e[(e.AfterSilence = 1)] = 'AfterSilence'),
-      (e[(e.AfterInactivity = 2)] = 'AfterInactivity');
-  })(EndBehaviorType || (EndBehaviorType = {})),
-  __name(createDefaultAudioReceiveStreamOptions, 'createDefaultAudioReceiveStreamOptions');
+__name(createDefaultAudioReceiveStreamOptions, 'createDefaultAudioReceiveStreamOptions');
 var AudioReceiveStream = class extends import_node_stream.Readable {
+  end;
+  endTimeout;
   constructor({ end: e, ...t }) {
     super({ ...t, objectMode: !0 }), (this.end = e);
   }
   push(e) {
     return (
-      !e ||
-        (this.end.behavior !== EndBehaviorType.AfterInactivity &&
-          (this.end.behavior !== EndBehaviorType.AfterSilence ||
-            (0 === e.compare(SILENCE_FRAME) && void 0 !== this.endTimeout))) ||
+      e &&
+        (2 === this.end.behavior ||
+          (1 === this.end.behavior && (0 !== e.compare(SILENCE_FRAME) || void 0 === this.endTimeout))) &&
         this.renewEndTimeout(this.end),
       super.push(e)
     );
@@ -812,34 +787,37 @@ var AudioReceiveStream = class extends import_node_stream.Readable {
 __name(AudioReceiveStream, 'AudioReceiveStream');
 var import_node_events5 = require('events'),
   SSRCMap = class extends import_node_events5.EventEmitter {
+    map;
     constructor() {
       super(), (this.map = new Map());
     }
     update(e) {
-      const t = this.map.get(e.audioSSRC),
+      let t = this.map.get(e.audioSSRC),
         s = { ...this.map.get(e.audioSSRC), ...e };
       this.map.set(e.audioSSRC, s), t || this.emit('create', s), this.emit('update', t, s);
     }
     get(e) {
       if ('number' == typeof e) return this.map.get(e);
-      for (const t of this.map.values()) if (t.userId === e) return t;
+      for (let t of this.map.values()) if (t.userId === e) return t;
     }
     delete(e) {
       if ('number' == typeof e) {
-        const t = this.map.get(e);
+        let t = this.map.get(e);
         return t && (this.map.delete(e), this.emit('delete', t)), t;
       }
-      for (const [t, s] of this.map.entries()) if (s.userId === e) return this.map.delete(t), this.emit('delete', s), s;
+      for (let [s, i] of this.map.entries()) if (i.userId === e) return this.map.delete(s), this.emit('delete', i), i;
     }
   };
 __name(SSRCMap, 'SSRCMap');
 var import_node_events6 = require('events'),
   _SpeakingMap = class extends import_node_events6.EventEmitter {
+    users;
+    speakingTimeouts;
     constructor() {
       super(), (this.users = new Map()), (this.speakingTimeouts = new Map());
     }
     onPacket(e) {
-      const t = this.speakingTimeouts.get(e);
+      let t = this.speakingTimeouts.get(e);
       t ? clearTimeout(t) : (this.users.set(e, Date.now()), this.emit('start', e)), this.startTimeout(e);
     }
     startTimeout(e) {
@@ -853,336 +831,309 @@ var import_node_events6 = require('events'),
   },
   SpeakingMap = _SpeakingMap;
 __name(SpeakingMap, 'SpeakingMap'), __publicField(SpeakingMap, 'DELAY', 100);
-var VoiceConnectionStatus,
-  VoiceConnectionDisconnectReason,
-  VoiceReceiver = class {
-    constructor(e) {
-      (this.voiceConnection = e),
-        (this.ssrcMap = new SSRCMap()),
-        (this.speaking = new SpeakingMap()),
-        (this.subscriptions = new Map()),
-        (this.connectionData = {}),
-        (this.onWsPacket = this.onWsPacket.bind(this)),
-        (this.onUdpMessage = this.onUdpMessage.bind(this));
-    }
-    onWsPacket(e) {
-      e.op === import_v43.VoiceOpcodes.ClientDisconnect && 'string' == typeof e.d?.user_id
-        ? this.ssrcMap.delete(e.d.user_id)
-        : e.op === import_v43.VoiceOpcodes.Speaking && 'string' == typeof e.d?.user_id && 'number' == typeof e.d?.ssrc
-        ? this.ssrcMap.update({ userId: e.d.user_id, audioSSRC: e.d.ssrc })
-        : e.op === import_v43.VoiceOpcodes.ClientConnect &&
-          'string' == typeof e.d?.user_id &&
-          'number' == typeof e.d?.audio_ssrc &&
-          this.ssrcMap.update({
-            userId: e.d.user_id,
-            audioSSRC: e.d.audio_ssrc,
-            videoSSRC: 0 === e.d.video_ssrc ? void 0 : e.d.video_ssrc,
-          });
-    }
-    decrypt(e, t, s, o) {
-      let n;
-      'xsalsa20_poly1305_lite' === t
-        ? (e.copy(s, 0, e.length - 4), (n = e.length - 4))
-        : 'xsalsa20_poly1305_suffix' === t
-        ? (e.copy(s, 0, e.length - 24), (n = e.length - 24))
-        : e.copy(s, 0, 0, 12);
-      const i = methods.open(e.slice(12, n), s, o);
-      if (i) return import_node_buffer5.Buffer.from(i);
-    }
-    parsePacket(e, t, s, o) {
-      let n = this.decrypt(e, t, s, o);
-      if (n) {
-        if (190 === n[0] && 222 === n[1]) {
-          const e = n.readUInt16BE(2);
-          n = n.subarray(4 + 4 * e);
-        }
-        return n;
+var VoiceReceiver = class {
+  voiceConnection;
+  ssrcMap;
+  subscriptions;
+  connectionData;
+  speaking;
+  constructor(e) {
+    (this.voiceConnection = e),
+      (this.ssrcMap = new SSRCMap()),
+      (this.speaking = new SpeakingMap()),
+      (this.subscriptions = new Map()),
+      (this.connectionData = {}),
+      (this.onWsPacket = this.onWsPacket.bind(this)),
+      (this.onUdpMessage = this.onUdpMessage.bind(this));
+  }
+  onWsPacket(e) {
+    e.op === import_v43.VoiceOpcodes.ClientDisconnect && 'string' == typeof e.d?.user_id
+      ? this.ssrcMap.delete(e.d.user_id)
+      : e.op === import_v43.VoiceOpcodes.Speaking && 'string' == typeof e.d?.user_id && 'number' == typeof e.d?.ssrc
+      ? this.ssrcMap.update({ userId: e.d.user_id, audioSSRC: e.d.ssrc })
+      : e.op === import_v43.VoiceOpcodes.ClientConnect &&
+        'string' == typeof e.d?.user_id &&
+        'number' == typeof e.d?.audio_ssrc &&
+        this.ssrcMap.update({
+          userId: e.d.user_id,
+          audioSSRC: e.d.audio_ssrc,
+          videoSSRC: 0 === e.d.video_ssrc ? void 0 : e.d.video_ssrc,
+        });
+  }
+  decrypt(e, t, s, i) {
+    let o;
+    'xsalsa20_poly1305_lite' === t
+      ? (e.copy(s, 0, e.length - 4), (o = e.length - 4))
+      : 'xsalsa20_poly1305_suffix' === t
+      ? (e.copy(s, 0, e.length - 24), (o = e.length - 24))
+      : e.copy(s, 0, 0, 12);
+    let n = methods.open(e.slice(12, o), s, i);
+    if (n) return import_node_buffer5.Buffer.from(n);
+  }
+  parsePacket(e, t, s, i) {
+    let o = this.decrypt(e, t, s, i);
+    if (o) {
+      if (190 === o[0] && 222 === o[1]) {
+        let n = o.readUInt16BE(2);
+        o = o.subarray(4 + 4 * n);
       }
+      return o;
     }
-    onUdpMessage(e) {
-      if (e.length <= 8) return;
-      const t = e.readUInt32BE(8),
-        s = this.ssrcMap.get(t);
-      if (!s) return;
-      this.speaking.onPacket(s.userId);
-      const o = this.subscriptions.get(s.userId);
-      if (o && this.connectionData.encryptionMode && this.connectionData.nonceBuffer && this.connectionData.secretKey) {
-        const t = this.parsePacket(
-          e,
-          this.connectionData.encryptionMode,
-          this.connectionData.nonceBuffer,
-          this.connectionData.secretKey,
-        );
-        t ? o.push(t) : o.destroy(new Error('Failed to parse packet'));
-      }
+  }
+  onUdpMessage(e) {
+    if (e.length <= 8) return;
+    let t = e.readUInt32BE(8),
+      s = this.ssrcMap.get(t);
+    if (!s) return;
+    this.speaking.onPacket(s.userId);
+    let i = this.subscriptions.get(s.userId);
+    if (i && this.connectionData.encryptionMode && this.connectionData.nonceBuffer && this.connectionData.secretKey) {
+      let o = this.parsePacket(
+        e,
+        this.connectionData.encryptionMode,
+        this.connectionData.nonceBuffer,
+        this.connectionData.secretKey,
+      );
+      o ? i.push(o) : i.destroy(Error('Failed to parse packet'));
     }
-    subscribe(e, t) {
-      const s = this.subscriptions.get(e);
-      if (s) return s;
-      const o = new AudioReceiveStream({ ...createDefaultAudioReceiveStreamOptions(), ...t });
-      return o.once('close', () => this.subscriptions.delete(e)), this.subscriptions.set(e, o), o;
-    }
-  };
-__name(VoiceReceiver, 'VoiceReceiver'),
-  (function (e) {
-    (e.Connecting = 'connecting'),
-      (e.Destroyed = 'destroyed'),
-      (e.Disconnected = 'disconnected'),
-      (e.Ready = 'ready'),
-      (e.Signalling = 'signalling');
-  })(VoiceConnectionStatus || (VoiceConnectionStatus = {})),
-  (function (e) {
-    (e[(e.WebSocketClose = 0)] = 'WebSocketClose'),
-      (e[(e.AdapterUnavailable = 1)] = 'AdapterUnavailable'),
-      (e[(e.EndpointRemoved = 2)] = 'EndpointRemoved'),
-      (e[(e.Manual = 3)] = 'Manual');
-  })(VoiceConnectionDisconnectReason || (VoiceConnectionDisconnectReason = {}));
-var VoiceConnection = class extends import_node_events7.EventEmitter {
-  constructor(e, t) {
-    super(),
-      (this.debug = t.debug ? e => this.emit('debug', e) : null),
-      (this.rejoinAttempts = 0),
-      (this.receiver = new VoiceReceiver(this)),
-      (this.onNetworkingClose = this.onNetworkingClose.bind(this)),
-      (this.onNetworkingStateChange = this.onNetworkingStateChange.bind(this)),
-      (this.onNetworkingError = this.onNetworkingError.bind(this)),
-      (this.onNetworkingDebug = this.onNetworkingDebug.bind(this));
-    const s = t.adapterCreator({
-      onVoiceServerUpdate: e => this.addServerPacket(e),
-      onVoiceStateUpdate: e => this.addStatePacket(e),
-      destroy: () => this.destroy(!1),
-    });
-    (this._state = { status: VoiceConnectionStatus.Signalling, adapter: s }),
-      (this.packets = { server: void 0, state: void 0 }),
-      (this.joinConfig = e);
   }
-  get state() {
-    return this._state;
-  }
-  set state(e) {
-    const t = this._state,
-      s = Reflect.get(t, 'networking'),
-      o = Reflect.get(e, 'networking'),
-      n = Reflect.get(t, 'subscription'),
-      i = Reflect.get(e, 'subscription');
-    if (
-      (s !== o &&
-        (s &&
-          (s.on('error', noop),
-          s.off('debug', this.onNetworkingDebug),
-          s.off('error', this.onNetworkingError),
-          s.off('close', this.onNetworkingClose),
-          s.off('stateChange', this.onNetworkingStateChange),
-          s.destroy()),
-        o && this.updateReceiveBindings(o.state, s?.state)),
-      e.status === VoiceConnectionStatus.Ready)
-    )
-      this.rejoinAttempts = 0;
-    else if (e.status === VoiceConnectionStatus.Destroyed)
-      for (const e of this.receiver.subscriptions.values()) e.destroyed || e.destroy();
-    t.status !== VoiceConnectionStatus.Destroyed && e.status === VoiceConnectionStatus.Destroyed && t.adapter.destroy(),
-      (this._state = e),
-      n && n !== i && n.unsubscribe(),
-      this.emit('stateChange', t, e),
-      t.status !== e.status && this.emit(e.status, t, e);
-  }
-  addServerPacket(e) {
-    (this.packets.server = e),
-      e.endpoint
-        ? this.configureNetworking()
-        : this.state.status !== VoiceConnectionStatus.Destroyed &&
-          (this.state = {
-            ...this.state,
-            status: VoiceConnectionStatus.Disconnected,
-            reason: VoiceConnectionDisconnectReason.EndpointRemoved,
-          });
-  }
-  addStatePacket(e) {
-    (this.packets.state = e),
-      void 0 !== e.self_deaf && (this.joinConfig.selfDeaf = e.self_deaf),
-      void 0 !== e.self_mute && (this.joinConfig.selfMute = e.self_mute),
-      e.channel_id && (this.joinConfig.channelId = e.channel_id);
-  }
-  updateReceiveBindings(e, t) {
-    const s = Reflect.get(t ?? {}, 'ws'),
-      o = Reflect.get(e, 'ws'),
-      n = Reflect.get(t ?? {}, 'udp'),
-      i = Reflect.get(e, 'udp');
-    s !== o && (s?.off('packet', this.receiver.onWsPacket), o?.on('packet', this.receiver.onWsPacket)),
-      n !== i && (n?.off('message', this.receiver.onUdpMessage), i?.on('message', this.receiver.onUdpMessage)),
-      (this.receiver.connectionData = Reflect.get(e, 'connectionData') ?? {});
-  }
-  configureNetworking() {
-    const { server: e, state: t } = this.packets;
-    if (!e || !t || this.state.status === VoiceConnectionStatus.Destroyed || !e.endpoint) return;
-    const s = new Networking(
-      {
-        endpoint: e.endpoint,
-        serverId: e.guild_id ?? e.channel_id,
-        token: e.token,
-        sessionId: t.session_id,
-        userId: t.user_id,
-      },
-      Boolean(this.debug),
-    );
-    s.once('close', this.onNetworkingClose),
-      s.on('stateChange', this.onNetworkingStateChange),
-      s.on('error', this.onNetworkingError),
-      s.on('debug', this.onNetworkingDebug),
-      (this.state = { ...this.state, status: VoiceConnectionStatus.Connecting, networking: s });
-  }
-  onNetworkingClose(e) {
-    this.state.status !== VoiceConnectionStatus.Destroyed &&
-      (4014 === e
-        ? (this.state = {
-            ...this.state,
-            status: VoiceConnectionStatus.Disconnected,
-            reason: VoiceConnectionDisconnectReason.WebSocketClose,
-            closeCode: e,
-          })
-        : ((this.state = { ...this.state, status: VoiceConnectionStatus.Signalling }),
-          this.rejoinAttempts++,
-          this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig)) ||
-            (this.state = {
-              ...this.state,
-              status: VoiceConnectionStatus.Disconnected,
-              reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
-            })));
-  }
-  onNetworkingStateChange(e, t) {
-    this.updateReceiveBindings(t, e),
-      e.code !== t.code &&
-        ((this.state.status !== VoiceConnectionStatus.Connecting &&
-          this.state.status !== VoiceConnectionStatus.Ready) ||
-          (t.code === NetworkingStatusCode.Ready
-            ? (this.state = { ...this.state, status: VoiceConnectionStatus.Ready })
-            : t.code !== NetworkingStatusCode.Closed &&
-              (this.state = { ...this.state, status: VoiceConnectionStatus.Connecting })));
-  }
-  onNetworkingError(e) {
-    this.emit('error', e);
-  }
-  onNetworkingDebug(e) {
-    this.debug?.(`[NW] ${e}`);
-  }
-  prepareAudioPacket(e) {
-    const t = this.state;
-    if (t.status === VoiceConnectionStatus.Ready) return t.networking.prepareAudioPacket(e);
-  }
-  dispatchAudio() {
-    const e = this.state;
-    if (e.status === VoiceConnectionStatus.Ready) return e.networking.dispatchAudio();
-  }
-  playOpusPacket(e) {
-    const t = this.state;
-    if (t.status === VoiceConnectionStatus.Ready)
-      return t.networking.prepareAudioPacket(e), t.networking.dispatchAudio();
-  }
-  destroy(e = !0) {
-    if (this.state.status === VoiceConnectionStatus.Destroyed)
-      throw new Error('Cannot destroy VoiceConnection - it has already been destroyed');
-    getVoiceConnection(this.joinConfig.guildId, this.joinConfig.group) === this && untrackVoiceConnection(this),
-      e && this.state.adapter.sendPayload(createJoinVoiceChannelPayload({ ...this.joinConfig, channelId: null })),
-      (this.state = { status: VoiceConnectionStatus.Destroyed });
-  }
-  disconnect() {
-    return (
-      this.state.status !== VoiceConnectionStatus.Destroyed &&
-      this.state.status !== VoiceConnectionStatus.Signalling &&
-      ((this.joinConfig.channelId = null),
-      this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig))
-        ? ((this.state = {
-            adapter: this.state.adapter,
-            reason: VoiceConnectionDisconnectReason.Manual,
-            status: VoiceConnectionStatus.Disconnected,
-          }),
-          !0)
-        : ((this.state = {
-            adapter: this.state.adapter,
-            subscription: this.state.subscription,
-            status: VoiceConnectionStatus.Disconnected,
-            reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
-          }),
-          !1))
-    );
-  }
-  rejoin(e) {
-    if (this.state.status === VoiceConnectionStatus.Destroyed) return !1;
-    const t = this.state.status !== VoiceConnectionStatus.Ready;
-    return (
-      t && this.rejoinAttempts++,
-      Object.assign(this.joinConfig, e),
-      this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig))
-        ? (t && (this.state = { ...this.state, status: VoiceConnectionStatus.Signalling }), !0)
-        : ((this.state = {
-            adapter: this.state.adapter,
-            subscription: this.state.subscription,
-            status: VoiceConnectionStatus.Disconnected,
-            reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
-          }),
-          !1)
-    );
-  }
-  setSpeaking(e) {
-    return this.state.status === VoiceConnectionStatus.Ready && this.state.networking.setSpeaking(e);
-  }
-  subscribe(e) {
-    if (this.state.status === VoiceConnectionStatus.Destroyed) return;
-    const t = e.subscribe(this);
-    return (this.state = { ...this.state, subscription: t }), t;
-  }
-  get ping() {
-    return this.state.status === VoiceConnectionStatus.Ready &&
-      this.state.networking.state.code === NetworkingStatusCode.Ready
-      ? { ws: this.state.networking.state.ws.ping, udp: this.state.networking.state.udp.ping }
-      : { ws: void 0, udp: void 0 };
-  }
-  onSubscriptionRemoved(e) {
-    this.state.status !== VoiceConnectionStatus.Destroyed &&
-      this.state.subscription === e &&
-      (this.state = { ...this.state, subscription: void 0 });
+  subscribe(e, t) {
+    let s = this.subscriptions.get(e);
+    if (s) return s;
+    let i = new AudioReceiveStream({ ...createDefaultAudioReceiveStreamOptions(), ...t });
+    return i.once('close', () => this.subscriptions.delete(e)), this.subscriptions.set(e, i), i;
   }
 };
-function createVoiceConnection(e, t) {
-  const s = createJoinVoiceChannelPayload(e),
-    o = getVoiceConnection(e.guildId, e.group);
-  if (o && o.state.status !== VoiceConnectionStatus.Destroyed)
-    return (
-      o.state.status === VoiceConnectionStatus.Disconnected
-        ? o.rejoin({ channelId: e.channelId, selfDeaf: e.selfDeaf, selfMute: e.selfMute })
-        : o.state.adapter.sendPayload(s) ||
-          (o.state = {
-            ...o.state,
-            status: VoiceConnectionStatus.Disconnected,
-            reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
+__name(VoiceReceiver, 'VoiceReceiver');
+var VoiceConnectionStatus =
+    (((VoiceConnectionStatus2 = VoiceConnectionStatus || {}).Connecting = 'connecting'),
+    (VoiceConnectionStatus2.Destroyed = 'destroyed'),
+    (VoiceConnectionStatus2.Disconnected = 'disconnected'),
+    (VoiceConnectionStatus2.Ready = 'ready'),
+    (VoiceConnectionStatus2.Signalling = 'signalling'),
+    VoiceConnectionStatus2),
+  VoiceConnectionDisconnectReason =
+    (((VoiceConnectionDisconnectReason2 = VoiceConnectionDisconnectReason || {})[
+      (VoiceConnectionDisconnectReason2.WebSocketClose = 0)
+    ] = 'WebSocketClose'),
+    (VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2.AdapterUnavailable = 1)] =
+      'AdapterUnavailable'),
+    (VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2.EndpointRemoved = 2)] = 'EndpointRemoved'),
+    (VoiceConnectionDisconnectReason2[(VoiceConnectionDisconnectReason2.Manual = 3)] = 'Manual'),
+    VoiceConnectionDisconnectReason2),
+  VoiceConnection = class extends import_node_events7.EventEmitter {
+    rejoinAttempts;
+    _state;
+    joinConfig;
+    packets;
+    receiver;
+    debug;
+    constructor(e, t) {
+      super(),
+        (this.debug = t.debug ? e => this.emit('debug', e) : null),
+        (this.rejoinAttempts = 0),
+        (this.receiver = new VoiceReceiver(this)),
+        (this.onNetworkingClose = this.onNetworkingClose.bind(this)),
+        (this.onNetworkingStateChange = this.onNetworkingStateChange.bind(this)),
+        (this.onNetworkingError = this.onNetworkingError.bind(this)),
+        (this.onNetworkingDebug = this.onNetworkingDebug.bind(this));
+      let s = t.adapterCreator({
+        onVoiceServerUpdate: e => this.addServerPacket(e),
+        onVoiceStateUpdate: e => this.addStatePacket(e),
+        destroy: () => this.destroy(!1),
+      });
+      (this._state = { status: 'signalling', adapter: s }),
+        (this.packets = { server: void 0, state: void 0 }),
+        (this.joinConfig = e);
+    }
+    get state() {
+      return this._state;
+    }
+    set state(e) {
+      let t = this._state,
+        s = Reflect.get(t, 'networking'),
+        i = Reflect.get(e, 'networking'),
+        o = Reflect.get(t, 'subscription'),
+        n = Reflect.get(e, 'subscription');
+      if (
+        (s !== i &&
+          (s &&
+            (s.on('error', noop),
+            s.off('debug', this.onNetworkingDebug),
+            s.off('error', this.onNetworkingError),
+            s.off('close', this.onNetworkingClose),
+            s.off('stateChange', this.onNetworkingStateChange),
+            s.destroy()),
+          i && this.updateReceiveBindings(i.state, s?.state)),
+        'ready' === e.status)
+      )
+        this.rejoinAttempts = 0;
+      else if ('destroyed' === e.status) for (let r of this.receiver.subscriptions.values()) r.destroyed || r.destroy();
+      'destroyed' !== t.status && 'destroyed' === e.status && t.adapter.destroy(),
+        (this._state = e),
+        o && o !== n && o.unsubscribe(),
+        this.emit('stateChange', t, e),
+        t.status !== e.status && this.emit(e.status, t, e);
+    }
+    addServerPacket(e) {
+      (this.packets.server = e),
+        e.endpoint
+          ? this.configureNetworking()
+          : 'destroyed' !== this.state.status && (this.state = { ...this.state, status: 'disconnected', reason: 2 });
+    }
+    addStatePacket(e) {
+      (this.packets.state = e),
+        void 0 !== e.self_deaf && (this.joinConfig.selfDeaf = e.self_deaf),
+        void 0 !== e.self_mute && (this.joinConfig.selfMute = e.self_mute),
+        e.channel_id && (this.joinConfig.channelId = e.channel_id);
+    }
+    updateReceiveBindings(e, t) {
+      let s = Reflect.get(t ?? {}, 'ws'),
+        i = Reflect.get(e, 'ws'),
+        o = Reflect.get(t ?? {}, 'udp'),
+        n = Reflect.get(e, 'udp');
+      s !== i && (s?.off('packet', this.receiver.onWsPacket), i?.on('packet', this.receiver.onWsPacket)),
+        o !== n && (o?.off('message', this.receiver.onUdpMessage), n?.on('message', this.receiver.onUdpMessage)),
+        (this.receiver.connectionData = Reflect.get(e, 'connectionData') ?? {});
+    }
+    configureNetworking() {
+      let { server: e, state: t } = this.packets;
+      if (!e || !t || 'destroyed' === this.state.status || !e.endpoint) return;
+      let s = new Networking(
+        {
+          endpoint: e.endpoint,
+          serverId: e.guild_id ?? e.channel_id,
+          token: e.token,
+          sessionId: t.session_id,
+          userId: t.user_id,
+        },
+        Boolean(this.debug),
+      );
+      s.once('close', this.onNetworkingClose),
+        s.on('stateChange', this.onNetworkingStateChange),
+        s.on('error', this.onNetworkingError),
+        s.on('debug', this.onNetworkingDebug),
+        (this.state = { ...this.state, status: 'connecting', networking: s });
+    }
+    onNetworkingClose(e) {
+      'destroyed' === this.state.status ||
+        (4014 === e
+          ? (this.state = { ...this.state, status: 'disconnected', reason: 0, closeCode: e })
+          : ((this.state = { ...this.state, status: 'signalling' }),
+            this.rejoinAttempts++,
+            this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig)) ||
+              (this.state = { ...this.state, status: 'disconnected', reason: 1 })));
+    }
+    onNetworkingStateChange(e, t) {
+      this.updateReceiveBindings(t, e),
+        e.code !== t.code &&
+          ('connecting' === this.state.status || 'ready' === this.state.status) &&
+          (4 === t.code
+            ? (this.state = { ...this.state, status: 'ready' })
+            : 6 !== t.code && (this.state = { ...this.state, status: 'connecting' }));
+    }
+    onNetworkingError(e) {
+      this.emit('error', e);
+    }
+    onNetworkingDebug(e) {
+      this.debug?.(`[NW] ${e}`);
+    }
+    prepareAudioPacket(e) {
+      let t = this.state;
+      if ('ready' === t.status) return t.networking.prepareAudioPacket(e);
+    }
+    dispatchAudio() {
+      let e = this.state;
+      if ('ready' === e.status) return e.networking.dispatchAudio();
+    }
+    playOpusPacket(e) {
+      let t = this.state;
+      if ('ready' === t.status) return t.networking.prepareAudioPacket(e), t.networking.dispatchAudio();
+    }
+    destroy(e = !0) {
+      if ('destroyed' === this.state.status)
+        throw Error('Cannot destroy VoiceConnection - it has already been destroyed');
+      getVoiceConnection(this.joinConfig.guildId, this.joinConfig.group) === this && untrackVoiceConnection(this),
+        e && this.state.adapter.sendPayload(createJoinVoiceChannelPayload({ ...this.joinConfig, channelId: null })),
+        (this.state = { status: 'destroyed' });
+    }
+    disconnect() {
+      return (
+        'destroyed' !== this.state.status &&
+        'signalling' !== this.state.status &&
+        (((this.joinConfig.channelId = null),
+        this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig)))
+          ? ((this.state = { adapter: this.state.adapter, reason: 3, status: 'disconnected' }), !0)
+          : ((this.state = {
+              adapter: this.state.adapter,
+              subscription: this.state.subscription,
+              status: 'disconnected',
+              reason: 1,
+            }),
+            !1))
+      );
+    }
+    rejoin(e) {
+      if ('destroyed' === this.state.status) return !1;
+      let t = 'ready' !== this.state.status;
+      return (t && this.rejoinAttempts++,
+      Object.assign(this.joinConfig, e),
+      this.state.adapter.sendPayload(createJoinVoiceChannelPayload(this.joinConfig)))
+        ? (t && (this.state = { ...this.state, status: 'signalling' }), !0)
+        : ((this.state = {
+            adapter: this.state.adapter,
+            subscription: this.state.subscription,
+            status: 'disconnected',
+            reason: 1,
           }),
-      o
+          !1);
+    }
+    setSpeaking(e) {
+      return 'ready' === this.state.status && this.state.networking.setSpeaking(e);
+    }
+    subscribe(e) {
+      if ('destroyed' === this.state.status) return;
+      let t = e.subscribe(this);
+      return (this.state = { ...this.state, subscription: t }), t;
+    }
+    get ping() {
+      return 'ready' === this.state.status && 4 === this.state.networking.state.code
+        ? { ws: this.state.networking.state.ws.ping, udp: this.state.networking.state.udp.ping }
+        : { ws: void 0, udp: void 0 };
+    }
+    onSubscriptionRemoved(e) {
+      'destroyed' !== this.state.status &&
+        this.state.subscription === e &&
+        (this.state = { ...this.state, subscription: void 0 });
+    }
+  };
+function createVoiceConnection(e, t) {
+  let s = createJoinVoiceChannelPayload(e),
+    i = getVoiceConnection(e.guildId, e.group);
+  if (i && 'destroyed' !== i.state.status)
+    return (
+      'disconnected' === i.state.status
+        ? i.rejoin({ channelId: e.channelId, selfDeaf: e.selfDeaf, selfMute: e.selfMute })
+        : i.state.adapter.sendPayload(s) || (i.state = { ...i.state, status: 'disconnected', reason: 1 }),
+      i
     );
-  const n = new VoiceConnection(e, t);
+  let o = new VoiceConnection(e, t);
   return (
-    trackVoiceConnection(n),
-    n.state.status === VoiceConnectionStatus.Destroyed ||
-      n.state.adapter.sendPayload(s) ||
-      (n.state = {
-        ...n.state,
-        status: VoiceConnectionStatus.Disconnected,
-        reason: VoiceConnectionDisconnectReason.AdapterUnavailable,
-      }),
-    n
+    trackVoiceConnection(o),
+    'destroyed' === o.state.status ||
+      o.state.adapter.sendPayload(s) ||
+      (o.state = { ...o.state, status: 'disconnected', reason: 1 }),
+    o
   );
 }
 function joinVoiceChannel(e) {
-  return createVoiceConnection(
-    { selfDeaf: !0, selfMute: !1, group: 'default', ...e },
-    { adapterCreator: e.adapterCreator, debug: e.debug },
-  );
+  let t = { selfDeaf: !0, selfMute: !1, group: 'default', ...e };
+  return createVoiceConnection(t, { adapterCreator: e.adapterCreator, debug: e.debug });
 }
 __name(VoiceConnection, 'VoiceConnection'),
   __name(createVoiceConnection, 'createVoiceConnection'),
   __name(joinVoiceChannel, 'joinVoiceChannel');
-var StreamType,
-  TransformerType,
-  import_node_stream2 = require('stream'),
+var import_node_stream2 = require('stream'),
   import_prism_media2 = __toESM(require('prism-media')),
   import_prism_media = __toESM(require('prism-media')),
   FFMPEG_PCM_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'],
@@ -1199,64 +1150,60 @@ var StreamType,
     '48000',
     '-ac',
     '2',
-  ];
-!(function (e) {
-  (e.Arbitrary = 'arbitrary'), (e.OggOpus = 'ogg/opus'), (e.Opus = 'opus'), (e.Raw = 'raw'), (e.WebmOpus = 'webm/opus');
-})(StreamType || (StreamType = {})),
-  (function (e) {
-    (e.FFmpegOgg = 'ffmpeg ogg'),
-      (e.FFmpegPCM = 'ffmpeg pcm'),
-      (e.InlineVolume = 'volume transformer'),
-      (e.OggOpusDemuxer = 'ogg/opus demuxer'),
-      (e.OpusDecoder = 'opus decoder'),
-      (e.OpusEncoder = 'opus encoder'),
-      (e.WebmOpusDemuxer = 'webm/opus demuxer');
-  })(TransformerType || (TransformerType = {}));
-var Node = class {
-  edges = [];
-  constructor(e) {
-    this.type = e;
-  }
-  addEdge(e) {
-    this.edges.push({ ...e, from: this });
-  }
-};
+  ],
+  StreamType =
+    (((StreamType2 = StreamType || {}).Arbitrary = 'arbitrary'),
+    (StreamType2.OggOpus = 'ogg/opus'),
+    (StreamType2.Opus = 'opus'),
+    (StreamType2.Raw = 'raw'),
+    (StreamType2.WebmOpus = 'webm/opus'),
+    StreamType2),
+  Node = class {
+    edges = [];
+    type;
+    constructor(e) {
+      this.type = e;
+    }
+    addEdge(e) {
+      this.edges.push({ ...e, from: this });
+    }
+  };
 __name(Node, 'Node');
 var NODES = new Map();
-for (const e of Object.values(StreamType)) NODES.set(e, new Node(e));
+for (const streamType of Object.values(StreamType)) NODES.set(streamType, new Node(streamType));
 function getNode(e) {
-  const t = NODES.get(e);
-  if (!t) throw new Error(`Node type '${e}' does not exist!`);
+  let t = NODES.get(e);
+  if (!t) throw Error(`Node type '${e}' does not exist!`);
   return t;
 }
 __name(getNode, 'getNode'),
-  getNode(StreamType.Raw).addEdge({
-    type: TransformerType.OpusEncoder,
-    to: getNode(StreamType.Opus),
+  getNode('raw').addEdge({
+    type: 'opus encoder',
+    to: getNode('opus'),
     cost: 1.5,
     transformer: () => new import_prism_media.default.opus.Encoder({ rate: 48e3, channels: 2, frameSize: 960 }),
   }),
-  getNode(StreamType.Opus).addEdge({
-    type: TransformerType.OpusDecoder,
-    to: getNode(StreamType.Raw),
+  getNode('opus').addEdge({
+    type: 'opus decoder',
+    to: getNode('raw'),
     cost: 1.5,
     transformer: () => new import_prism_media.default.opus.Decoder({ rate: 48e3, channels: 2, frameSize: 960 }),
   }),
-  getNode(StreamType.OggOpus).addEdge({
-    type: TransformerType.OggOpusDemuxer,
-    to: getNode(StreamType.Opus),
+  getNode('ogg/opus').addEdge({
+    type: 'ogg/opus demuxer',
+    to: getNode('opus'),
     cost: 1,
     transformer: () => new import_prism_media.default.opus.OggDemuxer(),
   }),
-  getNode(StreamType.WebmOpus).addEdge({
-    type: TransformerType.WebmOpusDemuxer,
-    to: getNode(StreamType.Opus),
+  getNode('webm/opus').addEdge({
+    type: 'webm/opus demuxer',
+    to: getNode('opus'),
     cost: 1,
     transformer: () => new import_prism_media.default.opus.WebmDemuxer(),
   });
 var FFMPEG_PCM_EDGE = {
-  type: TransformerType.FFmpegPCM,
-  to: getNode(StreamType.Raw),
+  type: 'ffmpeg pcm',
+  to: getNode('raw'),
   cost: 2,
   transformer: e =>
     new import_prism_media.default.FFmpeg({
@@ -1270,46 +1217,44 @@ function canEnableFFmpegOptimizations() {
   return !1;
 }
 if (
-  (getNode(StreamType.Arbitrary).addEdge(FFMPEG_PCM_EDGE),
-  getNode(StreamType.OggOpus).addEdge(FFMPEG_PCM_EDGE),
-  getNode(StreamType.WebmOpus).addEdge(FFMPEG_PCM_EDGE),
-  getNode(StreamType.Raw).addEdge({
-    type: TransformerType.InlineVolume,
-    to: getNode(StreamType.Raw),
+  (getNode('arbitrary').addEdge(FFMPEG_PCM_EDGE),
+  getNode('ogg/opus').addEdge(FFMPEG_PCM_EDGE),
+  getNode('webm/opus').addEdge(FFMPEG_PCM_EDGE),
+  getNode('raw').addEdge({
+    type: 'volume transformer',
+    to: getNode('raw'),
     cost: 0.5,
     transformer: () => new import_prism_media.default.VolumeTransformer({ type: 's16le' }),
   }),
   __name(canEnableFFmpegOptimizations, 'canEnableFFmpegOptimizations'),
   canEnableFFmpegOptimizations())
 ) {
-  const e = {
-    type: TransformerType.FFmpegOgg,
-    to: getNode(StreamType.OggOpus),
+  let e = {
+    type: 'ffmpeg ogg',
+    to: getNode('ogg/opus'),
     cost: 2,
     transformer: e =>
       new import_prism_media.default.FFmpeg({
         args: 'string' == typeof e ? ['-i', e, ...FFMPEG_OPUS_ARGUMENTS] : FFMPEG_OPUS_ARGUMENTS,
       }),
   };
-  getNode(StreamType.Arbitrary).addEdge(e),
-    getNode(StreamType.OggOpus).addEdge(e),
-    getNode(StreamType.WebmOpus).addEdge(e);
+  getNode('arbitrary').addEdge(e), getNode('ogg/opus').addEdge(e), getNode('webm/opus').addEdge(e);
 }
-function findPath(e, t, s = getNode(StreamType.Opus), o = [], n = 5) {
-  if (e === s && t(o)) return { cost: 0 };
-  if (0 === n) return { cost: Number.POSITIVE_INFINITY };
-  let i;
-  for (const r of e.edges) {
-    if (i && r.cost > i.cost) continue;
-    const e = findPath(r.to, t, s, [...o, r], n - 1),
-      a = r.cost + e.cost;
-    (!i || a < i.cost) && (i = { cost: a, edge: r, next: e });
+function findPath(e, t, s = getNode('opus'), i = [], o = 5) {
+  if (e === s && t(i)) return { cost: 0 };
+  if (0 === o) return { cost: Number.POSITIVE_INFINITY };
+  let n;
+  for (let r of e.edges) {
+    if (n && r.cost > n.cost) continue;
+    let a = findPath(r.to, t, s, [...i, r], o - 1),
+      c = r.cost + a.cost;
+    (!n || c < n.cost) && (n = { cost: c, edge: r, next: a });
   }
-  return i ?? { cost: Number.POSITIVE_INFINITY };
+  return n ?? { cost: Number.POSITIVE_INFINITY };
 }
 function constructPipeline(e) {
-  const t = [];
-  let s = e;
+  let t = [],
+    s = e;
   for (; s?.edge; ) t.push(s.edge), (s = s.next);
   return t;
 }
@@ -1318,23 +1263,30 @@ function findPipeline(e, t) {
 }
 __name(findPath, 'findPath'), __name(constructPipeline, 'constructPipeline'), __name(findPipeline, 'findPipeline');
 var AudioResource = class {
+  playStream;
+  edges;
+  metadata;
+  volume;
+  encoder;
+  audioPlayer;
   playbackDuration = 0;
   started = !1;
+  silencePaddingFrames;
   silenceRemaining = -1;
-  constructor(e, t, s, o) {
-    (this.edges = e),
-      (this.playStream = t.length > 1 ? (0, import_node_stream2.pipeline)(t, noop) : t[0]),
-      (this.metadata = s),
-      (this.silencePaddingFrames = o);
-    for (const e of t)
-      e instanceof import_prism_media2.default.VolumeTransformer
-        ? (this.volume = e)
-        : e instanceof import_prism_media2.default.opus.Encoder && (this.encoder = e);
+  constructor(e, t, s, i) {
+    for (let o of ((this.edges = e),
+    (this.playStream = t.length > 1 ? (0, import_node_stream2.pipeline)(t, noop) : t[0]),
+    (this.metadata = s),
+    (this.silencePaddingFrames = i),
+    t))
+      o instanceof import_prism_media2.default.VolumeTransformer
+        ? (this.volume = o)
+        : o instanceof import_prism_media2.default.opus.Encoder && (this.encoder = o);
     this.playStream.once('readable', () => (this.started = !0));
   }
   get readable() {
     if (0 === this.silenceRemaining) return !1;
-    const e = this.playStream.readable;
+    let e = this.playStream.readable;
     return (
       e ||
       (-1 === this.silenceRemaining && (this.silenceRemaining = this.silencePaddingFrames), 0 !== this.silenceRemaining)
@@ -1346,66 +1298,62 @@ var AudioResource = class {
   read() {
     if (0 === this.silenceRemaining) return null;
     if (this.silenceRemaining > 0) return this.silenceRemaining--, SILENCE_FRAME;
-    const e = this.playStream.read();
+    let e = this.playStream.read();
     return e && (this.playbackDuration += 20), e;
   }
 };
 __name(AudioResource, 'AudioResource');
-var VOLUME_CONSTRAINT = __name(e => e.some(e => e.type === TransformerType.InlineVolume), 'VOLUME_CONSTRAINT'),
+var VOLUME_CONSTRAINT = __name(e => e.some(e => 'volume transformer' === e.type), 'VOLUME_CONSTRAINT'),
   NO_CONSTRAINT = __name(() => !0, 'NO_CONSTRAINT');
 function inferStreamType(e) {
-  return e instanceof import_prism_media2.default.opus.Encoder
-    ? { streamType: StreamType.Opus, hasVolume: !1 }
-    : e instanceof import_prism_media2.default.opus.Decoder
-    ? { streamType: StreamType.Raw, hasVolume: !1 }
-    : e instanceof import_prism_media2.default.VolumeTransformer
-    ? { streamType: StreamType.Raw, hasVolume: !0 }
-    : e instanceof import_prism_media2.default.opus.OggDemuxer ||
-      e instanceof import_prism_media2.default.opus.WebmDemuxer
-    ? { streamType: StreamType.Opus, hasVolume: !1 }
-    : { streamType: StreamType.Arbitrary, hasVolume: !1 };
+  if (e instanceof import_prism_media2.default.opus.Encoder) return { streamType: 'opus', hasVolume: !1 };
+  if (e instanceof import_prism_media2.default.opus.Decoder) return { streamType: 'raw', hasVolume: !1 };
+  if (e instanceof import_prism_media2.default.VolumeTransformer) return { streamType: 'raw', hasVolume: !0 };
+  if (e instanceof import_prism_media2.default.opus.OggDemuxer) return { streamType: 'opus', hasVolume: !1 };
+  if (e instanceof import_prism_media2.default.opus.WebmDemuxer) return { streamType: 'opus', hasVolume: !1 };
+  return { streamType: 'arbitrary', hasVolume: !1 };
 }
 function createAudioResource(e, t = {}) {
   let s = t.inputType,
-    o = Boolean(t.inlineVolume);
-  if ('string' == typeof e) s = StreamType.Arbitrary;
+    i = Boolean(t.inlineVolume);
+  if ('string' == typeof e) s = 'arbitrary';
   else if (void 0 === s) {
-    const t = inferStreamType(e);
-    (s = t.streamType), (o = o && !t.hasVolume);
+    let o = inferStreamType(e);
+    (s = o.streamType), (i = i && !o.hasVolume);
   }
-  const n = findPipeline(s, o ? VOLUME_CONSTRAINT : NO_CONSTRAINT);
+  let n = findPipeline(s, i ? VOLUME_CONSTRAINT : NO_CONSTRAINT);
   if (0 === n.length) {
-    if ('string' == typeof e) throw new Error(`Invalid pipeline constructed for string resource '${e}'`);
+    if ('string' == typeof e) throw Error(`Invalid pipeline constructed for string resource '${e}'`);
     return new AudioResource([], [e], t.metadata ?? null, t.silencePaddingFrames ?? 5);
   }
-  const i = n.map(t => t.transformer(e));
-  return 'string' != typeof e && i.unshift(e), new AudioResource(n, i, t.metadata ?? null, t.silencePaddingFrames ?? 5);
+  let r = n.map(t => t.transformer(e));
+  return 'string' != typeof e && r.unshift(e), new AudioResource(n, r, t.metadata ?? null, t.silencePaddingFrames ?? 5);
 }
 __name(inferStreamType, 'inferStreamType'), __name(createAudioResource, 'createAudioResource');
 var import_node_path = require('path'),
   import_prism_media3 = __toESM(require('prism-media'));
 function findPackageJSON(e, t, s) {
   if (0 === s) return;
-  const o = (0, import_node_path.resolve)(e, './package.json');
+  let i = (0, import_node_path.resolve)(e, './package.json');
   try {
-    const e = require(o);
-    if (e.name !== t) throw new Error('package.json does not match');
-    return e;
+    let o = require(i);
+    if (o.name !== t) throw Error('package.json does not match');
+    return o;
   } catch {
     return findPackageJSON((0, import_node_path.resolve)(e, '..'), t, s - 1);
   }
 }
 function version(e) {
   try {
-    if ('@discordjs/voice' === e) return '[VI]{{inject}}[/VI]';
-    const t = findPackageJSON((0, import_node_path.dirname)(require.resolve(e)), e, 3);
+    if ('@discordjs/voice' === e) return '0.16.0';
+    let t = findPackageJSON((0, import_node_path.dirname)(require.resolve(e)), e, 3);
     return t?.version ?? 'not found';
   } catch {
     return 'not found';
   }
 }
 function generateDependencyReport() {
-  const e = [],
+  let e = [],
     t = __name(t => e.push(`- ${t}: ${version(t)}`), 'addVersion');
   e.push('Core Dependencies'),
     t('@discordjs/voice'),
@@ -1423,8 +1371,8 @@ function generateDependencyReport() {
     e.push(''),
     e.push('FFmpeg');
   try {
-    const t = import_prism_media3.default.FFmpeg.getInfo();
-    e.push(`- version: ${t.version}`), e.push('- libopus: ' + (t.output.includes('--enable-libopus') ? 'yes' : 'no'));
+    let s = import_prism_media3.default.FFmpeg.getInfo();
+    e.push(`- version: ${s.version}`), e.push(`- libopus: ${s.output.includes('--enable-libopus') ? 'yes' : 'no'}`);
   } catch {
     e.push('- not found');
   }
@@ -1435,17 +1383,17 @@ __name(findPackageJSON, 'findPackageJSON'),
   __name(generateDependencyReport, 'generateDependencyReport');
 var import_node_events8 = require('events');
 function abortAfter(e) {
-  const t = new AbortController(),
+  let t = new AbortController(),
     s = setTimeout(() => t.abort(), e);
   return t.signal.addEventListener('abort', () => clearTimeout(s)), [t, t.signal];
 }
 async function entersState(e, t, s) {
   if (e.state.status !== t) {
-    const [o, n] = 'number' == typeof s ? abortAfter(s) : [void 0, s];
+    let [i, o] = 'number' == typeof s ? abortAfter(s) : [void 0, s];
     try {
-      await (0, import_node_events8.once)(e, t, { signal: n });
+      await (0, import_node_events8.once)(e, t, { signal: o });
     } finally {
-      o?.abort();
+      i?.abort();
     }
   }
   return e;
@@ -1456,25 +1404,31 @@ var import_node_buffer6 = require('buffer'),
   import_node_stream3 = require('stream'),
   import_prism_media4 = __toESM(require('prism-media'));
 function validateDiscordOpusHead(e) {
-  const t = e.readUInt8(9),
+  let t = e.readUInt8(9),
     s = e.readUInt32LE(12);
   return 2 === t && 48e3 === s;
 }
 async function demuxProbe(e, t = 1024, s = validateDiscordOpusHead) {
-  return new Promise((o, n) => {
-    if (e.readableObjectMode) return void n(new Error('Cannot probe a readable stream in object mode'));
-    if (e.readableEnded) return void n(new Error('Cannot probe a stream that has ended'));
-    let i,
-      r = import_node_buffer6.Buffer.alloc(0);
-    const a = __name(t => {
+  return new Promise((i, o) => {
+    if (e.readableObjectMode) {
+      o(Error('Cannot probe a readable stream in object mode'));
+      return;
+    }
+    if (e.readableEnded) {
+      o(Error('Cannot probe a stream that has ended'));
+      return;
+    }
+    let n = import_node_buffer6.Buffer.alloc(0),
+      r,
+      a = __name(t => {
         e.off('data', l),
           e.off('close', p),
           e.off('end', p),
           e.pause(),
-          (i = t),
+          (r = t),
           e.readableEnded
-            ? o({ stream: import_node_stream3.Readable.from(r), type: t })
-            : (r.length > 0 && e.push(r), o({ stream: e, type: t }));
+            ? i({ stream: import_node_stream3.Readable.from(n), type: t })
+            : (n.length > 0 && e.push(n), i({ stream: e, type: t }));
       }, 'finish'),
       c = __name(
         e => t => {
@@ -1482,21 +1436,21 @@ async function demuxProbe(e, t = 1024, s = validateDiscordOpusHead) {
         },
         'foundHead',
       ),
-      u = new import_prism_media4.default.opus.WebmDemuxer();
-    u.once('error', noop), u.on('head', c(StreamType.WebmOpus));
-    const d = new import_prism_media4.default.opus.OggDemuxer();
-    d.once('error', noop), d.on('head', c(StreamType.OggOpus));
-    const p = __name(() => {
-        i || a(StreamType.Arbitrary);
+      d = new import_prism_media4.default.opus.WebmDemuxer();
+    d.once('error', noop), d.on('head', c('webm/opus'));
+    let u = new import_prism_media4.default.opus.OggDemuxer();
+    u.once('error', noop), u.on('head', c('ogg/opus'));
+    let p = __name(() => {
+        r || a('arbitrary');
       }, 'onClose'),
       l = __name(s => {
-        (r = import_node_buffer6.Buffer.concat([r, s])),
-          u.write(s),
+        (n = import_node_buffer6.Buffer.concat([n, s])),
           d.write(s),
-          r.length >= t && (e.off('data', l), e.pause(), import_node_process.default.nextTick(p));
+          u.write(s),
+          n.length >= t && (e.off('data', l), e.pause(), import_node_process.default.nextTick(p));
       }, 'onData');
-    e.once('error', n), e.on('data', l), e.once('close', p), e.once('end', p);
+    e.once('error', o), e.on('data', l), e.once('close', p), e.once('end', p);
   });
 }
 __name(validateDiscordOpusHead, 'validateDiscordOpusHead'), __name(demuxProbe, 'demuxProbe');
-var version2 = '[VI]{{inject}}[/VI]';
+var version2 = '0.16.0';

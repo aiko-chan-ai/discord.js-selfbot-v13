@@ -401,11 +401,11 @@ class RequestHandler {
           await this.manager.client.sleep(5_000);
           this.manager.client.emit(
             DEBUG,
-            `Captcha solved.
+            `Captcha details:
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Key     : ${captcha ? `${captcha.slice(0, 30)}...` : '[Capcha not solved]'}
+    Key     : ${captcha ? `${captcha.slice(0, 30)}...` : '[Captcha not solved]'}
     rqToken : ${data.captcha_rqtoken}`,
           );
           request.retries++;
