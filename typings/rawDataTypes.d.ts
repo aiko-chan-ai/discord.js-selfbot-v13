@@ -248,6 +248,7 @@ export interface APIAutoModerationAction {
 export interface APIAutoModerationActionMetadata {
   channel_id?: Snowflake;
   duration_seconds?: number;
+  custom_message?: string;
 }
 
 export interface APIAutoModerationRule {
