@@ -139,14 +139,11 @@ class ClientUser extends User {
 
   /**
    * Edits the logged in client.
-   * @param {ClientUserEditData} data The new data
+   * @param {ClientUserEditData} options The new data
    * @returns {Promise<ClientUser>}
    */
-  async edit({ username, avatar }) {
-    const data = await this.client.api
-      .users('@me')
-      .patch({ data: { username, avatar: avatar && (await DataResolver.resolveImage(avatar)) } });
-
+  async edit(options = {}) {
+    const data = await this.client.api.users('@me').patch({ data: options });
     this.client.token = data.token;
     const { updated } = this.client.actions.UserUpdate.handle(data);
     return updated ?? this;
@@ -171,6 +168,7 @@ class ClientUser extends User {
     }
     return this.edit({
       username,
+      discriminator: this.discriminator,
       password: this.client.password ? this.client.password : password,
     });
   }
@@ -185,7 +183,8 @@ class ClientUser extends User {
    *   .then(user => console.log(`New avatar set!`))
    *   .catch(console.error);
    */
-  setAvatar(avatar) {
+  async setAvatar(avatar) {
+    avatar = avatar && (await DataResolver.resolveImage(avatar));
     return this.edit({ avatar });
   }
   /**
@@ -255,6 +254,7 @@ class ClientUser extends User {
     }
     return this.edit({
       discriminator,
+      username: this.username,
       password: this.client.password ? this.client.password : password,
     });
   }

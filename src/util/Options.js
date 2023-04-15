@@ -201,7 +201,7 @@ class Options extends null {
           os_version: '10.0.22621',
           os_arch: 'x64',
           system_locale: 'en-US',
-          client_build_number: 184787, // 184787 (stable) but we don't want the captcha to be more difficult to solve
+          client_build_number: 189005,
           native_build_number: 30921,
           client_event_source: null,
           design_id: 0,
