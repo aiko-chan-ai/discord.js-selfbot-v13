@@ -784,17 +784,23 @@ export class BaseGuildTextChannel extends TextBasedChannelMixin(GuildChannel) {
   public setType(type: Pick<typeof ChannelTypes, 'GUILD_NEWS'>, reason?: string): Promise<NewsChannel>;
 }
 
-export class BaseGuildVoiceChannel extends GuildChannel {
+export class BaseGuildVoiceChannel extends TextBasedChannelMixin(GuildChannel, ['lastPinTimestamp', 'lastPinAt']) {
   public constructor(guild: Guild, data?: RawGuildChannelData);
   public readonly members: Collection<Snowflake, GuildMember>;
   public readonly full: boolean;
   public readonly joinable: boolean;
-  public rtcRegion: string | null;
   public bitrate: number;
+  public nsfw: boolean;
+  public rtcRegion: string | null;
+  public rateLimitPerUser: number | null;
   public userLimit: number;
+  public videoQualityMode: VideoQualityMode | null;
   public createInvite(options?: CreateInviteOptions): Promise<Invite>;
   public setRTCRegion(rtcRegion: string | null, reason?: string): Promise<this>;
   public fetchInvites(cache?: boolean): Promise<Collection<string, Invite>>;
+  public setBitrate(bitrate: number, reason?: string): Promise<VoiceChannel>;
+  public setUserLimit(userLimit: number, reason?: string): Promise<VoiceChannel>;
+  public setVideoQualityMode(videoQualityMode: VideoQualityMode | number, reason?: string): Promise<VoiceChannel>;
 }
 
 export class BaseMessageComponent {
@@ -2910,9 +2916,9 @@ export class SnowflakeUtil extends null {
 }
 
 export class StageChannel extends BaseGuildVoiceChannel {
+  public readonly stageInstance: StageInstance | null;
   public topic: string | null;
   public type: 'GUILD_STAGE_VOICE';
-  public readonly stageInstance: StageInstance | null;
   public createStageInstance(options: StageInstanceCreateOptions): Promise<StageInstance>;
   public setTopic(topic: string): Promise<StageChannel>;
 }
@@ -3358,17 +3364,11 @@ export class Formatters extends null {
   public static userMention: typeof userMention;
 }
 
-export class VoiceChannel extends TextBasedChannelMixin(BaseGuildVoiceChannel, ['lastPinTimestamp', 'lastPinAt']) {
-  public videoQualityMode: VideoQualityMode | null;
+export class VoiceChannel extends BaseGuildVoiceChannel {
   /** @deprecated Use manageable instead */
   public readonly editable: boolean;
   public readonly speakable: boolean;
   public type: 'GUILD_VOICE';
-  public nsfw: boolean;
-  public rateLimitPerUser: number | null;
-  public setBitrate(bitrate: number, reason?: string): Promise<VoiceChannel>;
-  public setUserLimit(userLimit: number, reason?: string): Promise<VoiceChannel>;
-  public setVideoQualityMode(videoQualityMode: VideoQualityMode | number, reason?: string): Promise<VoiceChannel>;
 }
 
 export class VoiceRegion {
@@ -4027,7 +4027,7 @@ export class GuildChannelManager extends CachedManager<Snowflake, GuildBasedChan
   public createWebhook(
     channel: GuildChannelResolvable,
     name: string,
-    options?: ChannelWebhookCreateOptions,
+    options?: TextChannel | NewsChannel | VoiceChannel | StageChannel | ForumChannel | Snowflake,
   ): Promise<Webhook>;
   public addFollower(
     channel: NewsChannel | Snowflake,
@@ -4789,7 +4789,7 @@ export interface ClientEvents extends BaseClientEvents {
   userSettingsUpdate: [setting: RawUserSettingsData];
   userGuildSettingsUpdate: [guild: Guild];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
-  webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel];
+  webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | StageChannel];
   /** @deprecated Use interactionCreate instead */
   interaction: [interaction: Interaction];
   interactionCreate: [interaction: Interaction | { nonce: Snowflake; id: Snowflake }];
@@ -7419,7 +7419,7 @@ export type WebhookClientOptions = Pick<
 export interface WebhookEditData {
   name?: string;
   avatar?: BufferResolvable | null;
-  channel?: GuildTextChannelResolvable;
+  channel?: GuildTextChannelResolvable | VoiceChannel | StageChannel | ForumChannel;
 }
 
 export type WebhookEditMessageOptions = Pick<
