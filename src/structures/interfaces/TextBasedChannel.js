@@ -452,7 +452,7 @@ class TextBasedChannel {
    *   .catch(console.error);
    * @example
    * // Send a remote file
-   * channel.send('botid', 'emoji upload', 'https://cdn.discordapp.com/icons/222078108977594368/6e1019b3179d71046e463a75915e7244.png?size=2048', 'test')
+   * channel.sendSlash('botid', 'emoji upload', 'https://cdn.discordapp.com/icons/222078108977594368/6e1019b3179d71046e463a75915e7244.png?size=2048', 'test')
    *   .then(console.log)
    *   .catch(console.error);
    * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md}
