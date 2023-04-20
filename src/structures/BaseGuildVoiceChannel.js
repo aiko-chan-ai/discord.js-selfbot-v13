@@ -3,6 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const GuildChannel = require('./GuildChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 const { VideoQualityModes } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
@@ -26,6 +27,14 @@ class BaseGuildVoiceChannel extends GuildChannel {
      * @type {boolean}
      */
     this.nsfw = Boolean(data.nsfw);
+
+    /**
+     * A manager of the interactions sent to this channel
+     * @type {InteractionManager}
+     */
+    this.interactions = new InteractionManager(this);
+
+    this._patch(data);
   }
 
   _patch(data) {

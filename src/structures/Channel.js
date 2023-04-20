@@ -15,7 +15,6 @@ let ForumChannel;
 const ChannelFlags = require('../util/ChannelFlags');
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
-// Const { ApplicationCommand } = require('discord.js-selfbot-v13'); - Not being used in this file, not necessary.
 
 /**
  * @type {WeakSet<Channel>}
@@ -243,9 +242,11 @@ class Channel extends Base {
             if (!allowUnknownGuild) channel.parent?.threads.cache.set(channel.id, channel);
             break;
           }
+
           case ChannelTypes.GUILD_DIRECTORY:
             channel = new DirectoryChannel(client, data);
             break;
+
           case ChannelTypes.GUILD_FORUM:
             channel = new ForumChannel(guild, data, client);
             break;
