@@ -63,9 +63,9 @@ class GuildForumThreadManager extends ThreadManager {
     let messagePayload;
 
     if (message instanceof MessagePayload) {
-      messagePayload = message.resolveData();
+      messagePayload = await message.resolveData();
     } else {
-      messagePayload = MessagePayload.create(this, message).resolveData();
+      messagePayload = await MessagePayload.create(this, message).resolveData();
     }
 
     let { data: body, files } = await messagePayload.resolveFiles();
