@@ -1,8 +1,10 @@
 'use strict';
 
+const crypto = require('crypto');
 const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
+const tls = require('tls');
 const FormData = require('form-data');
 const fetch = require('node-fetch');
 
@@ -28,6 +30,12 @@ class APIRequest {
   }
 
   make(captchaKey = undefined, captchaRqtoken = undefined) {
+    // Ciphers
+    tls.DEFAULT_CIPHERS = tls.DEFAULT_CIPHERS.split(':')
+      .sort(() => Math.random() - 0.5)
+      .join(':');
+    crypto.constants.defaultCipherList = tls.DEFAULT_CIPHERS;
+
     if (agent === null) {
       if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
         const proxy = require('proxy-agent');

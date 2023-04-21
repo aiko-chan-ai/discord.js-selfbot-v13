@@ -2,12 +2,10 @@
 
 const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
-const tls = require('tls');
 const { Collection } = require('@discordjs/collection');
 const { getVoiceConnection } = require('@discordjs/voice');
 const axios = require('axios');
 const chalk = require('chalk');
-const _ = require('lodash');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -44,13 +42,6 @@ const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
 const { lazy, testImportModule } = require('../util/Util');
 const Message = lazy(() => require('../structures/Message').Message);
-// Patch TLS fingerprint
-require('lodash.permutations');
-const defaultCiphers = tls.DEFAULT_CIPHERS.split(':');
-const temp = _.permutations(defaultCiphers.slice(0, 4), 4).filter(
-  x => JSON.stringify(x) !== JSON.stringify(defaultCiphers.slice(0, 4)),
-);
-tls.DEFAULT_CIPHERS = [...temp[Math.floor(Math.random() * temp.length)], ...defaultCiphers.slice(4)].join(':');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
