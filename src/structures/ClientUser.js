@@ -197,10 +197,11 @@ class ClientUser extends User {
    *   .then(user => console.log(`New banner set!`))
    *   .catch(console.error);
    */
-  setBanner(banner) {
+  async setBanner(banner) {
     if (this.nitroType !== 'NITRO_BOOST') {
       throw new Error('You must be a Nitro Boosted User to change your banner.');
     }
+    banner = banner && (await DataResolver.resolveImage(banner));
     return this.edit({ banner });
   }
 
