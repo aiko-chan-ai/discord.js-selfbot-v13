@@ -97,8 +97,8 @@ UserFlags.FLAGS = {
   DISABLED: Math.pow(2, 41), // [Undocumented] User is currently temporarily or permanently disabled.
   VERIFIED_EMAIL: Math.pow(2, 43), // [Undocumented] User has a verified email on their account.
   QUARANTINED: Math.pow(2, 44), // [Undocumented] User is quarantined.
-  COLLABORATOR: 1 << 50, // [Undocumented] User is a collaborator and has staff permissions.
-  RESTRICTED_COLLABORATOR: 1 << 51, // [Undocumented] User is a restricted collaborator and has staff permissions.
+  COLLABORATOR: Math.pow(2, 50), // [Undocumented] User is a collaborator and has staff permissions.
+  RESTRICTED_COLLABORATOR: Math.pow(2, 51), // [Undocumented] User is a restricted collaborator and has staff permissions.
 };
 
 module.exports = UserFlags;
