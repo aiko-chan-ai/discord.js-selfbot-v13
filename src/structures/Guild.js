@@ -590,15 +590,14 @@ class Guild extends AnonymousGuild {
    */
   get clydeSupport() {
     // **BETA** - This feature is currently in beta and may be changed or removed at any time.
-    // Cannot be enabled on guilds with more than 100 members
+    if (this.features.includes('COMMUNITY')) return false;
     if (
-      v3(`2023-03_clyde_ai:${this.id}`) % 10e3 > 100 ||
-      this.memberCount > 100 ||
-      this.features.includes('COMMUNITY')
+      (this.memberCount < 101 && v3(`2023-03_clyde_ai:${this.id}`) % 10e3 < 1200) ||
+      (this.memberCount < 201 && v3(`2023-03_clyde_ai:${this.id}`) % 10e3 < 1000)
     ) {
-      return false;
+      return true;
     }
-    return true;
+    return false;
   }
 
   /**
