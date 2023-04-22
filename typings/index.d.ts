@@ -1637,6 +1637,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public readonly voice: VoiceState;
   public themeColors?: [number, number];
   public readonly hexThemeColor: [string, string] | null;
+  public badges: { id: string; description: string; icon: string; link?: string }[] | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public ban(options?: BanOptions): Promise<GuildMember>;
   public disableCommunicationUntil(timeout: DateResolvable | null, reason?: string): Promise<GuildMember>;

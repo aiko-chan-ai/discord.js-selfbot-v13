@@ -294,6 +294,18 @@ class User extends Base {
       this.application = new ClientApplication(this.client, data.application, this);
     }
 
+    if ('badges' in data) {
+      /**
+       * User badges (Boost, Slash, AutoMod, etc.)
+       * @type {?Array<{ id: string, description: string, icon: string, link?: string }>}
+       */
+      this.badges = data.badges;
+    }
+
+    if ('guild_badges' in data) {
+      // Unknown
+    }
+
     this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
   }
 
