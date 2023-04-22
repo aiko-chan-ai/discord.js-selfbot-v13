@@ -1605,6 +1605,14 @@ export class GuildEmoji extends BaseGuildEmoji {
   public setName(name: string, reason?: string): Promise<GuildEmoji>;
 }
 
+export interface UserBadge {
+  name: string;
+  description: string;
+  icon: string;
+  link?: string;
+  iconURL(): string;
+}
+
 export class GuildMember extends PartialTextBasedChannel(Base) {
   private constructor(client: Client, data: RawGuildMemberData, guild: Guild);
   private _roles: Snowflake[];
@@ -1637,7 +1645,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public readonly voice: VoiceState;
   public themeColors?: [number, number];
   public readonly hexThemeColor: [string, string] | null;
-  public badges: { id: string; description: string; icon: string; link?: string }[] | null;
+  public badges: UserBadge[] | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public ban(options?: BanOptions): Promise<GuildMember>;
   public disableCommunicationUntil(timeout: DateResolvable | null, reason?: string): Promise<GuildMember>;

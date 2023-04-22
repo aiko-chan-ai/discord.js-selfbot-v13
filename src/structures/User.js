@@ -296,10 +296,24 @@ class User extends Base {
 
     if ('badges' in data) {
       /**
-       * User badges (Boost, Slash, AutoMod, etc.)
-       * @type {?Array<{ id: string, description: string, icon: string, link?: string }>}
+       * @callback BadgeIcon
+       * @returns {string}
        */
-      this.badges = data.badges;
+
+      /**
+       * @typedef {Object} UserBadge
+       * @property {string} id The id of the badge
+       * @property {string} description The description of the badge
+       * @property {string} icon The icon hash of the badge
+       * @property {?string} link The link of the badge
+       * @property {BadgeIcon} iconURL The iconURL of the badge
+       */
+
+      /**
+       * User badges (Boost, Slash, AutoMod, etc.)
+       * @type {?Array<UserBadge>}
+       */
+      this.badges = data.badges.map(o => ({ ...o, iconURL: () => this.client.rest.cdn.BadgeIcon(o.icon) }));
     }
 
     if ('guild_badges' in data) {

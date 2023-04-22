@@ -227,6 +227,8 @@ exports.Endpoints = {
         makeImageUrl(`${root}/role-icons/${roleId}/${hash}`, { size, format }),
       guildScheduledEventCover: (scheduledEventId, coverHash, format, size) =>
         makeImageUrl(`${root}/guild-events/${scheduledEventId}/${coverHash}`, { size, format }),
+      // Test only
+      BadgeIcon: hash => makeImageUrl(`${root}/badge-icons/${hash}.png`),
     };
   },
   invite: (root, code, eventId) => (eventId ? `${root}/${code}?event=${eventId}` : `${root}/${code}`),
