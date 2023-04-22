@@ -466,7 +466,8 @@ new DiscordAuthWebsocket({
         }
       });
     if (!res && this.captchaCache) {
-      this._logger('debug', 'Detect captcha... Try call captchaHandler()', this.captchaCache);
+      this._logger('default', 'Captcha is detected. Please solve the captcha to continue.');
+      this._logger('debug', 'Try call captchaHandler()', this.captchaCache);
       const token = await this.options.captchaHandler(this.captchaCache);
       return this._findRealToken(token);
     }
