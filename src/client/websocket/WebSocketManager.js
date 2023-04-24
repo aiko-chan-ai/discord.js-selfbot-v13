@@ -140,13 +140,14 @@ class WebSocketManager extends EventEmitter {
     */
 
     let gatewayURL = 'wss://gateway.discord.gg';
-    const { url } = await this.client.api.gateway
-      .get({ auth: false })
-      // eslint-disable-next-line no-unused-vars
+    const { url } = await this.client.api.gateway.get({ auth: false }).catch(() => ({ url: gatewayURL }));
+    // eslint-disable-next-line no-unused-vars
+    /*
       .catch(error => {
         // Never throw error :v
         // throw error.httpStatus === 401 ? invalidToken : error;
       });
+      */
     if (url) gatewayURL = url;
     const recommendedShards = 1;
     const sessionStartLimit = {
