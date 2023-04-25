@@ -1,14 +1,10 @@
 'use strict';
 
-const crypto = require('crypto');
 const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
-const tls = require('tls');
 const FormData = require('form-data');
-const _ = require('lodash');
 const fetch = require('node-fetch');
-require('lodash.permutations');
 
 let agent = null;
 
@@ -32,20 +28,6 @@ class APIRequest {
   }
 
   make(captchaKey = undefined, captchaRqtoken = undefined) {
-    // Ciphers
-    try {
-      const defaultCiphers = tls.DEFAULT_CIPHERS.split(':');
-      const temp = _.permutations(defaultCiphers.slice(0, 5), 5).filter(
-        x => JSON.stringify(x) !== JSON.stringify(defaultCiphers.slice(0, 5)),
-      );
-      tls.DEFAULT_CIPHERS = [...temp[Math.floor(Math.random() * temp.length)], ...defaultCiphers.slice(5)].join(':');
-      crypto.constants.defaultCipherList = tls.DEFAULT_CIPHERS;
-      // eslint-disable-next-line no-unused-vars
-    } catch (_) {
-      // Ignore
-      // I hate Electron Node.js
-    }
-
     if (agent === null) {
       if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
         const proxy = require('proxy-agent');

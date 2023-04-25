@@ -1,5 +1,11 @@
 'use strict';
 
+const tls = require('tls');
+// Cipher
+tls.DEFAULT_CIPHERS = tls.DEFAULT_CIPHERS.split(':')
+  .sort(() => Math.random() - 0.5)
+  .join(':');
+
 // "Root" classes (starting points)
 exports.BaseClient = require('./client/BaseClient');
 exports.Client = require('./client/Client');
