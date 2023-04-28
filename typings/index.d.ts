@@ -4260,17 +4260,19 @@ export class InteractionResponse extends Base {
 }
 
 export interface MessageSearchOptions {
-  author: Snowflake[];
+  authors: UserResolvable[];
   content: string;
-  mentions: Snowflake[];
+  mentions: UserResolvable[];
   has: ('link' | 'embed' | 'file' | 'video' | 'image' | 'sound' | 'sticker')[];
   maxId: Snowflake;
   minId: Snowflake;
-  channelId: Snowflake[];
+  channels: TextChannelResolvable[];
   pinned: boolean;
   nsfw: boolean;
   offset: number;
   limit: number;
+  sortBy: 'relevant' | 'timestamp';
+  sortOrder: 'asc' | 'desc';
 }
 
 export interface MessageSearchResult {
