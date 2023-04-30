@@ -424,7 +424,13 @@ new DiscordAuthWebsocket({
     this.callFindRealTokenCount++;
     if (!this.token) return this._throwError(new Error('Token is not created.'));
     if (!captchaSolveData && this.captchaCache) return this._throwError(new Error('Captcha is not solved.'));
-    if (this.callFindRealTokenCount > 5) return this._throwError(new Error('Failed to find real token.'));
+    if (this.callFindRealTokenCount > 5) {
+      return this._throwError(
+        new Error(
+          `Failed to find real token (${this.callFindRealTokenCount} times) ${this.captchaCache ? '[Captcha]' : ''}`,
+        ),
+      );
+    }
     this._logger('debug', 'Find real token...');
     const res = await axios
       .post(
@@ -454,6 +460,7 @@ new DiscordAuthWebsocket({
             'User-Agent': this.options.userAgent,
             Referer: 'https://discord.com/channels/@me',
             Connection: 'keep-alive',
+            Origin: 'https://discord.com',
           },
         },
       )
