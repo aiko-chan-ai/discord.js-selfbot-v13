@@ -2409,9 +2409,9 @@ export class MessageReaction {
   public count: number;
   public burstCount: number;
   public burstColors: string[];
+  public isBurst: boolean;
   public readonly emoji: GuildEmoji | ReactionEmoji;
   public me: boolean;
-  public meBurst: boolean;
   public message: Message | PartialMessage;
   public readonly partial: false;
   public users: ReactionUserManager;

@@ -28,13 +28,13 @@ class MessageReaction {
      * Whether the client has given this reaction
      * @type {boolean}
      */
-    this.me = data.me;
+    this.me = data.me || data.me_burst;
 
     /**
-     * Whether the client has given this super reaction
+     * Super reaction
      * @type {boolean}
      */
-    this.meBurst = Boolean(data.me_burst);
+    this.isBurst = Boolean(data.me_burst || data.burst);
 
     /**
      * A manager of the users that have given this reaction
