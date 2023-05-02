@@ -2116,7 +2116,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public crosspost(): Promise<Message>;
   public fetch(force?: boolean): Promise<Message>;
   public pin(reason?: string): Promise<Message>;
-  public react(emoji: EmojiIdentifierResolvable): Promise<MessageReaction>;
+  public react(emoji: EmojiIdentifierResolvable, burst?: boolean): Promise<MessageReaction>;
   public removeAttachments(): Promise<Message>;
   public reply(options: string | MessagePayload | ReplyMessageOptions): Promise<Message>;
   public resolveComponent(customId: string): MessageActionRowComponent | null;
@@ -2407,8 +2407,11 @@ export class MessageReaction {
 
   public readonly client: Client;
   public count: number;
+  public burstCount: number;
+  public burstColors: string[];
   public readonly emoji: GuildEmoji | ReactionEmoji;
   public me: boolean;
+  public meBurst: boolean;
   public message: Message | PartialMessage;
   public readonly partial: false;
   public users: ReactionUserManager;
@@ -4235,7 +4238,7 @@ export class MessageManager extends CachedManager<Snowflake, Message, MessageRes
     cacheOptions?: BaseFetchOptions,
   ): Promise<Collection<Snowflake, Message>>;
   public fetchPinned(cache?: boolean): Promise<Collection<Snowflake, Message>>;
-  public react(message: MessageResolvable, emoji: EmojiIdentifierResolvable): Promise<void>;
+  public react(message: MessageResolvable, emoji: EmojiIdentifierResolvable, burst?: boolean): Promise<void>;
   public pin(message: MessageResolvable, reason?: string): Promise<void>;
   public unpin(message: MessageResolvable, reason?: string): Promise<void>;
   public search(options: MessageSearchOptions): Promise<MessageSearchResult>;

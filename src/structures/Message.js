@@ -792,6 +792,7 @@ class Message extends Base {
   /**
    * Adds a reaction to the message.
    * @param {EmojiIdentifierResolvable} emoji The emoji to react with
+   * @param {boolean} [burst=false] Super Reactions (Discord Nitro only)
    * @returns {Promise<MessageReaction>}
    * @example
    * // React to a message with a unicode emoji
@@ -804,9 +805,9 @@ class Message extends Base {
    *   .then(console.log)
    *   .catch(console.error);
    */
-  async react(emoji) {
+  async react(emoji, burst = false) {
     if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
-    await this.channel.messages.react(this.id, emoji);
+    await this.channel.messages.react(this.id, emoji, burst);
 
     return this.client.actions.MessageReactionAdd.handle(
       {
@@ -814,6 +815,7 @@ class Message extends Base {
         channel: this.channel,
         message: this,
         emoji: Util.resolvePartialEmoji(emoji),
+        me_burst: burst,
       },
       true,
     ).reaction;

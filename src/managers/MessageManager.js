@@ -205,9 +205,10 @@ class MessageManager extends CachedManager {
    * Adds a reaction to a message, even if it's not cached.
    * @param {MessageResolvable} message The message to react to
    * @param {EmojiIdentifierResolvable} emoji The emoji to react with
+   * @param {boolean} [burst=false] Super Reactions (Discord Nitro only)
    * @returns {Promise<void>}
    */
-  async react(message, emoji) {
+  async react(message, emoji, burst = false) {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
@@ -219,7 +220,15 @@ class MessageManager extends CachedManager {
       : encodeURIComponent(emoji.name);
 
     // eslint-disable-next-line newline-per-chained-call
-    await this.client.api.channels(this.channel.id).messages(message).reactions(emojiId, '@me').put();
+    await this.client.api
+      .channels(this.channel.id)
+      .messages(message)
+      .reactions(emojiId, '@me')
+      .put({
+        query: {
+          type: burst ? 1 : 0,
+        },
+      });
   }
 
   /**

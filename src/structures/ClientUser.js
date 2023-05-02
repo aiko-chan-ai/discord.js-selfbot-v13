@@ -573,6 +573,14 @@ class ClientUser extends User {
       data: {},
     });
   }
+
+  /**
+   * Super Reactions
+   * @returns {Promise<number>}
+   */
+  fetchBurstCredit() {
+    return this.client.api.users['@me']['burst-credits'].get().then(d => d.amount);
+  }
 }
 
 module.exports = ClientUser;

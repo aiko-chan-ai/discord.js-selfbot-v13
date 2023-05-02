@@ -31,6 +31,12 @@ class MessageReaction {
     this.me = data.me;
 
     /**
+     * Whether the client has given this super reaction
+     * @type {boolean}
+     */
+    this.meBurst = Boolean(data.me_burst);
+
+    /**
      * A manager of the users that have given this reaction
      * @type {ReactionUserManager}
      */
@@ -48,6 +54,22 @@ class MessageReaction {
        * @type {?number}
        */
       this.count ??= data.count;
+    }
+
+    if ('burst_count' in data) {
+      /**
+       * The number of people that have given the same super reaction
+       * @type {?number}
+       */
+      this.burstCount ??= data.burst_count;
+    }
+
+    if ('burst_colors' in data) {
+      /**
+       * Burst colors of the reaction
+       * @type {?string[]}
+       */
+      this.burstColors ??= data.burst_colors;
     }
   }
 
