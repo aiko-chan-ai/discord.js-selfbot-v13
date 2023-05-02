@@ -66,10 +66,28 @@ class MessageReaction {
 
     if ('burst_colors' in data) {
       /**
-       * Burst colors of the reaction
-       * @type {?string[]}
+       * HEX colors used for super reaction
+       * @type {string[]}
        */
-      this.burstColors ??= data.burst_colors;
+      this.burstColors = data.burst_colors;
+    }
+
+    if ('count_details' in data) {
+      /**
+       * The reaction count details object contains information about super and normal reaction counts.
+       * @typedef {Object} ReactionCountDetailsData
+       * @property {number} burst Count of super reaction
+       * @property {number} normal Count of normal reaction
+       */
+
+      /**
+       * The reaction count details object contains information about super and normal reaction counts.
+       * @type {?ReactionCountDetailsData}
+       */
+      this.countDetails = {
+        burst: data.count_details.burst,
+        normal: data.count_details.normal,
+      };
     }
   }
 

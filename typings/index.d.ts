@@ -2412,12 +2412,18 @@ export class MessageReaction {
   public isBurst: boolean;
   public readonly emoji: GuildEmoji | ReactionEmoji;
   public me: boolean;
+  public countDetails: ReactionCountDetailsData;
   public message: Message | PartialMessage;
   public readonly partial: false;
   public users: ReactionUserManager;
   public remove(): Promise<MessageReaction>;
   public fetch(): Promise<MessageReaction>;
   public toJSON(): unknown;
+}
+
+export interface ReactionCountDetailsData {
+  burst: number;
+  normal: number;
 }
 
 export class MessageSelectMenu extends BaseMessageComponent {
