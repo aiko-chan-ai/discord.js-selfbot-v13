@@ -269,11 +269,6 @@ export const enum SelectMenuComponentTypes {
   CHANNEL_SELECT = 8,
 }
 
-export const enum ModalComponentTypes {
-  ACTION_ROW = 1,
-  TEXT_INPUT = 4,
-}
-
 export const enum MFALevels {
   NONE = 0,
   ELEVATED = 1,
