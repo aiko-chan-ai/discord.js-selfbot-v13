@@ -324,10 +324,13 @@ class Webhook {
 
     let messagePayload;
 
-    if (options instanceof MessagePayload) messagePayload = options;
-    else messagePayload = MessagePayload.create(this, options);
+    if (options instanceof MessagePayload) {
+      messagePayload = await options.resolveData();
+    } else {
+      messagePayload = await MessagePayload.create(this, options).resolveData();
+    }
 
-    const { data, files } = await messagePayload.resolveData().resolveFiles();
+    const { data, files } = await messagePayload.resolveFiles();
 
     const d = await this.client.api
       .webhooks(this.id, this.token)
