@@ -255,6 +255,7 @@ class Guild extends AnonymousGuild {
      * * MORE_STICKERS
      * * THREE_DAY_THREAD_ARCHIVE
      * * SEVEN_DAY_THREAD_ARCHIVE
+     * * RAID_ALERTS_DISABLED
      * * PRIVATE_THREADS
      * * ROLE_ICONS
      * * ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE
@@ -1362,7 +1363,7 @@ class Guild extends AnonymousGuild {
    * @example
    * // Edit the guild safety alerts channel
    * guild.setSafetyAlertsChannel(channel)
-   *  .then(updated => console.log(`Updated guild safety alerts channel to ${guild.safetyAlertsChannel.name}`))
+   *  .then(updated => console.log(`Updated guild safety alerts channel to ${updated.safetyAlertsChannel.name}`))
    *  .catch(console.error);
    */
   setSafetyAlertsChannel(safetyAlertsChannel, reason) {
