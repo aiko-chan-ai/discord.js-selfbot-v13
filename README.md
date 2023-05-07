@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.13`, based on `discord.js@13.15`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v2.14`, based on `discord.js@13.16`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -47,6 +47,7 @@
 ### Optional packages
 
 - [2captcha](https://www.npmjs.com/package/2captcha) for solving captcha (`npm install 2captcha`)
+- [node-capmonster](https://www.npmjs.com/package/node-capmonster) for solving captcha (`npm install node-capmonster`)
 
 ## Installation
 
