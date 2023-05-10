@@ -1064,7 +1064,9 @@ export class ClientUser extends User {
   public deleteAccount(password: string): Promise<this>;
   public setDeaf(status: boolean): Promise<boolean>;
   public setMute(status: boolean): Promise<boolean>;
-  public getInvite(options?: CreateInviteOptions): Promise<Invite>;
+  public createFriendInvite(): Promise<Invite>;
+  public getAllFriendInvites(): Promise<Collection<string, Invite>>;
+  public revokeAllFriendInvites(): Promise<Collection<string, Invite>>;
   public setSamsungActivity(packageName: string, type?: 'START' | 'UPDATE' | 'STOP'): Promise<this>;
   public getMentions(
     limit?: number,

@@ -463,26 +463,46 @@ class ClientUser extends User {
 
   /**
    * Create an invite [Friend Invites]
-   * maxAge: 86400 | maxUses: 0
+   * maxAge: 604800 | maxUses: 1
    * @returns {Promise<Invite>}
    * @see {@link https://github.com/13-05/hidden-disc-docs#js-snippet-for-creating-friend-invites}
    * @example
    * // Options not working
-   * client.user.getInvite();
+   * client.user.createFriendInvite();
    *   .then(console.log)
    *   .catch(console.error);
    */
-  async getInvite() {
+  async createFriendInvite() {
     const data = await this.client.api.users['@me'].invites.post({
-      data: {
-        validate: null,
-        max_age: 86400,
-        max_uses: 0,
-        target_type: 2,
-        temporary: false,
-      },
+      data: {},
     });
     return new Invite(this.client, data);
+  }
+
+  /**
+   * Get all friend invites
+   * @returns {Promise<Collection<string, Invite>>}
+   */
+  async getAllFriendInvites() {
+    const data = await this.client.api.users['@me'].invites.get();
+    const collection = new Collection();
+    for (const invite of data) {
+      collection.set(invite.code, new Invite(this.client, invite));
+    }
+    return collection;
+  }
+
+  /**
+   * Revoke all friend invites
+   * @returns {Promise<Collection<string, Invite>>}
+   */
+  async revokeAllFriendInvites() {
+    const data = await this.client.api.users['@me'].invites.delete();
+    const collection = new Collection();
+    for (const invite of data) {
+      collection.set(invite.code, new Invite(this.client, invite));
+    }
+    return collection;
   }
 
   /**
