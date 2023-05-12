@@ -1485,11 +1485,6 @@ export class Guild extends AnonymousGuild {
   public setWidgetSettings(settings: GuildWidgetSettingsData, reason?: string): Promise<Guild>;
   public setVanityCode(code?: string): Promise<Vanity>;
   public toJSON(): unknown;
-  // Added
-  /** @deprecated */
-  public readonly clydeSupport: boolean;
-  /** @deprecated */
-  public enableClydeAI(enabled?: boolean): Promise<Guild>;
 }
 
 export class GuildAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'> {

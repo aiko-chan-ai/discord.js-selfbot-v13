@@ -583,25 +583,6 @@ class Guild extends AnonymousGuild {
   }
 
   /**
-   * Check out the guild that can activate ClydeAI
-   * <info>**BETA** - This feature is currently in beta and may be changed or removed at any time.</info>
-   * @type {boolean}
-   * @readonly
-   * @deprecated
-   */
-  get clydeSupport() {
-    // **BETA** - This feature is currently in beta and may be changed or removed at any time.
-    if (this.features.includes('COMMUNITY')) return false;
-    if (
-      (this.memberCount < 101 && v3(`2023-03_clyde_ai:${this.id}`) % 10e3 < 1200) ||
-      (this.memberCount < 201 && v3(`2023-03_clyde_ai:${this.id}`) % 10e3 < 1000)
-    ) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * AFK voice channel for this guild.
    * @type {?VoiceChannel}
    * @readonly
@@ -1475,23 +1456,6 @@ class Guild extends AnonymousGuild {
     const features = this.features.filter(feature => feature !== 'INVITES_DISABLED');
     if (disabled) features.push('INVITES_DISABLED');
     return this.edit({ features });
-  }
-
-  /**
-   * Enables or disables Clyde AI for this guild.
-   * <info>This feature is currently in beta and may be changed or removed at any time.</info>
-   * @param {boolean} [enabled=true] Whether the guild is enabled for Clyde AI
-   * @returns {Promise<Guild>}
-   * @deprecated
-   */
-  enableClydeAI(enabled = true) {
-    if (!this.clydeSupport) return Promise.resolve(this);
-    if (enabled) {
-      if (this.features.includes('CLYDE_ENABLED')) return Promise.resolve(this);
-      return this.edit({ features: [...this.features, 'CLYDE_ENABLED'] });
-    } else {
-      return this.edit({ features: this.features.filter(f => f !== 'CLYDE_ENABLED') });
-    }
   }
 
   /**
