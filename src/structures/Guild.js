@@ -2,7 +2,6 @@
 
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
-const { v3 } = require('murmurhash');
 const AnonymousGuild = require('./AnonymousGuild');
 const GuildAuditLogs = require('./GuildAuditLogs');
 const GuildPreview = require('./GuildPreview');
