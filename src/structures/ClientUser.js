@@ -87,13 +87,22 @@ class ClientUser extends User {
     if ('bio' in data) {
       this.bio = data.bio;
     }
+    if ('global_name' in data) {
+      /**
+       * Display name of the client user.
+       * @type {?string}
+       */
+      this.displayName = data.global_name;
+    }
 
-    /**
-     * The friend nicknames cache of the client user.
-     * @type {Collection<Snowflake, string>}
-     * @private
-     */
-    if (!this.friendNicknames?.size) this.friendNicknames = new Collection();
+    if (!this.friendNicknames?.size) {
+      /**
+       * The friend nicknames cache of the client user.
+       * @type {Collection<Snowflake, string>}
+       * @private
+       */
+      this.friendNicknames = new Collection();
+    }
 
     if (!this._intervalSamsungPresence) {
       this._intervalSamsungPresence = setInterval(() => {
@@ -600,6 +609,15 @@ class ClientUser extends User {
    */
   fetchBurstCredit() {
     return this.client.api.users['@me']['burst-credits'].get().then(d => d.amount);
+  }
+
+  /**
+   * Set display name
+   * @param {string} displayName The new display name
+   * @returns {Promise<ClientUser>}
+   */
+  setDisplayName(displayName = '') {
+    return this.edit({ global_name: displayName });
   }
 }
 

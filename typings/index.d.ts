@@ -1085,6 +1085,7 @@ export class ClientUser extends User {
   public readonly nsfwAllowed: boolean;
   public readonly emailAddress: string;
   public stopRinging(channel: ChannelResolvable): Promise<void>;
+  public setDisplayName(displayName?: string): Promise<this>;
 }
 
 type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST' | 'NITRO_BASIC';
