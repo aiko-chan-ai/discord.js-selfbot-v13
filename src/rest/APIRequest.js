@@ -48,26 +48,26 @@ class APIRequest {
 
     let headers = {
       ...this.client.options.http.headers,
-      Accept: '*/*',
-      origin: 'https://discord.com',
-      'Accept-Language': 'en-US',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-origin',
-      'X-Debug-Options': 'bugReporterEnabled',
-      'X-Super-Properties': `${Buffer.from(
-        this.client.options.jsonTransformer(this.client.options.ws.properties),
-        'ascii',
-      ).toString('base64')}`,
-      'X-Discord-Locale': 'en-US',
-      'User-Agent': this.client.options.http.headers['User-Agent'],
-      Referer: 'https://discord.com/channels/@me',
-      Connection: 'keep-alive',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': 'Windows',
+      accept: '*/*',
+      'accept-language': 'en-US',
       'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="${
         /Chrome\/(\d+)/.exec(this.client.options.http.headers['User-Agent'])[1]
       }"`,
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+      'x-debug-options': 'bugReporterEnabled',
+      'x-discord-locale': 'en-US',
+      'x-discord-timezone': 'Asia/Saigon',
+      'x-super-properties': `${Buffer.from(
+        this.client.options.jsonTransformer(this.client.options.ws.properties),
+        'ascii',
+      ).toString('base64')}`,
+      Referer: 'https://discord.com/channels/@me',
+      origin: 'https://discord.com',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
