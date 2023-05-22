@@ -536,6 +536,7 @@ class Client extends BaseClient {
     try {
       const latest_tag = res_.data['dist-tags'].latest;
       this.emit('update', Discord.version, latest_tag);
+      this.emit('debug', `${chalk.greenBright('[OK]')} Check Update success`);
     } catch {
       this.emit('debug', `${chalk.redBright('[Fail]')} Check Update error`);
       this.emit('update', Discord.version, false);

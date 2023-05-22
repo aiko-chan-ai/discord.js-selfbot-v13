@@ -42,9 +42,10 @@ function patchVoice(client) {
 
 module.exports = async (client, { d: data }, shard) => {
   if (!firstReady) {
-    client.once('update', (currentVersion, newVersion) => {
-      if (!newVersion) {
-        console.log(`
+    if (client.options.checkUpdate) {
+      client.once('update', (currentVersion, newVersion) => {
+        if (!newVersion) {
+          console.log(`
       ${chalk.redBright('[WARNING]')} Cannot check new Discord.js-selfbot-v13 version.
       Current: ${chalk.blueBright(currentVersion)}
   
@@ -56,8 +57,8 @@ module.exports = async (client, { d: data }, shard) => {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`);
-      } else if (currentVersion !== newVersion && !currentVersion.includes('-')) {
-        console.log(`
+        } else if (currentVersion !== newVersion && !currentVersion.includes('-')) {
+          console.log(`
       ${chalk.yellowBright('[WARNING]')} New Discord.js-selfbot-v13 version.
       Current: ${chalk.redBright(currentVersion)} => Latest: ${chalk.greenBright(newVersion)}
   
@@ -69,9 +70,9 @@ module.exports = async (client, { d: data }, shard) => {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`);
-      } else {
-        console.log(
-          `
+        } else {
+          console.log(
+            `
       ${chalk.greenBright('[OK]')} Discord.js-selfbot-v13 is up to date. Current: ${chalk.blueBright(currentVersion)}
   
       If you don't want to show this message, set ${chalk.cyanBright('checkUpdate')} to false
@@ -82,11 +83,9 @@ module.exports = async (client, { d: data }, shard) => {
   
       and using event update
       https://discordjs-self-v13.netlify.app/#/docs/docs/main/class/Client?scrollTo=e-update\n`,
-        );
-      }
-    });
-
-    if (client.options.checkUpdate === false) {
+          );
+        }
+      });
       client.checkUpdate();
     }
 
