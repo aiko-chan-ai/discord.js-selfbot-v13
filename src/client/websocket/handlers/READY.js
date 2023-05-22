@@ -86,7 +86,7 @@ module.exports = async (client, { d: data }, shard) => {
       }
     });
 
-    if (client.options.checkUpdate) {
+    if (client.options.checkUpdate === false) {
       client.checkUpdate();
     }
 
