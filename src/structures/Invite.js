@@ -337,7 +337,9 @@ class Invite extends Base {
       location_channel_type: ChannelTypes[this.channel?.type] ?? 0,
     };
     await this.client.api.invites(this.code).post({
-      data: {},
+      data: {
+        session_id: this.client.session_id,
+      },
       headers: {
         'X-Context-Properties': Buffer.from(JSON.stringify(dataHeader), 'utf8').toString('base64'),
       },

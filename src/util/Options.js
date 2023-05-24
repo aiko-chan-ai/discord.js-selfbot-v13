@@ -201,7 +201,10 @@ class Options extends null {
           os_version: '10.0.22621',
           os_arch: 'x64',
           system_locale: 'en-US',
-          client_build_number: 198920,
+          browser_user_agent:
+            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9013 Chrome/108.0.5359.215 Electron/22.3.2 Safari/537.36',
+          browser_version: '22.3.2',
+          client_build_number: 199933,
           native_build_number: 32266,
           client_event_source: null,
           design_id: 0,

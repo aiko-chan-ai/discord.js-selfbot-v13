@@ -627,7 +627,9 @@ class Client extends BaseClient {
         headers: {
           'X-Context-Properties': 'eyJsb2NhdGlvbiI6Ik1hcmtkb3duIExpbmsifQ==', // Markdown Link
         },
-        data: {},
+        data: {
+          session_id: this.session_id,
+        },
       });
     }
   }
