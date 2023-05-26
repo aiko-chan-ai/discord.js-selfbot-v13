@@ -318,7 +318,14 @@ class MessagePayload {
     }
 
     const resource = await DataResolver.resolveFile(attachment);
-    return { attachment, name, file: resource };
+    return {
+      attachment,
+      name,
+      file: resource,
+      description: fileLike.description,
+      duration_secs: fileLike.duration,
+      waveform: fileLike.waveform,
+    };
   }
 
   /**

@@ -143,6 +143,9 @@ class MessageManager extends CachedManager {
           id: attachment.id,
           filename: files[attachment.id].name,
           uploaded_filename: attachment.upload_filename,
+          description: files[attachment.id].description,
+          duration_secs: files[attachment.id].duration_secs,
+          waveform: files[attachment.id].waveform,
         };
       });
       const attachmentsData = await Promise.all(requestPromises);

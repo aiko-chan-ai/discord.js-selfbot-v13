@@ -20,7 +20,7 @@ class GuildForumThreadManager extends ThreadManager {
    * @typedef {BaseMessageOptions} GuildForumThreadMessageCreateOptions
    * @property {StickerResolvable} [stickers] The stickers to send with the message
    * @property {BitFieldResolvable} [flags] The flags to send with the message.
-   * Only `SUPPRESS_EMBEDS` and `SUPPRESS_NOTIFICATIONS` can be set.
+   * Only `SUPPRESS_EMBEDS`, `SUPPRESS_NOTIFICATIONS` and `IS_VOICE_MESSAGE` can be set.
    */
 
   /**
@@ -82,6 +82,9 @@ class GuildForumThreadManager extends ThreadManager {
           id: attachment.id,
           filename: files[attachment.id].name,
           uploaded_filename: attachment.upload_filename,
+          description: files[attachment.id].description,
+          duration_secs: files[attachment.id].duration_secs,
+          waveform: files[attachment.id].waveform,
         };
       });
       const attachmentsData = await Promise.all(requestPromises);

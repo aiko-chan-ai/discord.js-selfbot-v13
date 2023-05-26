@@ -93,7 +93,7 @@ class TextBasedChannel {
    * @property {ReplyOptions} [reply] The options for replying to a message
    * @property {StickerResolvable[]} [stickers=[]] Stickers to send in the message
    * @property {MessageFlags} [flags] Which flags to set for the message.
-   * Only `SUPPRESS_EMBEDS` and `SUPPRESS_NOTIFICATIONS` can be set.
+   * Only `SUPPRESS_EMBEDS`, `SUPPRESS_NOTIFICATIONS` and `IS_VOICE_MESSAGE` can be set.
    */
 
   /**
@@ -187,6 +187,9 @@ class TextBasedChannel {
           id: attachment.id,
           filename: files[attachment.id].name,
           uploaded_filename: attachment.upload_filename,
+          description: files[attachment.id].description,
+          duration_secs: files[attachment.id].duration_secs,
+          waveform: files[attachment.id].waveform,
         };
       });
       const attachmentsData = await Promise.all(requestPromises);
