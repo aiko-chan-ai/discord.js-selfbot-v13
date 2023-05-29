@@ -450,7 +450,7 @@ class TextBasedChannel {
    * @returns {Promise<InteractionResponse>}
    * @example
    * // Send a basic slash
-   * channel.sendSlash('botid', 'ping)
+   * channel.sendSlash('botid', 'ping')
    *   .then(console.log)
    *   .catch(console.error);
    * @example
