@@ -447,18 +447,11 @@ class Client extends BaseClient {
   }
 
   /**
-   * @typedef {Object} remoteAuthConfrim
-   * @property {function} yes Yes
-   * @property {function} no No
-   */
-
-  /**
    * Implement `remoteAuth`, like using your phone to scan a QR code
    * @param {string} url URL from QR code
-   * @param {boolean} forceAccept Whether to force confirm `yes`
-   * @returns {Promise<remoteAuthConfrim | void>}
+   * @returns {Promise<void>}
    */
-  async remoteAuth(url, forceAccept = false) {
+  async remoteAuth(url) {
     if (!this.isReady()) throw new Error('CLIENT_NOT_READY', 'Remote Auth');
     // Step 1: Parse URL
     url = new URL(url);
@@ -478,17 +471,9 @@ class Client extends BaseClient {
     });
     const handshake_token = res.handshake_token;
     // Step 3: Post
-    const yes = () =>
-      this.api.users['@me']['remote-auth'].finish.post({ data: { handshake_token, temporary_token: false } });
-    const no = () => this.api.users['@me']['remote-auth'].cancel.post({ data: { handshake_token } });
-    if (forceAccept) {
-      return yes();
-    } else {
-      return {
-        yes,
-        no,
-      };
-    }
+    return this.api.users['@me']['remote-auth'].finish.post({ data: { handshake_token, temporary_token: false } });
+    // Cancel
+    // this.api.users['@me']['remote-auth'].cancel.post({ data: { handshake_token } });
   }
 
   /**
@@ -947,10 +932,19 @@ class Client extends BaseClient {
   }
 
   /**
-   * Authorize an URL.
+   * @typedef {Object} OAuth2AuthorizeOptions
+   * @property {string} [guild_id] Guild ID
+   * @property {PermissionResolvable} [permissions] Permissions
+   * @property {boolean} [authorize] Whether to authorize or not
+   * @property {string} [code] 2FA Code
+   * @property {string} [webhook_channel_id] Webhook Channel ID
+   */
+
+  /**
+   * Authorize an application.
    * @param {string} url Discord Auth URL
-   * @param {Object} options Oauth2 options
-   * @returns {Promise<boolean>}
+   * @param {OAuth2AuthorizeOptions} options Oauth2 options
+   * @returns {Promise<void>}
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
       guild_id: "guildID",
@@ -958,38 +952,23 @@ class Client extends BaseClient {
       authorize: true
     })
    */
-  async authorizeURL(url, options = {}) {
-    const reg = /(api\/)*oauth2\/authorize/gim;
-    let searchParams = {};
-    const checkURL = () => {
-      try {
-        // eslint-disable-next-line no-new
-        const url_ = new URL(url);
-        if (!['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(url_.hostname)) return false;
-        if (!reg.test(url_.pathname)) return false;
-        for (const [key, value] of url_.searchParams.entries()) {
-          searchParams[key] = value;
-        }
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
-    options = Object.assign(
-      {
-        authorize: true,
-        permissions: '0',
-      },
-      options,
-    );
-    if (!url || !checkURL()) {
+  authorizeURL(url, options = { authorize: true, permissions: '0' }) {
+    const pathnameAPI = /\/api\/(v\d{1,2}\/)?oauth2\/authorize/;
+    const pathnameURL = /\/oauth2\/authorize/;
+    const url_ = new URL(url);
+    if (
+      !['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(url_.hostname) ||
+      (!pathnameAPI.test(url_.pathname) && !pathnameURL.test(url_.pathname))
+    ) {
       throw new Error('INVALID_URL', url);
     }
-    await this.api.oauth2.authorize.post({
+    const searchParams = Object.fromEntries(url_.searchParams);
+    options.permissions = `${Permissions.resolve(searchParams.permissions || options.permissions) || 0}`;
+    delete searchParams.permissions;
+    return this.api.oauth2.authorize.post({
       query: searchParams,
       data: options,
     });
-    return true;
   }
 
   /**

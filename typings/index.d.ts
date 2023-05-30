@@ -917,10 +917,14 @@ export abstract class Channel extends Base {
 
 export type If<T extends boolean, A, B = null> = T extends true ? A : T extends false ? B : A | B;
 
-export interface remoteAuthConfrim {
-  yes(): Promise<undefined>;
-  no(): Promise<undefined>;
+export interface OAuth2AuthorizeOptions {
+  guild_id: Snowflake;
+  permissions?: PermissionResolvable;
+  authorize?: boolean;
+  code?: string;
+  webhook_channel_id?: Snowflake;
 }
+
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions); /* Bug report by Mavri#0001 [721347809667973141] */
   private actions: unknown;
@@ -971,14 +975,14 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;
   public switchUser(token: string): void;
   public QRLogin(options?: DiscordAuthWebsocketOptions): DiscordAuthWebsocket;
-  public remoteAuth(url: string, forceAccept?: boolean): Promise<remoteAuthConfrim | undefined>;
+  public remoteAuth(url: string): Promise<undefined>;
   public createToken(): Promise<string>;
   public checkUpdate(): Promise<this>;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
   public customStatusAuto(client?: this): undefined;
-  public authorizeURL(url: string, options?: object): Promise<boolean>;
+  public authorizeURL(url: string, options?: object): Promise<undefined>;
   public sleep(milliseconds: number): Promise<void> | null;
   private _clearCache(cache: Collection<any, any>): void;
   public toJSON(): unknown;
