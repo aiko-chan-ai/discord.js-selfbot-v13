@@ -531,7 +531,13 @@ exports.Events = {
   RELATIONSHIP_UPDATE: 'relationshipUpdate',
   UNHANDLED_PACKET: 'unhandledPacket',
   CAPTCHA_REQUIRED: 'captchaRequired',
+  // ! TODO: Add more events
   SOUNDBOARD_SOUNDS: 'soundboardSounds',
+  VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
+  GUILD_SOUNDBOARD_SOUND_CREATE: 'guildSoundboardSoundCreate',
+  GUILD_SOUNDBOARD_SOUND_UPDATE: 'guildSoundboardSoundUpdate',
+  GUILD_SOUNDBOARD_SOUNDS_UPDATE: 'guildSoundboardSoundsUpdate',
+  GUILD_SOUNDBOARD_SOUND_DELETE: 'guildSoundboardSoundDelete',
 };
 
 /**
