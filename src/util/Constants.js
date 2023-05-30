@@ -287,12 +287,17 @@ exports.Status = {
  * * STREAM_WATCH: 20
  * * STREAM_PING: 21 #  Send
  * * STREAM_SET_PAUSED: 22
- * * REQUEST_APPLICATION_COMMANDS: 24
+ * * REQUEST_GUILD_APPLICATION_COMMANDS: 24
  * * EMBEDDED_ACTIVITY_LAUNCH: 25
  * * EMBEDDED_ACTIVITY_CLOSE: 26
  * * EMBEDDED_ACTIVITY_UPDATE: 27
  * * REQUEST_FORUM_UNREADS: 28
  * * REMOTE_COMMAND: 29
+ * * GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30
+ * * REQUEST_SOUNDBOARD_SOUNDS: 31
+ * * SPEED_TEST_CREATE: 32
+ * * SPEED_TEST_DELETE: 33
+ * * REQUEST_LAST_MESSAGES: 34
  * @typedef {Object<string, number>} Opcodes
  */
 exports.Opcodes = {
@@ -319,12 +324,18 @@ exports.Opcodes = {
   STREAM_WATCH: 20,
   STREAM_PING: 21, // #  Send
   STREAM_SET_PAUSED: 22,
-  REQUEST_APPLICATION_COMMANDS: 24, // #  Send => request application/bot cmds (user, message, and slash cmds)
+  REQUEST_GUILD_APPLICATION_COMMANDS: 24, // #  Send => request application/bot cmds (user, message, and slash cmds)
   EMBEDDED_ACTIVITY_LAUNCH: 25,
   EMBEDDED_ACTIVITY_CLOSE: 26,
   EMBEDDED_ACTIVITY_UPDATE: 27,
   REQUEST_FORUM_UNREADS: 28,
   REMOTE_COMMAND: 29,
+  GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30,
+  REQUEST_SOUNDBOARD_SOUNDS: 31, // Payload: { guild_ids: string[] }
+  SPEED_TEST_CREATE: 32,
+  SPEED_TEST_DELETE: 33,
+  REQUEST_LAST_MESSAGES: 34, // Payload: { guild_id: string, channel_ids: string[] }
+  // Update: 30/5/2023
 };
 
 /**
@@ -520,6 +531,7 @@ exports.Events = {
   RELATIONSHIP_UPDATE: 'relationshipUpdate',
   UNHANDLED_PACKET: 'unhandledPacket',
   CAPTCHA_REQUIRED: 'captchaRequired',
+  SOUNDBOARD_SOUNDS: 'soundboardSounds',
 };
 
 /**
