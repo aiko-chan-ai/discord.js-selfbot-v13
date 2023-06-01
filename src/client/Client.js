@@ -944,7 +944,7 @@ class Client extends BaseClient {
    * Authorize an application.
    * @param {string} url Discord Auth URL
    * @param {OAuth2AuthorizeOptions} options Oauth2 options
-   * @returns {Promise<void>}
+   * @returns {Promise<Object>}
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
       guild_id: "guildID",

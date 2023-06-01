@@ -981,8 +981,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
-  public customStatusAuto(client?: this): undefined;
-  public authorizeURL(url: string, options?: object): Promise<undefined>;
+  private customStatusAuto(client?: this): undefined;
+  public authorizeURL(url: string, options?: object): Promise<object>;
   public sleep(milliseconds: number): Promise<void> | null;
   private _clearCache(cache: Collection<any, any>): void;
   public toJSON(): unknown;

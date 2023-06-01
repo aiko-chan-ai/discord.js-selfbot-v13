@@ -4,7 +4,6 @@ const { setTimeout } = require('node:timers');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { inspect } = require('util');
 const { AsyncQueue } = require('@sapphire/async-queue');
-const parseCookie = require('set-cookie-parser');
 const DiscordAPIError = require('./DiscordAPIError');
 const HTTPError = require('./HTTPError');
 const RateLimitError = require('./RateLimitError');
@@ -241,22 +240,6 @@ class RequestHandler {
 
     let sublimitTimeout;
     if (res.headers) {
-      const cookie = res.headers.raw()['set-cookie'];
-      if (cookie && Array.isArray(cookie)) {
-        const oldCookie = parseCookie((this.manager.client.options.http.headers.Cookie || '').split('; '), {
-          map: true,
-        });
-        const parse = parseCookie(cookie, {
-          map: true,
-        });
-        for (const key in parse) {
-          oldCookie[key] = parse[key];
-        }
-        this.manager.client.options.http.headers.Cookie = Object.entries(oldCookie)
-          .map(([key, value]) => `${key}=${value.value}`)
-          .join('; ');
-        this.manager.client.emit('debug', `[REST] Set new cookie: ${this.manager.client.options.http.headers.Cookie}`);
-      }
       const serverDate = res.headers.get('date');
       const limit = res.headers.get('x-ratelimit-limit');
       const remaining = res.headers.get('x-ratelimit-remaining');

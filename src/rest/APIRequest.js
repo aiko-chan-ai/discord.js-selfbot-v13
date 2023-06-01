@@ -3,8 +3,11 @@
 const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
+const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
-const fetch = require('node-fetch');
+const fetchOriginal = require('node-fetch');
+
+const fetch = makeFetchCookie(fetchOriginal);
 
 let agent = null;
 
