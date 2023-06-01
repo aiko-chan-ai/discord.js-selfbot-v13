@@ -700,10 +700,6 @@ class WebSocketShard extends EventEmitter {
 
     this.status = Status.IDENTIFYING;
 
-    // Clone the identify payload and assign the token and shard info
-    client.options.ws.properties = Object.assign(client.options.ws.properties, {
-      browser_user_agent: client.options.http.headers['User-Agent'],
-    });
     Object.keys(client.options.ws.properties)
       .filter(k => k.startsWith('$'))
       .forEach(k => {
