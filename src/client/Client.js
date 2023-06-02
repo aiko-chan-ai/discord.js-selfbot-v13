@@ -1033,6 +1033,9 @@ class Client extends BaseClient {
     if (options && typeof options.captchaSolver !== 'function') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'captchaSolver', 'a function');
     }
+    if (options && typeof options.captchaWithProxy !== 'boolean') {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaWithProxy', 'a boolean');
+    }
     if (options && typeof options.DMSync !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');
     }

@@ -42,6 +42,7 @@ const { defaultUA } = require('../util/Constants');
  * @property {string} [captchaService=null] Captcha service to use for solving captcha {@link captchaServices}
  * @property {string} [captchaKey=null] Captcha service key
  * @property {string} [captchaRetryLimit=3] Captcha retry limit
+ * @property {string} [captchaWithProxy=false] Whether to use proxy for captcha solving
  * @property {string} [password=null] Your Discord account password
  * @property {boolean} [usingNewAttachmentAPI=true] Use new attachment API
  * @property {string} [interactionTimeout=15000] The amount of time in milliseconds to wait for an interaction response, before rejecting
@@ -166,6 +167,7 @@ class Options extends null {
       captchaService: '',
       captchaKey: null,
       captchaRetryLimit: 3,
+      captchaWithProxy: false,
       DMSync: false,
       patchVoice: false,
       password: null,

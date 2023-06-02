@@ -32,6 +32,7 @@ class RESTManager {
       this.client.options.captchaService,
       this.client.options.captchaKey,
       this.client.options.captchaSolver,
+      this.client.options.captchaWithProxy ? this.client.options.proxy : '',
     );
   }
 

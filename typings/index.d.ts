@@ -5075,6 +5075,7 @@ export interface ClientOptions {
   captchaKey?: string;
   captchaSolver?: (data: Captcha, userAgent: string) => Promise<string>;
   captchaRetryLimit?: number;
+  captchaWithProxy?: boolean;
   interactionTimeout?: number;
   usingNewAttachmentAPI?: boolean;
 }
