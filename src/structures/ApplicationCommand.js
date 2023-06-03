@@ -879,7 +879,8 @@ class ApplicationCommand extends Base {
       let nonce = SnowflakeUtil.generate();
       const data = getDataPost(optionsData, nonce);
       await this.client.api.interactions.post({
-        body: data,
+        data,
+        useFormDataPayloadJSON: true,
         files: attachmentsBuffer,
       });
       this.client._interactionCache.set(nonce, {
@@ -975,7 +976,8 @@ class ApplicationCommand extends Base {
       data.data.guild_id = message.guildId;
     }
     await this.client.api.interactions.post({
-      body: data,
+      data,
+      useFormDataPayloadJSON: true,
     });
     this.client._interactionCache.set(nonce, {
       channelId: message.channelId,

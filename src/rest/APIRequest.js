@@ -6,8 +6,10 @@ const { setTimeout } = require('node:timers');
 const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
+const { CookieJar } = require('tough-cookie');
 
-const fetch = makeFetchCookie(fetchOriginal);
+const cookieJar = new CookieJar();
+const fetch = makeFetchCookie(fetchOriginal, cookieJar);
 
 let agent = null;
 
@@ -85,6 +87,10 @@ class APIRequest {
         'User-Agent': this.client.options.http.headers['User-Agent'],
       };
     }
+    if (captchaKey && typeof captchaKey == 'string') {
+      headers['x-captcha-key'] = captchaKey;
+      if (captchaRqtoken) headers['x-captcha-rqtoken'] = captchaRqtoken;
+    }
 
     let body;
     if (this.options.files?.length) {
@@ -98,29 +104,18 @@ class APIRequest {
         } else {
           body.append('payload_json', JSON.stringify(this.options.data));
         }
-      } else if (typeof this.options.body !== 'undefined') {
-        if (this.options.dontUsePayloadJSON) {
-          for (const [key, value] of Object.entries(this.options.body)) body.append(key, value);
-        } else {
-          body.append('payload_json', JSON.stringify(this.options.body));
-        }
       }
       headers = Object.assign(headers, body.getHeaders());
       // eslint-disable-next-line eqeqeq
     } else if (this.options.data != null) {
-      headers['Content-Type'] = 'application/json';
-      if (captchaKey && typeof captchaKey == 'string') {
-        if (!this.options.data) this.options.data = {};
-        // Delete cookie (https://t.me/DMDGOBugsAndFeatures/626) Wtf Unknown Message Error ???
-        headers.Cookie = undefined;
-        this.options.data.captcha_key = captchaKey;
-        if (captchaRqtoken) this.options.data.captcha_rqtoken = captchaRqtoken;
+      if (this.options.useFormDataPayloadJSON) {
+        body = new FormData();
+        body.append('payload_json', JSON.stringify(this.options.data));
+        headers = Object.assign(headers, body.getHeaders());
+      } else {
+        body = JSON.stringify(this.options.data);
+        headers['Content-Type'] = 'application/json';
       }
-      body = this.options.data ? JSON.stringify(this.options.data) : undefined;
-    } else if (this.options.body != null) {
-      body = new FormData();
-      body.append('payload_json', JSON.stringify(this.options.body));
-      headers = Object.assign(headers, body.getHeaders());
     }
 
     const controller = new AbortController();

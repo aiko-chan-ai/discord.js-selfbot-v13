@@ -18,6 +18,7 @@ const captchaMessage = [
   'invalid-input-response',
   'invalid-response',
   'You need to update your app',
+  'response-already-used-error',
 ];
 
 function parseResponse(res) {
