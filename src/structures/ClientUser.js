@@ -87,13 +87,6 @@ class ClientUser extends User {
     if ('bio' in data) {
       this.bio = data.bio;
     }
-    if ('global_name' in data) {
-      /**
-       * Display name of the client user.
-       * @type {?string}
-       */
-      this.displayName = data.global_name;
-    }
 
     if (!this.friendNicknames?.size) {
       /**
@@ -612,12 +605,12 @@ class ClientUser extends User {
   }
 
   /**
-   * Set display name
-   * @param {string} displayName The new display name
+   * Set global display name
+   * @param {string} globalName The new display name
    * @returns {Promise<ClientUser>}
    */
-  setDisplayName(displayName = '') {
-    return this.edit({ global_name: displayName });
+  setGlobalName(globalName = '') {
+    return this.edit({ global_name: globalName });
   }
 }
 
