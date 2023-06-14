@@ -205,10 +205,9 @@ class Options extends null {
           system_locale: 'en-US',
           browser_user_agent: defaultUA,
           browser_version: '22.3.2',
-          client_build_number: 201332,
-          native_build_number: 32266,
+          client_build_number: 204762,
+          native_build_number: 33666,
           client_event_source: null,
-          design_id: 0,
         },
         version: 9,
         client_state: {
