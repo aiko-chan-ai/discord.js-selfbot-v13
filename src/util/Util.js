@@ -709,8 +709,8 @@ class Util extends null {
     if (!files.length) return [];
     files = files.map((file, i) => ({
       filename: file.name ?? file.attachment?.name ?? file.attachment?.filename ?? 'file.jpg',
-      // 8MB = 8388608 bytes
-      file_size: Math.floor((8_388_608 / 10) * Math.random()),
+      // 25MB = 26_214_400bytes
+      file_size: Math.floor((26_214_400 / 10) * Math.random()),
       id: `${i}`,
     }));
     const { attachments } = await client.api.channels[channelId].attachments.post({
@@ -732,6 +732,15 @@ class Util extends null {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Calculates the default avatar index for a given user id.
+   * @param {Snowflake} userId - The user id to calculate the default avatar index for
+   * @returns {number}
+   */
+  static calculateUserDefaultAvatarIndex(userId) {
+    return Number(BigInt(userId) >> 22n) % 6;
   }
 }
 
