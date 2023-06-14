@@ -891,7 +891,7 @@ class ApplicationCommand extends Base {
       return new Promise((resolve, reject) => {
         const handler = data => {
           timeout.refresh();
-          if (data.metadata.nonce !== nonce) return;
+          if (data.metadata?.nonce !== nonce) return;
           clearTimeout(timeout);
           this.client.removeListener('interactionResponse', handler);
           this.client.decrementMaxListeners();
@@ -987,7 +987,7 @@ class ApplicationCommand extends Base {
     return new Promise((resolve, reject) => {
       const handler = data => {
         timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
+        if (data.metadata?.nonce !== nonce) return;
         clearTimeout(timeout);
         this.client.removeListener('interactionResponse', handler);
         this.client.decrementMaxListeners();

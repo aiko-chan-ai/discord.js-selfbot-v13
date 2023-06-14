@@ -359,7 +359,7 @@ class MessageSelectMenu extends BaseMessageComponent {
     return new Promise((resolve, reject) => {
       const handler = data => {
         timeout.refresh();
-        if (data.metadata.nonce !== nonce) return;
+        if (data.metadata?.nonce !== nonce) return;
         clearTimeout(timeout);
         message.client.removeListener('interactionResponse', handler);
         message.client.decrementMaxListeners();
