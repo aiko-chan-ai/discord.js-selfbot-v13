@@ -124,4 +124,9 @@ Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13
   Better Markdown to text chat Discord.
 - 📗 ...
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=aiko-chan-ai/discord.js-selfbot-v13&type=Date)](https://star-history.com/#aiko-chan-ai/discord.js-selfbot-v13&Date)
+
+
 # From Github with love 💕
