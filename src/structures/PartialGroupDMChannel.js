@@ -160,7 +160,7 @@ class PartialGroupDMChannel extends Channel {
     }
     if (this.recipients.get(user)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL')); // Fails sometimes if member leaves recently (ex. user leave msg's channel used for adding)
     await this.client.api.channels[this.id].recipients[user].put();
-    this.recipients.set(user, this.client.users.cache.get(user));
+    this._recipients = this._recipients.filter(r => r.id !== user);
     return this;
   }
 
@@ -179,7 +179,7 @@ class PartialGroupDMChannel extends Channel {
     }
     if (!this.recipients.get(user)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
     await this.client.api.channels[this.id].recipients[user].delete();
-    this.recipients.delete(user);
+    this._recipients = this._recipients.filter(r => r.id !== user);
     return this;
   }
 
