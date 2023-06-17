@@ -969,7 +969,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public redeemNitro(code: string, channel?: TextChannelResolvable, failIfNotExists?: boolean): object;
+  public redeemNitro(code: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): object;
   public generateInvite(options?: InviteGenerationOptions): string;
   public login(token?: string): Promise<string>;
   public normalLogin(username: string, password?: string, mfaCode?: string): Promise<string>;

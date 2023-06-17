@@ -240,16 +240,6 @@ class Client extends BaseClient {
      */
     this.password = this.options.password;
 
-    /**
-     * Nitro cache
-     * @type {Array}
-     */
-    this.usedCodes = [];
-
-    setInterval(() => {
-      this.usedCodes = [];
-    }, 1000 * 60 * 60).unref();
-
     this.session_id = null;
 
     if (this.options.messageSweepInterval > 0) {
@@ -622,48 +612,39 @@ class Client extends BaseClient {
   /**
    * Automatically Redeem Nitro from raw message.
    * @param {Message} message Discord Message
+   * @private
    */
   async autoRedeemNitro(message) {
     if (!(message instanceof Message())) return;
-    await this.redeemNitro(message.content, message.channel, false);
+    if (!message.content) return;
+    const allLinks =
+      message.content.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/gm) ||
+      message.content.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/gm);
+    if (!allLinks) return;
+    for (const link of allLinks) {
+      await this.redeemNitro(link, message.channel);
+    }
   }
 
   /**
    * Redeem nitro from code or url.
    * @param {string} nitro Nitro url or code
    * @param {TextChannelResolvable} channel Channel that the code was sent in
-   * @param {boolean} failIfNotExists Whether to fail if the code doesn't exist
-   * @returns {Promise<boolean>}
+   * @param {Snowflake} [paymentSourceId] Payment source id
+   * @returns {Promise<any>}
    */
-  async redeemNitro(nitro, channel, failIfNotExists = true) {
+  redeemNitro(nitro, channel, paymentSourceId) {
     if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
+    const nitroCode =
+      nitro.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/) ||
+      nitro.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/);
+    if (!nitroCode) return false;
+    const code = nitroCode[2];
     channel = this.channels.resolveId(channel);
-    const regex = {
-      gift: /(discord.gift|discord.com|discordapp.com\/gifts)\/\w{16,25}/gim,
-      url: /(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)/gim,
-    };
-    const nitroArray = nitro.match(regex.gift);
-    if (!nitroArray) return false;
-    const codeArray = nitroArray.map(code => code.replace(regex.url, ''));
-    let redeem = false;
-    this.emit('debug', `${chalk.greenBright('[Nitro]')} Redeem Nitro: ${nitroArray.join(', ')}`);
-    for await (const code of codeArray) {
-      if (this.usedCodes.includes(code)) continue;
-      await this.api.entitlements['gift-codes'](code)
-        .redeem.post({
-          auth: true,
-          data: { channel_id: channel || null, payment_source_id: null },
-        })
-        .then(() => {
-          this.usedCodes.push(code);
-          redeem = true;
-        })
-        .catch(e => {
-          this.usedCodes.push(code);
-          if (failIfNotExists) throw e;
-        });
-    }
-    return redeem;
+    return this.api.entitlements['gift-codes'](code).redeem.post({
+      auth: true,
+      data: { channel_id: channel || null, payment_source_id: paymentSourceId || null },
+    });
   }
 
   /**
