@@ -377,7 +377,7 @@ class User extends Base {
    * @returns {Promise<boolean>}
    */
   setNickname(nickname) {
-    return this.client.user.setNickname(this.id, nickname);
+    return this.client.relationships.setNickname(this.id, nickname);
   }
 
   /**
