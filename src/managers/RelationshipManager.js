@@ -159,14 +159,14 @@ class RelationshipManager {
   /**
    * Sends a friend request.
    * @param {string} username Username of the user to send the request to
-   * @param {number} discriminator Discriminator of the user to send the request to
+   * @param {?number} discriminator Discriminator of the user to send the request to
    * @returns {Promise<boolean>}
    */
   async sendFriendRequest(username, discriminator) {
     await this.client.api.users('@me').relationships.post({
       data: {
         username,
-        discriminator: parseInt(discriminator),
+        discriminator: discriminator == 0 ? null : parseInt(discriminator),
       },
       headers: {
         'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Add Friend' }), 'utf8').toString('base64'),

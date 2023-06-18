@@ -4410,7 +4410,7 @@ export class RelationshipManager {
   public fetch(user: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes>;
   public deleteFriend(user: UserResolvable): Promise<boolean>;
   public deleteBlocked(user: UserResolvable): Promise<boolean>;
-  public sendFriendRequest(username: string, discriminator: number): Promise<boolean>;
+  public sendFriendRequest(username: string, discriminator?: number): Promise<boolean>;
   public cancelFriendRequest(user: UserResolvable): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
   public addBlocked(user: UserResolvable): Promise<boolean>;
