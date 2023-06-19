@@ -59,7 +59,7 @@
     "@sapphire/shapeshift": "^3.8.2",
     "@types/node-fetch": "^2.6.3",
     "@types/ws": "^8.5.4",
-    "axios": "1.1",
+    "axios": "1.4",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.37.40",
     "fetch-cookie": "^2.1.0",
