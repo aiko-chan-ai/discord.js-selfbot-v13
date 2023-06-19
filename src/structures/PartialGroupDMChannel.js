@@ -159,7 +159,8 @@ class PartialGroupDMChannel extends Channel {
     if (!userId) {
       return Promise.reject(new TypeError('User is not a User or User ID'));
     }
-    if (this.recipients.get(userId)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL')); // Fails sometimes if member leaves recently (ex. user leave msg's channel used for adding)
+    // API
+    // if (this.recipients.get(userId)) return Promise.reject(new Error('USER_ALREADY_IN_GROUP_DM_CHANNEL')); // Fails sometimes if member leaves recently (ex. user leave msg's channel used for adding)
     await this.client.api.channels[this.id].recipients[userId].put();
     this._recipients.push(user);
     return this;
@@ -178,7 +179,8 @@ class PartialGroupDMChannel extends Channel {
     if (!user) {
       return Promise.reject(new TypeError('User is not a User or User ID'));
     }
-    if (!this.recipients.get(user)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
+    // API
+    // if (!this.recipients.get(user)) return Promise.reject(new Error('USER_NOT_IN_GROUP_DM_CHANNEL'));
     await this.client.api.channels[this.id].recipients[user].delete();
     this._recipients = this._recipients.filter(r => r.id !== user);
     return this;
