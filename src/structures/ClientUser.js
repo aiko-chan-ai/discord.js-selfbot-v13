@@ -170,7 +170,6 @@ class ClientUser extends User {
     }
     return this.edit({
       username,
-      discriminator: this.discriminator,
       password: this.client.password ? this.client.password : password,
     });
   }
