@@ -617,7 +617,7 @@ class ClientUser extends User {
 
   /**
    * Set pronouns
-   * @param {string | null} pronouns
+   * @param {?string} pronouns Your pronouns
    * @returns {Promise<ClientUser>}
    */
   setPronouns(pronouns = '') {

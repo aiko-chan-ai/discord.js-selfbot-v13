@@ -1090,6 +1090,7 @@ export class ClientUser extends User {
   public readonly emailAddress: string;
   public stopRinging(channel: ChannelResolvable): Promise<void>;
   public setGlobalName(globalName?: string): Promise<this>;
+  public setPronouns(pronouns?: string): Promise<this>;
 }
 
 type NitroType = 'NONE' | 'NITRO_CLASSIC' | 'NITRO_BOOST' | 'NITRO_BASIC';
@@ -3256,6 +3257,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public avatarDecoration: string | null;
   public banner: string | null | undefined;
   public bot: boolean;
+  public pronouns: string | null;
   public readonly createdAt: Date;
   public readonly relationships: RelationshipTypes;
   public readonly createdTimestamp: number;
@@ -3275,10 +3277,10 @@ export class User extends PartialTextBasedChannel(Base) {
   public username: string;
   public readonly note: string | null;
   public readonly nickname: string | null;
-  public readonly connectedAccounts: object[];
-  public readonly premiumSince: Date;
-  public readonly premiumGuildSince: Date;
-  public readonly bio: string | null;
+  public connectedAccounts: object[];
+  public premiumSince: Date;
+  public premiumGuildSince: Date;
+  public bio: string | null;
   public readonly mutualGuilds: Collection<Snowflake, object>;
   public readonly mutualFriends: Promise<Collection<Snowflake, User>>;
   public readonly voice: VoiceState;

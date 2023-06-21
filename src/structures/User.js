@@ -54,33 +54,29 @@ class User extends Base {
      * Time that User has nitro (Unix Timestamp)
      * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {?number}
-     * @readonly
      */
     this.premiumSince = null;
     /**
      * Time that User has nitro and boost server (Unix Timestamp)
      * @type {?number}
-     * @readonly
      */
     this.premiumGuildSince = null;
     /**
      * About me (User)
      * <info>The user must be force fetched for this property to be present or be updated</info>
      * @type {?string}
-     * @readonly
      */
     this.bio = null;
     /**
-     * This user is on the same servers as Client User
+     * Pronouns (User)
      * <info>The user must be force fetched for this property to be present or be updated</info>
-     * @type {Collection<Snowflake, Guild>}
-     * @readonly
+     * @type {?string}
      */
-    this.mutualGuilds = new Collection();
+    this.pronouns = null;
+    this._mutualGuilds = [];
     /**
      * [Bot] Application
      * @type {?ClientApplication}
-     * @readonly
      */
     this.application = application ? new ClientApplication(this.client, application, this) : null;
     this._partial = true;
@@ -200,6 +196,16 @@ class User extends Base {
     } else {
       this.avatarDecoration ??= null;
     }
+  }
+
+  /**
+   * This user is on the same servers as Client User
+   * <info>The user must be force fetched for this property to be present or be updated</info>
+   * @type {Collection<Snowflake, Guild>}
+   * @readonly
+   */
+  get mutualGuilds() {
+    return new Collection(this._mutualGuilds.map(obj => [obj.id, obj]));
   }
 
   /**
@@ -335,7 +341,9 @@ class User extends Base {
       // Unknown
     }
 
-    this.mutualGuilds = new Collection(data.mutual_guilds.map(obj => [obj.id, obj]));
+    if ('mutual_guilds' in data) {
+      this._mutualGuilds = data.mutual_guilds;
+    }
   }
 
   /**
