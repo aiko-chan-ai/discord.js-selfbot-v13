@@ -87,6 +87,9 @@ class ClientUser extends User {
     if ('bio' in data) {
       this.bio = data.bio;
     }
+    if ('pronouns' in data) {
+      this.pronouns = data.pronouns;
+    }
 
     if (!this.friendNicknames?.size) {
       /**
@@ -610,6 +613,15 @@ class ClientUser extends User {
    */
   setGlobalName(globalName = '') {
     return this.edit({ global_name: globalName });
+  }
+
+  /**
+   * Set pronouns
+   * @param {string | null} pronouns
+   * @returns {Promise<ClientUser>}
+   */
+  setPronouns(pronouns = '') {
+    return this.edit({ pronouns });
   }
 }
 
