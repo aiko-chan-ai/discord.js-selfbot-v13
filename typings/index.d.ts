@@ -1050,7 +1050,7 @@ export class ClientUser extends User {
   public premiumUsageFlags: PremiumUsageFlags;
   public setThemeColors(primary?: ColorResolvable, accent?: ColorResolvable): ClientUser;
   public edit(data: ClientUserEditData): Promise<this>;
-  public setActivity(options?: ActivityOptions): ClientPresence;
+  public setActivity(options?: ActivitiesOptions): ClientPresence;
   public setActivity(name: string, options?: ActivityOptions): ClientPresence;
   public setAFK(afk?: boolean, shardId?: number | number[]): ClientPresence;
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
