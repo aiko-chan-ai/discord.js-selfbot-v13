@@ -43,6 +43,7 @@ class ApplicationFlags extends BitField {}
  * * `EMBEDDED_FIRST_PARTY`
  * * `APPLICATION_COMMAND_BADGE`
  * * `ACTIVE`
+ * * `IFRAME_MODAL`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/application#application-object-application-flags}
  * @see {@link https://flags.lewistehminerz.dev/}
@@ -69,6 +70,7 @@ ApplicationFlags.FLAGS = {
   EMBEDDED_FIRST_PARTY: 1 << 20,
   APPLICATION_COMMAND_BADGE: 1 << 23,
   ACTIVE: 1 << 24,
+  IFRAME_MODAL: 1 << 26,
 };
 
 module.exports = ApplicationFlags;

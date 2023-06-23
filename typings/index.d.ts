@@ -5404,7 +5404,8 @@ export type ApplicationFlagsString =
   | 'GATEWAY_MESSAGE_CONTENT_LIMITED'
   | 'EMBEDDED_FIRST_PARTY'
   | 'APPLICATION_COMMAND_BADGE'
-  | 'ACTIVE';
+  | 'ACTIVE'
+  | 'IFRAME_MODAL';
 
 export interface ApplicationRoleConnectionMetadataEditOptions {
   name: string;
