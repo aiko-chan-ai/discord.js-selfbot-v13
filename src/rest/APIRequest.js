@@ -55,9 +55,7 @@ class APIRequest {
       ...this.client.options.http.headers,
       accept: '*/*',
       'accept-language': 'en-US',
-      'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="${
-        /Chrome\/(\d+)/.exec(this.client.options.http.headers['User-Agent'])[1]
-      }"`,
+      'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="108"`,
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
