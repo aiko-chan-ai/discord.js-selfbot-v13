@@ -380,7 +380,7 @@ class GuildMember extends Base {
     return (
       !this.permissions.has(Permissions.FLAGS.ADMINISTRATOR) &&
       this.manageable &&
-      (this.guild.me?.permissions.has(Permissions.FLAGS.MODERATE_MEMBERS) ?? false)
+      (this.guild.members.me?.permissions.has(Permissions.FLAGS.MODERATE_MEMBERS) ?? false)
     );
   }
 
