@@ -2571,6 +2571,7 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   'setNSFW',
 ]) {
   private constructor(client: Client, data: RawPartialGroupDMChannelData);
+  public type: 'GROUP_DM';
   public name: string | null;
   public icon: string | null;
   public readonly recipients: Collection<Snowflake, User>;
