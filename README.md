@@ -12,9 +12,6 @@
   </p>
 </div>
 
-## Words from the Developer
-- I'm on vacation so the library won't update much :3
-
 ## About
 
 <strong>Welcome to `discord.js-selfbot-v13@v2.14`, based on `discord.js@13.16`</strong>

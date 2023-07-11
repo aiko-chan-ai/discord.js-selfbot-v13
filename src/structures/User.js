@@ -300,6 +300,8 @@ class User extends Base {
        * @type {?Array<number>}
        */
       this.themeColors = data.user_profile.theme_colors;
+
+      this.pronouns = data.user_profile.pronouns;
     }
 
     if ('guild_member_profile' in data && 'guild_member' in data) {

@@ -48,6 +48,7 @@ class ClientUser extends User {
        */
       this.nitroType = nitro ?? `UNKNOWN_TYPE_${data.premium_type}`;
     }
+
     if ('purchased_flags' in data) {
       /**
        * Purchased state of the client user.
@@ -55,6 +56,7 @@ class ClientUser extends User {
        */
       this.purchasedFlags = new PurchasedFlags(data.purchased_flags || 0);
     }
+
     if ('premium_usage_flags' in data) {
       /**
        * Premium usage state of the client user.
@@ -62,7 +64,7 @@ class ClientUser extends User {
        */
       this.premiumUsageFlags = new PremiumUsageFlags(data.premium_usage_flags || 0);
     }
-    // Key: premium = boolean;
+
     if ('phone' in data) {
       /**
        * Phone number of the client user.
@@ -70,6 +72,7 @@ class ClientUser extends User {
        */
       this.phoneNumber = data.phone;
     }
+
     if ('nsfw_allowed' in data) {
       /**
        * Whether or not the client user is allowed to send NSFW messages [iOS device].
@@ -77,6 +80,7 @@ class ClientUser extends User {
        */
       this.nsfwAllowed = data.nsfw_allowed;
     }
+
     if ('email' in data) {
       /**
        * Email address of the client user.
@@ -84,9 +88,11 @@ class ClientUser extends User {
        */
       this.emailAddress = data.email;
     }
+
     if ('bio' in data) {
       this.bio = data.bio;
     }
+
     if ('pronouns' in data) {
       this.pronouns = data.pronouns;
     }
