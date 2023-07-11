@@ -460,7 +460,7 @@ new DiscordAuthWebsocket({
     ).json();
     if (res?.captcha_key) {
       this.captchaCache = res;
-    } else {
+    } else if (!res.encrypted_token) {
       this._throwError(new Error('Request failed. Please try again.', res));
       this.captchaCache = null;
     }
@@ -470,7 +470,7 @@ new DiscordAuthWebsocket({
       const token = await this.options.captchaSolver(this.captchaCache);
       return this._findRealToken(token);
     }
-    this.realToken = this._decryptPayload(res.data.encrypted_token).toString();
+    this.realToken = this._decryptPayload(res.encrypted_token).toString();
     /**
      * Emitted whenever a real token is found.
      * @event DiscordAuthWebsocket#finish
