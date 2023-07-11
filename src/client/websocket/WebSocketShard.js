@@ -707,10 +707,9 @@ class WebSocketShard extends EventEmitter {
         delete client.options.ws.properties[k];
       });
     const d = {
+      presence: client.options.presence,
       ...client.options.ws,
-      // Remove, Req by dolfies_person [Reddit]: intents: Intents.resolve(client.options.intents),
       token: client.token,
-      // Remove: shard: [this.id, Number(client.options.shardCount)],
     };
 
     this.debug(
