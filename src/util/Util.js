@@ -3,7 +3,7 @@
 const { parse } = require('node:path');
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
-const axios = require('axios');
+const fetch = require('node-fetch');
 const { Colors } = require('./Constants');
 const { RangeError, TypeError } = require('../errors');
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
@@ -722,7 +722,20 @@ class Util extends null {
   }
 
   static uploadFile(data, url) {
-    return axios.put(url, data);
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: 'PUT',
+        body: data,
+      })
+        .then(res => {
+          if (res.ok) {
+            resolve(res);
+          } else {
+            reject(res);
+          }
+        })
+        .catch(reject);
+    });
   }
 
   static testImportModule(name) {

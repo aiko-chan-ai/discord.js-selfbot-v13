@@ -4,8 +4,8 @@ const process = require('node:process');
 const { setInterval, setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const { getVoiceConnection } = require('@discordjs/voice');
-const axios = require('axios');
 const chalk = require('chalk');
+const fetch = require('node-fetch');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -505,11 +505,11 @@ class Client extends BaseClient {
    * @returns {Promise<Client>}
    */
   async checkUpdate() {
-    const res_ = await axios
-      .get(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
-      .catch(() => {});
+    const res_ = await (
+      await fetch(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
+    ).json();
     try {
-      const latest_tag = res_.data['dist-tags'].latest;
+      const latest_tag = res_['dist-tags'].latest;
       this.emit('update', Discord.version, latest_tag);
       this.emit('debug', `${chalk.greenBright('[OK]')} Check Update success`);
     } catch {

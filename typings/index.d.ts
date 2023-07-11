@@ -2317,7 +2317,6 @@ export class WebEmbed {
   public constructor(data?: WebEmbedOptions);
   public author: MessageEmbedAuthor | null;
   public baseURL: string | undefined;
-  public shortenAPI: string | undefined;
   public color: number | null;
   public description: string | null;
   public image: MessageEmbedImage | null;

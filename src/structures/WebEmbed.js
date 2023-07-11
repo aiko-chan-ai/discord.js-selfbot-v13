@@ -1,8 +1,8 @@
 'use strict';
-const axios = require('axios');
 const baseURL = 'https://webembed-sb.onrender.com/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
+const fetch = require('node-fetch');
 const { RangeError } = require('../errors');
 const Util = require('../util/Util');
 
@@ -60,13 +60,6 @@ class WebEmbed {
      * @see https://github.com/aiko-chan-ai/WebEmbed
      */
     this.baseURL = data.baseURL ?? baseURL;
-
-    /**
-     * Shorten API
-     * @type {?string} https://webembed-sb.onrender.com/short?url=
-     * @see https://github.com/aiko-chan-ai/WebEmbed
-     */
-    this.shortenAPI = data.shortenAPI;
   }
   /**
    * @private
@@ -371,7 +364,7 @@ class WebEmbed {
     }
     const fullURL = `${this.baseURL}${arrayQuery.join('&')}`;
     if (this.shorten) {
-      const url = await this.constructor.getShorten(fullURL, this);
+      const url = await this.constructor.getShorten(fullURL);
       if (!url) console.log('Cannot shorten URL in WebEmbed');
       return this.hidden ? `${hiddenCharter} ${url || fullURL}` : url || fullURL;
     } else {
@@ -379,18 +372,11 @@ class WebEmbed {
     }
   }
 
-  static async getShorten(url, embed) {
-    const APIurl = ['https://tinyurl.com/api-create.php?url='];
-    const shorten = `${
-      embed.shortenAPI && typeof embed.shortenAPI == 'string'
-        ? embed.shortenAPI
-        : APIurl[Math.floor(Math.random() * APIurl.length)]
-    }${encodeURIComponent(url)}`;
+  static async getShorten(url) {
+    const shorten = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`;
     try {
-      const res = await axios.get(`${shorten}`);
-      if (typeof res.data === 'string') return res.data;
-      else if (typeof res.data === 'object') return res.data.shorten;
-      else throw new Error('Unknown error');
+      const res = await (await fetch(shorten)).text();
+      return res;
     } catch {
       return undefined;
     }

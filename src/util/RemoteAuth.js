@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const EventEmitter = require('node:events');
 const { setTimeout } = require('node:timers');
 const { StringDecoder } = require('string_decoder');
-const axios = require('axios');
 const chalk = require('chalk');
+const fetch = require('node-fetch');
 const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
 const { defaultUA } = require('./Constants');
@@ -268,13 +268,8 @@ new DiscordAuthWebsocket({
     }
   }
   _throwError(error) {
-    if (error.request) {
-      // Axios error
-      console.log(chalk.red(`[DiscordRemoteAuth] ERROR`), error.message, error.response);
-      throw new Error(`Request failed with status code ${error.response.status}`);
-    } else {
-      throw error;
-    }
+    console.log(chalk.red(`[DiscordRemoteAuth] ERROR`), error);
+    throw error;
   }
   _send(op, data) {
     if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
@@ -432,46 +427,43 @@ new DiscordAuthWebsocket({
       );
     }
     this._logger('debug', 'Find real token...');
-    const res = await axios
-      .post(
-        `https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`,
-        captchaSolveData
-          ? {
-              ticket: this.token,
-              captcha_rqtoken: this.captchaCache.captcha_rqtoken,
-              captcha_key: captchaSolveData,
-            }
-          : {
-              ticket: this.token,
-            },
-        {
-          headers: {
-            Accept: '*/*',
-            'Accept-Language': 'en-US',
-            'Content-Type': 'application/json',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'X-Debug-Options': 'bugReporterEnabled',
-            'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString(
-              'base64',
-            )}`,
-            'X-Discord-Locale': 'en-US',
-            'User-Agent': this.options.userAgent,
-            Referer: 'https://discord.com/channels/@me',
-            Connection: 'keep-alive',
-            Origin: 'https://discord.com',
-          },
+    const res = await (
+      await fetch(`https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`, {
+        method: 'POST',
+        headers: {
+          Accept: '*/*',
+          'Accept-Language': 'en-US',
+          'Content-Type': 'application/json',
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'same-origin',
+          'X-Debug-Options': 'bugReporterEnabled',
+          'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString('base64')}`,
+          'X-Discord-Locale': 'en-US',
+          'User-Agent': this.options.userAgent,
+          Referer: 'https://discord.com/channels/@me',
+          Connection: 'keep-alive',
+          Origin: 'https://discord.com',
         },
-      )
-      .catch(e => {
-        if (e.response.data?.captcha_key) {
-          this.captchaCache = e.response.data;
-        } else {
-          this._throwError(e);
-          this.captchaCache = null;
-        }
-      });
+        body: JSON.stringify(
+          captchaSolveData
+            ? {
+                ticket: this.token,
+                captcha_rqtoken: this.captchaCache.captcha_rqtoken,
+                captcha_key: captchaSolveData,
+              }
+            : {
+                ticket: this.token,
+              },
+        ),
+      })
+    ).json();
+    if (res?.captcha_key) {
+      this.captchaCache = res;
+    } else {
+      this._throwError(new Error('Request failed. Please try again.', res));
+      this.captchaCache = null;
+    }
     if (!res && this.captchaCache) {
       this._logger('default', 'Captcha is detected. Please solve the captcha to continue.');
       this._logger('debug', 'Try call captchaSolver()', this.captchaCache);
