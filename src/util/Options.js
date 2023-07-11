@@ -220,6 +220,7 @@ class Options extends null {
           private_channels_version: '0',
           api_code_version: 0,
         },
+        version: 9,
       },
       http: {
         agent: {},
