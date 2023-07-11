@@ -2562,7 +2562,6 @@ export class OAuth2Guild extends BaseGuild {
   public owner: boolean;
   public permissions: Readonly<Permissions>;
 }
-
 export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   'bulkDelete',
   'fetchWebhooks',
@@ -7054,6 +7053,10 @@ export type PermissionString =
 export type RecursiveArray<T> = ReadonlyArray<T | RecursiveArray<T>>;
 
 export type RecursiveReadonlyArray<T> = ReadonlyArray<T | RecursiveReadonlyArray<T>>;
+
+export interface PartialRecipient {
+  username: string;
+}
 
 export type PremiumTier = keyof typeof PremiumTiers;
 
