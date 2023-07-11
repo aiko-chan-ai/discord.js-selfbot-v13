@@ -2562,6 +2562,7 @@ export class OAuth2Guild extends BaseGuild {
   public owner: boolean;
   public permissions: Readonly<Permissions>;
 }
+
 export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   'bulkDelete',
   'fetchWebhooks',
