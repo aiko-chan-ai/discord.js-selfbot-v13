@@ -3273,7 +3273,6 @@ export class User extends PartialTextBasedChannel(Base) {
   public id: Snowflake;
   public readonly partial: false;
   public system: boolean;
-  /** @deprecated Use {@link User#username} instead. */
   public readonly tag: string;
   public username: string;
   public readonly note: string | null;

@@ -1,6 +1,5 @@
 'use strict';
 
-const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const ClientApplication = require('./ClientApplication');
@@ -11,8 +10,6 @@ const { RelationshipTypes, NitroType } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const UserFlags = require('../util/UserFlags');
 const Util = require('../util/Util');
-
-let tagDeprecationEmitted = false;
 
 /**
  * Represents a user on Discord.
@@ -555,14 +552,9 @@ class User extends Base {
    * <info>This user's username, or their legacy tag (e.g. `hydrabolt#0001`)
    * if they're using the legacy username system</info>
    * @type {?string}
-   * @deprecated Use {@link User#username} instead.
    * @readonly
    */
   get tag() {
-    if (!tagDeprecationEmitted) {
-      process.emitWarning('User#tag is deprecated. Use User#username instead.', 'DeprecationWarning');
-      tagDeprecationEmitted = true;
-    }
     return typeof this.username === 'string'
       ? this.discriminator === '0'
         ? this.username
