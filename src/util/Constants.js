@@ -287,55 +287,58 @@ exports.Status = {
  * * STREAM_WATCH: 20
  * * STREAM_PING: 21 #  Send
  * * STREAM_SET_PAUSED: 22
- * * REQUEST_GUILD_APPLICATION_COMMANDS: 24
- * * EMBEDDED_ACTIVITY_LAUNCH: 25
- * * EMBEDDED_ACTIVITY_CLOSE: 26
- * * EMBEDDED_ACTIVITY_UPDATE: 27
- * * REQUEST_FORUM_UNREADS: 28
- * * REMOTE_COMMAND: 29
- * * GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30
+ * * LFG_SUBSCRIPTIONS: 23 [Unused]
+ * * REQUEST_GUILD_APPLICATION_COMMANDS: 24 [Unused]
+ * * EMBEDDED_ACTIVITY_LAUNCH: 25 => Launch an embedded activity in a voice channel or call.
+ * * EMBEDDED_ACTIVITY_CLOSE: 26 => Stop an embedded activity.
+ * * EMBEDDED_ACTIVITY_UPDATE: 27 => Update an embedded activity.
+ * * REQUEST_FORUM_UNREADS: 28 => Request forum channel unread counts.
+ * * REMOTE_COMMAND: 29 => Send a remote command to an embedded (Xbox, PlayStation) voice session.
+ * * GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30 => Request deleted entity IDs not matching a given hash for a guild.
  * * REQUEST_SOUNDBOARD_SOUNDS: 31
- * * SPEED_TEST_CREATE: 32
- * * SPEED_TEST_DELETE: 33
- * * REQUEST_LAST_MESSAGES: 34
+ * * SPEED_TEST_CREATE: 32 => Create a voice speed test.
+ * * SPEED_TEST_DELETE: 33 => Delete a voice speed test.
+ * * REQUEST_LAST_MESSAGES: 34 => 	Request last messages for a guild's channels.
+ * * SEARCH_RECENT_MEMBERS: 35 => ~ Opcode 8 (Member Safety)
  * @typedef {Object<string, number>} Opcodes
  */
 exports.Opcodes = {
-  DISPATCH: 0, // #  Receive => dispatches an event
-  HEARTBEAT: 1, // #  Send/Receive => used for ping checking
-  IDENTIFY: 2, // #  Send => used for client handshake
-  STATUS_UPDATE: 3, // #  Send => used to update the client status
-  VOICE_STATE_UPDATE: 4, // #  Send => used to join/move/leave voice channels
-  VOICE_GUILD_PING: 5, // #  Send => used for voice ping checking
-  RESUME: 6, //  #  Send => used to resume a closed connection
-  RECONNECT: 7, // #  Receive => used to tell when to reconnect (sometimes...)
-  REQUEST_GUILD_MEMBERS: 8, // #  Send => used to request guild members (when searching for members in the search bar of a guild)
-  INVALID_SESSION: 9, // #  Receive => used to notify client they have an invalid session id
-  HELLO: 10, // #  Receive => sent immediately after connecting, contains heartbeat and server debug information
-  HEARTBEAT_ACK: 11, // #  Sent  => immediately following a client heartbeat that was received
-  GUILD_SYNC: 12, // #  Receive => guild_sync but not used anymore
-  DM_UPDATE: 13, // #  Send => used to get dm features
-  GUILD_SUBSCRIPTIONS: 14, // #  Send => discord responds back with GUILD_MEMBER_LIST_UPDATE type SYNC...
+  DISPATCH: 0,
+  HEARTBEAT: 1,
+  IDENTIFY: 2,
+  STATUS_UPDATE: 3,
+  VOICE_STATE_UPDATE: 4,
+  VOICE_GUILD_PING: 5,
+  RESUME: 6,
+  RECONNECT: 7,
+  REQUEST_GUILD_MEMBERS: 8,
+  INVALID_SESSION: 9,
+  HELLO: 10,
+  HEARTBEAT_ACK: 11,
+  GUILD_SYNC: 12,
+  DM_UPDATE: 13,
+  GUILD_SUBSCRIPTIONS: 14,
   LOBBY_CONNECT: 15,
   LOBBY_DISCONNECT: 16,
-  LOBBY_VOICE_STATE_UPDATE: 17, // #  Receive
+  LOBBY_VOICE_STATE_UPDATE: 17,
   STREAM_CREATE: 18,
   STREAM_DELETE: 19,
   STREAM_WATCH: 20,
-  STREAM_PING: 21, // #  Send
+  STREAM_PING: 21,
   STREAM_SET_PAUSED: 22,
-  REQUEST_GUILD_APPLICATION_COMMANDS: 24, // #  Send => request application/bot cmds (user, message, and slash cmds)
+  REQUEST_GUILD_APPLICATION_COMMANDS: 24,
   EMBEDDED_ACTIVITY_LAUNCH: 25,
   EMBEDDED_ACTIVITY_CLOSE: 26,
   EMBEDDED_ACTIVITY_UPDATE: 27,
-  REQUEST_FORUM_UNREADS: 28,
-  REMOTE_COMMAND: 29,
-  GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30,
+  REQUEST_FORUM_UNREADS: 28, // Payload: { guild_id: Snowflake, channel_id: Snowflake, threads: { thread_id: Snowflake, ack_message_id: Snowflake }[] }
+  REMOTE_COMMAND: 29, // Payload: { target_session_id: string, payload: any }
+  GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH: 30, // Payload: { guild_id: Snowflake, channel_ids_hash: string[], role_ids_hash: string[], emoji_ids_hash: string[], sticker_ids_hash: string[] }
   REQUEST_SOUNDBOARD_SOUNDS: 31, // Payload: { guild_ids: string[] }
-  SPEED_TEST_CREATE: 32,
-  SPEED_TEST_DELETE: 33,
+  SPEED_TEST_CREATE: 32, // Payload: { preferred_region: string }
+  SPEED_TEST_DELETE: 33, // Payload: null
   REQUEST_LAST_MESSAGES: 34, // Payload: { guild_id: string, channel_ids: string[] }
-  // Update: 30/5/2023
+  SEARCH_RECENT_MEMBERS: 35, // Payload: { guild_id: string, query: string, continuation_token?: Snowflake }
+  // Update: 17/7/2023
 };
 
 /**

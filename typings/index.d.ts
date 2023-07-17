@@ -4135,6 +4135,7 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
     time?: number,
   ): Promise<Collection<Snowflake, GuildMember>>;
   public fetchBruteforce(options?: BruteforceOptions): Promise<Collection<Snowflake, GuildMember>>;
+  public fetchByMemberSafety(timeout?: number): Promise<Collection<Snowflake, GuildMember>>;
   public fetchMe(options?: BaseFetchOptions): Promise<GuildMember>;
   public kick(user: UserResolvable, reason?: string): Promise<GuildMember | User | Snowflake>;
   public list(options?: GuildListMembersOptions): Promise<Collection<Snowflake, GuildMember>>;

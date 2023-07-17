@@ -202,11 +202,15 @@ class GuildMemberManager extends CachedManager {
       ) {
         return this._fetchMany();
       } else {
-        return this.fetchBruteforce({
+        return this.fetchByMemberSafety();
+        /*
+        NOTE: This is a very slow method, and can take up to 999+ minutes to complete.
+        this.fetchBruteforce({
           delay: 50,
           skipWarn: true,
           depth: 1,
         });
+        */
       }
     }
     const user = this.client.users.resolveId(options);
@@ -532,6 +536,47 @@ class GuildMemberManager extends CachedManager {
         }
       }
       resolve(this.guild.members.cache);
+    });
+  }
+
+  /**
+   * Experimental method to fetch all members from the guild.
+   * @param {number} [timeout=120000] Timeout for receipt of members in ms
+   * @returns {Promise<Collection<Snowflake, GuildMember>>}
+   */
+  fetchByMemberSafety(timeout = 120_000) {
+    return new Promise(resolve => {
+      let timeout_ = setTimeout(() => {
+        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+        resolve(this.guild.members.cache);
+      }, timeout).unref();
+      const handler = (members, guild, raw) => {
+        if (guild.id == this.guild.id && !raw.nonce && raw.index == 0 && raw.count == 1) {
+          if (members.size > 0) {
+            this.client.ws.broadcast({
+              op: 35,
+              d: {
+                guild_id: this.guild.id,
+                query: '',
+                continuation_token: members.first()?.id,
+              },
+            });
+          } else {
+            clearTimeout(timeout_);
+            this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
+            resolve(this.guild.members.cache);
+          }
+        }
+      };
+      this.client.on('guildMembersChunk', handler);
+      this.client.ws.broadcast({
+        op: 35,
+        d: {
+          guild_id: this.guild.id,
+          query: '',
+          continuation_token: null,
+        },
+      });
     });
   }
 
