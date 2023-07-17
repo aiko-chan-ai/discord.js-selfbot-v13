@@ -541,6 +541,7 @@ class GuildMemberManager extends CachedManager {
 
   /**
    * Experimental method to fetch all members from the guild.
+   * <info>Lists up to 10000 members of the guild.</info>
    * @param {number} [timeout=120000] Timeout for receipt of members in ms
    * @returns {Promise<Collection<Snowflake, GuildMember>>}
    */
