@@ -540,19 +540,20 @@ class GuildMemberManager extends CachedManager {
   }
 
   /**
-   * Experimental method to fetch all members from the guild.
+   * Experimental method to fetch members from the guild.
    * <info>Lists up to 10000 members of the guild.</info>
-   * @param {number} [timeout=120000] Timeout for receipt of members in ms
+   * @param {number} [timeout=15_000] Timeout for receipt of members in ms
    * @returns {Promise<Collection<Snowflake, GuildMember>>}
    */
-  fetchByMemberSafety(timeout = 120_000) {
+  fetchByMemberSafety(timeout = 15_000) {
     return new Promise(resolve => {
+      const nonce = SnowflakeUtil.generate();
       let timeout_ = setTimeout(() => {
         this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
         resolve(this.guild.members.cache);
       }, timeout).unref();
       const handler = (members, guild, raw) => {
-        if (guild.id == this.guild.id && !raw.nonce && raw.index == 0 && raw.count == 1) {
+        if (guild.id == this.guild.id && raw.nonce == nonce) {
           if (members.size > 0) {
             this.client.ws.broadcast({
               op: 35,
@@ -560,6 +561,7 @@ class GuildMemberManager extends CachedManager {
                 guild_id: this.guild.id,
                 query: '',
                 continuation_token: members.first()?.id,
+                nonce,
               },
             });
           } else {
@@ -576,6 +578,7 @@ class GuildMemberManager extends CachedManager {
           guild_id: this.guild.id,
           query: '',
           continuation_token: null,
+          nonce,
         },
       });
     });
