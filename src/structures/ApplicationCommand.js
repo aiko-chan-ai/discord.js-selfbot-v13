@@ -824,7 +824,7 @@ class ApplicationCommand extends Base {
         application_id: this.applicationId,
         guild_id: message.guildId,
         channel_id: message.channelId,
-        session_id: this.client.session_id,
+        session_id: this.client.sessionId,
         data: {
           version: this.version,
           id: this.id,
@@ -962,7 +962,7 @@ class ApplicationCommand extends Base {
       application_id: this.applicationId,
       guild_id: message.guildId,
       channel_id: message.channelId,
-      session_id: this.client.session_id,
+      session_id: this.client.sessionId,
       data: {
         version: this.version,
         id: this.id,

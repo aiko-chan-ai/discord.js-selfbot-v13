@@ -234,7 +234,7 @@ class Modal {
       channel_id: channel,
       data: dataFinal,
       nonce,
-      session_id: this.client.session_id,
+      session_id: this.client.sessionId,
     };
     await this.client.api.interactions.post({
       data: postData,

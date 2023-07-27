@@ -195,7 +195,7 @@ class Options extends null {
       proxy: '',
       ws: {
         // eslint-disable-next-line no-undef
-        // capabilities: 16381,
+        capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
         properties: {
           os: 'Windows',
           browser: 'Discord Client',
@@ -206,7 +206,7 @@ class Options extends null {
           system_locale: 'en-US',
           browser_user_agent: defaultUA,
           browser_version: '22.3.12',
-          client_build_number: 213510,
+          client_build_number: 215527,
           native_build_number: 34898,
           client_event_source: null,
         },

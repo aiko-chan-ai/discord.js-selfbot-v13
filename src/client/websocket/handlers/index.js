@@ -61,6 +61,7 @@ const handlers = Object.fromEntries([
   ['USER_GUILD_SETTINGS_UPDATE', require('./USER_GUILD_SETTINGS_UPDATE')],
   // USER_SETTINGS_PROTO_UPDATE // opcode 0
   ['USER_NOTE_UPDATE', require('./USER_NOTE_UPDATE')],
+  ['USER_REQUIRED_ACTION_UPDATE', require('./USER_REQUIRED_ACTION_UPDATE')],
   ['USER_UPDATE', require('./USER_UPDATE')],
   ['PRESENCE_UPDATE', require('./PRESENCE_UPDATE')],
   ['TYPING_START', require('./TYPING_START')],

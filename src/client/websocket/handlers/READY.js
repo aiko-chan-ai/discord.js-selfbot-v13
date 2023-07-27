@@ -4,6 +4,7 @@ let ClientUser;
 const { VoiceConnection } = require('@discordjs/voice');
 const chalk = require('chalk');
 const { Events, Opcodes } = require('../../../util/Constants');
+const Util = require('../../../util/Util');
 const { VoiceConnection: VoiceConnection_patch } = require('../../../util/Voice');
 let firstReady = false;
 
@@ -41,6 +42,7 @@ function patchVoice(client) {
 }
 
 module.exports = async (client, { d: data }, shard) => {
+  Util.clientRequiredAction(client, data.required_action);
   if (!firstReady) {
     if (client.options.checkUpdate) {
       client.once('update', (currentVersion, newVersion) => {
@@ -99,7 +101,6 @@ module.exports = async (client, { d: data }, shard) => {
     firstReady = true;
   }
 
-  client.session_id = data.session_id;
   if (client.user) {
     client.user._patch(data.user);
   } else {

@@ -240,8 +240,6 @@ class Client extends BaseClient {
      */
     this.password = this.options.password;
 
-    this.session_id = null;
-
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
         'The message sweeping client options are deprecated, use the global sweepers instead.',
@@ -260,7 +258,7 @@ class Client extends BaseClient {
    * @readonly
    */
   get sessionId() {
-    return this.session_id;
+    return this.ws.shards.first()?.sessionId;
   }
 
   /**
@@ -603,7 +601,7 @@ class Client extends BaseClient {
           'X-Context-Properties': 'eyJsb2NhdGlvbiI6Ik1hcmtkb3duIExpbmsifQ==', // Markdown Link
         },
         data: {
-          session_id: this.session_id,
+          session_id: this.sessionId,
         },
       });
     }

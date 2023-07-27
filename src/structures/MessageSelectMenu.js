@@ -337,7 +337,7 @@ class MessageSelectMenu extends BaseMessageComponent {
       channel_id: message.channel.id,
       message_id: message.id,
       application_id: message.applicationId ?? message.author.id,
-      session_id: message.client.session_id,
+      session_id: message.client.sessionId,
       message_flags: message.flags.bitfield,
       data: {
         component_type: MessageComponentTypes[this.type],
