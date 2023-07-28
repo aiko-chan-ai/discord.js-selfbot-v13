@@ -270,6 +270,7 @@ class VoiceState extends Base {
         data: {
           channel_id: this.channelId,
           suppress: suppressed,
+          request_to_speak_timestamp: null,
         },
       });
     }
@@ -277,17 +278,37 @@ class VoiceState extends Base {
 
   /**
    * Get URL Image of the user's streaming video (NOT STREAMING !!!)
-   * @returns {string} URL Image of the user's streaming video
+   * @returns {Promise<string>} URL Image of the user's streaming video
    */
   async getPreview() {
-    if (!this.guild?.id) return null;
-
     if (!this.streaming) throw new Error('USER_NOT_STREAMING');
     // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
-    const data = await this.client.api.streams[
-      `guild%3A${this.guild.id}%3A${this.channelId}%3A${this.id}`
-    ].preview.get();
+    // URL: https://discord.com/api/v9/streams/call:channelId:userId/preview
+    const streamKey = this.guild.id
+      ? `guild:${this.guild.id}:${this.channelId}:${this.id}`
+      : `call:${this.channelId}:${this.id}`;
+    const data = await this.client.api.streams[encodeURIComponent(streamKey)].preview.get();
     return data.url;
+  }
+
+  /**
+   * Post Preview Image to the client user's streaming video
+   * @param {string} base64Image Base64 URI (data:image/jpeg;base64,data)
+   * @returns {Promise<void>}
+   */
+  async postPreview(base64Image) {
+    if (!this.client.user.id === this.id || !this.streaming) throw new Error('USER_NOT_STREAMING');
+    // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
+    // URL: https://discord.com/api/v9/streams/call:channelId:userId/preview
+    const streamKey = this.guild.id
+      ? `guild:${this.guild.id}:${this.channelId}:${this.id}`
+      : `call:${this.channelId}:${this.id}`;
+    await this.client.api.streams[encodeURIComponent(streamKey)].preview.post({
+      data: {
+        thumbnail: base64Image,
+      },
+    });
+    return true;
   }
 
   toJSON() {

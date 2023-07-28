@@ -3437,6 +3437,7 @@ export class VoiceState extends Base {
   public setRequestToSpeak(request?: boolean): Promise<void>;
   public setSuppressed(suppressed?: boolean): Promise<void>;
   public getPreview(): Promise<string>;
+  public postPreview(base64Image: string): Promise<void>;
 }
 
 export class Webhook extends WebhookMixin() {
