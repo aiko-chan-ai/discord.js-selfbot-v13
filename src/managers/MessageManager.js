@@ -381,7 +381,7 @@ class MessageManager extends CachedManager {
       stringQuery = stringQuery.filter(v => !v.startsWith('channel_id') && !v.startsWith('include_nsfw'));
       data = await this.client.api.channels[this.channel.id].messages[`search?${stringQuery.join('&')}`].get();
     }
-    console.log(stringQuery);
+
     for await (const message of data.messages) result.set(message[0].id, new Message(this.client, message[0]));
     return {
       messages: result,
