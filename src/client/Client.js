@@ -469,7 +469,7 @@ class Client extends BaseClient {
    * @returns {Promise<string>} New Discord Token
    */
   createToken() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       // Step 1: Create DiscordAuthWebsocket
       const QR = new DiscordAuthWebsocket({
         hiddenLog: true,
@@ -482,7 +482,11 @@ class Client extends BaseClient {
       });
       // Step 2: Add event
       QR.once('ready', async (_, url) => {
-        await this.remoteAuth(url, true);
+        try {
+          await this.remoteAuth(url);
+        } catch (e) {
+          reject(e);
+        }
       }).once('finish', (user, token) => {
         resolve(token);
       });
