@@ -201,16 +201,15 @@ class GuildMemberManager extends CachedManager {
         this.guild.members.me.permissions.has('MANAGE_ROLES')
       ) {
         return this._fetchMany();
-      } else {
+      } else if (this.guild.memberCount <= 10000) {
         return this.fetchByMemberSafety();
-        /*
-        NOTE: This is a very slow method, and can take up to 999+ minutes to complete.
+      } else {
+        // NOTE: This is a very slow method, and can take up to 999+ minutes to complete.
         this.fetchBruteforce({
           delay: 50,
           skipWarn: true,
           depth: 1,
         });
-        */
       }
     }
     const user = this.client.users.resolveId(options);
