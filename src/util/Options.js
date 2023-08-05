@@ -190,7 +190,7 @@ class Options extends null {
       restSweepInterval: 60,
       failIfNotExists: false,
       userAgentSuffix: [],
-      presence: { status: 'online', since: 0, activities: [], afk: false },
+      presence: { status: 'dnd', since: 0, activities: [], afk: false },
       sweepers: {},
       proxy: '',
       ws: {
