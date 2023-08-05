@@ -85,3 +85,17 @@ await guild.setCommunity(true);
 await guild.setCommunity(false);
 ```
 </details>
+	
+## Add Bot
+<details open>
+<summary><strong>Click to show</strong></summary>
+<strong>You can add a bot to the server using this method</strong>
+```js
+// nopecha or 2captcha
+client.options.captchaService = "captchaservice";
+// the key go here
+client.options.key = "captchakey";
+const guild = client.guilds.cache.get("guild_id")
+guild.addBot("bot_id", "8").then(() => console.log("Added bot to server"));
+```
+</details>
