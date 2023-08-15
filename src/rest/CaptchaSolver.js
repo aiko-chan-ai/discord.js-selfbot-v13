@@ -92,7 +92,7 @@ module.exports = class CaptchaSolver {
               this.solver
                 .hcaptcha(siteKey, 'discord.com', postD)
                 .then(res => {
-                  let result = findStringWithRegex(res, /^P\d_\w+/)[0];
+                  let result = findStringWithRegex(res.data, /^P\d_\w+/)[0];
                   if (!result) throw new Error('Invalid captcha response');
                   resolve(result);
                 })
