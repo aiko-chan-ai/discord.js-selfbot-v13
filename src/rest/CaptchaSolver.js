@@ -34,18 +34,6 @@ const proxyParser = proxy => {
   return proxyConfig;
 };
 
-function findStringWithRegex(obj, regex) {
-  const matchingKeys = [];
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === 'object') {
-      matchingKeys.push(...findStringWithRegex(obj[key], regex));
-    } else if (typeof obj[key] === 'string' && regex.test(obj[key])) {
-      matchingKeys.push(key);
-    }
-  }
-  return matchingKeys;
-}
-
 module.exports = class CaptchaSolver {
   constructor(service, key, defaultCaptchaSolver, proxyString = '') {
     this.service = 'custom';
@@ -92,9 +80,11 @@ module.exports = class CaptchaSolver {
               this.solver
                 .hcaptcha(siteKey, 'discord.com', postD)
                 .then(res => {
-                  let result = findStringWithRegex(res.data, /^P\d_\w+/)[0];
-                  if (!result) throw new Error('Invalid captcha response');
-                  resolve(result);
+                  if (typeof res.data == 'string') {
+                    resolve(res.data);
+                  } else {
+                    reject(new Error('Unknown Response'));
+                  }
                 })
                 .catch(reject);
             });
