@@ -34,6 +34,18 @@ const proxyParser = proxy => {
   return proxyConfig;
 };
 
+function findStringWithRegex(obj, regex) {
+  const matchingKeys = [];
+  for (const key in obj) {
+    if (obj[key] && typeof obj[key] === 'object') {
+      matchingKeys.push(...findStringWithRegex(obj[key], regex));
+    } else if (typeof obj[key] === 'string' && regex.test(obj[key])) {
+      matchingKeys.push(key);
+    }
+  }
+  return matchingKeys;
+}
+
 module.exports = class CaptchaSolver {
   constructor(service, key, defaultCaptchaSolver, proxyString = '') {
     this.service = 'custom';
@@ -58,9 +70,13 @@ module.exports = class CaptchaSolver {
           this.solve = (data, userAgent) =>
             new Promise((resolve, reject) => {
               const siteKey = data.captcha_sitekey;
-              let postD = {};
+              let postD = {
+                invisible: 1,
+                userAgent,
+              };
               if (this.proxy !== null) {
                 postD = {
+                  ...postD,
                   proxytype: this.proxy.protocol?.toUpperCase(),
                   proxy: `${'auth' in this.proxy ? `${this.proxy.auth.username}:${this.proxy.auth.password}@` : ''}${
                     this.proxy.host
@@ -71,13 +87,14 @@ module.exports = class CaptchaSolver {
                 postD = {
                   ...postD,
                   data: data.captcha_rqdata,
-                  userAgent,
                 };
               }
               this.solver
-                .hcaptcha(siteKey, 'https://discord.com/channels/@me', postD)
+                .hcaptcha(siteKey, 'discord.com', postD)
                 .then(res => {
-                  resolve(res.data);
+                  let result = findStringWithRegex(res, /^P\d_\w+/)[0];
+                  if (!result) throw new Error('Invalid captcha response');
+                  resolve(result);
                 })
                 .catch(reject);
             });
