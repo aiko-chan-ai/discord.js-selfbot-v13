@@ -82,7 +82,7 @@
     "@discordjs/docgen": "^0.11.1",
     "@favware/npm-deprecate": "^1.0.7",
     "@types/node": "^18.16.0",
-    "conventional-changelog-cli": "^2.2.2",
+    "conventional-changelog-cli": "^4.0.0",
     "dtslint": "^4.2.1",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
