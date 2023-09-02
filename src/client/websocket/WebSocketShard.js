@@ -281,7 +281,7 @@ class WebSocketShard extends EventEmitter {
       let args = { handshakeTimeout: 30_000 };
       if (client.options.proxy.length > 0) {
         const proxy = require('proxy-agent');
-        args.agent = new proxy(client.options.proxy);
+        args.agent = new proxy.ProxyAgent(client.options.proxy);
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
       // Adding a handshake timeout to just make sure no zombie connection appears.
