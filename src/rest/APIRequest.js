@@ -36,7 +36,7 @@ class APIRequest {
     if (agent === null) {
       if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
         const proxy = require('proxy-agent');
-        agent = new proxy(this.client.options.proxy);
+        agent = new proxy.ProxyAgent(this.client.options.proxy);
       } else if (this.client.options.http.agent instanceof https.Agent) {
         agent = this.client.options.http.agent;
         agent.keepAlive = true;
