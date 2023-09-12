@@ -205,7 +205,7 @@ class GuildMemberManager extends CachedManager {
         return this.fetchByMemberSafety();
       } else {
         // NOTE: This is a very slow method, and can take up to 999+ minutes to complete.
-        this.fetchBruteforce({
+        return this.fetchBruteforce({
           delay: 50,
           skipWarn: true,
           depth: 1,
