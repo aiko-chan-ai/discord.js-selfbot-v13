@@ -215,6 +215,23 @@ class VoiceState extends Base {
   }
 
   /**
+   * Sets the status of the voice channel
+   * @param {string} status The message to set the channel status to
+   * @returns {Promise<void>}
+   */
+  async setStatus(status) {
+    if (this.channel?.id) {
+      if (this.channel?.type !== 'GUILD_VOICE') throw new Error('VOICE_NOT_GUILD_CHANNEL');
+
+      await this.client.api.channels(this.channel.id, 'voice-status').put({
+        data: {
+          status,
+        },
+      });
+    }
+  }
+
+  /**
    * Toggles the request to speak in the channel.
    * Only applicable for stage channels and for the client's own voice state.
    * @param {boolean} [request=true] Whether or not the client is requesting to become a speaker.
