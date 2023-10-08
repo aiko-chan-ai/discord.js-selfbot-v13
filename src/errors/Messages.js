@@ -75,6 +75,7 @@ const Messages = {
   CLIENT_NO_CALL: 'No call exists!',
 
   VOICE_NOT_STAGE_CHANNEL: 'You are only allowed to do this in stage channels.',
+  VOICE_NOT_IN_GUILD: 'You are only allowed to do this in guild channels.',
 
   VOICE_STATE_NOT_OWN:
     'You cannot self-deafen/mute/request to speak on VoiceStates that do not belong to the ClientUser.',

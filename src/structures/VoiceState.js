@@ -217,16 +217,25 @@ class VoiceState extends Base {
   /**
    * Sets the status of the voice channel
    * @param {string} status The message to set the channel status to
+   * @example
+   * // Setting the status to something
+   * guild.members.me.voice.setStatus("something")
+   * @example
+   * // Removing the status
+   * guild.members.me.voice.setStatus("")
    * @returns {Promise<void>}
    */
   async setStatus(status) {
+    // PUT https://discord.com/api/v9/channels/channelID/voice-status
     if (this.channel?.id) {
-      if (this.channel?.type !== 'GUILD_VOICE') throw new Error('VOICE_NOT_GUILD_CHANNEL');
+      // You can set the staus in normal voice channels and in stages so any type starting with GUILD should work
+      if (!this.channel?.type.startsWith('GUILD')) throw new Error('VOICE_NOT_IN_GUILD');
 
       await this.client.api.channels(this.channel.id, 'voice-status').put({
         data: {
           status,
         },
+        versioned: true,
       });
     }
   }
