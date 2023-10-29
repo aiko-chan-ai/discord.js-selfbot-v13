@@ -187,3 +187,6 @@ exports.WidgetMember = require('./structures/WidgetMember');
 exports.WelcomeChannel = require('./structures/WelcomeChannel');
 exports.WelcomeScreen = require('./structures/WelcomeScreen');
 exports.WebSocket = require('./WebSocket');
+
+// DiscordJSVoice Patch
+exports.DiscordJSVoice = require('./util/Voice');
