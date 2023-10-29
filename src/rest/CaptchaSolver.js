@@ -104,7 +104,7 @@ module.exports = class CaptchaSolver {
             new Promise((resolve, reject) => {
               if (userAgent) client.setUserAgent(userAgent);
               if (this.proxy !== null) {
-                client.setProxy(
+                client.setGlobalProxy(
                   this.proxy.protocol,
                   this.proxy.host,
                   this.proxy.port,
