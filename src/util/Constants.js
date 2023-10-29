@@ -6,7 +6,7 @@ const Package = (exports.Package = require('../../package.json'));
 const { Error, RangeError, TypeError } = require('../errors');
 
 exports.defaultUA =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9017 Chrome/108.0.5359.215 Electron/22.3.12 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9021 Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36';
 
 /**
  * Max bulk deletable message age

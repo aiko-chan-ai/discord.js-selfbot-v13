@@ -53,6 +53,7 @@ class APIRequest {
 
     let headers = {
       ...this.client.options.http.headers,
+      authority: 'discord.com',
       accept: '*/*',
       'accept-language': 'en-US',
       'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="108"`,

@@ -40,8 +40,7 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
-const { lazy, testImportModule } = require('../util/Util');
-const Message = lazy(() => require('../structures/Message').Message);
+const { testImportModule } = require('../util/Util');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -608,23 +607,6 @@ class Client extends BaseClient {
           session_id: this.sessionId,
         },
       });
-    }
-  }
-
-  /**
-   * Automatically Redeem Nitro from raw message.
-   * @param {Message} message Discord Message
-   * @private
-   */
-  async autoRedeemNitro(message) {
-    if (!(message instanceof Message())) return;
-    if (!message.content) return;
-    const allLinks =
-      message.content.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/gm) ||
-      message.content.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/gm);
-    if (!allLinks) return;
-    for (const link of allLinks) {
-      await this.redeemNitro(link, message.channel);
     }
   }
 
