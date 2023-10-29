@@ -154,7 +154,7 @@ class DMChannel extends Channel {
   // Doesn't work on DM channels; setRateLimitPerUser() {}
   // Doesn't work on DM channels; setNSFW() {}
   // Testing feature: Call
-  // URL: https://discord.com/api/v9/channels/DMchannelId/call/ring
+  // URL: https://discord.com/api/v9/channels/:DMchannelId/call/ring
   /**
    * Call this DMChannel. Return discordjs/voice VoiceConnection
    * @param {CallOptions} options Options for the call
@@ -177,11 +177,7 @@ class DMChannel extends Channel {
         );
       } else {
         if (options.ring) {
-          this.client.api.channels(this.id).call.ring.post({
-            data: {
-              recipients: null,
-            },
-          });
+          this.ring();
         }
         const connection = joinVoiceChannel({
           channelId: this.id,
@@ -201,6 +197,19 @@ class DMChannel extends Channel {
       }
     });
   }
+
+  /**
+   * Ring the user's phone / PC (call)
+   * @returns {Promise<any>}
+   */
+  ring() {
+    return this.client.api.channels(this.id).call.ring.post({
+      data: {
+        recipients: null,
+      },
+    });
+  }
+
   /**
    * Sync VoiceState of this DMChannel.
    * @returns {undefined}

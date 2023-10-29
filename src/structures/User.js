@@ -517,25 +517,18 @@ class User extends Base {
 
   /**
    * Ring the user's phone / PC (call)
-   * @returns {Promise<boolean>}
+   * @returns {Promise<any>}
+   * @deprecated
    */
   ring() {
     if (this.relationships !== 'FRIEND') return Promise.reject(new Error('USER_NOT_FRIEND'));
     if (!this.client.user.voice?.channelId || !this.client.callVoice) {
       return Promise.reject(new Error('CLIENT_NO_CALL'));
     }
-    return new Promise((resolve, reject) => {
-      this.client.api
-        .channels(this.dmChannel.id)
-        .call.ring.post({
-          data: {
-            recipients: [this.id],
-          },
-        })
-        .then(() => resolve(true))
-        .catch(e => {
-          reject(e);
-        });
+    return this.client.api.channels(this.dmChannel.id).call.ring.post({
+      data: {
+        recipients: [this.id],
+      },
     });
   }
 

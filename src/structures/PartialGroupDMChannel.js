@@ -354,6 +354,22 @@ class PartialGroupDMChannel extends Channel {
       }
     });
   }
+
+  /**
+   * Ring the user's phone / PC (call)
+   * @param {UserResolvable[]} recipients Array of recipients
+   * @returns {Promise<any>}
+   */
+  ring(recipients) {
+    if (!recipients || !Array.isArray(recipients) || recipients.length == 0) recipients = null;
+    recipients = recipients.map(r => this.client.users.resolveId(r)).filter(r => r && this.recipients.get(r));
+    return this.client.api.channels(this.id).call.ring.post({
+      data: {
+        recipients,
+      },
+    });
+  }
+
   /**
    * Sync VoiceState of this Group DMChannel.
    * @returns {undefined}

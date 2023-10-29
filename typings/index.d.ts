@@ -1337,6 +1337,7 @@ export class DMChannel extends TextBasedChannelMixin(Channel, [
   public fetch(force?: boolean): Promise<this>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public call(options?: CallOptions): Promise<VoiceConnection>;
+  public ring(): Promise<any>;
   public sync(): undefined;
   public readonly shard: WebSocketShard;
   public readonly voiceUsers: Collection<Snowflake, User>;
@@ -2598,6 +2599,7 @@ export class PartialGroupDMChannel extends TextBasedChannelMixin(Channel, [
   public setOwner(user: UserResolvable): Promise<PartialGroupDMChannel>;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public call(options?: CallOptions): Promise<VoiceConnection>;
+  public ring(recipients: UserResolvable[]): Promise<any>;
   public sync(): undefined;
   public readonly shard: WebSocketShard;
   public readonly voiceUsers: Collection<Snowflake, User>;
@@ -3302,7 +3304,8 @@ export class User extends PartialTextBasedChannel(Base) {
   public getProfile(guildId?: Snowflake): Promise<User>;
   public setNickname(nickname: string | null): Promise<boolean>;
   public toString(): UserMention;
-  public ring(): Promise<boolean>;
+  /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
+  public ring(): Promise<any>;
   public themeColors?: [number, number];
   public readonly hexThemeColor: [string, string] | null;
 }
