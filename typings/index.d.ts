@@ -2337,6 +2337,7 @@ export class WebEmbed {
   public setTitle(title: string): this;
   public setURL(url: string): this;
   public setProvider(options: MessageEmbedProvider | null): this;
+  public toString(): string;
   public toMessage(): Promise<string>;
 }
 

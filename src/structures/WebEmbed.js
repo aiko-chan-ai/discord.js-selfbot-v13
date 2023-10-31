@@ -319,50 +319,55 @@ class WebEmbed {
     return this;
   }
 
+  toString() {
+    const url = new URL(baseURL);
+    url.searchParams.set('image_type', this.imageType);
+    if (this.title) {
+      url.searchParams.set('title', this.title);
+    }
+    if (this.description) {
+      url.searchParams.set('description', this.description);
+    }
+    if (this.url) {
+      url.searchParams.set('url', this.url);
+    }
+    if (this.color) {
+      url.searchParams.set('color', `#${this.color.toString(16)}`);
+    }
+    if (this.image?.url) {
+      url.searchParams.set('image', this.image.url);
+    }
+    if (this.video?.url) {
+      url.searchParams.set('video', this.video.url);
+    }
+    if (this.author) {
+      if (this.author.name) {
+        url.searchParams.set('author_name', this.author.name);
+      }
+      if (this.author.url) {
+        url.searchParams.set('author_url', this.author.url);
+      }
+    }
+    if (this.provider) {
+      if (this.provider.name) {
+        url.searchParams.set('provider_name', this.provider.name);
+      }
+      if (this.provider.url) {
+        url.searchParams.set('provider_url', this.provider.url);
+      }
+    }
+    if (this.thumbnail?.url) {
+      url.searchParams.set('image', this.thumbnail.url);
+    }
+    return url.toString();
+  }
+
   /**
    * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
    * @returns {string} Message Content
    */
   async toMessage() {
-    const arrayQuery = [`image_type=${this.imageType}`];
-    if (this.title) {
-      arrayQuery.push(`title=${encodeURIComponent(this.title)}`);
-    }
-    if (this.description) {
-      arrayQuery.push(`description=${encodeURIComponent(this.description)}`);
-    }
-    if (this.url) {
-      arrayQuery.push(`url=${encodeURIComponent(this.url)}`);
-    }
-    if (this.color) {
-      arrayQuery.push(`color=${encodeURIComponent(`#${this.color.toString(16)}`)}`);
-    }
-    if (this.image?.url) {
-      arrayQuery.push(`image=${encodeURIComponent(this.image.url)}`);
-    }
-    if (this.video?.url) {
-      arrayQuery.push(`video=${encodeURIComponent(this.video.url)}`);
-    }
-    if (this.author) {
-      if (this.author.name) {
-        arrayQuery.push(`author_name=${encodeURIComponent(this.author.name)}`);
-      }
-      if (this.author.url) {
-        arrayQuery.push(`author_url=${encodeURIComponent(this.author.url)}`);
-      }
-    }
-    if (this.provider) {
-      if (this.provider.name) {
-        arrayQuery.push(`provider_name=${encodeURIComponent(this.provider.name)}`);
-      }
-      if (this.provider.url) {
-        arrayQuery.push(`provider_url=${encodeURIComponent(this.provider.url)}`);
-      }
-    }
-    if (this.thumbnail?.url) {
-      arrayQuery.push(`image=${encodeURIComponent(this.thumbnail.url)}`);
-    }
-    const fullURL = `${this.baseURL}${arrayQuery.join('&')}`;
+    const fullURL = this.toString();
     if (this.shorten) {
       const url = await this.constructor.getShorten(fullURL);
       if (!url) console.log('Cannot shorten URL in WebEmbed');
