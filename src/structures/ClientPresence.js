@@ -4,6 +4,8 @@ const { Presence } = require('./Presence');
 const { TypeError } = require('../errors');
 const { Opcodes, ActivityTypes } = require('../util/Constants');
 
+const CustomStatusActivityTypes = [ActivityTypes.CUSTOM, ActivityTypes[ActivityTypes.CUSTOM]];
+
 /**
  * Represents the client's presence.
  * @extends {Presence}
@@ -54,7 +56,13 @@ class ClientPresence extends Presence {
         if (![ActivityTypes.CUSTOM, 'CUSTOM'].includes(activity.type) && typeof activity.name !== 'string') {
           throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
         }
-        activity.type ??= 0;
+        activity.type ??= ActivityTypes.PLAYING;
+
+        if (CustomStatusActivityTypes.includes(activity.type) && !activity.state) {
+          activity.state = activity.name;
+          activity.name = 'Custom Status';
+        }
+
         data.activities.push(
           Object.assign(activity, {
             type: typeof activity.type === 'number' ? activity.type : ActivityTypes[activity.type],

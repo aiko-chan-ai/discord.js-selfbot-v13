@@ -360,6 +360,7 @@ exports.Opcodes = {
  * * CALL_CREATE: callCreate
  * * CALL_DELETE: callDelete
  * * CALL_UPDATE: callUpdate
+ * * GUILD_AVAILABLE: guildAvailable
  * * GUILD_CREATE: guildCreate
  * * GUILD_DELETE: guildDelete
  * * GUILD_UPDATE: guildUpdate
@@ -451,6 +452,7 @@ exports.Events = {
   CALL_CREATE: 'callCreate',
   CALL_DELETE: 'callDelete',
   CALL_UPDATE: 'callUpdate',
+  GUILD_AVAILABLE: 'guildAvailable',
   GUILD_CREATE: 'guildCreate',
   GUILD_DELETE: 'guildDelete',
   GUILD_UPDATE: 'guildUpdate',

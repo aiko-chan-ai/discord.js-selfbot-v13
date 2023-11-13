@@ -1014,12 +1014,15 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
 
 export class ClientApplication extends Application {
   private constructor(client: Client, data: RawClientApplicationData);
+  public approximateGuildCount: number | null;
   public botPublic: boolean | null;
   public popularCommands: Collection<Snowflake, ApplicationCommand> | undefined;
   public botRequireCodeGrant: boolean | null;
   public commands: ApplicationCommandManager;
   public cover: string | null;
   public flags: Readonly<ApplicationFlags>;
+  public guildId: Snowflake | null;
+  public readonly guild: Guild | null;
   public tags: string[];
   public installParams: ClientApplicationInstallParams | null;
   public customInstallURL: string | null;
@@ -1051,7 +1054,7 @@ export class ClientUser extends User {
   public setThemeColors(primary?: ColorResolvable, accent?: ColorResolvable): ClientUser;
   public edit(data: ClientUserEditData): Promise<this>;
   public setActivity(options?: ActivitiesOptions): ClientPresence;
-  public setActivity(name: string, options?: ActivityOptions): ClientPresence;
+  public setActivity(name: string, options?: Omit<ActivityOptions, 'name'>): ClientPresence;
   public setAFK(afk?: boolean, shardId?: number | number[]): ClientPresence;
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
   public setBanner(banner: BufferResolvable | Base64Resolvable | null): Promise<this>;
@@ -2003,27 +2006,23 @@ export class LimitedCollection<K, V> extends Collection<K, V> {
   public static filterByLifetime<K, V>(options?: LifetimeFilterOptions<K, V>): SweepFilter<K, V>;
 }
 
-export type MessageCollectorOptionsParams<T extends MessageComponentTypeResolvable, Cached extends boolean = boolean> =
-  | {
-      componentType?: T;
-    } & MessageComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
+export type MessageCollectorOptionsParams<
+  T extends MessageComponentTypeResolvable,
+  Cached extends boolean = boolean,
+> = {
+  componentType?: T;
+} & MessageComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
 
 export type MessageChannelCollectorOptionsParams<
   T extends MessageComponentTypeResolvable,
   Cached extends boolean = boolean,
-> =
-  | {
-      componentType?: T;
-    } & MessageChannelComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
+> = {
+  componentType?: T;
+} & MessageChannelComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
 
-export type AwaitMessageCollectorOptionsParams<
-  T extends MessageComponentTypeResolvable,
-  Cached extends boolean = boolean,
-> =
-  | { componentType?: T } & Pick<
-      InteractionCollectorOptions<MappedInteractionTypes<Cached>[T]>,
-      keyof AwaitMessageComponentOptions<any>
-    >;
+export type AwaitMessageCollectorOptionsParams<T extends MessageComponentTypeResolvable, Cached extends boolean = boolean> = {
+  componentType?: T;
+} & Pick<InteractionCollectorOptions<MappedInteractionTypes<Cached>[T]>, keyof AwaitMessageComponentOptions<any>>;
 
 export interface StringMappedInteractionTypes<Cached extends CacheType = CacheType> {
   BUTTON: ButtonInteraction<Cached>;
@@ -2164,6 +2163,7 @@ export class MessageAttachment {
   public description: string | null;
   public duration: number | null;
   public ephemeral: boolean;
+  public flags: Readonly<AttachmentFlags>;
   public height: number | null;
   public id: Snowflake;
   public name: string | null;
@@ -2184,6 +2184,13 @@ export interface InteractionResponseBody {
   id: Snowflake;
   nonce: Snowflake;
 }
+
+export class AttachmentFlags extends BitField<AttachmentFlagsString> {
+  public static FLAGS: Record<AttachmentFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<AttachmentFlagsString, number>): number;
+}
+
+export type AttachmentFlagsString = 'IS_REMIX';
 
 export class MessageButton extends BaseMessageComponent {
   public constructor(data?: MessageButton | MessageButtonOptions | APIButtonComponent);
@@ -2328,6 +2335,7 @@ export class WebEmbed {
   public hidden: boolean;
   public shorten: boolean;
   public imageType: 'thumbnail' | 'image';
+  public redirect?: string;
   public setAuthor(options: EmbedAuthorData | null): this;
   public setColor(color: ColorResolvable): this;
   public setDescription(description: string): this;
@@ -2704,6 +2712,7 @@ export class Role extends Base {
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
   public deleted: boolean;
   public readonly editable: boolean;
+  public flags: Readonly<RoleFlags>;
   public guild: Guild;
   public readonly hexColor: HexColorString;
   public hoist: boolean;
@@ -2738,6 +2747,13 @@ export class Role extends Base {
   /** @deprecated Use {@link RoleManager.comparePositions} instead. */
   public static comparePositions(role1: Role, role2: Role): number;
 }
+
+export class RoleFlags extends BitField<RoleFlagsString> {
+  public static FLAGS: Record<RoleFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<RoleFlagsString, number>): number;
+}
+
+export type RoleFlagsString = 'IN_PROMPT';
 
 export class BaseSelectMenuInteraction<
   Cached extends CacheType = CacheType,
@@ -3802,7 +3818,7 @@ export abstract class DataManager<K, Holds, R> extends BaseManager {
 }
 
 export abstract class CachedManager<K, Holds, R> extends DataManager<K, Holds, R> {
-  protected constructor(client: Client, holds: Constructable<Holds>);
+  protected constructor(client: Client, holds: Constructable<Holds>, iterable?: Iterable<Holds>);
   private readonly _cache: Collection<K, Holds>;
   private _add(data: unknown, cache?: boolean, { id, extras }?: { id: K; extras: unknown[] }): Holds;
 }
@@ -4526,9 +4542,10 @@ export type ActivityFlagsString =
 export type ActivitiesOptions = Omit<ActivityOptions | CustomStatus | RichPresence | SpotifyRPC, 'shardId'>;
 
 export interface ActivityOptions {
-  name?: string;
+  name: string;
+  state?: string;
   url?: string;
-  type?: ExcludeEnum<typeof ActivityTypes, 'CUSTOM'>;
+  type?: ActivityType;
   shardId?: number | readonly number[];
 }
 
@@ -4766,6 +4783,7 @@ export interface ClientEvents extends BaseClientEvents {
   callCreate: [call: Call];
   callDelete: [call: Call];
   callUpdate: [call: Call];
+  guildAvailable: [guild: Guild];
   guildBanAdd: [ban: GuildBan];
   guildBanRemove: [ban: GuildBan];
   guildCreate: [guild: Guild];
@@ -4869,9 +4887,14 @@ export interface ConstantsEvents {
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate';
   APPLICATION_COMMAND_PERMISSIONS_UPDATE: 'applicationCommandPermissionsUpdate';
+  AUTO_MODERATION_ACTION_EXECUTION: 'autoModerationActionExecution';
+  AUTO_MODERATION_RULE_CREATE: 'autoModerationRuleCreate';
+  AUTO_MODERATION_RULE_DELETE: 'autoModerationRuleDelete';
+  AUTO_MODERATION_RULE_UPDATE: 'autoModerationRuleUpdate';
   CALL_CREATE: 'callCreate';
   CALL_DELETE: 'callDelete';
   CALL_UPDATE: 'callUpdate';
+  GUILD_AVAILABLE: 'guildAvailable';
   GUILD_CREATE: 'guildCreate';
   GUILD_DELETE: 'guildDelete';
   GUILD_UPDATE: 'guildUpdate';
@@ -4971,6 +4994,7 @@ export interface WebEmbedOptions {
   video?: Partial<MessageEmbedVideo> & { proxy_url?: string };
   footer?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
   imageType?: 'thumbnail' | 'image';
+  redirect?: string;
 }
 // export interface MessageOptions
 // embeds?: (WebEmbed | MessageEmbed | MessageEmbedOptions | APIEmbed)[];
@@ -6692,6 +6716,7 @@ export interface MessageActivity {
 }
 
 export interface BaseButtonOptions extends BaseMessageComponentOptions {
+  type: 'BUTTON' | MessageComponentTypes.BUTTON;
   disabled?: boolean;
   emoji?: EmojiIdentifierResolvable;
   label?: string;

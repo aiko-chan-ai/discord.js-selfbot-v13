@@ -28,6 +28,13 @@ module.exports = (client, { d: data }, shard) => {
       // A newly available guild
       guild._patch(data);
       run(client, guild);
+
+      /**
+       * Emitted whenever a guild becomes available.
+       * @event Client#guildAvailable
+       * @param {Guild} guild The guild that became available
+       */
+      client.emit(Events.GUILD_AVAILABLE, guild);
     }
   } else {
     // A new guild

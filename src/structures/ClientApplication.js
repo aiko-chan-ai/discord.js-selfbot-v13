@@ -16,7 +16,7 @@ const Permissions = require('../util/Permissions');
  */
 
 /**
- * Represents a Client OAuth2 Application.
+ * Represents a client application.
  * @extends {Application}
  */
 class ClientApplication extends Application {
@@ -68,6 +68,26 @@ class ClientApplication extends Application {
        * @type {ApplicationFlags}
        */
       this.flags = new ApplicationFlags(data.flags).freeze();
+    }
+
+    if ('approximate_guild_count' in data) {
+      /**
+       * An approximate amount of guilds this application is in.
+       * @type {?number}
+       */
+      this.approximateGuildCount = data.approximate_guild_count;
+    } else {
+      this.approximateGuildCount ??= null;
+    }
+
+    if ('guild_id' in data) {
+      /**
+       * The id of the guild associated with this application.
+       * @type {?Snowflake}
+       */
+      this.guildId = data.guild_id;
+    } else {
+      this.guildId ??= null;
     }
 
     if ('cover_image' in data) {
@@ -130,6 +150,15 @@ class ClientApplication extends Application {
       : data.owner
       ? this.client.users._add(data.owner)
       : this.owner ?? null;
+  }
+
+  /**
+   * The guild associated with this application.
+   * @type {?Guild}
+   * @readonly
+   */
+  get guild() {
+    return this.client.guilds.cache.get(this.guildId) ?? null;
   }
 
   /**

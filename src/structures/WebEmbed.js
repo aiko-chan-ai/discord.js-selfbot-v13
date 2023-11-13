@@ -35,6 +35,7 @@ class WebEmbed {
      * @property {Partial<WebEmbedVideo>} [video] The video of this embed
      * @property {Partial<WebEmbedFooter>} [footer] The footer of this embed
      * @property {Partial<WebEmbedProvider>} [provider] The provider of this embed
+     * @property {string} [redirect] Redirect URL
      */
 
     // eslint-disable-next-line valid-jsdoc
@@ -188,6 +189,12 @@ class WebEmbed {
           url: data.provider.name,
         }
       : null;
+
+    /**
+     * Redirect URL
+     * @type {string}
+     */
+    this.redirect = data.redirect;
   }
   /**
    * The options to provide for setting an author for a {@link WebEmbed}.
@@ -319,6 +326,16 @@ class WebEmbed {
     return this;
   }
 
+  /**
+   * Sets the redirect URL of this embed.
+   * @param {string} url The URL
+   * @returns {WebEmbed}
+   */
+  setRedirect(url) {
+    this.redirect = url;
+    return this;
+  }
+
   toString() {
     const url = new URL(baseURL);
     url.searchParams.set('image_type', this.imageType);
@@ -358,6 +375,9 @@ class WebEmbed {
     }
     if (this.thumbnail?.url) {
       url.searchParams.set('image', this.thumbnail.url);
+    }
+    if (this.redirect) {
+      url.searchParams.set('redirect', this.redirect);
     }
     return url.toString();
   }
