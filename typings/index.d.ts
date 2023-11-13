@@ -2020,7 +2020,10 @@ export type MessageChannelCollectorOptionsParams<
   componentType?: T;
 } & MessageChannelComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
 
-export type AwaitMessageCollectorOptionsParams<T extends MessageComponentTypeResolvable, Cached extends boolean = boolean> = {
+export type AwaitMessageCollectorOptionsParams<
+  T extends MessageComponentTypeResolvable,
+  Cached extends boolean = boolean,
+> = {
   componentType?: T;
 } & Pick<InteractionCollectorOptions<MappedInteractionTypes<Cached>[T]>, keyof AwaitMessageComponentOptions<any>>;
 
