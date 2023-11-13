@@ -53,7 +53,7 @@
   "dependencies": {
     "@aikochan2k6/qrcode-terminal": "^0.12.1",
     "@discordjs/builders": "^1.6.3",
-    "@discordjs/collection": "^1.5.3",
+    "@discordjs/collection": "^2.0.0",
     "@discordjs/voice": "^0.16.0",
     "@sapphire/async-queue": "^1.5.0",
     "@sapphire/shapeshift": "^3.9.3",
