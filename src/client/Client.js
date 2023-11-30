@@ -1024,7 +1024,7 @@ class Client extends BaseClient {
       typeof options.proxy === 'string' &&
       testImportModule('proxy-agent') === false
     ) {
-      throw new Error('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent');
+      throw new Error('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent@5');
     }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');
