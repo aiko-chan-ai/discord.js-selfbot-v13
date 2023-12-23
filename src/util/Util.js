@@ -5,7 +5,7 @@ const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
 const fetch = require('node-fetch');
 const { Colors } = require('./Constants');
-const { RangeError, TypeError } = require('../errors');
+const { RangeError, TypeError, Error: DJSError } = require('../errors');
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const isObject = d => typeof d === 'object' && d !== null;
 
@@ -748,6 +748,52 @@ class Util extends null {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  static getProxyObject(proxy) {
+    const protocol = new URL(proxy).protocol.slice(0, -1);
+    const mapObject = {
+      http: 'https', // Cuz we can't use http for discord
+      https: 'https',
+      socks4: 'socks',
+      socks5: 'socks',
+      'pac+http': 'pac',
+      'pac+https': 'pac',
+    };
+    const proxyType = mapObject[protocol];
+    switch (proxyType) {
+      case 'https': {
+        if (!Util.testImportModule('https-proxy-agent')) {
+          throw new DJSError('MISSING_MODULE', 'https-proxy-agent', 'npm install https-proxy-agent');
+        }
+        const httpsProxyAgent = require('https-proxy-agent');
+        return new httpsProxyAgent.HttpsProxyAgent(proxy);
+      }
+
+      case 'socks': {
+        if (!Util.testImportModule('socks-proxy-agent')) {
+          throw new DJSError('MISSING_MODULE', 'socks-proxy-agent', 'npm install socks-proxy-agent');
+        }
+        const socksProxyAgent = require('socks-proxy-agent');
+        return new socksProxyAgent.SocksProxyAgent(proxy);
+      }
+
+      case 'pac': {
+        if (!Util.testImportModule('pac-proxy-agent')) {
+          throw new DJSError('MISSING_MODULE', 'pac-proxy-agent', 'npm install pac-proxy-agent');
+        }
+        const pacProxyAgent = require('pac-proxy-agent');
+        return new pacProxyAgent.PacProxyAgent(proxy);
+      }
+
+      default: {
+        if (!Util.testImportModule('proxy-agent')) {
+          throw new DJSError('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent@5');
+        }
+        const proxyAgent = require('proxy-agent');
+        return new proxyAgent(proxy);
+      }
     }
   }
 

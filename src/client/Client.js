@@ -40,7 +40,7 @@ const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
-const { testImportModule } = require('../util/Util');
+const { getProxyObject } = require('../util/Util');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -1018,13 +1018,8 @@ class Client extends BaseClient {
     }
     if (options && typeof options.proxy !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
-    } else if (
-      options &&
-      options.proxy &&
-      typeof options.proxy === 'string' &&
-      testImportModule('proxy-agent') === false
-    ) {
-      throw new Error('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent@5');
+    } else if (options && options.proxy && typeof options.proxy === 'string') {
+      getProxyObject(options.proxy);
     }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');

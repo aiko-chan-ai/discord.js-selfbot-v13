@@ -7,6 +7,7 @@ const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
 const { CookieJar } = require('tough-cookie');
+const { getProxyObject } = require('../util/Util');
 
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);
@@ -35,8 +36,7 @@ class APIRequest {
   make(captchaKey = undefined, captchaRqtoken = undefined) {
     if (agent === null) {
       if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
-        const ProxyAgent = require('proxy-agent');
-        agent = new ProxyAgent(this.client.options.proxy);
+        agent = getProxyObject(this.client.options.proxy);
       } else if (this.client.options.http.agent instanceof https.Agent) {
         agent = this.client.options.http.agent;
         agent.keepAlive = true;
