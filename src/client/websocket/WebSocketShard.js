@@ -5,6 +5,7 @@ const { setTimeout, setInterval, clearTimeout } = require('node:timers');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
+const { getProxyObject } = require('../../util/Util');
 
 const STATUS_KEYS = Object.keys(Status);
 const CONNECTION_STATE = Object.keys(WebSocket.WebSocket);
@@ -280,8 +281,7 @@ class WebSocketShard extends EventEmitter {
 
       let args = { handshakeTimeout: 30_000 };
       if (client.options.proxy.length > 0) {
-        const ProxyAgent = require('proxy-agent');
-        args.agent = new ProxyAgent(client.options.proxy);
+        args.agent = getProxyObject(client.options.proxy);
         this.debug(`Using proxy ${client.options.proxy}`, args);
       }
       // Adding a handshake timeout to just make sure no zombie connection appears.
