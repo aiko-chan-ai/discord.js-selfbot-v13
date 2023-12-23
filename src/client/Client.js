@@ -1018,11 +1018,7 @@ class Client extends BaseClient {
     }
     if (options && typeof options.proxy !== 'string') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
-    } else if (
-      options &&
-      options.proxy &&
-      typeof options.proxy === 'string'
-    ) {
+    } else if (options && options.proxy && typeof options.proxy === 'string') {
       getProxyObject(options.proxy);
     }
     if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
