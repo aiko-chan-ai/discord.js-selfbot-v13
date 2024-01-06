@@ -211,12 +211,13 @@ class MessageMentions {
    */
   has(data, { ignoreDirect = false, ignoreRoles = false, ignoreRepliedUser = false, ignoreEveryone = false } = {}) {
     const user = this.client.users.resolve(data);
+
     if (!ignoreEveryone && user && this.everyone) return true;
 
     const userWasRepliedTo = user && this.repliedUser?.id === user.id;
 
     if (!ignoreRepliedUser && userWasRepliedTo && this.users.has(user.id)) return true;
-    if (!ignoreRepliedUser && this.users.has(this.repliedUser?.id) && this.repliedUser?.id === user?.id) return true;
+
     if (!ignoreDirect) {
       if (user && (!ignoreRepliedUser || this.parsedUsers.has(user.id)) && this.users.has(user.id)) return true;
 
@@ -226,7 +227,7 @@ class MessageMentions {
       const channel = this.client.channels.resolve(data);
       if (channel && this.channels.has(channel.id)) return true;
     }
-    if (user && !ignoreEveryone && this.everyone) return true;
+
     if (!ignoreRoles) {
       const member = this.guild?.members.resolve(data);
       if (member) {
