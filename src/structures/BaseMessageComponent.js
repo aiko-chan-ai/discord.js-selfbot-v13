@@ -76,11 +76,7 @@ class BaseMessageComponent {
         component = data instanceof MessageButton ? data : new MessageButton(data);
         break;
       }
-      case MessageComponentTypes.STRING_SELECT:
-      case MessageComponentTypes.USER_SELECT:
-      case MessageComponentTypes.ROLE_SELECT:
-      case MessageComponentTypes.MENTIONABLE_SELECT:
-      case MessageComponentTypes.CHANNEL_SELECT: {
+      case MessageComponentTypes.SELECT_MENU: {
         const MessageSelectMenu = require('./MessageSelectMenu');
         component = data instanceof MessageSelectMenu ? data : new MessageSelectMenu(data);
         break;
