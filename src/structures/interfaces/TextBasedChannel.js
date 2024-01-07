@@ -498,11 +498,8 @@ class TextBasedChannel {
     }
     if (user._partial) await user.getProfile().catch(() => {});
     if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    const API =
-      this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id]['application-command-index'];
-    const data = await API.get();
+    const data = await this.searchInteraction(user.application?.id ?? user.id, 'CHAT_INPUT');
     for (const command of data.application_commands) {
-      if (command.type !== 1) continue;
       if (user.id == command.application_id || user.application.id == command.application_id) {
         user.application?.commands?._add(command, true);
       }
