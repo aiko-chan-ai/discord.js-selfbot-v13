@@ -45,7 +45,7 @@
     "discordapp"
   ],
   "author": "aiko-chan-ai",
-  "license": "Apache-2.0",
+  "license": "GNU General Public License v3.0",
   "bugs": {
     "url": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues"
   },
