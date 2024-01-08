@@ -1,17 +1,19 @@
 'use strict';
 
-const { Events, RelationshipTypes } = require('../../../util/Constants');
+const { Events } = require('../../../util/Constants');
 
 module.exports = (client, { d: data }) => {
   if (data.user) {
     client.users._add(data.user);
   }
   client.relationships.cache.set(data.id, data.type);
+  client.relationships.friendNicknames.set(data.id, data.nickname);
+  client.relationships.sinceCache.set(data.id, new Date(data.since || 0));
   /**
-   * Emitted whenever a relationship is updated.
+   * Emitted when a relationship is created, relevant to the current user.
    * @event Client#relationshipAdd
-   * @param {Snowflake} user The userID that was updated
-   * @param {RelationshipTypes} type The new relationship type
+   * @param {Snowflake} user Target userId
+   * @param {boolean} shouldNotify Whether the client should notify the user of this relationship's creation
    */
-  client.emit(Events.RELATIONSHIP_ADD, data.id, RelationshipTypes[data.type]);
+  client.emit(Events.RELATIONSHIP_ADD, data.id, Boolean(data.should_notify));
 };

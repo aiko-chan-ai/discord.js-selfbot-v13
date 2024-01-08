@@ -1,7 +1,7 @@
 'use strict';
 
-const Buffer = require('node:buffer').Buffer;
 const { Collection } = require('@discordjs/collection');
+const BaseManager = require('./BaseManager');
 const { GuildMember } = require('../structures/GuildMember');
 const { Message } = require('../structures/Message');
 const ThreadMember = require('../structures/ThreadMember');
@@ -11,19 +11,22 @@ const { RelationshipTypes } = require('../util/Constants');
 /**
  * Manages API methods for Relationships and stores their cache.
  */
-class RelationshipManager {
+class RelationshipManager extends BaseManager {
   constructor(client, users) {
-    /**
-     * The client that instantiated this manager.
-     * @type {Client}
-     */
-    this.client = client;
+    super(client);
     /**
      * A collection of users this manager is caching. (Type: Number)
      * @type {Collection<Snowflake, RelationshipTypes>}
-     * @readonly
      */
     this.cache = new Collection();
+    /**
+     * @type {Collection<Snowflake, string>}
+     */
+    this.friendNicknames = new Collection();
+    /**
+     * @type {Collection<Snowflake, Date>}
+     */
+    this.sinceCache = new Collection();
     this._setup(users);
   }
 
@@ -35,7 +38,7 @@ class RelationshipManager {
   get friendCache() {
     const users = this.cache
       .filter(value => value === RelationshipTypes.FRIEND)
-      .map((value, key) => [key, this.client.users.cache.get(key)]);
+      .map((_, key) => [key, this.client.users.cache.get(key)]);
     return new Collection(users);
   }
 
@@ -47,7 +50,7 @@ class RelationshipManager {
   get blockedCache() {
     const users = this.cache
       .filter(value => value === RelationshipTypes.BLOCKED)
-      .map((value, key) => [key, this.client.users.cache.get(key)]);
+      .map((_, key) => [key, this.client.users.cache.get(key)]);
     return new Collection(users);
   }
 
@@ -59,7 +62,7 @@ class RelationshipManager {
   get incomingCache() {
     const users = this.cache
       .filter(value => value === RelationshipTypes.PENDING_INCOMING)
-      .map((value, key) => [key, this.client.users.cache.get(key)]);
+      .map((_, key) => [key, this.client.users.cache.get(key)]);
     return new Collection(users);
   }
 
@@ -71,16 +74,29 @@ class RelationshipManager {
   get outgoingCache() {
     const users = this.cache
       .filter(value => value === RelationshipTypes.PENDING_OUTGOING)
-      .map((value, key) => [key, this.client.users.cache.get(key)]);
+      .map((_, key) => [key, this.client.users.cache.get(key)]);
     return new Collection(users);
   }
 
   /**
-   * Return array of cache
-   * @returns {Array<{id: Snowflake, type: RelationshipTypes}>}
+   * @typedef {Object} RelationshipJSONData
+   * @property {Snowflake} id The ID of the target user
+   * @property {RelationshipTypes} type The type of relationship
+   * @property {string | null} nickname The nickname of the user in this relationship (1-32 characters)
+   * @property {string} since When the user requested a relationship (ISO8601 timestamp)
    */
-  toArray() {
-    return this.cache.map((value, key) => ({ id: key, type: RelationshipTypes[value] }));
+
+  /**
+   * Return array of cache
+   * @returns {RelationshipJSONData[]}
+   */
+  toJSON() {
+    return this.cache.map((value, key) => ({
+      id: key,
+      type: RelationshipTypes[value],
+      nickname: this.friendNicknames.get(key),
+      since: this.sinceCache.get(key).toISOString(),
+    }));
   }
 
   /**
@@ -91,8 +107,9 @@ class RelationshipManager {
   _setup(users) {
     if (!Array.isArray(users)) return;
     for (const relationShip of users) {
-      this.client.user.friendNicknames.set(relationShip.id, relationShip.nickname);
+      this.friendNicknames.set(relationShip.id, relationShip.nickname);
       this.cache.set(relationShip.id, relationShip.type);
+      this.sinceCache.set(relationShip.id, new Date(relationShip.since || 0));
     }
   }
 
@@ -133,66 +150,55 @@ class RelationshipManager {
   }
 
   /**
-   * Deletes a friend relationship with a client user.
+   * Deletes a friend / blocked relationship with a client user or cancels a friend request.
    * @param {UserResolvable} user Target
    * @returns {Promise<boolean>}
    */
-  deleteFriend(user) {
+  async deleteRelationship(user) {
     const id = this.resolveId(user);
-    // Check if already friends
-    if (this.cache.get(id) !== RelationshipTypes.FRIEND) return false;
-    return this.__cancel(id);
+    if (
+      ![RelationshipTypes.FRIEND, RelationshipTypes.BLOCKED, RelationshipTypes.PENDING_OUTGOING].includes(
+        this.cache.get(id),
+      )
+    ) {
+      return Promise.resolve(false);
+    }
+    await this.client.api.users['@me'].relationships[id].delete({
+      DiscordContext: { location: 'Friends' },
+    });
+    return true;
   }
 
   /**
-   * Deletes a blocked relationship with a client user.
-   * @param {UserResolvable} user Target
-   * @returns {Promise<boolean>}
+   * @typedef {Object} FriendRequestOptions
+   * @property {UserResolvable} [user] Target
+   * @property {string} [username] Discord username
+   * @property {number | null} [discriminator] Discord discriminator
    */
-  deleteBlocked(user) {
-    const id = this.resolveId(user);
-    // Check if already blocked
-    if (this.cache.get(id) !== RelationshipTypes.BLOCKED) return false;
-    return this.__cancel(id);
-  }
 
   /**
    * Sends a friend request.
-   * @param {string} username Username of the user to send the request to
-   * @param {?number} discriminator Discriminator of the user to send the request to
+   * @param {FriendRequestOptions} options Target
    * @returns {Promise<boolean>}
    */
-  async sendFriendRequest(username, discriminator) {
-    await this.client.api.users('@me').relationships.post({
-      data: {
-        username,
-        discriminator: discriminator == 0 ? null : parseInt(discriminator),
-      },
-      headers: {
-        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Add Friend' }), 'utf8').toString('base64'),
-      },
-    });
-    return true;
-  }
-
-  /**
-   * Cancels a friend request.
-   * @param {UserResolvable} user  the user you want to delete
-   * @returns {Promise<boolean>}
-   */
-  cancelFriendRequest(user) {
-    const id = this.resolveId(user);
-    if (this.cache.get(id) !== RelationshipTypes.PENDING_OUTGOING) return false;
-    return this.__cancel(id);
-  }
-
-  async __cancel(id) {
-    await this.client.api.users['@me'].relationships[id].delete({
-      headers: {
-        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Friends' }), 'utf8').toString('base64'),
-      },
-    });
-    return true;
+  async sendFriendRequest(options) {
+    if (options?.user) {
+      const id = this.resolveId(options.user);
+      await this.client.api.users['@me'].relationships[id].put({
+        data: {},
+        DiscordContext: { location: 'ContextMenu' },
+      });
+      return true;
+    } else {
+      await this.client.api.users['@me'].relationships.post({
+        data: {
+          username: options.username,
+          discriminator: options.discriminator,
+        },
+        DiscordContext: { location: 'Add Friend' },
+      });
+      return true;
+    }
   }
 
   /**
@@ -203,16 +209,14 @@ class RelationshipManager {
   async addFriend(user) {
     const id = this.resolveId(user);
     // Check if already friends
-    if (this.cache.get(id) === RelationshipTypes.FRIEND) return false;
+    if (this.cache.get(id) === RelationshipTypes.FRIEND) return Promise.resolve(false);
     // Check if outgoing request
-    if (this.cache.get(id) === RelationshipTypes.PENDING_OUTGOING) return false;
+    if (this.cache.get(id) === RelationshipTypes.PENDING_OUTGOING) return Promise.resolve(false);
     await this.client.api.users['@me'].relationships[id].put({
       data: {
         type: RelationshipTypes.FRIEND,
       },
-      headers: {
-        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'Friends' }), 'utf8').toString('base64'),
-      },
+      DiscordContext: { location: 'Friends' },
     });
     return true;
   }
@@ -223,14 +227,19 @@ class RelationshipManager {
    * @param {?string} nickname New nickname
    * @returns {Promise<boolean>}
    */
-  async setNickname(user, nickname) {
+  async setNickname(user, nickname = null) {
     const id = this.resolveId(user);
-    if (this.cache.get(id) !== RelationshipTypes.FRIEND) return false;
+    if (this.cache.get(id) !== RelationshipTypes.FRIEND) return Promise.resolve(false);
     await this.client.api.users['@me'].relationships[id].patch({
       data: {
         nickname: typeof nickname === 'string' ? nickname : null,
       },
     });
+    if (nickname) {
+      this.friendNicknames.set(id, nickname);
+    } else {
+      this.friendNicknames.delete(id);
+    }
     return true;
   }
 
@@ -242,14 +251,12 @@ class RelationshipManager {
   async addBlocked(user) {
     const id = this.resolveId(user);
     // Check
-    if (this.cache.get(id) === RelationshipTypes.BLOCKED) return false;
+    if (this.cache.get(id) === RelationshipTypes.BLOCKED) return Promise.resolve(false);
     await this.client.api.users['@me'].relationships[id].put({
       data: {
         type: RelationshipTypes.BLOCKED,
       },
-      headers: {
-        'X-Context-Properties': Buffer.from(JSON.stringify({ location: 'ContextMenu' }), 'utf8').toString('base64'),
-      },
+      DiscordContext: { location: 'ContextMenu' },
     });
     return true;
   }
