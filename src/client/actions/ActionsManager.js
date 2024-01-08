@@ -45,7 +45,6 @@ class ActionsManager {
     this.register(require('./GuildStickerUpdate'));
     this.register(require('./GuildStickersUpdate'));
     this.register(require('./GuildUpdate'));
-    this.register(require('./InteractionCreate'));
     this.register(require('./InviteCreate'));
     this.register(require('./InviteDelete'));
     this.register(require('./MessageCreate'));
