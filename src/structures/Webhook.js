@@ -72,7 +72,7 @@ class Webhook {
 
     if ('channel_id' in data) {
       /**
-       * The channel the webhook belongs to
+       * The id of the channel the webhook belongs to
        * @type {Snowflake}
        */
       this.channelId = data.channel_id;
@@ -116,6 +116,7 @@ class Webhook {
    * @property {string} [avatarURL] Avatar URL override for the message
    * @property {Snowflake} [threadId] The id of the thread in the channel to send to.
    * <info>For interaction webhooks, this property is ignored</info>
+   * @property {string} [threadName] Name of the thread to create (only available if webhook is in a forum channel)
    * @property {MessageFlags} [flags] Which flags to set for the message. Only `SUPPRESS_EMBEDS` can be set.
    */
 
@@ -127,11 +128,10 @@ class Webhook {
    * @property {FileOptions[]|BufferResolvable[]|MessageAttachment[]} [files] See {@link BaseMessageOptions#files}
    * @property {MessageMentionOptions} [allowedMentions] See {@link BaseMessageOptions#allowedMentions}
    * @property {MessageAttachment[]} [attachments] Attachments to send with the message
-   * @property {Array<(MessageActionRow|MessageActionRowOptions)>} [components]
+   * @property {MessageActionRow[]|MessageActionRowOptions[]} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {Snowflake} [threadId] The id of the thread this message belongs to
    * <info>For interaction webhooks, this property is ignored</info>
-   * @property {string} [threadName] Name of the thread to create (only available if webhook is in a forum channel)
    */
 
   /**
@@ -188,9 +188,9 @@ class Webhook {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
+      messagePayload = options.resolveData();
     } else {
-      messagePayload = await MessagePayload.create(this, options).resolveData();
+      messagePayload = MessagePayload.create(this, options).resolveData();
     }
 
     const { data, files } = await messagePayload.resolveFiles();
@@ -324,13 +324,10 @@ class Webhook {
 
     let messagePayload;
 
-    if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
-    } else {
-      messagePayload = await MessagePayload.create(this, options).resolveData();
-    }
+    if (options instanceof MessagePayload) messagePayload = options;
+    else messagePayload = MessagePayload.create(this, options);
 
-    const { data, files } = await messagePayload.resolveFiles();
+    const { data, files } = await messagePayload.resolveData().resolveFiles();
 
     const d = await this.client.api
       .webhooks(this.id, this.token)
@@ -384,6 +381,15 @@ class Webhook {
         auth: false,
         webhook: true,
       });
+  }
+
+  /**
+   * The channel the webhook belongs to
+   * @type {?(TextChannel|VoiceChannel|NewsChannel|ForumChannel)}
+   * @readonly
+   */
+  get channel() {
+    return this.client.channels.resolve(this.channelId);
   }
 
   /**
