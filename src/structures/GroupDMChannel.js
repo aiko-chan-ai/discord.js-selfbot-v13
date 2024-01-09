@@ -299,8 +299,6 @@ class GroupDMChannel extends Channel {
   sendTyping() {}
   createMessageCollector() {}
   awaitMessages() {}
-  createMessageComponentCollector() {}
-  awaitMessageComponent() {}
   // Doesn't work on DM channels; setRateLimitPerUser() {}
   // Doesn't work on DM channels; setNSFW() {}
 }

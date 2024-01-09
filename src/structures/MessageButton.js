@@ -1,13 +1,9 @@
 'use strict';
 
-const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const { RangeError } = require('../errors');
-const { MessageButtonStyles, MessageComponentTypes, InteractionTypes } = require('../util/Constants');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
+const { MessageButtonStyles, MessageComponentTypes } = require('../util/Constants');
 const Util = require('../util/Util');
-const { lazy } = require('../util/Util');
-const Message = lazy(() => require('../structures/Message').Message);
 
 /**
  * Represents a button message component.
@@ -163,68 +159,6 @@ class MessageButton extends BaseMessageComponent {
    */
   static resolveStyle(style) {
     return typeof style === 'string' ? style : MessageButtonStyles[style];
-  }
-  // Patch Click
-  /**
-   * Click the button
-   * @param {Message} message Discord Message
-   * @returns {Promise<InteractionResponse>}
-   */
-  async click(message) {
-    const nonce = SnowflakeUtil.generate();
-    if (!(message instanceof Message())) throw new Error('[UNKNOWN_MESSAGE] Please pass a valid Message');
-    if (!this.customId || this.style == MessageButtonStyles.LINK || this.disabled) return false;
-    const data = {
-      type: InteractionTypes.MESSAGE_COMPONENT,
-      nonce,
-      guild_id: message.guild?.id ?? null,
-      channel_id: message.channel.id,
-      message_id: message.id,
-      application_id: message.applicationId ?? message.author.id,
-      session_id: message.client.sessionId,
-      message_flags: message.flags.bitfield,
-      data: {
-        component_type: MessageComponentTypes.BUTTON,
-        custom_id: this.customId,
-      },
-    };
-    await message.client.api.interactions.post({
-      data,
-    });
-    message.client._interactionCache.set(nonce, {
-      channelId: message.channelId,
-      guildId: message.guildId,
-      metadata: data,
-    });
-    return new Promise((resolve, reject) => {
-      const handler = data => {
-        timeout.refresh();
-        if (data.metadata?.nonce !== nonce) return;
-        clearTimeout(timeout);
-        message.client.removeListener('interactionResponse', handler);
-        message.client.decrementMaxListeners();
-        if (data.status) {
-          resolve(data.metadata);
-        } else {
-          reject(
-            new Error('INTERACTION_ERROR', {
-              cause: data,
-            }),
-          );
-        }
-      };
-      const timeout = setTimeout(() => {
-        message.client.removeListener('interactionResponse', handler);
-        message.client.decrementMaxListeners();
-        reject(
-          new Error('INTERACTION_TIMEOUT', {
-            cause: data,
-          }),
-        );
-      }, message.client.options.interactionTimeout).unref();
-      message.client.incrementMaxListeners();
-      message.client.on('interactionResponse', handler);
-    });
   }
 }
 

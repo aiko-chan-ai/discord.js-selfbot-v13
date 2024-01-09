@@ -138,7 +138,7 @@ class Modal {
       data: postData,
     });
     return new Promise((resolve, reject) => {
-      const timeoutMs = 15_000;
+      const timeoutMs = 5_000;
       // Waiting for MsgCreate / ModalCreate
       const handler = data => {
         if (data.nonce !== nonce) return;

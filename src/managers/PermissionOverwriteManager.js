@@ -89,7 +89,7 @@ class PermissionOverwriteManager extends CachedManager {
    * @private
    */
   async upsert(userOrRole, options, overwriteOptions = {}, existing) {
-    const userOrRoleId = this.channel.guild.roles.resolveId(userOrRole) ?? this.client.users.resolveId(userOrRole);
+    let userOrRoleId = this.channel.guild.roles.resolveId(userOrRole) ?? this.client.users.resolveId(userOrRole);
     let { type, reason } = overwriteOptions;
     if (typeof type !== 'number') {
       userOrRole = this.channel.guild.roles.resolve(userOrRole) ?? this.client.users.resolve(userOrRole);
