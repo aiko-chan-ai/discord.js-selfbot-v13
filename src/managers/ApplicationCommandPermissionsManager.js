@@ -10,7 +10,7 @@ const { ApplicationCommandPermissionTypes, APIErrors } = require('../util/Consta
  * @extends {BaseManager}
  */
 class ApplicationCommandPermissionsManager extends BaseManager {
-  constructor(manager, user) {
+  constructor(manager) {
     super(manager.client);
 
     /**
@@ -37,8 +37,6 @@ class ApplicationCommandPermissionsManager extends BaseManager {
      * @type {?Snowflake}
      */
     this.commandId = manager.id ?? null;
-
-    this.user = user;
   }
 
   /**
@@ -49,10 +47,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * @private
    */
   permissionsPath(guildId, commandId) {
-    return this.client.api
-      .applications(typeof this.user === 'string' ? this.user : this.user.id)
-      .guilds(guildId)
-      .commands(commandId).permissions;
+    return this.client.api.applications(this.client.application.id).guilds(guildId).commands(commandId).permissions;
   }
 
   /**
@@ -164,7 +159,6 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *   .catch(console.error);
    */
   async set({ guild, command, permissions, fullPermissions } = {}) {
-    if (!this.manager.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const { guildId, commandId } = this._validateOptions(guild, command);
 
     if (commandId) {
@@ -226,7 +220,6 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *   .catch(console.error);
    */
   async add({ guild, command, permissions }) {
-    if (!this.manager.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (!commandId) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
     if (!Array.isArray(permissions)) {
@@ -278,13 +271,12 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *    .catch(console.error);
    */
   async remove({ guild, command, users, roles }) {
-    if (!this.manager.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (!commandId) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
     if (!users && !roles) throw new TypeError('INVALID_TYPE', 'users OR roles', 'Array or Resolvable', true);
 
-    const resolvedIds = [];
+    let resolvedIds = [];
     if (Array.isArray(users)) {
       users.forEach(user => {
         const userId = this.client.users.resolveId(user);

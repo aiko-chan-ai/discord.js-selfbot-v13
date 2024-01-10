@@ -1,10 +1,13 @@
 'use strict';
 
 const process = require('node:process');
+const { ApplicationFlags } = require('../../util/ApplicationFlags');
 const { ClientApplicationAssetTypes, Endpoints } = require('../../util/Constants');
 const Permissions = require('../../util/Permissions');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
+const { ApplicationRoleConnectionMetadata } = require('../ApplicationRoleConnectionMetadata');
 const Base = require('../Base');
+const Team = require('../Team');
 
 const AssetTypes = Object.keys(ClientApplicationAssetTypes);
 
@@ -67,6 +70,132 @@ class Application extends Base {
     } else {
       this.roleConnectionsVerificationURL ??= null;
     }
+
+    // ClientApplication
+    /**
+     * The tags this application has (max of 5)
+     * @type {string[]}
+     */
+    this.tags = data.tags ?? [];
+
+    if ('install_params' in data) {
+      /**
+       * Settings for this application's default in-app authorization
+       * @type {?ClientApplicationInstallParams}
+       */
+      this.installParams = {
+        scopes: data.install_params.scopes,
+        permissions: new Permissions(data.install_params.permissions).freeze(),
+      };
+    } else {
+      this.installParams ??= null;
+    }
+
+    if ('custom_install_url' in data) {
+      /**
+       * This application's custom installation URL
+       * @type {?string}
+       */
+      this.customInstallURL = data.custom_install_url;
+    } else {
+      this.customInstallURL = null;
+    }
+
+    if ('flags' in data) {
+      /**
+       * The flags this application has
+       * @type {ApplicationFlags}
+       */
+      this.flags = new ApplicationFlags(data.flags).freeze();
+    }
+
+    if ('approximate_guild_count' in data) {
+      /**
+       * An approximate amount of guilds this application is in.
+       * @type {?number}
+       */
+      this.approximateGuildCount = data.approximate_guild_count;
+    } else {
+      this.approximateGuildCount ??= null;
+    }
+
+    if ('guild_id' in data) {
+      /**
+       * The id of the guild associated with this application.
+       * @type {?Snowflake}
+       */
+      this.guildId = data.guild_id;
+    } else {
+      this.guildId ??= null;
+    }
+
+    if ('cover_image' in data) {
+      /**
+       * The hash of the application's cover image
+       * @type {?string}
+       */
+      this.cover = data.cover_image;
+    } else {
+      this.cover ??= null;
+    }
+
+    if ('rpc_origins' in data) {
+      /**
+       * The application's RPC origins, if enabled
+       * @type {string[]}
+       */
+      this.rpcOrigins = data.rpc_origins;
+    } else {
+      this.rpcOrigins ??= [];
+    }
+
+    if ('bot_require_code_grant' in data) {
+      /**
+       * If this application's bot requires a code grant when using the OAuth2 flow
+       * @type {?boolean}
+       */
+      this.botRequireCodeGrant = data.bot_require_code_grant;
+    } else {
+      this.botRequireCodeGrant ??= null;
+    }
+
+    if ('bot_public' in data) {
+      /**
+       * If this application's bot is public
+       * @type {?boolean}
+       */
+      this.botPublic = data.bot_public;
+    } else {
+      this.botPublic ??= null;
+    }
+
+    /**
+     * The owner of this OAuth application
+     * @type {?(User|Team)}
+     */
+    this.owner = data.team
+      ? new Team(this.client, data.team)
+      : data.owner
+      ? this.client.users._add(data.owner)
+      : this.owner ?? null;
+  }
+
+  /**
+   * The guild associated with this application.
+   * @type {?Guild}
+   * @readonly
+   */
+  get guild() {
+    return this.client.guilds.cache.get(this.guildId) ?? null;
+  }
+
+  /**
+   * Whether this application is partial
+   * @type {boolean}
+   * @readonly
+   */
+  get partial() {
+    return !this.name;
   }
 
   /**
@@ -88,35 +217,29 @@ class Application extends Base {
   }
 
   /**
-   * Invites this application to a guild / server
-   * @param {Snowflake} guild_id The id of the guild that you want to invite the bot to
-   * @param {PermissionResolvable} [permissions] The permissions for the bot in number form (the default is 8 / Administrator)
-   * @param {string} [captcha] The captcha key to add
-   * @returns {Promise<void>} nothing :)
+   * Obtains this application from Discord.
+   * @returns {Promise<Application>}
    */
-  async invite(guild_id, permissions, captcha = null) {
-    permissions = Permissions.resolve(permissions || 0n);
-    const postData = {
-      authorize: true,
-      guild_id,
-      permissions: '0',
-    };
-    if (permissions) {
-      postData.permissions = permissions;
-    }
-    if (captcha && typeof captcha === 'string' && captcha.length > 0) {
-      postData.captcha = captcha;
-    }
-    await this.client.api.oauth2.authorize.post({
+  async fetch() {
+    const app = await this.client.api.oauth2.authorize.get({
       query: {
         client_id: this.id,
         scope: 'bot applications.commands',
       },
-      data: postData,
-      headers: {
-        referer: `https://discord.com/oauth2/authorize?client_id=${this.id}&permissions=${permissions}&scope=bot`,
-      },
     });
+    const user = this.client.users._add(app.bot);
+    user._partial = false;
+    this._patch(app.application);
+    return this;
+  }
+
+  /**
+   * Gets this application's role connection metadata records
+   * @returns {Promise<ApplicationRoleConnectionMetadata[]>}
+   */
+  async fetchRoleConnectionMetadataRecords() {
+    const metadata = await this.client.api.applications(this.id)('role-connections').metadata.get();
+    return metadata.map(data => new ApplicationRoleConnectionMetadata(data));
   }
 
   /**
