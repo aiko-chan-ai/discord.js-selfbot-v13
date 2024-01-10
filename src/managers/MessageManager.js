@@ -2,7 +2,7 @@
 
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
-const { TypeError, Error } = require('../errors');
+const { TypeError } = require('../errors');
 const { Message } = require('../structures/Message');
 const MessagePayload = require('../structures/MessagePayload');
 const Util = require('../util/Util');
@@ -123,38 +123,32 @@ class MessageManager extends CachedManager {
     const messageId = this.resolveId(message);
     if (!messageId) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    let messagePayload;
-    if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
-    } else {
-      messagePayload = await MessagePayload.create(message instanceof Message ? message : this, options).resolveData();
-    }
-    let { data, files } = await messagePayload.resolveFiles();
+    const { data, files } = await (options instanceof MessagePayload
+      ? options
+      : MessagePayload.create(message instanceof Message ? message : this, options)
+    )
+      .resolveData()
+      .resolveFiles();
 
-    if (typeof options == 'object' && typeof options.usingNewAttachmentAPI !== 'boolean') {
-      options.usingNewAttachmentAPI = this.client.options.usingNewAttachmentAPI;
-    }
+    // New API
+    const attachments = await Util.getUploadURL(this.client, this.channel.id, files);
+    const requestPromises = attachments.map(async attachment => {
+      await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
+      return {
+        id: attachment.id,
+        filename: files[attachment.id].name,
+        uploaded_filename: attachment.upload_filename,
+        description: files[attachment.id].description,
+        duration_secs: files[attachment.id].duration_secs,
+        waveform: files[attachment.id].waveform,
+      };
+    });
+    const attachmentsData = await Promise.all(requestPromises);
+    attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    data.attachments = attachmentsData;
+    // Empty Files
 
-    if (options?.usingNewAttachmentAPI === true) {
-      const attachments = await Util.getAttachments(this.client, this.channel.id, ...files);
-      const requestPromises = attachments.map(async attachment => {
-        await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
-        return {
-          id: attachment.id,
-          filename: files[attachment.id].name,
-          uploaded_filename: attachment.upload_filename,
-          description: files[attachment.id].description,
-          duration_secs: files[attachment.id].duration_secs,
-          waveform: files[attachment.id].waveform,
-        };
-      });
-      const attachmentsData = await Promise.all(requestPromises);
-      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      data.attachments = attachmentsData;
-      files = [];
-    }
-
-    const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data, files });
+    const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data });
 
     const existing = this.cache.get(messageId);
     if (existing) {
@@ -251,24 +245,21 @@ class MessageManager extends CachedManager {
       const existing = this.cache.get(messageId);
       if (existing && !existing.partial) return existing;
     }
+
     // https://discord.com/api/v9/channels/:id/messages?limit=50&around=:msgid
     return new Promise((resolve, reject) => {
-      this._fetchMany({
-        around: messageId,
-        limit: 50,
-      })
+      this._fetchMany(
+        {
+          around: messageId,
+          limit: 50,
+        },
+        cache,
+      )
         .then(data_ =>
           data_.has(messageId) ? resolve(data_.get(messageId)) : reject(new Error('MESSAGE_ID_NOT_FOUND')),
         )
         .catch(reject);
     });
-  }
-
-  async _fetchMany(options = {}, cache) {
-    const data = await this.client.api.channels[this.channel.id].messages.get({ query: options });
-    const messages = new Collection();
-    for (const message of data) messages.set(message.id, this._add(message, cache));
-    return messages;
   }
 
   /**
@@ -387,6 +378,13 @@ class MessageManager extends CachedManager {
       messages: result,
       total: data.total_results,
     };
+  }
+
+  async _fetchMany(options = {}, cache) {
+    const data = await this.client.api.channels[this.channel.id].messages.get({ query: options });
+    const messages = new Collection();
+    for (const message of data) messages.set(message.id, this._add(message, cache));
+    return messages;
   }
 }
 

@@ -3,7 +3,7 @@
 const ThreadManager = require('./ThreadManager');
 const { TypeError } = require('../errors');
 const MessagePayload = require('../structures/MessagePayload');
-const { resolveAutoArchiveMaxLimit, getAttachments, uploadFile } = require('../util/Util');
+const { resolveAutoArchiveMaxLimit, getUploadURL, uploadFile } = require('../util/Util');
 
 /**
  * Manages API methods for threads in forum channels and stores their cache.
@@ -20,7 +20,7 @@ class GuildForumThreadManager extends ThreadManager {
    * @typedef {BaseMessageOptions} GuildForumThreadMessageCreateOptions
    * @property {StickerResolvable} [stickers] The stickers to send with the message
    * @property {BitFieldResolvable} [flags] The flags to send with the message.
-   * Only `SUPPRESS_EMBEDS`, `SUPPRESS_NOTIFICATIONS` and `IS_VOICE_MESSAGE` can be set.
+   * Only `SUPPRESS_EMBEDS` and `SUPPRESS_NOTIFICATIONS` can be set.
    */
 
   /**
@@ -63,35 +63,29 @@ class GuildForumThreadManager extends ThreadManager {
     let messagePayload;
 
     if (message instanceof MessagePayload) {
-      messagePayload = await message.resolveData();
+      messagePayload = message.resolveData();
     } else {
-      messagePayload = await MessagePayload.create(this, message).resolveData();
+      messagePayload = MessagePayload.create(this, message).resolveData();
     }
 
-    let { data: body, files } = await messagePayload.resolveFiles();
+    const { data: body, files } = await messagePayload.resolveFiles();
 
-    if (typeof message == 'object' && typeof message.usingNewAttachmentAPI !== 'boolean') {
-      message.usingNewAttachmentAPI = this.client.options.usingNewAttachmentAPI;
-    }
-
-    if (message?.usingNewAttachmentAPI === true) {
-      const attachments = await getAttachments(this.client, this.channel.id, ...files);
-      const requestPromises = attachments.map(async attachment => {
-        await uploadFile(files[attachment.id].file, attachment.upload_url);
-        return {
-          id: attachment.id,
-          filename: files[attachment.id].name,
-          uploaded_filename: attachment.upload_filename,
-          description: files[attachment.id].description,
-          duration_secs: files[attachment.id].duration_secs,
-          waveform: files[attachment.id].waveform,
-        };
-      });
-      const attachmentsData = await Promise.all(requestPromises);
-      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      body.attachments = attachmentsData;
-      files = [];
-    }
+    // New API
+    const attachments = await getUploadURL(this.client, this.channel.id, files);
+    const requestPromises = attachments.map(async attachment => {
+      await uploadFile(files[attachment.id].file, attachment.upload_url);
+      return {
+        id: attachment.id,
+        filename: files[attachment.id].name,
+        uploaded_filename: attachment.upload_filename,
+        description: files[attachment.id].description,
+        duration_secs: files[attachment.id].duration_secs,
+        waveform: files[attachment.id].waveform,
+      };
+    });
+    const attachmentsData = await Promise.all(requestPromises);
+    attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    data.attachments = attachmentsData;
 
     if (autoArchiveDuration === 'MAX') autoArchiveDuration = resolveAutoArchiveMaxLimit(this.channel.guild);
 
@@ -103,7 +97,7 @@ class GuildForumThreadManager extends ThreadManager {
         applied_tags: appliedTags,
         message: body,
       },
-      files,
+      files: [],
       reason,
     });
 
