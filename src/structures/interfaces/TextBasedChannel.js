@@ -1,17 +1,14 @@
 'use strict';
 
 /* eslint-disable import/order */
-const InteractionManager = require('../../managers/InteractionManager');
 const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
+const { InteractionTypes, ApplicationCommandOptionTypes, Events } = require('../../util/Constants');
+const { Error } = require('../../errors');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
-const { Collection } = require('@discordjs/collection');
-const { InteractionTypes, MaxBulkDeletableMessageAge } = require('../../util/Constants');
-const { TypeError, Error } = require('../../errors');
-const InteractionCollector = require('../InteractionCollector');
-const { lazy, getAttachments, uploadFile } = require('../../util/Util');
-const Message = lazy(() => require('../Message').Message);
+const { setTimeout } = require('node:timers');
 const { s } = require('@sapphire/shapeshift');
+const Util = require('../../util/Util');
 const validateName = stringName =>
   s.string
     .lengthGreaterThanOrEqual(1)
@@ -31,12 +28,6 @@ class TextBasedChannel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
-
-    /**
-     * A manager of the interactions sent to this channel
-     * @type {InteractionManager}
-     */
-    this.interactions = new InteractionManager(this);
 
     /**
      * The channel's last message id, if one was sent
@@ -76,7 +67,7 @@ class TextBasedChannel {
    * @property {boolean} [tts=false] Whether or not the message should be spoken aloud
    * @property {string} [nonce=''] The nonce for the message
    * @property {string} [content=''] The content for the message
-   * @property {Array<(MessageEmbed|APIEmbed|WebEmbed)>} [embeds] The embeds for the message
+   * @property {Array<(MessageEmbed|APIEmbed)>} [embeds] The embeds for the message
    * (see [here](https://discord.com/developers/docs/resources/channel#embed-object) for more details)
    * @property {MessageMentionOptions} [allowedMentions] Which mentions should be parsed from the message content
    * (see [here](https://discord.com/developers/docs/resources/channel#allowed-mentions-object) for more details)
@@ -84,7 +75,6 @@ class TextBasedChannel {
    * @property {Array<(MessageActionRow|MessageActionRowOptions)>} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {MessageAttachment[]} [attachments] Attachments to send in the message
-   * @property {boolean} [usingNewAttachmentAPI] Whether to use the new attachment API (`channels/:id/attachments`)
    */
 
   /**
@@ -168,39 +158,195 @@ class TextBasedChannel {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = await options.resolveData();
+      messagePayload = options.resolveData();
     } else {
-      messagePayload = await MessagePayload.create(this, options).resolveData();
+      messagePayload = MessagePayload.create(this, options).resolveData();
     }
 
-    let { data, files } = await messagePayload.resolveFiles();
-
-    if (typeof options == 'object' && typeof options.usingNewAttachmentAPI !== 'boolean') {
-      options.usingNewAttachmentAPI = this.client.options.usingNewAttachmentAPI;
-    }
-
-    if (options?.usingNewAttachmentAPI === true) {
-      const attachments = await getAttachments(this.client, this.id, ...files);
-      const requestPromises = attachments.map(async attachment => {
-        await uploadFile(files[attachment.id].file, attachment.upload_url);
-        return {
-          id: attachment.id,
-          filename: files[attachment.id].name,
-          uploaded_filename: attachment.upload_filename,
-          description: files[attachment.id].description,
-          duration_secs: files[attachment.id].duration_secs,
-          waveform: files[attachment.id].waveform,
-        };
-      });
-      const attachmentsData = await Promise.all(requestPromises);
-      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      data.attachments = attachmentsData;
-      files = [];
-    }
-
-    const d = await this.client.api.channels[this.id].messages.post({ data, files });
+    const { data, files } = await messagePayload.resolveFiles();
+    // New API
+    const attachments = await Util.getUploadURL(this.client, this.id, files);
+    const requestPromises = attachments.map(async attachment => {
+      await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
+      return {
+        id: attachment.id,
+        filename: files[attachment.id].name,
+        uploaded_filename: attachment.upload_filename,
+        description: files[attachment.id].description,
+        duration_secs: files[attachment.id].duration_secs,
+        waveform: files[attachment.id].waveform,
+      };
+    });
+    const attachmentsData = await Promise.all(requestPromises);
+    attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    data.attachments = attachmentsData;
+    // Empty Files
+    const d = await this.client.api.channels[this.id].messages.post({ data });
 
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
+  }
+
+  searchInteraction() {
+    // Support Slash / ContextMenu
+    // API https://canary.discord.com/api/v9/guilds/:id/application-command-index // Guild
+    //     https://canary.discord.com/api/v9/channels/:id/application-command-index // DM Channel
+    // Updated: 07/01/2023
+    return this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id][
+      'application-command-index'
+    ].get();
+  }
+
+  async sendSlash(botOrApplicationId, commandNameString, ...args) {
+    // Parse commandName /role add user
+    const cmd = commandNameString.trim().split(' ');
+    // Ex: role add user => [role, add, user]
+    // Parse:               name, subGr, sub
+    const commandName = validateName(cmd[0]);
+    // Parse: role
+    const sub = cmd.slice(1);
+    // Parse: [add, user]
+    for (let i = 0; i < sub.length; i++) {
+      if (sub.length > 2) {
+        throw new Error('INVALID_COMMAND_NAME', cmd);
+      }
+      validateName(sub[i]);
+    }
+    // Search all
+    const data = await this.searchInteraction();
+    // Find command...
+    const filterCommand = data.application_commands.filter(obj =>
+      // Filter: name | name_default
+      [obj.name, obj.name_default].includes(commandName),
+    );
+    // Filter Bot
+    botOrApplicationId = this.client.users.resolveId(botOrApplicationId);
+    const application = data.applications.find(
+      obj => obj.id == botOrApplicationId || obj.bot?.id == botOrApplicationId,
+    );
+    // Find Command with application
+    const command = filterCommand.find(command => command.application_id == application.id);
+
+    args = args.flat(2);
+    let optionFormat = [];
+    let attachments = [];
+    let optionsMaxdepth, subGroup, subCommand;
+    if (sub.length == 2) {
+      // Subcommand Group > Subcommand
+      // Find Sub group
+      subGroup = command.options.find(
+        obj =>
+          obj.type == ApplicationCommandOptionTypes.SUB_COMMAND_GROUP && [obj.name, obj.name_default].includes(sub[0]),
+      );
+      if (!subGroup) throw new Error('SLASH_COMMAND_SUB_COMMAND_GROUP_INVALID', sub[0]);
+      // Find Sub
+      subCommand = subGroup.options.find(
+        obj => obj.type == ApplicationCommandOptionTypes.SUB_COMMAND && [obj.name, obj.name_default].includes(sub[1]),
+      );
+      if (!subCommand) throw new Error('SLASH_COMMAND_SUB_COMMAND_INVALID', sub[1]);
+      // Options
+      optionsMaxdepth = subCommand.options;
+    } else if (sub.length == 1) {
+      // Subcommand
+      subCommand = command.options.find(
+        obj => obj.type == ApplicationCommandOptionTypes.SUB_COMMAND && [obj.name, obj.name_default].includes(sub[0]),
+      );
+      if (!subCommand) throw new Error('SLASH_COMMAND_SUB_COMMAND_INVALID', sub[0]);
+      // Options
+      optionsMaxdepth = subCommand.options;
+    } else {
+      optionsMaxdepth = command.options;
+    }
+    const valueRequired = optionsMaxdepth?.filter(o => o.required).length || 0;
+    for (let i = 0; i < Math.min(args.length, optionsMaxdepth?.length || 0); i++) {
+      const optionInput = optionsMaxdepth[i];
+      const value = args[i];
+      const parseData = await parseOption(
+        this.client,
+        optionInput,
+        value,
+        optionFormat,
+        attachments,
+        command,
+        application.id,
+        this.guild?.id,
+        this.id,
+        subGroup,
+        subCommand,
+      );
+      optionFormat = parseData.optionFormat;
+      attachments = parseData.attachments;
+    }
+    if (valueRequired > args.length) {
+      throw new Error('SLASH_COMMAND_REQUIRED_OPTIONS_MISSING', valueRequired, optionFormat.length);
+    }
+    // Post
+    let postData;
+    if (subGroup) {
+      postData = [
+        {
+          type: ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+          name: subGroup.name,
+          options: [
+            {
+              type: ApplicationCommandOptionTypes.SUB_COMMAND,
+              name: subCommand.name,
+              options: optionFormat,
+            },
+          ],
+        },
+      ];
+    } else if (subCommand) {
+      postData = [
+        {
+          type: ApplicationCommandOptionTypes.SUB_COMMAND,
+          name: subCommand.name,
+          options: optionFormat,
+        },
+      ];
+    } else {
+      postData = optionFormat;
+    }
+    const nonce = SnowflakeUtil.generate();
+    const body = createPostData(
+      this.client,
+      false,
+      application.id,
+      nonce,
+      this.guild?.id,
+      Boolean(command.guild_id),
+      this.id,
+      command.version,
+      command.id,
+      command.name_default || command.name,
+      command.type,
+      postData,
+      attachments,
+    );
+    this.client.api.interactions.post({
+      data: body,
+      usePayloadJSON: true,
+    });
+    return new Promise((resolve, reject) => {
+      const timeoutMs = 5_000;
+      // Waiting for MsgCreate / ModalCreate
+      const handler = data => {
+        if (data.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        resolve(data);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_FAILED'));
+      }, timeoutMs).unref();
+      this.client.incrementMaxListeners();
+      this.client.on(Events.MESSAGE_CREATE, handler);
+      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
+    });
   }
 
   /**
@@ -262,101 +408,6 @@ class TextBasedChannel {
   }
 
   /**
-   * Creates a component interaction collector.
-   * @param {MessageComponentCollectorOptions} [options={}] Options to send to the collector
-   * @returns {InteractionCollector}
-   * @example
-   * // Create a button interaction collector
-   * const filter = (interaction) => interaction.customId === 'button' && interaction.user.id === 'someId';
-   * const collector = channel.createMessageComponentCollector({ filter, time: 15_000 });
-   * collector.on('collect', i => console.log(`Collected ${i.customId}`));
-   * collector.on('end', collected => console.log(`Collected ${collected.size} items`));
-   */
-  createMessageComponentCollector(options = {}) {
-    return new InteractionCollector(this.client, {
-      ...options,
-      interactionType: InteractionTypes.MESSAGE_COMPONENT,
-      channel: this,
-    });
-  }
-
-  /**
-   * Collects a single component interaction that passes the filter.
-   * The Promise will reject if the time expires.
-   * @param {AwaitMessageComponentOptions} [options={}] Options to pass to the internal collector
-   * @returns {Promise<MessageComponentInteraction>}
-   * @example
-   * // Collect a message component interaction
-   * const filter = (interaction) => interaction.customId === 'button' && interaction.user.id === 'someId';
-   * channel.awaitMessageComponent({ filter, time: 15_000 })
-   *   .then(interaction => console.log(`${interaction.customId} was clicked!`))
-   *   .catch(console.error);
-   */
-  awaitMessageComponent(options = {}) {
-    const _options = { ...options, max: 1 };
-    return new Promise((resolve, reject) => {
-      const collector = this.createMessageComponentCollector(_options);
-      collector.once('end', (interactions, reason) => {
-        const interaction = interactions.first();
-        if (interaction) resolve(interaction);
-        else reject(new Error('INTERACTION_COLLECTOR_ERROR', reason));
-      });
-    });
-  }
-
-  /**
-   * Bulk deletes given messages that are newer than two weeks.
-   * @param {Collection<Snowflake, Message>|MessageResolvable[]|number} messages
-   * Messages or number of messages to delete
-   * @param {boolean} [filterOld=false] Filter messages to remove those which are older than two weeks automatically
-   * @returns {Promise<Collection<Snowflake, Message|undefined>>} Returns the deleted messages
-   * @example
-   * // Bulk delete messages
-   * channel.bulkDelete(5)
-   *   .then(messages => console.log(`Bulk deleted ${messages.size} messages`))
-   *   .catch(console.error);
-   */
-  async bulkDelete(messages, filterOld = false) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
-    if (Array.isArray(messages) || messages instanceof Collection) {
-      let messageIds = messages instanceof Collection ? [...messages.keys()] : messages.map(m => m.id ?? m);
-      if (filterOld) {
-        messageIds = messageIds.filter(id => Date.now() - SnowflakeUtil.timestampFrom(id) < MaxBulkDeletableMessageAge);
-      }
-      if (messageIds.length === 0) return new Collection();
-      if (messageIds.length === 1) {
-        await this.client.api.channels(this.id).messages(messageIds[0]).delete();
-        const message = this.client.actions.MessageDelete.getMessage(
-          {
-            message_id: messageIds[0],
-          },
-          this,
-        );
-        return message ? new Collection([[message.id, message]]) : new Collection();
-      }
-      await this.client.api.channels[this.id].messages['bulk-delete'].post({ data: { messages: messageIds } });
-      return messageIds.reduce(
-        (col, id) =>
-          col.set(
-            id,
-            this.client.actions.MessageDeleteBulk.getMessage(
-              {
-                message_id: id,
-              },
-              this,
-            ),
-          ),
-        new Collection(),
-      );
-    }
-    if (!isNaN(messages)) {
-      const msgs = await this.messages.fetch({ limit: messages });
-      return this.bulkDelete(msgs, filterOld);
-    }
-    throw new TypeError('MESSAGE_BULK_DELETE_TYPE');
-  }
-
-  /**
    * Fetches all webhooks for the channel.
    * @returns {Promise<Collection<Snowflake, Webhook>>}
    * @example
@@ -414,142 +465,21 @@ class TextBasedChannel {
     return this.edit({ nsfw }, reason);
   }
 
-  /**
-   * Search Slash Command (return raw data)
-   * @param {Snowflake} applicationId Application ID
-   * @param {?ApplicationCommandType} type Command Type
-   * @returns {Object}
-   */
-  searchInteraction(applicationId, type = 'CHAT_INPUT') {
-    switch (type) {
-      case 'USER':
-      case 2:
-        type = 2;
-        break;
-      case 'MESSAGE':
-      case 3:
-        type = 3;
-        break;
-      default:
-        type = 1;
-        break;
-    }
-    return this.client.api.channels[this.id]['application-commands'].search.get({
-      query: {
-        type,
-        application_id: applicationId,
-      },
-    });
-  }
-
-  /**
-   * Send Slash to this channel
-   * @param {UserResolvable} bot Bot user (BotID, not applicationID)
-   * @param {string} commandString Command name (and sub / group formats)
-   * @param {...?any|any[]} args Command arguments
-   * @returns {Promise<InteractionResponse>}
-   * @example
-   * // Send a basic slash
-   * channel.sendSlash('botid', 'ping')
-   *   .then(console.log)
-   *   .catch(console.error);
-   * @example
-   * // Send a remote file
-   * channel.sendSlash('botid', 'emoji upload', 'https://cdn.discordapp.com/icons/222078108977594368/6e1019b3179d71046e463a75915e7244.png?size=2048', 'test')
-   *   .then(console.log)
-   *   .catch(console.error);
-   * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md}
-   */
-  async sendSlash(bot, commandString, ...args) {
-    const perms =
-      this.type != 'DM'
-        ? this.permissionsFor(this.client.user).toArray()
-        : ['USE_APPLICATION_COMMANDS', `${this.recipient.relationships == 'BLOCKED' ? '' : 'SEND_MESSAGES'}`];
-    if (!perms.includes('SEND_MESSAGES')) {
-      throw new Error(
-        'INTERACTION_SEND_FAILURE',
-        `Cannot send Slash to ${this.toString()} ${
-          this.recipient ? 'because bot has been blocked' : 'due to missing SEND_MESSAGES permission'
-        }`,
-      );
-    }
-    if (!perms.includes('USE_APPLICATION_COMMANDS')) {
-      throw new Error(
-        'INTERACTION_SEND_FAILURE',
-        `Cannot send Slash to ${this.toString()} due to missing USE_APPLICATION_COMMANDS permission`,
-      );
-    }
-    args = args.flat(2);
-    const cmd = commandString.trim().split(' ');
-    // Validate CommandName
-    const commandName = validateName(cmd[0]);
-    const sub = cmd.slice(1);
-    for (let i = 0; i < sub.length; i++) {
-      if (sub.length > 2) {
-        throw new Error('INVALID_COMMAND_NAME', cmd);
-      }
-      validateName(sub[i]);
-    }
-    if (!bot) throw new Error('MUST_SPECIFY_BOT');
-    const botId = this.client.users.resolveId(bot);
-    const user = await this.client.users.fetch(botId).catch(() => {});
-    if (!user || !user.bot || !user.application) {
-      throw new Error('botId is not a bot or does not have an application slash command');
-    }
-    if (user._partial) await user.getProfile().catch(() => {});
-    if (!commandName || typeof commandName !== 'string') throw new Error('Command name is required');
-    const API =
-      this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id]['application-command-index'];
-    const data = await API.get();
-    for (const command of data.application_commands) {
-      if (command.type !== 1) continue;
-      if (user.id == command.application_id || user.application.id == command.application_id) {
-        user.application?.commands?._add(command, true);
-      }
-    }
-    // Remove
-    const commandTarget = user.application?.commands?.cache.find(
-      c => c.name === commandName && c.type === 'CHAT_INPUT',
-    );
-    if (!commandTarget) {
-      throw new Error(
-        'INTERACTION_SEND_FAILURE',
-        `SlashCommand ${commandName} is not found (With search)\nDebug:\n+ botId: ${botId} (ApplicationId: ${
-          user.application?.id
-        })\n+ args: ${args.join(' | ') || null}`,
-      );
-    }
-    return commandTarget.sendSlashCommand(
-      new (Message())(this.client, {
-        channel_id: this.id,
-        guild_id: this.guild?.id || null,
-        author: this.client.user,
-        content: '',
-        id: this.client.user.id,
-      }),
-      sub && sub.length > 0 ? sub : [],
-      args && args.length ? args : [],
-    );
-  }
-
   static applyToClass(structure, full = false, ignore = []) {
     const props = ['send'];
     if (full) {
       props.push(
+        'sendSlash',
+        'searchInteraction',
         'lastMessage',
         'lastPinAt',
-        'bulkDelete',
         'sendTyping',
         'createMessageCollector',
         'awaitMessages',
-        'createMessageComponentCollector',
-        'awaitMessageComponent',
         'fetchWebhooks',
         'createWebhook',
         'setRateLimitPerUser',
         'setNSFW',
-        'sendSlash',
-        'searchInteraction',
       );
     }
     for (const prop of props) {
@@ -567,3 +497,225 @@ module.exports = TextBasedChannel;
 
 // Fixes Circular
 const MessageManager = require('../../managers/MessageManager');
+
+// Utils
+function parseChoices(parent, list_choices, value) {
+  if (value !== undefined) {
+    if (Array.isArray(list_choices) && list_choices.length) {
+      const choice = list_choices.find(c => [c.name, c.value].includes(value));
+      if (choice) {
+        return choice.value;
+      } else {
+        throw new Error('INVALID_SLASH_COMMAND_CHOICES', parent, value);
+      }
+    } else {
+      return value;
+    }
+  } else {
+    return undefined;
+  }
+}
+
+async function addDataFromAttachment(value, client, channelId, attachments) {
+  value = await MessagePayload.resolveFile(value);
+  if (!value?.file) {
+    throw new TypeError('The attachment data must be a BufferResolvable or Stream or FileOptions of MessageAttachment');
+  }
+  const data = await Util.getUploadURL(client, channelId, [value]);
+  await Util.uploadFile(value.file, data[0].upload_url);
+  const id = attachments.length;
+  attachments.push({
+    id,
+    filename: value.name,
+    uploaded_filename: data[0].upload_filename,
+  });
+  return {
+    id,
+    attachments,
+  };
+}
+
+async function parseOption(
+  client,
+  optionCommand,
+  value,
+  optionFormat,
+  attachments,
+  command,
+  applicationId,
+  guildId,
+  channelId,
+  subGroup,
+  subCommand,
+) {
+  const data = {
+    type: optionCommand.type,
+    name: optionCommand.name,
+  };
+  if (value !== undefined) {
+    switch (optionCommand.type) {
+      case ApplicationCommandOptionTypes.BOOLEAN:
+      case 'BOOLEAN': {
+        data.value = Boolean(value);
+        break;
+      }
+      case ApplicationCommandOptionTypes.INTEGER:
+      case 'INTEGER': {
+        data.value = Number(value);
+        break;
+      }
+      case ApplicationCommandOptionTypes.ATTACHMENT:
+      case 'ATTACHMENT': {
+        const parseData = await addDataFromAttachment(value, client, channelId, attachments);
+        data.value = parseData.id;
+        attachments = parseData.attachments;
+        break;
+      }
+      case ApplicationCommandOptionTypes.SUB_COMMAND_GROUP:
+      case 'SUB_COMMAND_GROUP': {
+        break;
+      }
+      default: {
+        value = parseChoices(optionCommand.name, optionCommand.choices, value);
+        if (optionCommand.autocomplete) {
+          const nonce = SnowflakeUtil.generate();
+          // Post
+          let postData;
+          if (subGroup) {
+            postData = [
+              {
+                type: ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+                name: subGroup.name,
+                options: [
+                  {
+                    type: ApplicationCommandOptionTypes.SUB_COMMAND,
+                    name: subCommand.name,
+                    options: [
+                      {
+                        type: optionCommand.type,
+                        name: optionCommand.name,
+                        value,
+                        focused: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ];
+          } else if (subCommand) {
+            postData = [
+              {
+                type: ApplicationCommandOptionTypes.SUB_COMMAND,
+                name: subCommand.name,
+                options: [
+                  {
+                    type: optionCommand.type,
+                    name: optionCommand.name,
+                    value,
+                    focused: true,
+                  },
+                ],
+              },
+            ];
+          } else {
+            postData = [
+              {
+                type: optionCommand.type,
+                name: optionCommand.name,
+                value,
+                focused: true,
+              },
+            ];
+          }
+          const body = createPostData(
+            client,
+            true,
+            applicationId,
+            nonce,
+            guildId,
+            Boolean(command.guild_id),
+            channelId,
+            command.version,
+            command.id,
+            command.name_default || command.name,
+            command.type,
+            postData,
+            [],
+          );
+          await client.api.interactions.post({
+            data: body,
+          });
+          data.value = await awaitAutocomplete(client, nonce, value);
+        } else {
+          data.value = value;
+        }
+      }
+    }
+    optionFormat.push(data);
+  }
+  return {
+    optionFormat,
+    attachments,
+  };
+}
+
+function awaitAutocomplete(client, nonce, defaultValue) {
+  return new Promise(resolve => {
+    const handler = data => {
+      if (data.t !== 'APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE') return;
+      if (data.d?.nonce !== nonce) return;
+      clearTimeout(timeout);
+      client.removeListener(Events.UNHANDLED_PACKET, handler);
+      client.decrementMaxListeners();
+      if (data.d.choices.length >= 1) {
+        resolve(data.d.choices[0].value);
+      } else {
+        resolve(defaultValue);
+      }
+    };
+    const timeout = setTimeout(() => {
+      client.removeListener(Events.UNHANDLED_PACKET, handler);
+      client.decrementMaxListeners();
+      resolve(defaultValue);
+    }, 5_000).unref();
+    client.incrementMaxListeners();
+    client.on(Events.UNHANDLED_PACKET, handler);
+  });
+}
+
+function createPostData(
+  client,
+  isAutocomplete = false,
+  applicationId,
+  nonce,
+  guildId,
+  isGuildCommand,
+  channelId,
+  commandVersion,
+  commandId,
+  commandName,
+  commandType,
+  postData,
+  attachments = [],
+) {
+  const data = {
+    type: isAutocomplete ? InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE : InteractionTypes.APPLICATION_COMMAND,
+    application_id: applicationId,
+    guild_id: guildId,
+    channel_id: channelId,
+    session_id: client.ws.shards.first()?.sessionId,
+    data: {
+      version: commandVersion,
+      id: commandId,
+      name: commandName,
+      type: commandType,
+      options: postData,
+      attachments: attachments,
+    },
+    nonce,
+  };
+  if (isGuildCommand) {
+    data.data.guild_id = guildId;
+  }
+  return data;
+}
