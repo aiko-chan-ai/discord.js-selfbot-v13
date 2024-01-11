@@ -1,12 +1,10 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { joinVoiceChannel, entersState, VoiceConnectionStatus } = require('@discordjs/voice');
 const { Channel } = require('./Channel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
-const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
-const { Status, Opcodes } = require('../util/Constants');
+const { Opcodes, Status } = require('../util/Constants');
 
 /**
  * Represents a direct message channel between two users.
@@ -25,12 +23,6 @@ class DMChannel extends Channel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
-
-    /**
-     * A manager of the interactions sent to this channel
-     * @type {InteractionManager}
-     */
-    this.interactions = new InteractionManager(this);
   }
 
   _patch(data) {
@@ -65,7 +57,7 @@ class DMChannel extends Channel {
     if ('is_message_request' in data) {
       /**
        * Whether the channel is a message request
-       * @type {boolean}
+       * @type {?boolean}
        */
       this.messageRequest = data.is_message_request;
     }
@@ -138,78 +130,6 @@ class DMChannel extends Channel {
     return this.recipient.toString();
   }
 
-  // These are here only for documentation purposes - they are implemented by TextBasedChannel
-  /* eslint-disable no-empty-function */
-  get lastMessage() {}
-  get lastPinAt() {}
-  send() {}
-  sendTyping() {}
-  createMessageCollector() {}
-  awaitMessages() {}
-  createMessageComponentCollector() {}
-  awaitMessageComponent() {}
-  sendSlash() {}
-  searchInteraction() {}
-  // Doesn't work on DM channels; bulkDelete() {}
-  // Doesn't work on DM channels; setRateLimitPerUser() {}
-  // Doesn't work on DM channels; setNSFW() {}
-  // Testing feature: Call
-  // URL: https://discord.com/api/v9/channels/:DMchannelId/call/ring
-  /**
-   * Call this DMChannel. Return discordjs/voice VoiceConnection
-   * @param {CallOptions} options Options for the call
-   * @returns {Promise<VoiceConnection>}
-   */
-  call(options = {}) {
-    options = Object.assign(
-      {
-        ring: true,
-      },
-      options || {},
-    );
-    return new Promise((resolve, reject) => {
-      if (!this.client.options.patchVoice) {
-        reject(
-          new Error(
-            'VOICE_NOT_PATCHED',
-            'Enable voice patching in client options\nhttps://discordjs-self-v13.netlify.app/#/docs/docs/main/typedef/ClientOptions',
-          ),
-        );
-      } else {
-        if (options.ring) {
-          this.ring();
-        }
-        const connection = joinVoiceChannel({
-          channelId: this.id,
-          guildId: null,
-          adapterCreator: this.voiceAdapterCreator,
-          selfDeaf: options.selfDeaf ?? false,
-          selfMute: options.selfMute ?? false,
-        });
-        entersState(connection, VoiceConnectionStatus.Ready, 30000)
-          .then(connection => {
-            resolve(connection);
-          })
-          .catch(err => {
-            connection.destroy();
-            reject(err);
-          });
-      }
-    });
-  }
-
-  /**
-   * Ring the user's phone / PC (call)
-   * @returns {Promise<any>}
-   */
-  ring() {
-    return this.client.api.channels(this.id).call.ring.post({
-      data: {
-        recipients: null,
-      },
-    });
-  }
-
   /**
    * Sync VoiceState of this DMChannel.
    * @returns {undefined}
@@ -222,6 +142,19 @@ class DMChannel extends Channel {
       },
     });
   }
+
+  /**
+   * Ring the user's phone / PC (call)
+   * @returns {Promise<void>}
+   */
+  ring() {
+    return this.client.api.channels(this.id).call.ring.post({
+      data: {
+        recipients: null,
+      },
+    });
+  }
+
   /**
    * The user in this voice-based channel
    * @type {Collection<Snowflake, User>}
@@ -236,18 +169,7 @@ class DMChannel extends Channel {
     }
     return coll;
   }
-  /**
-   * Get connection to current call
-   * @type {?VoiceConnection}
-   * @readonly
-   */
-  get voiceConnection() {
-    const check = this.client.callVoice?.joinConfig?.channelId == this.id;
-    if (check) {
-      return this.client.callVoice;
-    }
-    return null;
-  }
+
   /**
    * Get current shard
    * @type {WebSocketShard}
@@ -256,6 +178,7 @@ class DMChannel extends Channel {
   get shard() {
     return this.client.ws.shards.first();
   }
+
   /**
    * The voice state adapter for this client that can be used with @discordjs/voice to play audio in DM / Group DM channels.
    * @type {?Function}
@@ -276,14 +199,19 @@ class DMChannel extends Channel {
       };
     };
   }
+
+  // These are here only for documentation purposes - they are implemented by TextBasedChannel
+  /* eslint-disable no-empty-function */
+  get lastMessage() {}
+  get lastPinAt() {}
+  send() {}
+  sendTyping() {}
+  createMessageCollector() {}
+  awaitMessages() {}
+  // Doesn't work on DM channels; setRateLimitPerUser() {}
+  // Doesn't work on DM channels; setNSFW() {}
 }
 
-TextBasedChannel.applyToClass(DMChannel, true, [
-  'bulkDelete',
-  'fetchWebhooks',
-  'createWebhook',
-  'setRateLimitPerUser',
-  'setNSFW',
-]);
+TextBasedChannel.applyToClass(DMChannel, true, ['fetchWebhooks', 'createWebhook', 'setRateLimitPerUser', 'setNSFW']);
 
 module.exports = DMChannel;
