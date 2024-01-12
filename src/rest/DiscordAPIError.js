@@ -25,7 +25,7 @@ class DiscordAPIError extends Error {
 
     /**
      * HTTP error code returned by Discord
-     * @type {number | string}
+     * @type {number}
      */
     this.code = error.code;
 
@@ -34,21 +34,6 @@ class DiscordAPIError extends Error {
      * @type {number}
      */
     this.httpStatus = status;
-
-    /**
-     * @typedef {Object} Captcha
-     * @property {Array<string>} captcha_key ['message']
-     * @property {string} captcha_sitekey Captcha sitekey (hcaptcha)
-     * @property {string} captcha_service hcaptcha
-     * @property {string} [captcha_rqdata]
-     * @property {string} [captcha_rqtoken]
-     */
-
-    /**
-     * Captcha response data if the request requires a captcha
-     * @type {Captcha | null}
-     */
-    this.captcha = error?.captcha_service ? error : null;
 
     /**
      * The data associated with the request that caused this error
@@ -64,6 +49,21 @@ class DiscordAPIError extends Error {
      * @type {number}
      */
     this.retries = request.retries;
+
+    /**
+     * @typedef {Object} Captcha
+     * @property {Array<string>} captcha_key ['message']
+     * @property {string} captcha_sitekey Captcha sitekey (hcaptcha)
+     * @property {string} captcha_service hcaptcha
+     * @property {string} [captcha_rqdata]
+     * @property {string} [captcha_rqtoken]
+     */
+
+    /**
+     * Captcha response data if the request requires a captcha
+     * @type {Captcha | null}
+     */
+    this.captcha = error?.captcha_service ? error : null;
   }
 
   /**

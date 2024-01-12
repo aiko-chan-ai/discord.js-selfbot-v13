@@ -2,13 +2,12 @@
 
 const { setTimeout } = require('node:timers');
 const { setTimeout: sleep } = require('node:timers/promises');
-const { inspect } = require('util');
 const { AsyncQueue } = require('@sapphire/async-queue');
 const DiscordAPIError = require('./DiscordAPIError');
 const HTTPError = require('./HTTPError');
 const RateLimitError = require('./RateLimitError');
 const {
-  Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST, CAPTCHA_REQUIRED },
+  Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
 
 const captchaMessage = [
@@ -23,7 +22,7 @@ const captchaMessage = [
 
 function parseResponse(res) {
   if (res.headers.get('content-type')?.startsWith('application/json')) return res.json();
-  return res.arrayBuffer(); // Cre: TheDevYellowy
+  return res.arrayBuffer();
 }
 
 function getAPIOffset(serverDate) {
@@ -354,18 +353,9 @@ class RequestHandler {
       let data;
       try {
         data = await parseResponse(res);
-        if (data?.captcha_service) {
-          /**
-           * Emitted when a request is blocked by a captcha
-           * @event Client#captchaRequired
-           * @param {Request} request The request that was blocked
-           * @param {Captcha} data The data returned by Discord
-           */
-          this.manager.client.emit(CAPTCHA_REQUIRED, request, data);
-        }
         if (
           data?.captcha_service &&
-          this.manager.client.options.captchaService &&
+          typeof this.manager.client.options.captchaSolver == 'function' &&
           request.retries < this.manager.client.options.captchaRetryLimit &&
           captchaMessage.some(s => data.captcha_key[0].includes(s))
         ) {
@@ -376,13 +366,14 @@ class RequestHandler {
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Info    : ${inspect(data, { depth: null })}`,
+    Sitekey : ${data.captcha_sitekey}
+    rqToken : ${data.captcha_rqtoken}`,
           );
-          const captcha = await this.manager.captchaService.solve(
-            data,
-            this.manager.client.options.http.headers['User-Agent'],
+          const captcha = await this.manager.client.options.captchaSolver(
+            data.captcha_sitekey,
+            request.fullUserAgent,
+            data.captcha_rqtoken,
           );
-          // Sleep: await this.manager.client.sleep(5_000);
           this.manager.client.emit(
             DEBUG,
             `Captcha details:
@@ -398,6 +389,7 @@ class RequestHandler {
       } catch (err) {
         throw new HTTPError(err.message, err.constructor.name, err.status, request);
       }
+
       throw new DiscordAPIError(data, res.status, request);
     }
 

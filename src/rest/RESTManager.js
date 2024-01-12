@@ -4,7 +4,6 @@ const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const APIRequest = require('./APIRequest');
 const routeBuilder = require('./APIRouter');
-const CaptchaSolver = require('./CaptchaSolver');
 const RequestHandler = require('./RequestHandler');
 const { Error } = require('../errors');
 const { Endpoints } = require('../util/Constants');
@@ -23,17 +22,6 @@ class RESTManager {
         this.handlers.sweep(handler => handler._inactive);
       }, client.options.restSweepInterval * 1_000).unref();
     }
-    this.captchaService = null;
-    this.setup();
-  }
-
-  setup() {
-    this.captchaService = new CaptchaSolver(
-      this.client.options.captchaService,
-      this.client.options.captchaKey,
-      this.client.options.captchaSolver,
-      this.client.options.captchaWithProxy ? this.client.options.proxy : '',
-    );
   }
 
   get api() {
@@ -41,16 +29,8 @@ class RESTManager {
   }
 
   getAuth() {
-    if ((this.client.token && this.client.user && this.client.user.bot) || this.client.accessToken) {
-      return `Bot ${this.client.token}`;
-    } else if (this.client.token) {
-      return this.client.token;
-    }
-    /*
-    // v13.7
     const token = this.client.token ?? this.client.accessToken;
-    if (token) return `Bot ${token}`;
-     */
+    if (token) return token?.replace(/Bot /g, '');
     throw new Error('TOKEN_MISSING');
   }
 

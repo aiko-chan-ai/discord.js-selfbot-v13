@@ -1,13 +1,14 @@
 'use strict';
 
 const Buffer = require('node:buffer').Buffer;
+const http = require('node:http');
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
 const { CookieJar } = require('tough-cookie');
-const { getProxyObject } = require('../util/Util');
+const { UserAgent } = require('../util/Constants');
 
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);
@@ -23,6 +24,9 @@ class APIRequest {
     this.options = options;
     this.retries = 0;
 
+    const { userAgentSuffix } = this.client.options;
+    this.fullUserAgent = `${UserAgent}${userAgentSuffix.length ? `, ${userAgentSuffix.join(', ')}` : ''}`;
+
     let queryString = '';
     if (options.query) {
       const query = Object.entries(options.query)
@@ -33,13 +37,11 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  make(captchaKey = undefined, captchaRqtoken = undefined) {
-    if (agent === null) {
-      if (typeof this.client.options.proxy === 'string' && this.client.options.proxy.length > 0) {
-        agent = getProxyObject(this.client.options.proxy);
-      } else if (this.client.options.http.agent instanceof https.Agent) {
+  make(captchaKey, captchaRqToken) {
+    if (!agent) {
+      if (this.client.options.http.agent instanceof http.Agent) {
+        this.client.options.http.agent.keepAlive = true;
         agent = this.client.options.http.agent;
-        agent.keepAlive = true;
       } else {
         agent = new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
       }
@@ -56,7 +58,7 @@ class APIRequest {
       authority: 'discord.com',
       accept: '*/*',
       'accept-language': 'en-US',
-      'sec-ch-ua': `"Not?A_Brand";v="8", "Chromium";v="108"`,
+      'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
@@ -65,18 +67,19 @@ class APIRequest {
       'x-debug-options': 'bugReporterEnabled',
       'x-discord-locale': 'en-US',
       'x-discord-timezone': 'Asia/Saigon',
-      'x-super-properties': `${Buffer.from(
-        this.client.options.jsonTransformer(this.client.options.ws.properties),
-        'ascii',
-      ).toString('base64')}`,
+      'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
+        'base64',
+      )}`,
       Referer: 'https://discord.com/channels/@me',
       origin: 'https://discord.com',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'User-Agent': this.fullUserAgent,
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
     if (this.options.reason) headers['X-Audit-Log-Reason'] = encodeURIComponent(this.options.reason);
     if (this.options.headers) headers = Object.assign(headers, this.options.headers);
+
     // Delete all headers if undefined
     for (const [key, value] of Object.entries(headers)) {
       if (value === undefined) delete headers[key];
@@ -86,9 +89,12 @@ class APIRequest {
         'User-Agent': this.client.options.http.headers['User-Agent'],
       };
     }
-    if (captchaKey && typeof captchaKey == 'string') {
-      headers['x-captcha-key'] = captchaKey;
-      if (captchaRqtoken) headers['x-captcha-rqtoken'] = captchaRqtoken;
+
+    // Some options
+    if (this.options.DiscordContext) {
+      headers['X-Context-Properties'] = Buffer.from(JSON.stringify(this.options.DiscordContext), 'utf8').toString(
+        'base64',
+      );
     }
 
     let body;
@@ -107,19 +113,21 @@ class APIRequest {
       headers = Object.assign(headers, body.getHeaders());
       // eslint-disable-next-line eqeqeq
     } else if (this.options.data != null) {
-      if (this.options.useFormDataPayloadJSON) {
+      if (this.options.usePayloadJSON) {
         body = new FormData();
         body.append('payload_json', JSON.stringify(this.options.data));
-        headers = Object.assign(headers, body.getHeaders());
       } else {
         body = JSON.stringify(this.options.data);
         headers['Content-Type'] = 'application/json';
       }
     }
 
+    // Captcha
+    if (captchaKey && typeof captchaKey == 'string') headers['X-Captcha-Key'] = captchaKey;
+    if (captchaRqToken && typeof captchaRqToken == 'string') headers['X-Captcha-Rqtoken'] = captchaRqToken;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
-
     return fetch(url, {
       method: this.method,
       headers,
