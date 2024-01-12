@@ -369,11 +369,7 @@ class RequestHandler {
     Sitekey : ${data.captcha_sitekey}
     rqToken : ${data.captcha_rqtoken}`,
           );
-          const captcha = await this.manager.client.options.captchaSolver(
-            data.captcha_sitekey,
-            request.fullUserAgent,
-            data.captcha_rqtoken,
-          );
+          const captcha = await this.manager.client.options.captchaSolver(data, request.fullUserAgent);
           this.manager.client.emit(
             DEBUG,
             `Captcha details:
