@@ -18,6 +18,7 @@ const captchaMessage = [
   'invalid-response',
   'You need to update your app',
   'response-already-used-error',
+  'rqkey-mismatch',
 ];
 
 function parseResponse(res) {
