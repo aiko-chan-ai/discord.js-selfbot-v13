@@ -3,6 +3,7 @@
 module.exports = (client, { d: data }) => {
   let msg;
   switch (data.required_action) {
+    case undefined:
     case null: {
       msg = 'All required actions have been completed.';
       break;
