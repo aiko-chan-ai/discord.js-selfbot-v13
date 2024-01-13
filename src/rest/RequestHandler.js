@@ -376,7 +376,7 @@ class RequestHandler {
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Key     : ${captcha ? `${captcha.slice(0, 30)}...` : '[Captcha not solved]'}
+    Key     : ${captcha ? `${captcha.slice(0, 120)}...` : '[Captcha not solved]'}
     rqToken : ${data.captcha_rqtoken}`,
           );
           request.retries++;
