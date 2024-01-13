@@ -60,12 +60,11 @@ class UserManager extends CachedManager {
       data: {
         recipients: [id],
       },
-      headers: {
-        'X-Context-Properties': 'e30=', // {}
-      },
+      DiscordContext: {},
     });
+
     const dm_channel = await this.client.channels._add(data, null, { cache });
-    await dm_channel.sync();
+    dm_channel.sync();
     return dm_channel;
   }
 
@@ -87,10 +86,9 @@ class UserManager extends CachedManager {
    * Obtains a user from Discord, or the user cache if it's already available.
    * @param {UserResolvable} user The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @param {?Snowflake} [options.guildId] The guild ID to fetch the member for
    * @returns {Promise<User>}
    */
-  async fetch(user, { cache = true, force = false, guildId = null } = {}) {
+  async fetch(user, { cache = true, force = false } = {}) {
     const id = this.resolveId(user);
     if (!force) {
       const existing = this.cache.get(id);
@@ -98,9 +96,7 @@ class UserManager extends CachedManager {
     }
 
     const data = await this.client.api.users(id).get();
-    const userObject = this._add(data, cache);
-    await userObject.getProfile(guildId ?? null).catch(() => {});
-    return userObject;
+    return this._add(data, cache);
   }
 
   /**
