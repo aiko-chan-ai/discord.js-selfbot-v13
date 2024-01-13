@@ -1,11 +1,11 @@
 'use strict';
 
 const EventEmitter = require('node:events');
+const http = require('node:http');
 const { setTimeout, setInterval, clearTimeout } = require('node:timers');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
-const { getProxyObject } = require('../../util/Util');
 
 const STATUS_KEYS = Object.keys(Status);
 const CONNECTION_STATE = Object.keys(WebSocket.WebSocket);
@@ -18,6 +18,7 @@ try {
 
 /**
  * Represents a Shard's WebSocket connection
+ * @extends {EventEmitter}
  */
 class WebSocketShard extends EventEmitter {
   constructor(manager, id) {
@@ -34,6 +35,13 @@ class WebSocketShard extends EventEmitter {
      * @type {number}
      */
     this.id = id;
+
+    /**
+     * The resume URL for this shard
+     * @type {?string}
+     * @private
+     */
+    this.resumeURL = null;
 
     /**
      * The current status of the shard
@@ -61,13 +69,6 @@ class WebSocketShard extends EventEmitter {
      * @private
      */
     this.sessionId = null;
-
-    /**
-     * URL to use when resuming
-     * @type {?string}
-     * @private
-     */
-    this.resumeURL = null;
 
     /**
      * The previous heartbeat ping of the shard
@@ -200,11 +201,11 @@ class WebSocketShard extends EventEmitter {
   connect() {
     const { client } = this.manager;
 
-    const gateway = this.resumeURL ?? this.manager.gateway;
-
     if (this.connection?.readyState === WebSocket.OPEN && this.status === Status.READY) {
       return Promise.resolve();
     }
+
+    const gateway = this.resumeURL ?? this.manager.gateway;
 
     return new Promise((resolve, reject) => {
       const cleanup = () => {
@@ -271,7 +272,7 @@ class WebSocketShard extends EventEmitter {
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
-    Proxy      : ${client.options.proxy || 'none'}`,
+    Agent      : ${client.options.ws.agent instanceof http.Agent}`,
       );
 
       this.status = this.status === Status.DISCONNECTED ? Status.RECONNECTING : Status.CONNECTING;
@@ -279,13 +280,11 @@ class WebSocketShard extends EventEmitter {
       this.setWsCloseTimeout(-1);
       this.connectedAt = Date.now();
 
-      let args = { handshakeTimeout: 30_000 };
-      if (client.options.proxy.length > 0) {
-        args.agent = getProxyObject(client.options.proxy);
-        this.debug(`Using proxy ${client.options.proxy}`, args);
-      }
       // Adding a handshake timeout to just make sure no zombie connection appears.
-      const ws = (this.connection = WebSocket.create(gateway, wsQuery, args));
+      const ws = (this.connection = WebSocket.create(gateway, wsQuery, {
+        handshakeTimeout: 30_000,
+        agent: client.options.ws.agent instanceof http.Agent ? client.options.ws.agent : undefined,
+      }));
       ws.onopen = this.onOpen.bind(this);
       ws.onmessage = this.onMessage.bind(this);
       ws.onerror = this.onError.bind(this);
@@ -433,11 +432,11 @@ class WebSocketShard extends EventEmitter {
          */
         this.emit(ShardEvents.READY);
 
-        this.sessionId = packet.d.session_id;
         this.resumeURL = packet.d.resume_gateway_url;
+        this.sessionId = packet.d.session_id;
         this.expectedGuilds = new Set(packet.d.guilds.filter(d => d?.unavailable == true).map(d => d.id));
         this.status = Status.WAITING_FOR_GUILDS;
-        this.debug(`[READY] Session ${this.sessionId} | ResumeURL ${this.resumeURL}`);
+        this.debug(`[READY] Session ${this.sessionId} | Resume url ${this.resumeURL}.`);
         this.lastHeartbeatAcked = true;
         this.sendHeartbeat('ReadyHeartbeat');
         break;
@@ -538,21 +537,23 @@ class WebSocketShard extends EventEmitter {
 
     const { waitGuildTimeout } = this.manager.client.options;
 
-    this.readyTimeout = setTimeout(() => {
-      this.debug(
-        `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
-          `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
-            this.expectedGuilds.size
-          }`,
-      );
+    this.readyTimeout = setTimeout(
+      () => {
+        this.debug(
+          `Shard ${hasGuildsIntent ? 'did' : 'will'} not receive any more guild packets` +
+            `${hasGuildsIntent ? ` in ${waitGuildTimeout} ms` : ''}.\nUnavailable guild count: ${
+              this.expectedGuilds.size
+            }`,
+        );
 
-      this.readyTimeout = null;
+        this.readyTimeout = null;
 
-      this.status = Status.READY;
+        this.status = Status.READY;
 
-      this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
-      // }, hasGuildsIntent && waitGuildTimeout).unref();
-    }, waitGuildTimeout).unref();
+        this.emit(ShardEvents.ALL_READY, this.expectedGuilds);
+      },
+      hasGuildsIntent ? waitGuildTimeout : 0,
+    ).unref();
   }
 
   /**
@@ -593,6 +594,7 @@ class WebSocketShard extends EventEmitter {
     }
     this.wsCloseTimeout = setTimeout(() => {
       this.setWsCloseTimeout(-1);
+
       // Check if close event was emitted.
       if (this.closeEmitted) {
         this.debug(`[WebSocket] close was already emitted, assuming the connection was closed properly.`);
@@ -656,7 +658,6 @@ class WebSocketShard extends EventEmitter {
     Sequence        : ${this.sequence}
     Connection State: ${this.connection ? CONNECTION_STATE[this.connection.readyState] : 'No Connection??'}`,
       );
-
       this.destroy({ reset: true, closeCode: 4009 });
       return;
     }
@@ -700,25 +701,24 @@ class WebSocketShard extends EventEmitter {
 
     this.status = Status.IDENTIFYING;
 
+    // Patch something
     Object.keys(client.options.ws.properties)
       .filter(k => k.startsWith('$'))
       .forEach(k => {
         client.options.ws.properties[k.slice(1)] = client.options.ws.properties[k];
         delete client.options.ws.properties[k];
       });
+
+    // Clone the identify payload and assign the token and shard info
     const d = {
-      presence: client.options.presence,
       ...client.options.ws,
       token: client.token,
     };
 
     delete d.version;
+    delete d.agent;
 
-    this.debug(
-      `[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: ${Intents.resolve(
-        client.options.intents,
-      )} 😊`,
-    );
+    this.debug(`[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: ${d.intents}`);
     this.send({ op: Opcodes.IDENTIFY, d }, true);
   }
 
@@ -815,6 +815,7 @@ class WebSocketShard extends EventEmitter {
     // Step 0: Remove all timers
     this.setHeartbeatTimer(-1);
     this.setHelloTimeout(-1);
+
     this.debug(
       `[WebSocket] Destroy: Attempting to close the WebSocket. | WS State: ${
         CONNECTION_STATE[this.connection?.readyState ?? WebSocket.CLOSED]
