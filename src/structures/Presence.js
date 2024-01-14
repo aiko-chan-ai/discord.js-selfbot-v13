@@ -91,7 +91,7 @@ class Presence extends Base {
     if ('activities' in data) {
       /**
        * The activities of this presence
-       * @type {Activity[]}
+       * @type {(Activity|CustomStatus|SpotifyRPC|RichPresence)[]}
        */
       this.activities = data.activities.map(activity => {
         if (fromClient === true) {

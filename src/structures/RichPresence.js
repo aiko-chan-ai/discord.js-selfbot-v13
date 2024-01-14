@@ -1,11 +1,8 @@
 'use strict';
+const { randomUUID } = require('node:crypto');
 const { ActivityTypes } = require('../util/Constants');
 const { resolvePartialEmoji } = require('../util/Util');
 
-// eslint-disable-next-line
-const getUUID = () =>
-  ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a => (a ^ ((Math.random() * 16) >> (a / 4))).toString(16));
-// Function check url valid (ok copilot)
 // eslint-disable-next-line
 const checkUrl = url => {
   try {
@@ -351,7 +348,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       if (!party.max || typeof party.max != 'number') throw new Error('Party must have max number');
       if (!party.current || typeof party.current != 'number') throw new Error('Party must have current');
       if (party.current > party.max) throw new Error('Party current must be less than max number');
-      if (!party.id || typeof party.id != 'string') party.id = getUUID();
+      if (!party.id || typeof party.id != 'string') party.id = randomUUID();
       this.party = {
         size: [party.current, party.max],
         id: party.id,
@@ -486,16 +483,6 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
       }
       return obj;
     }
-  }
-
-  /**
-   * Get random UUID string (Util)
-   * @returns {string}
-   */
-  static getUUID() {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a =>
-      (a ^ ((Math.random() * 16) >> (a / 4))).toString(16),
-    );
   }
 
   /**
@@ -718,5 +705,4 @@ module.exports = {
   CustomStatus,
   RichPresence,
   SpotifyRPC,
-  getUUID,
 };
