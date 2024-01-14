@@ -31,7 +31,7 @@ class MessageReaction {
     this.me = data.me || data.me_burst;
 
     /**
-     * Super reaction
+     * Is super reaction
      * @type {boolean}
      */
     this.isBurst = Boolean(data.me_burst || data.burst);

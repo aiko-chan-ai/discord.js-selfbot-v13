@@ -113,14 +113,13 @@ class ChannelManager extends CachedManager {
     }
 
     const data = await this.client.api.channels(id).get();
-    // Delete in cache
-    this._remove(id);
     return this._add(data, null, { cache, allowUnknownGuild });
   }
+
   /**
    * Create Group DM
    * @param {UserResolvable[]} recipients Array of recipients
-   * @returns {Promise<PartialGroupDMChannel>} Channel
+   * @returns {Promise<GroupDMChannel>} Channel
    */
   async createGroupDM(recipients) {
     // Check

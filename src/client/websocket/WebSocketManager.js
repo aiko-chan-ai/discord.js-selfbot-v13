@@ -126,36 +126,15 @@ class WebSocketManager extends EventEmitter {
    * @private
    */
   async connect() {
-    // eslint-disable-next-line no-unused-vars
-    const invalidToken = new Error(WSCodes[4004]);
-    /*
-    BOT
-    const {
-      url: gatewayURL,
-      shards: recommendedShards,
-      session_start_limit: sessionStartLimit,
-    } = await this.client.api.gateway.bot.get().catch(error => {
-      throw error.httpStatus === 401 ? invalidToken : error;
-    });
-    */
-
     let gatewayURL = 'wss://gateway.discord.gg';
-    const { url } = await this.client.api.gateway.get({ auth: false }).catch(() => ({ url: gatewayURL }));
-    // eslint-disable-next-line no-unused-vars
-    /*
-      .catch(error => {
-        // Never throw error :v
-        // throw error.httpStatus === 401 ? invalidToken : error;
-      });
-      */
-    if (url) gatewayURL = url;
-    const recommendedShards = 1;
-    const sessionStartLimit = {
-      total: Infinity,
-      remaining: Infinity,
-    };
+    await this.client.api.gateway
+      .get({ auth: false })
+      .then(r => (gatewayURL = r.url))
+      .catch(() => {});
 
-    const { total, remaining } = sessionStartLimit;
+    const total = Infinity;
+    const remaining = Infinity;
+    const recommendedShards = 1;
 
     this.debug(`Fetched Gateway Information
     URL: ${gatewayURL}
@@ -294,7 +273,7 @@ class WebSocketManager extends EventEmitter {
     } catch (error) {
       this.debug(`Couldn't reconnect or fetch information about the gateway. ${error}`);
       if (error.httpStatus !== 401) {
-        this.debug('Possible network error occurred. Retrying in 5s...');
+        this.debug(`Possible network error occurred. Retrying in 5s...`);
         await sleep(5_000);
         this.reconnecting = false;
         return this.reconnect();
@@ -368,11 +347,12 @@ class WebSocketManager extends EventEmitter {
       /**
        * Emitted whenever a packet isn't handled.
        * @event Client#unhandledPacket
-       * @param {Object} packet The packet (t: Event name, d: Data)
-       * @param {Number} shard The shard that received the packet (Auto = 0)
+       * @param {Object} packet The packet (t: EVENT_NAME, d: any)
+       * @param {Number} shard The shard that received the packet (Shard 0)
        */
       this.client.emit(Events.UNHANDLED_PACKET, packet, shard);
     }
+
     return true;
   }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+const { isJSONEncodable } = require('@discordjs/builders');
 const { Collection } = require('@discordjs/collection');
 const ApplicationCommandPermissionsManager = require('./ApplicationCommandPermissionsManager');
 const CachedManager = require('./CachedManager');
@@ -13,15 +14,14 @@ const Permissions = require('../util/Permissions');
  * @extends {CachedManager}
  */
 class ApplicationCommandManager extends CachedManager {
-  constructor(client, iterable, user) {
+  constructor(client, iterable) {
     super(client, ApplicationCommand, iterable);
 
     /**
      * The manager for permissions of arbitrary commands on arbitrary guilds
      * @type {ApplicationCommandPermissionsManager}
      */
-    this.permissions = new ApplicationCommandPermissionsManager(this, user);
-    this.user = user;
+    this.permissions = new ApplicationCommandPermissionsManager(this);
   }
 
   /**
@@ -43,7 +43,7 @@ class ApplicationCommandManager extends CachedManager {
    * @private
    */
   commandPath({ id, guildId } = {}) {
-    let path = this.client.api.applications(this.user.id);
+    let path = this.client.api.applications(this.client.application.id);
     if (this.guild ?? guildId) path = path.guilds(this.guild?.id ?? guildId);
     return id ? path.commands(id) : path.commands;
   }
@@ -58,7 +58,7 @@ class ApplicationCommandManager extends CachedManager {
   /* eslint-disable max-len */
   /**
    * Data that resolves to the data of an ApplicationCommand
-   * @typedef {ApplicationCommandDataResolvable|SlashCommandBuilder|ContextMenuCommandBuilder} ApplicationCommandDataResolvable
+   * @typedef {ApplicationCommandData|APIApplicationCommand|SlashCommandBuilder|ContextMenuCommandBuilder} ApplicationCommandDataResolvable
    */
   /* eslint-enable max-len */
 
@@ -94,7 +94,6 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetch(id, { guildId, cache = true, force = false, locale, withLocalizations } = {}) {
-    // Change from user.createDM to opcode (risky action)
     if (typeof id === 'object') {
       ({ guildId, cache = true, locale, withLocalizations } = id);
     } else if (id) {
@@ -102,11 +101,10 @@ class ApplicationCommandManager extends CachedManager {
         const existing = this.cache.get(id);
         if (existing) return existing;
       }
-      await this.user.createDM().catch(() => {});
       const command = await this.commandPath({ id, guildId }).get();
       return this._add(command, cache);
     }
-    await this.user.createDM().catch(() => {});
+
     const data = await this.commandPath({ guildId }).get({
       headers: {
         'X-Discord-Locale': locale,
@@ -132,7 +130,6 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async create(command, guildId) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const data = await this.commandPath({ guildId }).post({
       data: this.constructor.transformCommand(command),
     });
@@ -162,7 +159,6 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async set(commands, guildId) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const data = await this.commandPath({ guildId }).put({
       data: commands.map(c => this.constructor.transformCommand(c)),
     });
@@ -185,7 +181,6 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async edit(command, data, guildId) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
@@ -208,7 +203,6 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async delete(command, guildId) {
-    if (!this.client.user.bot) throw new Error('INVALID_USER_METHOD');
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
@@ -226,6 +220,8 @@ class ApplicationCommandManager extends CachedManager {
    * @private
    */
   static transformCommand(command) {
+    if (isJSONEncodable(command)) return command.toJSON();
+
     let default_member_permissions;
 
     if ('default_member_permissions' in command) {
@@ -240,6 +236,7 @@ class ApplicationCommandManager extends CachedManager {
           ? new Permissions(command.defaultMemberPermissions).bitfield.toString()
           : command.defaultMemberPermissions;
     }
+
     return {
       name: command.name,
       name_localizations: command.nameLocalizations ?? command.name_localizations,

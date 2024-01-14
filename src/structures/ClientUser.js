@@ -3,19 +3,24 @@
 const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const Invite = require('./Invite');
-const { Message } = require('./Message');
 const User = require('./User');
-const { Util } = require('..');
-const { Error: Error_ } = require('../errors');
-const { Opcodes, NitroType, HypeSquadType } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const PremiumUsageFlags = require('../util/PremiumUsageFlags');
 const PurchasedFlags = require('../util/PurchasedFlags');
+const Util = require('../util/Util');
+
 /**
  * Represents the logged in client's Discord user.
  * @extends {User}
  */
 class ClientUser extends User {
+  #packageName = null;
+  #intervalSamsungPresence = setInterval(() => {
+    this.client.emit('debug', `[UPDATE] Samsung Presence: ${this.#packageName}`);
+    if (!this.#packageName) return;
+    this.setSamsungActivity(this.#packageName, 'UPDATE');
+  }, 1000 * 60 * 10).unref();
+
   _patch(data) {
     super._patch(data);
 
@@ -29,7 +34,7 @@ class ClientUser extends User {
 
     if ('mfa_enabled' in data) {
       /**
-       * If the bot's {@link ClientApplication#owner Owner} has MFA enabled on their account
+       * If the bot's {@link Application#owner Owner} has MFA enabled on their account
        * @type {?boolean}
        */
       this.mfaEnabled = typeof data.mfa_enabled === 'boolean' ? data.mfa_enabled : null;
@@ -38,16 +43,6 @@ class ClientUser extends User {
     }
 
     if ('token' in data) this.client.token = data.token;
-
-    // Todo: Add (Selfbot)
-    if ('premium_type' in data) {
-      const nitro = NitroType[data.premium_type ?? 0];
-      /**
-       * Nitro type of the client user.
-       * @type {NitroType}
-       */
-      this.nitroType = nitro ?? `UNKNOWN_TYPE_${data.premium_type}`;
-    }
 
     if ('purchased_flags' in data) {
       /**
@@ -70,7 +65,7 @@ class ClientUser extends User {
        * Phone number of the client user.
        * @type {?string}
        */
-      this.phoneNumber = data.phone;
+      this.phone = data.phone;
     }
 
     if ('nsfw_allowed' in data) {
@@ -86,48 +81,35 @@ class ClientUser extends User {
        * Email address of the client user.
        * @type {?string}
        */
-      this.emailAddress = data.email;
+      this.email = data.email;
     }
 
     if ('bio' in data) {
+      /**
+       * About me (User)
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?string}
+       */
       this.bio = data.bio;
     }
 
     if ('pronouns' in data) {
+      /**
+       * Pronouns (User)
+       * <info>The user must be force fetched for this property to be present or be updated</info>
+       * @type {?string}
+       */
       this.pronouns = data.pronouns;
     }
 
-    if (!this.friendNicknames?.size) {
+    if ('premium_type' in data) {
       /**
-       * The friend nicknames cache of the client user.
-       * @type {Collection<Snowflake, string>}
-       * @private
+       * Premium types denote the level of premium a user has.
+       * @type {number}
+       * @see {@link https://discord-userdoccers.vercel.app/resources/user#premium-type}
        */
-      this.friendNicknames = new Collection();
+      this.premiumType = data.premium_type;
     }
-
-    if (!this._intervalSamsungPresence) {
-      this._intervalSamsungPresence = setInterval(() => {
-        this.client.emit('debug', `Samsung Presence: ${this._packageName}`);
-        if (!this._packageName) return;
-        this.setSamsungActivity(this._packageName, 'UPDATE');
-      }, 1000 * 60 * 10).unref();
-      // 20 minutes max
-    }
-  }
-
-  /**
-   * Patch note
-   * @param {Object} data Note data
-   * @private
-   */
-  _patchNote(data) {
-    /**
-     * The notes cache of the client user.
-     * @type {Collection<Snowflake, string>}
-     * @private
-     */
-    this.notes = data ? new Collection(Object.entries(data)) : new Collection();
   }
 
   /**
@@ -165,7 +147,6 @@ class ClientUser extends User {
    * <info>Changing usernames in Discord is heavily rate limited, with only 2 requests
    * every hour. Use this sparingly!</info>
    * @param {string} username The new username
-   * @param {string} password The password of the account
    * @returns {Promise<ClientUser>}
    * @example
    * // Set username
@@ -173,14 +154,8 @@ class ClientUser extends User {
    *   .then(user => console.log(`My new username is ${user.username}`))
    *   .catch(console.error);
    */
-  setUsername(username, password) {
-    if (!password && !this.client.password) {
-      throw new Error('A password is required to change a username.');
-    }
-    return this.edit({
-      username,
-      password: this.client.password ? this.client.password : password,
-    });
+  setUsername(username) {
+    return this.edit({ username });
   }
 
   /**
@@ -196,186 +171,6 @@ class ClientUser extends User {
   async setAvatar(avatar) {
     avatar = avatar && (await DataResolver.resolveImage(avatar));
     return this.edit({ avatar });
-  }
-  /**
-   * Sets the banner of the logged in client.
-   * @param {?(BufferResolvable|Base64Resolvable)} banner The new banner
-   * @returns {Promise<ClientUser>}
-   * @example
-   * // Set banner
-   * client.user.setBanner('./banner.png')
-   *   .then(user => console.log(`New banner set!`))
-   *   .catch(console.error);
-   */
-  async setBanner(banner) {
-    if (this.nitroType !== 'NITRO_BOOST') {
-      throw new Error('You must be a Nitro Boosted User to change your banner.');
-    }
-    banner = banner && (await DataResolver.resolveImage(banner));
-    return this.edit({ banner });
-  }
-
-  /**
-   * Set HyperSquad House
-   * @param {HypeSquadType} type
-   * * `LEAVE`: 0
-   * * `HOUSE_BRAVERY`: 1
-   * * `HOUSE_BRILLIANCE`: 2
-   * * `HOUSE_BALANCE`: 3
-   * @returns {Promise<void>}
-   * @example
-   * // Set HyperSquad HOUSE_BRAVERY
-   * client.user.setHypeSquad(1); || client.user.setHypeSquad('HOUSE_BRAVERY');
-   * // Leave
-   * client.user.setHypeSquad(0);
-   */
-  async setHypeSquad(type) {
-    const id = typeof type === 'string' ? HypeSquadType[type] : type;
-    if (!id && id !== 0) throw new Error('Invalid HypeSquad type.');
-    if (id !== 0) {
-      const data = await this.client.api.hypesquad.online.post({
-        data: { house_id: id },
-      });
-      return data;
-    } else {
-      const data = await this.client.api.hypesquad.online.delete();
-      return data;
-    }
-  }
-
-  /**
-   * Set Accent color
-   * @param {ColorResolvable} color Color to set
-   * @returns {Promise<ClientUser>}
-   */
-  setAccentColor(color = null) {
-    return this.edit({ accent_color: color ? Util.resolveColor(color) : null });
-  }
-
-  /**
-   * Set discriminator
-   * @param {User.discriminator} discriminator It is #1234
-   * @param {string} password The password of the account
-   * @returns {Promise<ClientUser>}
-   */
-  setDiscriminator(discriminator, password) {
-    if (this.nitroType == 'NONE') throw new Error('You must be a Nitro User to change your discriminator.');
-    if (!password && !this.client.password) {
-      throw new Error('A password is required to change a discriminator.');
-    }
-    return this.edit({
-      discriminator,
-      username: this.username,
-      password: this.client.password ? this.client.password : password,
-    });
-  }
-
-  /**
-   * Set About me
-   * @param {string | null} bio Bio to set
-   * @returns {Promise<ClientUser>}
-   */
-  setAboutMe(bio = null) {
-    return this.edit({
-      bio,
-    });
-  }
-
-  /**
-   * Change the email
-   * @param {Email<string>} email Email to change
-   * @param {string} password Password of the account
-   * @returns {Promise<ClientUser>}
-   */
-  setEmail(email, password) {
-    throw new Error('This method is not available yet. Please use the official Discord client to change your email.');
-    // eslint-disable-next-line no-unreachable
-    if (!password && !this.client.password) {
-      throw new Error('A password is required to change a email.');
-    }
-    return this.edit({
-      email,
-      password: this.client.password ? this.client.password : password,
-    });
-  }
-
-  /**
-   * Set new password
-   * @param {string} oldPassword Old password
-   * @param {string} newPassword New password to set
-   * @returns {Promise<ClientUser>}
-   */
-  setPassword(oldPassword, newPassword) {
-    if (!oldPassword && !this.client.password) {
-      throw new Error('A password is required to change a password.');
-    }
-    if (!newPassword) throw new Error('New password is required.');
-    return this.edit({
-      password: this.client.password ? this.client.password : oldPassword,
-      new_password: newPassword,
-    });
-  }
-
-  /**
-   * Disable account
-   * @param {string} password Password of the account
-   * @returns {Promise<ClientUser>}
-   */
-  async disableAccount(password) {
-    if (!password && !this.client.password) {
-      throw new Error('A password is required to disable an account.');
-    }
-    const data = await this.client.api.users['@me'].disable.post({
-      data: {
-        password: this.client.password ? this.client.password : password,
-      },
-    });
-    return data;
-  }
-
-  /**
-   * Set selfdeaf (Global)
-   * @param {boolean} status Whether or not the ClientUser is deafened
-   * @returns {boolean}
-   */
-  setDeaf(status) {
-    if (typeof status !== 'boolean') throw new Error('Deaf status must be a boolean.');
-    this.client.ws.broadcast({
-      op: Opcodes.VOICE_STATE_UPDATE,
-      d: { self_deaf: status },
-    });
-    return status;
-  }
-
-  /**
-   * Set selfmute (Global)
-   * @param {boolean} status Whether or not the ClientUser is muted
-   * @returns {boolean}
-   */
-  setMute(status) {
-    if (typeof status !== 'boolean') throw new Error('Mute status must be a boolean.');
-    this.client.ws.broadcast({
-      op: Opcodes.VOICE_STATE_UPDATE,
-      d: { self_mute: status },
-    });
-    return status;
-  }
-
-  /**
-   * Delete account. Warning: Cannot be changed once used!
-   * @param {string} password Password of the account
-   * @returns {Promise<ClientUser>}
-   */
-  async deleteAccount(password) {
-    if (!password && !this.client.password) {
-      throw new Error('A password is required to delete an account.');
-    }
-    const data = await this.client.api.users['@me/delete'].post({
-      data: {
-        password: this.client.password ? this.client.password : password,
-      },
-    });
-    return data;
   }
 
   /**
@@ -451,15 +246,10 @@ class ClientUser extends User {
    * @see {@link https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/RichPresence.md}
    */
   setActivity(name, options = {}) {
-    if (!name) {
-      return this.setPresence({ activities: [], shardId: options.shardId });
-    }
+    if (!name) return this.setPresence({ activities: [], shardId: options.shardId });
 
     const activity = Object.assign({}, options, typeof name === 'object' ? name : { name });
-    return this.setPresence({
-      activities: [activity],
-      shardId: activity.shardId,
-    });
+    return this.setPresence({ activities: [activity], shardId: activity.shardId });
   }
 
   /**
@@ -470,6 +260,81 @@ class ClientUser extends User {
    */
   setAFK(afk = true, shardId) {
     return this.setPresence({ afk, shardId });
+  }
+
+  /**
+   * Sets the banner of the logged in client.
+   * @param {?(BufferResolvable|Base64Resolvable)} banner The new banner
+   * @returns {Promise<ClientUser>}
+   * @example
+   * // Set banner
+   * client.user.setBanner('./banner.png')
+   *   .then(user => console.log(`New banner set!`))
+   *   .catch(console.error);
+   */
+  async setBanner(banner) {
+    banner = banner && (await DataResolver.resolveImage(banner));
+    return this.edit({ banner });
+  }
+
+  /**
+   * Set HyperSquad House
+   * @param {string|number} type
+   * * `LEAVE`: 0
+   * * `HOUSE_BRAVERY`: 1
+   * * `HOUSE_BRILLIANCE`: 2
+   * * `HOUSE_BALANCE`: 3
+   * @returns {Promise<void>}
+   * @example
+   * // Set HyperSquad HOUSE_BRAVERY
+   * client.user.setHypeSquad(1); || client.user.setHypeSquad('HOUSE_BRAVERY');
+   * // Leave
+   * client.user.setHypeSquad(0);
+   */
+  setHypeSquad(type) {
+    switch (type) {
+      case 'LEAVE': {
+        type = 0;
+        break;
+      }
+      case 'HOUSE_BRAVERY': {
+        type = 1;
+        break;
+      }
+      case 'HOUSE_BRILLIANCE': {
+        type = 2;
+        break;
+      }
+      case 'HOUSE_BALANCE': {
+        type = 3;
+        break;
+      }
+    }
+    if (type == 0) {
+      return this.client.api.hypesquad.online.delete();
+    } else {
+      return this.client.api.hypesquad.online.post({
+        data: { house_id: type },
+      });
+    }
+  }
+
+  /**
+   * Set Accent color
+   * @param {ColorResolvable} color Color to set
+   * @returns {Promise<ClientUser>}
+   */
+  setAccentColor(color = null) {
+    return this.edit({ accent_color: color ? Util.resolveColor(color) : null });
+  }
+
+  /**
+   * Set About me
+   * @param {string} [bio=null] Bio to set
+   * @returns {Promise<ClientUser>}
+   */
+  setAboutMe(bio = null) {
+    return this.edit({ bio });
   }
 
   /**
@@ -505,63 +370,10 @@ class ClientUser extends User {
 
   /**
    * Revoke all friend invites
-   * @returns {Promise<Collection<string, Invite>>}
+   * @returns {Promise<void>}
    */
-  async revokeAllFriendInvites() {
-    const data = await this.client.api.users['@me'].invites.delete();
-    const collection = new Collection();
-    for (const invite of data) {
-      collection.set(invite.code, new Invite(this.client, invite));
-    }
-    return collection;
-  }
-
-  /**
-   * Get a collection of messages mentioning clientUser
-   * @param {number} [limit=25] Maximum number of messages to get
-   * @param {boolean} [mentionRoles=true] Whether or not to mention roles
-   * @param {boolean} [mentionEveryone=true] Whether or not to mention `@everyone`
-   * @returns {Promise<Collection<Snowflake, Message>>}
-   */
-  async getMentions(limit = 25, mentionRoles = true, mentionEveryone = true) {
-    // https://canary.discord.com/api/v9/users/@me/mentions?limit=25&roles=true&everyone=true
-    const data = await this.client.api.users['@me'].mentions.get({
-      query: {
-        limit,
-        roles: mentionRoles,
-        everyone: mentionEveryone,
-      },
-    });
-    const collection = new Collection();
-    for (const msg of data) {
-      collection.set(msg.id, new Message(this.client, msg));
-    }
-    return collection;
-  }
-
-  /**
-   * Change Theme color
-   * @param {ColorResolvable} primary The primary color of the user's profile
-   * @param {ColorResolvable} accent The accent color of the user's profile
-   * @returns {Promise<ClientUser>}
-   */
-  async setThemeColors(primary, accent) {
-    if (!primary || !accent) throw new Error('PRIMARY_COLOR or ACCENT_COLOR are required.');
-    // Check nitro
-    if (this.nitroType !== 'NITRO_BOOST') {
-      throw new Error_('NITRO_BOOST_REQUIRED', 'themeColors');
-    }
-    primary = Util.resolveColor(primary) || this.themeColors[0];
-    accent = Util.resolveColor(accent) || this.themeColors[1];
-    const data_ = await this.client.api.users['@me'].profile.patch({
-      data: {
-        theme_colors: [primary, accent],
-      },
-    });
-    this._ProfilePatch({
-      user_profile: data_,
-    });
-    return this;
+  revokeAllFriendInvites() {
+    return this.client.api.users['@me'].invites.delete();
   }
 
   /**
@@ -587,8 +399,8 @@ class ClientUser extends User {
         update: type,
       },
     });
-    if (type !== 'STOP') this._packageName = packageName;
-    else this._packageName = null;
+    if (type !== 'STOP') this.#packageName = packageName;
+    else this.#packageName = null;
     return this;
   }
 
@@ -598,9 +410,7 @@ class ClientUser extends User {
    * @returns {Promise<void>}
    */
   stopRinging(channel) {
-    const id = this.client.channels.resolveId(channel);
-    if (!channel) return false;
-    return this.client.api.channels(id).call['stop-ringing'].post({
+    return this.client.api.channels(this.client.channels.resolveId(channel)).call['stop-ringing'].post({
       data: {},
     });
   }

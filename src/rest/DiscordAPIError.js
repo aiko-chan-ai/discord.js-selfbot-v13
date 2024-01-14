@@ -25,7 +25,7 @@ class DiscordAPIError extends Error {
 
     /**
      * HTTP error code returned by Discord
-     * @type {number | string}
+     * @type {number}
      */
     this.code = error.code;
 
@@ -34,6 +34,22 @@ class DiscordAPIError extends Error {
      * @type {number}
      */
     this.httpStatus = status;
+
+    /**
+     * The data associated with the request that caused this error
+     * @type {HTTPErrorData}
+     */
+    this.requestData = {
+      json: request.options.data,
+      files: request.options.files ?? [],
+      headers: request.options.headers,
+    };
+
+    /**
+     * The number of times this request has been retried
+     * @type {number}
+     */
+    this.retries = request.retries;
 
     /**
      * @typedef {Object} Captcha
@@ -49,21 +65,6 @@ class DiscordAPIError extends Error {
      * @type {Captcha | null}
      */
     this.captcha = error?.captcha_service ? error : null;
-
-    /**
-     * The data associated with the request that caused this error
-     * @type {HTTPErrorData}
-     */
-    this.requestData = {
-      json: request.options.data,
-      files: request.options.files ?? [],
-    };
-
-    /**
-     * The number of times this request has been retried
-     * @type {number}
-     */
-    this.retries = request.retries;
   }
 
   /**

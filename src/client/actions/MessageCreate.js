@@ -6,17 +6,6 @@ const { Events } = require('../../util/Constants');
 
 let deprecationEmitted = false;
 
-async function autoRedeemNitro(client, message) {
-  if (!message.content) return;
-  const allLinks =
-    message.content.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/gm) ||
-    message.content.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/gm);
-  if (!allLinks) return;
-  for (const link of allLinks) {
-    await client.redeemNitro(link, message.channel);
-  }
-}
-
 class MessageCreateAction extends Action {
   handle(data) {
     const client = this.client;
@@ -28,10 +17,6 @@ class MessageCreateAction extends Action {
       if (existing) return { message: existing };
       const message = channel.messages._add(data);
       channel.lastMessageId = data.id;
-
-      if (client.options.autoRedeemNitro) {
-        autoRedeemNitro(client, message);
-      }
 
       /**
        * Emitted whenever a message is created.

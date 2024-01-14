@@ -14,7 +14,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v2.15`, based on `discord.js@13.17`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v3.0`, based on `discord.js@13.17`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -57,7 +57,7 @@
 
 **Node.js 16.6.0 or newer is required**
 
-> Recommended Node.js version: 18 (LTS)
+> Recommended Node.js version: 18+ (LTS)
 
 ```sh-session
 npm install discord.js-selfbot-v13@latest
@@ -106,9 +106,6 @@ console.log('%cWorked!', 'font-size: 50px');
 console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
 ```
 
-Credit: <img src="https://cdn.discordapp.com/emojis/889092230063734795.png" alt="." width="16" height="16"/> [<strong>hxr404</strong>](https://github.com/hxr404/Discord-Console-hacks)
-
-
 ## Contributing
 
 - Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
@@ -127,7 +124,6 @@ Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13
   A patched version of discord, with bot login support
 - 📕 [***aiko-chan-ai/Discord-Markdown***](https://github.com/aiko-chan-ai/Discord-Markdown) <br/>
   Better Markdown to text chat Discord.
-- 📗 ...
 
 ## Star History
 

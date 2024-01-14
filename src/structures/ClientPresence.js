@@ -2,7 +2,7 @@
 
 const { Presence } = require('./Presence');
 const { TypeError } = require('../errors');
-const { Opcodes, ActivityTypes } = require('../util/Constants');
+const { ActivityTypes, Opcodes } = require('../util/Constants');
 
 const CustomStatusActivityTypes = [ActivityTypes.CUSTOM, ActivityTypes[ActivityTypes.CUSTOM]];
 
@@ -22,7 +22,6 @@ class ClientPresence extends Presence {
    */
   set(presence) {
     const packet = this._parse(presence);
-    // Parse with custom class
     this._patch(packet, true);
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
@@ -33,8 +32,6 @@ class ClientPresence extends Presence {
     } else {
       this.client.ws.shards.get(presence.shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
     }
-    // Parse with default class
-    // this._patch(packet, false);
     return this;
   }
 
@@ -48,14 +45,13 @@ class ClientPresence extends Presence {
     const data = {
       activities: [],
       afk: typeof afk === 'boolean' ? afk : false,
-      since: 0,
+      since: typeof since === 'number' && !Number.isNaN(since) ? since : null,
       status: status ?? this.status,
     };
     if (activities?.length) {
       for (const [i, activity] of activities.entries()) {
-        if (![ActivityTypes.CUSTOM, 'CUSTOM'].includes(activity.type) && typeof activity.name !== 'string') {
-          throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
-        }
+        if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
+
         activity.type ??= ActivityTypes.PLAYING;
 
         if (CustomStatusActivityTypes.includes(activity.type) && !activity.state) {

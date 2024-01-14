@@ -1,14 +1,13 @@
 'use strict';
-const { Buffer } = require('buffer');
-const crypto = require('crypto');
+
+const { Buffer } = require('node:buffer');
+const crypto = require('node:crypto');
 const EventEmitter = require('node:events');
+const { StringDecoder } = require('node:string_decoder');
 const { setTimeout } = require('node:timers');
-const { StringDecoder } = require('string_decoder');
-const chalk = require('chalk');
 const fetch = require('node-fetch');
-const { encode: urlsafe_b64encode } = require('safe-base64');
 const WebSocket = require('ws');
-const { defaultUA } = require('./Constants');
+const { UserAgent } = require('./Constants');
 const Options = require('./Options');
 
 const defaultClientOptions = Options.createDefault();
@@ -22,9 +21,9 @@ const receiveEvent = {
   NONCE_PROOF: 'nonce_proof',
   PENDING_REMOTE_INIT: 'pending_remote_init',
   HEARTBEAT_ACK: 'heartbeat_ack',
-  PENDING_LOGIN: 'pending_ticket',
+  PENDING_TICKET: 'pending_ticket',
   CANCEL: 'cancel',
-  SUCCESS: 'pending_login',
+  PENDING_LOGIN: 'pending_login',
 };
 
 const sendEvent = {
@@ -37,266 +36,167 @@ const Event = {
   READY: 'ready',
   ERROR: 'error',
   CANCEL: 'cancel',
-  WAIT: 'pending',
-  SUCCESS: 'success',
+  WAIT_SCAN: 'pending',
   FINISH: 'finish',
   CLOSED: 'closed',
+  DEBUG: 'debug',
 };
 
 /**
- * @typedef {Object} DiscordAuthWebsocketOptions
- * @property {?boolean} [debug=false] Log debug info
- * @property {?boolean} [hiddenLog=false] Hide log ?
- * @property {?boolean} [autoLogin=false] Automatically login (DiscordJS.Client Login) ?
- * @property {?boolean} [failIfError=true] Throw error ?
- * @property {?boolean} [generateQR=true] Create QR Code ?
- * @property {?number} [apiVersion=9] API Version
- * @property {?string} [userAgent] User Agent
- * @property {?Object.<string,string>} [wsProperties]  Web Socket Properties
- */
-
-/**
- * Discord Auth QR (Discord.RemoteAuth will be removed in the future, v13.9.0 release)
+ * Discord Auth QR
  * @extends {EventEmitter}
  * @abstract
  */
 class DiscordAuthWebsocket extends EventEmitter {
+  #ws = null;
+  #heartbeatInterval = null;
+  #expire = null;
+  #publicKey = null;
+  #privateKey = null;
+  #ticket = null;
+  #fingerprint = '';
+  #userDecryptString = '';
+
   /**
    * Creates a new DiscordAuthWebsocket instance.
-   * @param {?DiscordAuthWebsocketOptions} options Options
    */
-  constructor(options) {
+  constructor() {
     super();
-    /**
-     * WebSocket
-     * @type {?WebSocket}
-     */
-    this.ws = null;
-    /**
-     * Heartbeat Interval
-     * @type {?number}
-     */
-    this.heartbeatInterval = NaN;
-    this._expire = NaN;
-    this.key = null;
-    /**
-     * User (Scan QR Code)
-     * @type {?Object}
-     */
-    this.user = null;
-    /**
-     * Temporary Token (Scan QR Code)
-     * @type {?string}
-     */
-    this.token = undefined;
-    /**
-     * Real Token (Login)
-     * @type {?string}
-     */
-    this.realToken = undefined;
-    /**
-     * Fingerprint (QR Code)
-     * @type {?string}
-     */
-    this.fingerprint = null;
-
-    /**
-     * Captcha Handler
-     * @type {Function}
-     * @param {Captcha} data hcaptcha data
-     * @returns {Promise<string>} Captcha token
-     */
-    // eslint-disable-next-line no-unused-vars
-    this.captchaSolver = data =>
-      new Promise((resolve, reject) => {
-        reject(
-          new Error(`
-Captcha Handler not found - Please set captchaSolver option
-Example captchaSolver function:
-
-new DiscordAuthWebsocket({
-  captchaSolver: async (data) => {
-    const token = await hcaptchaSolver(data.captcha_sitekey, 'discord.com');
-    return token;
+    this.token = '';
   }
-});
 
-`),
-        );
-      });
-
-    /**
-     * Captcha Cache
-     * @type {?Captcha}
-     */
-    this.captchaCache = null;
-
-    this._validateOptions(options);
-
-    this.callFindRealTokenCount = 0;
-  }
   /**
-   * Get expire time
-   * @type {string} Expire time
-   * @readonly
+   * @type {string}
    */
-  get exprireTime() {
-    return this._expire.toLocaleString('en-US');
+  get AuthURL() {
+    return baseURL + this.#fingerprint;
   }
-  _validateOptions(options = {}) {
-    /**
-     * Options
-     * @type {?DiscordAuthWebsocketOptions}
-     */
-    this.options = {
-      debug: false,
-      hiddenLog: false,
-      autoLogin: false,
-      failIfError: true,
-      generateQR: true,
-      apiVersion: 9,
-      userAgent: defaultUA,
-      wsProperties: defaultClientOptions.ws.properties,
-      captchaSolver: () => new Error('Captcha Handler not found. Please set captchaSolver option.'),
-    };
-    if (typeof options == 'object') {
-      if (typeof options.debug == 'boolean') this.options.debug = options.debug;
-      if (typeof options.hiddenLog == 'boolean') this.options.hiddenLog = options.hiddenLog;
-      if (typeof options.autoLogin == 'boolean') this.options.autoLogin = options.autoLogin;
-      if (typeof options.failIfError == 'boolean') this.options.failIfError = options.failIfError;
-      if (typeof options.generateQR == 'boolean') this.options.generateQR = options.generateQR;
-      if (typeof options.apiVersion == 'number') this.options.apiVersion = options.apiVersion;
-      if (typeof options.userAgent == 'string') this.options.userAgent = options.userAgent;
-      if (typeof options.wsProperties == 'object') this.options.wsProperties = options.wsProperties;
-      if (typeof options.captchaSolver == 'function') this.captchaSolver = options.captchaSolver;
-    }
+
+  /**
+   * @type {Date}
+   */
+  get exprire() {
+    return this.#expire;
   }
-  _createWebSocket(url) {
-    this.ws = new WebSocket(url, {
+
+  /**
+   * @type {UserRaw}
+   */
+  get user() {
+    return DiscordAuthWebsocket.decryptUser(this.#userDecryptString);
+  }
+
+  #createWebSocket(url) {
+    this.#ws = new WebSocket(url, {
       headers: {
         Origin: 'https://discord.com',
-        'User-Agent': this.options.userAgent,
+        'User-Agent': UserAgent,
       },
     });
-    this._handleWebSocket();
+    this.#handleWebSocket();
   }
-  _handleWebSocket() {
-    this.ws.on('error', error => {
-      this._logger('error', error);
+
+  #handleWebSocket() {
+    this.#ws.on('error', error => {
+      /**
+       * WS Error
+       * @event DiscordAuthWebsocket#error
+       * @param {Error} error Error
+       */
+      this.emit(Event.ERROR, error);
     });
-    this.ws.on('open', () => {
-      this._logger('debug', 'Client Connected');
+    this.#ws.on('open', () => {
+      /**
+       * Debug Event
+       * @event DiscordAuthWebsocket#debug
+       * @param {string} msg Debug msg
+       */
+      this.emit(Event.DEBUG, '[WS] Client Connected');
     });
-    this.ws.on('close', () => {
-      this._logger('debug', 'Connection closed.');
+    this.#ws.on('close', () => {
+      this.emit(Event.DEBUG, '[WS] Connection closed');
     });
-    this.ws.on('message', message => {
-      this._handleMessage(JSON.parse(message));
-    });
+    this.#ws.on('message', this.#handleMessage.bind(this));
   }
-  _handleMessage(message) {
+
+  #handleMessage(message) {
+    message = JSON.parse(message);
     switch (message.op) {
       case receiveEvent.HELLO: {
-        this._ready(message);
+        this.#ready(message);
         break;
       }
+
       case receiveEvent.NONCE_PROOF: {
-        this._receiveNonceProof(message);
+        this.#receiveNonceProof(message);
         break;
       }
+
       case receiveEvent.PENDING_REMOTE_INIT: {
-        this._pendingRemoteInit(message);
-        break;
-      }
-      case receiveEvent.HEARTBEAT_ACK: {
-        this._logger('debug', 'Heartbeat acknowledged.');
-        this._heartbeatAck();
-        break;
-      }
-      case receiveEvent.PENDING_LOGIN: {
-        this._pendingLogin(message);
-        break;
-      }
-      case receiveEvent.CANCEL: {
-        this._logger('debug', 'Cancel login.');
+        this.#fingerprint = message.fingerprint;
         /**
-         * Emitted whenever a user cancels the login process.
-         * @event DiscordAuthWebsocket#cancel
-         * @param {object} user User (Raw)
+         * Ready Event
+         * @event DiscordAuthWebsocket#ready
+         * @param {DiscordAuthWebsocket} client WS
          */
-        this.emit(Event.CANCEL, this.user);
+        this.emit(Event.READY, this);
+        break;
+      }
+
+      case receiveEvent.HEARTBEAT_ACK: {
+        this.emit(Event.DEBUG, `Heartbeat acknowledged.`);
+        this.#heartbeatAck();
+        break;
+      }
+
+      case receiveEvent.PENDING_TICKET: {
+        this.#pendingLogin(message);
+        break;
+      }
+
+      case receiveEvent.CANCEL: {
+        /**
+         * Cancel
+         * @event DiscordAuthWebsocket#cancel
+         * @param {DiscordAuthWebsocket} client WS
+         */
+        this.emit(Event.CANCEL, this);
         this.destroy();
         break;
       }
-      case receiveEvent.SUCCESS: {
-        this._logger('debug', 'Receive Token - Login Success.', message.ticket);
-        /**
-         * Emitted whenever a token is created. (Fake token)
-         * @event DiscordAuthWebsocket#success
-         * @param {object} user Discord User
-         * @param {string} token Discord Token (Fake)
-         */
-        this.emit(Event.SUCCESS, this.user, message.ticket);
-        this.token = message.ticket;
-        this._findRealToken();
-        this._logger('default', 'Get token success.');
-        break;
-      }
-      default: {
-        this._logger('debug', `Unknown op: ${message.op}`, message);
-      }
-    }
-  }
-  _logger(type = 'default', ...message) {
-    if (this.options.hiddenLog) return;
-    switch (type.toLowerCase()) {
-      case 'error': {
-        // eslint-disable-next-line no-unused-expressions
-        this.options.failIfError
-          ? this._throwError(new Error(message[0]))
-          : console.error(chalk.red(`[DiscordRemoteAuth] ERROR`), ...message);
-        break;
-      }
-      case 'default': {
-        console.log(chalk.green(`[DiscordRemoteAuth]`), ...message);
-        break;
-      }
-      case 'debug': {
-        if (this.options.debug) console.log(chalk.yellow(`[DiscordRemoteAuth] DEBUG`), ...message);
+
+      case receiveEvent.PENDING_LOGIN: {
+        this.#ticket = message.ticket;
+        this.#findRealToken();
         break;
       }
     }
   }
-  _throwError(error) {
-    console.log(chalk.red(`[DiscordRemoteAuth] ERROR`), error);
-    throw error;
-  }
-  _send(op, data) {
-    if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
+
+  #send(op, data) {
+    if (!this.#ws) return;
     let payload = { op: op };
     if (data !== null) payload = { ...payload, ...data };
-    this._logger('debug', `Send Data:`, payload);
-    this.ws.send(JSON.stringify(payload));
+    this.#ws.send(JSON.stringify(payload));
   }
-  _heartbeat() {
-    this._send(sendEvent.HEARTBEAT);
-  }
-  _heartbeatAck() {
+
+  #heartbeatAck() {
     setTimeout(() => {
-      this._heartbeat();
-    }, this.heartbeatInterval).unref();
+      this.#send(sendEvent.HEARTBEAT);
+    }, this.#heartbeatInterval).unref();
   }
-  _ready(data) {
-    this._logger('debug', 'Attempting server handshake...');
-    this._expire = new Date(Date.now() + data.timeout_ms);
-    this.heartbeatInterval = data.heartbeat_interval;
-    this._createKey();
-    this._heartbeatAck();
-    this._init();
+
+  #ready(data) {
+    this.emit(Event.DEBUG, 'Attempting server handshake...');
+    this.#expire = new Date(Date.now() + data.timeout_ms);
+    this.#heartbeatInterval = data.heartbeat_interval;
+    this.#createKey();
+    this.#heartbeatAck();
+    this.#init();
   }
-  _createKey() {
-    if (this.key) this._throwError(new Error('Key is already created.'));
-    this.key = crypto.generateKeyPairSync('rsa', {
+
+  #createKey() {
+    const key = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: {
         type: 'spki',
@@ -307,35 +207,41 @@ new DiscordAuthWebsocket({
         format: 'pem',
       },
     });
+    this.#privateKey = key.privateKey;
+    this.#publicKey = key.publicKey;
   }
-  _createPublicKey() {
-    if (!this.key) this._throwError(new Error('Key is not created.'));
-    this._logger('debug', 'Generating public key...');
+
+  #encodePublicKey() {
     const decoder = new StringDecoder('utf-8');
-    let pub_key = decoder.write(this.key.publicKey);
+    let pub_key = decoder.write(this.#publicKey);
     pub_key = pub_key.split('\n').slice(1, -2).join('');
-    this._logger('debug', 'Public key generated.', pub_key);
     return pub_key;
   }
-  _init() {
-    const public_key = this._createPublicKey();
-    this._send(sendEvent.INIT, { encoded_public_key: public_key });
+
+  #init() {
+    const public_key = this.#encodePublicKey();
+    this.#send(sendEvent.INIT, { encoded_public_key: public_key });
   }
-  _receiveNonceProof(data) {
+
+  #receiveNonceProof(data) {
     const nonce = data.encrypted_nonce;
-    const decrypted_nonce = this._decryptPayload(nonce);
-    let proof = crypto.createHash('sha256').update(decrypted_nonce).digest();
-    proof = urlsafe_b64encode(proof);
-    proof = proof.replace(/\s+$/, '');
-    this._send(sendEvent.NONCE_PROOF, { proof: proof });
-    this._logger('debug', `Nonce proof decrypted:`, proof);
+    const decrypted_nonce = this.#decryptPayload(nonce);
+    const proof = crypto
+      .createHash('sha256')
+      .update(decrypted_nonce)
+      .digest()
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+/, '')
+      .replace(/\s+$/, '');
+    this.#send(sendEvent.NONCE_PROOF, { proof: proof });
   }
-  _decryptPayload(encrypted_payload) {
-    if (!this.key) this._throwError(new Error('Key is not created.'));
+
+  #decryptPayload(encrypted_payload) {
     const payload = Buffer.from(encrypted_payload, 'base64');
-    this._logger('debug', `Encrypted Payload (Buffer):`, payload);
     const decoder = new StringDecoder('utf-8');
-    const private_key = decoder.write(this.key.privateKey);
+    const private_key = decoder.write(this.#privateKey);
     const data = crypto.privateDecrypt(
       {
         key: private_key,
@@ -344,170 +250,129 @@ new DiscordAuthWebsocket({
       },
       payload,
     );
-    this._logger('debug', `Decrypted Payload:`, data.toString());
     return data;
   }
-  _pendingLogin(data) {
-    const user_data = this._decryptPayload(data.encrypted_user_payload);
-    const user = new User(user_data.toString());
-    this.user = user;
+
+  #pendingLogin(data) {
+    const user_data = this.#decryptPayload(data.encrypted_user_payload);
+    this.#userDecryptString = user_data.toString();
+
+    /**
+     * @typedef {Object} UserRaw
+     * @property {Snowflake} id
+     * @property {string} username
+     * @property {number} discriminator
+     * @property {string} avatar
+     */
+
     /**
      * Emitted whenever a user is scan QR Code.
      * @event DiscordAuthWebsocket#pending
-     * @param {object} user Discord User Raw
+     * @param {UserRaw} user Discord User Raw
      */
-    this.emit(Event.WAIT, user);
-    this._logger('debug', 'Waiting for user to finish login...');
-    this.user.prettyPrint(this);
-    this._logger('default', 'Please check your phone again to confirm login.');
+    this.emit(Event.WAIT_SCAN, this.user);
   }
-  _pendingRemoteInit(data) {
-    this._logger('debug', `Pending Remote Init:`, data);
-    /**
-     * Emitted whenever a url is created.
-     * @event DiscordAuthWebsocket#ready
-     * @param {string} fingerprint Fingerprint
-     * @param {string} url DiscordAuthWebsocket
-     */
-    this.emit(Event.READY, data.fingerprint, `${baseURL}${data.fingerprint}`);
-    this.fingerprint = data.fingerprint;
-    if (this.options.generateQR) this.generateQR();
-  }
-  _awaitLogin(client) {
-    this.once(Event.FINISH, (user, token) => {
-      this._logger('debug', 'Create login state...', user, token);
-      client.login(token);
+
+  #awaitLogin(client) {
+    return new Promise(r => {
+      this.once(Event.FINISH, token => {
+        r(client.login(token));
+      });
     });
   }
+
   /**
-   * Connect to DiscordAuthWebsocket.
-   * @param {?Client} client Using only for auto login.
-   * @returns {undefined}
+   * Connect WS
+   * @param {Client} [client] DiscordJS Client
+   * @returns {Promise<void>}
    */
   connect(client) {
-    this._createWebSocket(wsURL);
-    if (client && this.options.autoLogin) this._awaitLogin(client);
+    this.#createWebSocket(wsURL);
+    if (client) {
+      return this.#awaitLogin(client);
+    } else {
+      return Promise.resolve();
+    }
   }
+
   /**
-   * Disconnect from DiscordAuthWebsocket.
-   * @returns {undefined}
+   * Destroy client
+   * @returns {void}
    */
   destroy() {
-    if (!this.ws) this._throwError(new Error('WebSocket is not connected.'));
+    if (!this.ws) return;
     this.ws.close();
+    this.emit(Event.DEBUG, 'WebSocket closed.');
     /**
      * Emitted whenever a connection is closed.
      * @event DiscordAuthWebsocket#closed
-     * @param {boolean} loginState Login state
      */
-    this.emit(Event.CLOSED, this.token);
-    this._logger('debug', 'WebSocket closed.');
+    this.emit(Event.CLOSED);
   }
+
   /**
    * Generate QR code for user to scan (Terminal)
-   * @returns {undefined}
+   * @returns {void}
    */
   generateQR() {
-    if (!this.fingerprint) this._throwError(new Error('Fingerprint is not created.'));
-    require('@aikochan2k6/qrcode-terminal').generate(`${baseURL}${this.fingerprint}`, {
+    if (!this.#fingerprint) return;
+    require('@aikochan2k6/qrcode-terminal').generate(this.AuthURL, {
       small: true,
     });
-    this._logger('default', `Please scan the QR code to continue.\nQR Code will expire in ${this.exprireTime}`);
   }
 
-  async _findRealToken(captchaSolveData) {
-    this.callFindRealTokenCount++;
-    if (!this.token) return this._throwError(new Error('Token is not created.'));
-    if (!captchaSolveData && this.captchaCache) return this._throwError(new Error('Captcha is not solved.'));
-    if (this.callFindRealTokenCount > 5) {
-      return this._throwError(
-        new Error(
-          `Failed to find real token (${this.callFindRealTokenCount} times) ${this.captchaCache ? '[Captcha]' : ''}`,
-        ),
-      );
-    }
-    this._logger('debug', 'Find real token...');
-    const res = await (
-      await fetch(`https://discord.com/api/v${this.options.apiVersion}/users/@me/remote-auth/login`, {
-        method: 'POST',
-        headers: {
-          Accept: '*/*',
-          'Accept-Language': 'en-US',
-          'Content-Type': 'application/json',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-origin',
-          'X-Debug-Options': 'bugReporterEnabled',
-          'X-Super-Properties': `${Buffer.from(JSON.stringify(this.options.wsProperties), 'ascii').toString('base64')}`,
-          'X-Discord-Locale': 'en-US',
-          'User-Agent': this.options.userAgent,
-          Referer: 'https://discord.com/channels/@me',
-          Connection: 'keep-alive',
-          Origin: 'https://discord.com',
-        },
-        body: JSON.stringify(
-          captchaSolveData
-            ? {
-                ticket: this.token,
-                captcha_rqtoken: this.captchaCache.captcha_rqtoken,
-                captcha_key: captchaSolveData,
-              }
-            : {
-                ticket: this.token,
-              },
-        ),
+  #findRealToken() {
+    return fetch(`https://discord.com/api/v9/users/@me/remote-auth/login`, {
+      method: 'POST',
+      headers: {
+        Accept: '*/*',
+        'Accept-Language': 'en-US',
+        'Content-Type': 'application/json',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'X-Debug-Options': 'bugReporterEnabled',
+        'X-Super-Properties': `${Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'ascii').toString(
+          'base64',
+        )}`,
+        'X-Discord-Locale': 'en-US',
+        'User-Agent': UserAgent,
+        Referer: 'https://discord.com/channels/@me',
+        Connection: 'keep-alive',
+        Origin: 'https://discord.com',
+      },
+      body: JSON.stringify({
+        ticket: this.#ticket,
+      }),
+    })
+      .then(r => r.json())
+      .then(res => {
+        if (res.encrypted_token) {
+          this.token = this.#decryptPayload(res.encrypted_token).toString();
+        }
+        /**
+         * Emitted whenever a real token is found.
+         * @event DiscordAuthWebsocket#finish
+         * @param {string} token Discord Token
+         */
+        this.emit(Event.FINISH, this.token);
+        this.destroy();
       })
-    ).json();
-    if (res?.captcha_key) {
-      this.captchaCache = res;
-    } else if (!res.encrypted_token) {
-      this._throwError(new Error('Request failed. Please try again.', res));
-      this.captchaCache = null;
-    }
-    if (!res && this.captchaCache) {
-      this._logger('default', 'Captcha is detected. Please solve the captcha to continue.');
-      this._logger('debug', 'Try call captchaSolver()', this.captchaCache);
-      const token = await this.options.captchaSolver(this.captchaCache);
-      return this._findRealToken(token);
-    }
-    this.realToken = this._decryptPayload(res.encrypted_token).toString();
-    /**
-     * Emitted whenever a real token is found.
-     * @event DiscordAuthWebsocket#finish
-     * @param {object} user User
-     * @param {string} token Real token
-     */
-    this.emit(Event.FINISH, this.user, this.realToken);
-    return this;
+      .catch(() => false);
   }
-}
 
-class User {
-  constructor(payload) {
+  static decryptUser(payload) {
     const values = payload.split(':');
-    this.id = values[0];
-    this.username = values[3];
-    this.discriminator = values[1];
-    this.avatar = values[2];
-    return this;
-  }
-  get avatarURL() {
-    return `https://cdn.discordapp.com/avatars/${this.id}/${this.avatar}.${
-      this.avatar.startsWith('a_') ? 'gif' : 'png'
-    }`;
-  }
-  get tag() {
-    return `${this.username}#${this.discriminator}`;
-  }
-  prettyPrint(RemoteAuth) {
-    let string = `\n`;
-    string += `         ${chalk.bgBlue('User:')}           `;
-    string += `${this.tag} (${this.id})\n`;
-    string += `         ${chalk.bgGreen('Avatar URL:')}     `;
-    string += chalk.cyan(`${this.avatarURL}\n`);
-    string += `         ${chalk.bgMagenta('Token:')}          `;
-    string += chalk.red(`${this.token ? this.token : 'Unknown'}`);
-    RemoteAuth._logger('default', string);
+    const id = values[0];
+    const username = values[3];
+    const discriminator = values[1];
+    const avatar = values[2];
+    return {
+      id,
+      username,
+      discriminator,
+      avatar,
+    };
   }
 }
 

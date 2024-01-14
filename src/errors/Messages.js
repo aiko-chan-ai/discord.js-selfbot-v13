@@ -11,8 +11,6 @@ const Messages = {
   TOKEN_INVALID: 'An invalid token was provided.',
   TOKEN_MISSING: 'Request to use token, but token was unavailable to the client.',
 
-  MFA_INVALID: 'An invalid mfa code was provided',
-
   WS_CLOSE_REQUESTED: 'WebSocket closed due to user request.',
   WS_CONNECTION_EXISTS: 'There is already an existing WebSocket connection.',
   WS_NOT_OPEN: (data = 'data') => `WebSocket not open to send ${data}`,
@@ -20,8 +18,8 @@ const Messages = {
 
   BITFIELD_INVALID: bit => `Invalid bitfield flag or number: ${bit}.`,
 
-  SHARDING_INVALID: 'Invalid shard settings were provided.',
-  SHARDING_REQUIRED: 'This session would have handled too many guilds - Sharding is required.',
+  SHARDING_INVALID: '[Bot Token] Invalid shard settings were provided.',
+  SHARDING_REQUIRED: '[Bot Token] This session would have handled too many guilds - Sharding is required.',
   INVALID_INTENTS: '[Bot Token] Invalid intent provided for WebSocket intents.',
   DISALLOWED_INTENTS: '[Bot Token] Privileged intent provided is not enabled or whitelisted.',
   SHARDING_NO_SHARDS: 'No shards have been spawned.',
@@ -49,12 +47,6 @@ const Messages = {
   EMBED_FOOTER_TEXT: 'MessageEmbed footer text must be a string.',
   EMBED_DESCRIPTION: 'MessageEmbed description must be a string.',
   EMBED_AUTHOR_NAME: 'MessageEmbed author name must be a string.',
-  /* Add */
-  MISSING_PERMISSIONS: (...permission) => `You can't do this action [Missing Permission(s): ${permission.join(', ')}]`,
-  EMBED_PROVIDER_NAME: 'MessageEmbed provider name must be a string.',
-  INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
-  INVALID_RANGE_QUERY_MEMBER: 'Invalid range query member. (0<x<=100)',
-  MUST_SPECIFY_BOT: 'You must specify a bot to use this command.',
 
   BUTTON_LABEL: 'MessageButton label must be a string',
   BUTTON_URL: 'MessageButton URL must be a string',
@@ -66,16 +58,22 @@ const Messages = {
   SELECT_OPTION_VALUE: 'MessageSelectOption value must be a string',
   SELECT_OPTION_DESCRIPTION: 'MessageSelectOption description must be a string',
 
+  TEXT_INPUT_CUSTOM_ID: 'TextInputComponent customId must be a string',
+  TEXT_INPUT_LABEL: 'TextInputComponent label must be a string',
+  TEXT_INPUT_PLACEHOLDER: 'TextInputComponent placeholder must be a string',
+  TEXT_INPUT_VALUE: 'TextInputComponent value must be a string',
+
+  MODAL_CUSTOM_ID: 'Modal customId must be a string',
+  MODAL_TITLE: 'Modal title must be a string',
+
   INTERACTION_COLLECTOR_ERROR: reason => `Collector received no interactions before ending with reason: ${reason}`,
 
   FILE_NOT_FOUND: file => `File could not be found: ${file}`,
 
   USER_BANNER_NOT_FETCHED: "You must fetch this user's banner before trying to generate its URL!",
   USER_NO_DM_CHANNEL: 'No DM Channel exists!',
-  CLIENT_NO_CALL: 'No call exists!',
 
   VOICE_NOT_STAGE_CHANNEL: 'You are only allowed to do this in stage channels.',
-  VOICE_NOT_IN_GUILD: 'You are only allowed to do this in guild channels.',
 
   VOICE_STATE_NOT_OWN:
     'You cannot self-deafen/mute/request to speak on VoiceStates that do not belong to the ClientUser.',
@@ -103,16 +101,10 @@ const Messages = {
   GUILD_CHANNEL_UNOWNED: "The fetched channel does not belong to this manager's guild.",
   GUILD_OWNED: 'Guild is owned by the client.',
   GUILD_MEMBERS_TIMEOUT: "Members didn't arrive in time.",
-  GUILD_APPLICATION_COMMANDS_SEARCH_TIMEOUT: "Application commands didn't arrive in time.",
   GUILD_UNCACHED_ME: 'The client user as a member of this guild is uncached.',
   CHANNEL_NOT_CACHED: 'Could not find the channel where this message came from in the cache!',
   STAGE_CHANNEL_RESOLVE: 'Could not resolve channel to a stage channel.',
   GUILD_SCHEDULED_EVENT_RESOLVE: 'Could not resolve the guild scheduled event.',
-
-  REQUIRE_PASSWORD: 'You must provide a password.',
-  INVALIDATE_MEMBER: range => `Invalid member range: [${range[0]}, ${range[1]}]`,
-
-  MISSING_VALUE: (where, type) => `Missing value for ${where} (${type})`,
 
   INVALID_TYPE: (name, expected, an = false) => `Supplied ${name} is not a${an ? 'n' : ''} ${expected}.`,
   INVALID_ELEMENT: (type, name, elem) => `Supplied ${type} ${name} includes an invalid element: ${elem}`,
@@ -141,10 +133,6 @@ const Messages = {
 
   INVITE_NOT_FOUND: 'Could not find the requested invite.',
 
-  NOT_OWNER_GROUP_DM_CHANNEL: "You can't do this action [Missing Permission]",
-  USER_ALREADY_IN_GROUP_DM_CHANNEL: 'User is already in the channel.',
-  USER_NOT_IN_GROUP_DM_CHANNEL: 'User is not in the channel.',
-
   DELETE_GROUP_DM_CHANNEL: "Bots don't have access to Group DM Channels and cannot delete them",
   FETCH_GROUP_DM_CHANNEL: "Bots don't have access to Group DM Channels and cannot fetch them",
 
@@ -169,60 +157,28 @@ const Messages = {
   COMMAND_INTERACTION_OPTION_NO_SUB_COMMAND_GROUP: 'No subcommand group specified for interaction.',
   AUTOCOMPLETE_INTERACTION_OPTION_NO_FOCUSED_OPTION: 'No focused option for autocomplete interaction.',
 
+  MODAL_SUBMIT_INTERACTION_FIELD_NOT_FOUND: customId => `Required field with custom id "${customId}" not found.`,
+  MODAL_SUBMIT_INTERACTION_FIELD_TYPE: (customId, type, expected) =>
+    `Field with custom id "${customId}" is of type: ${type}; expected ${expected}.`,
+
   INVITE_MISSING_SCOPES: 'At least one valid scope must be provided for the invite',
 
   NOT_IMPLEMENTED: (what, name) => `Method ${what} not implemented on ${name}.`,
 
   SWEEP_FILTER_RETURN: 'The return value of the sweepFilter function was not false or a Function',
 
-  INVALID_BOT_METHOD: 'Bot accounts cannot use this method',
-  INVALID_USER_METHOD: 'User accounts cannot use this method',
-  BOT_ONLY: 'This method only for bots',
-  USER_ONLY: 'This method only for users',
-
-  INTERACTION_SEND_FAILURE: msg => `${msg}`,
-
-  INVALID_LOCALE: 'Unable to select this location',
-  FOLDER_NOT_FOUND: 'Server directory not found',
-  FOLDER_POSITION_INVALID: 'The server index in the directory is invalid',
-  APPLICATION_ID_INVALID: "The application isn't BOT",
-  INVALID_NITRO: 'Invalid Nitro Code',
-  MESSAGE_ID_NOT_FOUND: 'Message ID not found',
-  MESSAGE_EMBED_LINK_LENGTH: 'Message content with embed link length is too long',
-  GUILD_MEMBERS_FETCH: msg => `${msg}`,
-  USER_NOT_STREAMING: 'User is not streaming',
-  // Djs v13.7
-  TEXT_INPUT_CUSTOM_ID: 'TextInputComponent customId must be a string',
-  TEXT_INPUT_LABEL: 'TextInputComponent label must be a string',
-  TEXT_INPUT_PLACEHOLDER: 'TextInputComponent placeholder must be a string',
-  TEXT_INPUT_VALUE: 'TextInputComponent value must be a string',
-
-  MODAL_CUSTOM_ID: 'Modal customId must be a string',
-  MODAL_TITLE: 'Modal title must be a string',
-
-  MODAL_SUBMIT_INTERACTION_FIELD_NOT_FOUND: customId => `Required field with custom id "${customId}" not found.`,
-  MODAL_SUBMIT_INTERACTION_FIELD_TYPE: (customId, type, expected) =>
-    `Field with custom id "${customId}" is of type: ${type}; expected ${expected}.`,
-
-  INVALID_REMOTE_AUTH_URL: 'Invalid remote auth URL (https://discord.com/ra/{hash})',
-  INVALID_URL: url =>
-    `Invalid URL: ${url}.\nMake sure you are using a valid URL (https://discord.com/oauth2/authorize?...)`,
-
-  NITRO_REQUIRED: 'This feature is only available for Nitro users.',
-  NITRO_BOOST_REQUIRED: feature => `This feature (${feature}) is only available for Nitro Boost users.`,
-  ONLY_ME: 'This feature is only available for self.',
-  MISSING_CAPTCHA_SERVICE: 'This feature is only available for enabled captcha handler.',
-
   GUILD_FORUM_MESSAGE_REQUIRED: 'You must provide a message to create a guild forum thread',
-  NORMAL_LOGIN: 'Username and password are required for normal login',
-  LOGIN_FAILED_UNKNOWN: 'Login failed',
-  LOGIN_FAILED_2FA: 'Login failed, 2FA code is required',
-  GUILD_IS_LARGE: 'This guild is too large to fetch all members with this method',
 
-  TEAM_MEMBER_FORMAT: 'The member provided is either not real or not of the User class',
-
-  MISSING_MODULE: (name, installCommand) =>
-    `The module "${name}" is missing. Please install it with "${installCommand}" and try again.`,
+  // Selfbot
+  INVALID_USER_API: 'User accounts cannot use this endpoint',
+  INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
+  INVALID_SLASH_COMMAND_CHOICES: (parentOptions, value) =>
+    `${value} is not a valid choice for this option (${parentOptions})`,
+  SLASH_COMMAND_REQUIRED_OPTIONS_MISSING: (req, opt) => `Value required (${req}) missing (Options: ${opt})`,
+  SLASH_COMMAND_SUB_COMMAND_GROUP_INVALID: n => `${n} is not a valid sub command group`,
+  SLASH_COMMAND_SUB_COMMAND_INVALID: n => `${n} is not a valid sub command`,
+  INTERACTION_FAILED: 'No responsed from Application Command',
+  USER_NOT_STREAMING: 'User is not streaming',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

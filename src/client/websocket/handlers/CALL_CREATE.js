@@ -1,5 +1,5 @@
 'use strict';
-const Call = require('../../../structures/Call');
+const CallState = require('../../../structures/CallState');
 const { Events } = require('../../../util/Constants');
 module.exports = (client, packet) => {
   for (const voice of packet.d.voice_states) {
@@ -8,7 +8,7 @@ module.exports = (client, packet) => {
   /**
    * Emitted whenever received a call
    * @event Client#callCreate
-   * @param {Call} call Call
+   * @param {CallState} call Call
    */
-  client.emit(Events.CALL_CREATE, new Call(client, packet.d));
+  client.emit(Events.CALL_CREATE, new CallState(client, packet.d));
 };

@@ -3,7 +3,6 @@
 const GuildChannel = require('./GuildChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const GuildForumThreadManager = require('../managers/GuildForumThreadManager');
-const InteractionManager = require('../managers/InteractionManager');
 const { SortOrderTypes, ForumLayoutTypes } = require('../util/Constants');
 const { transformAPIGuildForumTag, transformAPIGuildDefaultReaction } = require('../util/Util');
 
@@ -45,12 +44,6 @@ const { transformAPIGuildForumTag, transformAPIGuildDefaultReaction } = require(
 class ForumChannel extends GuildChannel {
   constructor(guild, data, client) {
     super(guild, data, client, false);
-
-    /**
-     * A manager of the interactions sent to this channel
-     * @type {InteractionManager}
-     */
-    this.interactions = new InteractionManager(this);
 
     /**
      * A manager of the threads belonging to this channel
@@ -260,12 +253,9 @@ TextBasedChannel.applyToClass(ForumChannel, true, [
   'send',
   'lastMessage',
   'lastPinAt',
-  'bulkDelete',
   'sendTyping',
   'createMessageCollector',
   'awaitMessages',
-  'createMessageComponentCollector',
-  'awaitMessageComponent',
 ]);
 
 module.exports = ForumChannel;

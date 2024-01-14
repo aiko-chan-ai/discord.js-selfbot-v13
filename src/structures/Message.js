@@ -1,22 +1,26 @@
 'use strict';
 
 const process = require('node:process');
+const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const ClientApplication = require('./ClientApplication');
-const InteractionCollector = require('./InteractionCollector');
 const MessageAttachment = require('./MessageAttachment');
-const MessageButton = require('./MessageButton');
 const Embed = require('./MessageEmbed');
 const Mentions = require('./MessageMentions');
 const MessagePayload = require('./MessagePayload');
-const MessageSelectMenu = require('./MessageSelectMenu');
 const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
+const Application = require('./interfaces/Application');
 const { Error } = require('../errors');
 const ReactionManager = require('../managers/ReactionManager');
-const { InteractionTypes, MessageTypes, SystemMessageTypes, MaxBulkDeletableMessageAge } = require('../util/Constants');
+const {
+  InteractionTypes,
+  MessageTypes,
+  SystemMessageTypes,
+  MessageComponentTypes,
+  Events,
+} = require('../util/Constants');
 const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -256,9 +260,9 @@ class Message extends Base {
     if ('application' in data) {
       /**
        * Supplemental application information for group activities
-       * @type {?ClientApplication}
+       * @type {?Application}
        */
-      this.groupActivityApplication = new ClientApplication(this.client, data.application);
+      this.groupActivityApplication = new Application(this.client, data.application);
     } else {
       this.groupActivityApplication ??= null;
     }
@@ -534,65 +538,6 @@ class Message extends Base {
   }
 
   /**
-   * @typedef {CollectorOptions} MessageComponentCollectorOptions
-   * @property {MessageComponentType} [componentType] The type of component to listen for
-   * @property {number} [max] The maximum total amount of interactions to collect
-   * @property {number} [maxComponents] The maximum number of components to collect
-   * @property {number} [maxUsers] The maximum number of users to interact
-   */
-
-  /**
-   * Creates a message component interaction collector.
-   * @param {MessageComponentCollectorOptions} [options={}] Options to send to the collector
-   * @returns {InteractionCollector}
-   * @example
-   * // Create a message component interaction collector
-   * const filter = (interaction) => interaction.customId === 'button' && interaction.user.id === 'someId';
-   * const collector = message.createMessageComponentCollector({ filter, time: 15_000 });
-   * collector.on('collect', i => console.log(`Collected ${i.customId}`));
-   * collector.on('end', collected => console.log(`Collected ${collected.size} items`));
-   */
-  createMessageComponentCollector(options = {}) {
-    return new InteractionCollector(this.client, {
-      ...options,
-      interactionType: InteractionTypes.MESSAGE_COMPONENT,
-      message: this,
-    });
-  }
-
-  /**
-   * An object containing the same properties as CollectorOptions, but a few more:
-   * @typedef {Object} AwaitMessageComponentOptions
-   * @property {CollectorFilter} [filter] The filter applied to this collector
-   * @property {number} [time] Time to wait for an interaction before rejecting
-   * @property {MessageComponentType} [componentType] The type of component interaction to collect
-   */
-
-  /**
-   * Collects a single component interaction that passes the filter.
-   * The Promise will reject if the time expires.
-   * @param {AwaitMessageComponentOptions} [options={}] Options to pass to the internal collector
-   * @returns {Promise<MessageComponentInteraction>}
-   * @example
-   * // Collect a message component interaction
-   * const filter = (interaction) => interaction.customId === 'button' && interaction.user.id === 'someId';
-   * message.awaitMessageComponent({ filter, time: 15_000 })
-   *   .then(interaction => console.log(`${interaction.customId} was clicked!`))
-   *   .catch(console.error);
-   */
-  awaitMessageComponent(options = {}) {
-    const _options = { ...options, max: 1 };
-    return new Promise((resolve, reject) => {
-      const collector = this.createMessageComponentCollector(_options);
-      collector.once('end', (interactions, reason) => {
-        const interaction = interactions.first();
-        if (interaction) resolve(interaction);
-        else reject(new Error('INTERACTION_COLLECTOR_ERROR', reason));
-      });
-    });
-  }
-
-  /**
    * Whether the message is editable by the client user
    * @type {boolean}
    * @readonly
@@ -653,14 +598,7 @@ class Message extends Base {
    * channel.bulkDelete(messages.filter(message => message.bulkDeletable));
    */
   get bulkDeletable() {
-    return (
-      (this.inGuild() &&
-        this.client.user.bot &&
-        Date.now() - this.createdTimestamp < MaxBulkDeletableMessageAge &&
-        this.deletable &&
-        this.channel?.permissionsFor(this.client.user).has(Permissions.FLAGS.MANAGE_MESSAGES, false)) ??
-      false
-    );
+    return false;
   }
 
   /**
@@ -722,7 +660,7 @@ class Message extends Base {
    * @property {MessageAttachment[]} [attachments] An array of attachments to keep,
    * all attachments will be kept if omitted
    * @property {FileOptions[]|BufferResolvable[]|MessageAttachment[]} [files] Files to add to the message
-   * @property {Array<(MessageActionRow|MessageActionRowOptions)>} [components]
+   * @property {MessageActionRow[]|MessageActionRowOptions[]} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    */
 
@@ -792,7 +730,7 @@ class Message extends Base {
   /**
    * Adds a reaction to the message.
    * @param {EmojiIdentifierResolvable} emoji The emoji to react with
-   * @param {boolean} [burst=false] Super Reactions (Discord Nitro only)
+   * @param {boolean} [burst=false] Super Reactions
    * @returns {Promise<MessageReaction>}
    * @example
    * // React to a message with a unicode emoji
@@ -1024,13 +962,221 @@ class Message extends Base {
       reactions: false,
     });
   }
-  // Added
+
+  // TypeScript
+  /**
+   * Check data
+   * @type {boolean}
+   * @readonly
+   */
+  get isMessage() {
+    return true;
+  }
+
+  /**
+   * Click specific button with X and Y
+   * @typedef {Object} MessageButtonLocation
+   * @property {number} X Index of the row
+   * @property {number} Y Index of the column
+   */
+
+  /**
+   * Click specific button or automatically click first button if no button is specified.
+   * @param {MessageButtonLocation|string|undefined} button button
+   * @returns {Promise<Message|Modal>}
+   * @example
+   * // Demo msg
+   * Some content
+   *  ――――――――――――――――――――――――――――――――> X from 0
+   *  │ [button1] [button2] [button3]
+   *  │ [button4] [button5] [button6]
+   *  ↓
+   *  Y from 0
+   * // Click button6 with X and Y
+   * [0,0] [1,0] [2,0]
+   * [0,1] [1,1] [2,1]
+   * // Code
+   * message.clickButton({
+   *  X: 2, Y: 1,
+   * });
+   * // Click button with customId (Ex button 5)
+   * message.clickButton('button5');
+   * // Click button 1
+   * message.clickButton();
+   */
+  clickButton(button) {
+    if (typeof button == 'undefined') {
+      button = this.components
+        .flatMap(row => row.components)
+        .find(b => b.type === 'BUTTON' && b.customId && !b.disabled);
+    } else if (typeof button == 'string') {
+      button = this.components.flatMap(row => row.components).find(b => b.type === 'BUTTON' && b.customId == button);
+    } else {
+      button = this.components[button.Y]?.components[button.X];
+    }
+    button = button.toJSON();
+    if (!button) throw new TypeError('BUTTON_NOT_FOUND');
+    if (!button.custom_id || button.disabled) throw new TypeError('BUTTON_CANNOT_CLICK');
+    const nonce = SnowflakeUtil.generate();
+    const data = {
+      type: InteractionTypes.MESSAGE_COMPONENT,
+      nonce,
+      guild_id: this.guildId,
+      channel_id: this.channelId,
+      message_id: this.id,
+      application_id: this.applicationId ?? this.author.id,
+      session_id: this.client.ws.shards.first()?.sessionId,
+      message_flags: this.flags.bitfield,
+      data: {
+        component_type: MessageComponentTypes.BUTTON,
+        custom_id: button.custom_id,
+      },
+    };
+    this.client.api.interactions.post({
+      data,
+    });
+    return new Promise((resolve, reject) => {
+      const timeoutMs = 5_000;
+      // Waiting for MsgCreate / ModalCreate
+      const handler = data => {
+        // UnhandledPacket
+        if (data.d?.nonce == nonce && data.t == 'INTERACTION_SUCCESS') {
+          // Interaction#deferUpdate
+          this.client.removeListener(Events.MESSAGE_CREATE, handler);
+          this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+          this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+          resolve(this);
+        }
+        if (data.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        resolve(data);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_FAILED'));
+      }, timeoutMs).unref();
+      this.client.incrementMaxListeners();
+      this.client.on(Events.MESSAGE_CREATE, handler);
+      this.client.on(Events.UNHANDLED_PACKET, handler);
+      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
+    });
+  }
+
+  /**
+   * Select specific menu
+   * @param {number|string} menu Target
+   * @param {Array<UserResolvable | RoleResolvable | ChannelResolvable | string>} values Any value
+   * @returns {Promise<Message|Modal>}
+   */
+  selectMenu(menu, values = []) {
+    let selectMenu;
+    if (/[0-4]/.test(menu)) {
+      selectMenu = this.components[menu]?.components[0];
+    } else {
+      selectMenu = this.components
+        .flatMap(row => row.components)
+        .find(
+          b =>
+            ['STRING_SELECT', 'USER_SELECT', 'ROLE_SELECT', 'MENTIONABLE_SELECT', 'CHANNEL_SELECT'].includes(b.type) &&
+            b.customId == menu &&
+            !b.disabled,
+        );
+    }
+    if (values.length < selectMenu.minValues) {
+      throw new RangeError(`[SELECT_MENU_MIN_VALUES] The minimum number of values is ${selectMenu.minValues}`);
+    }
+    if (values.length > selectMenu.maxValues) {
+      throw new RangeError(`[SELECT_MENU_MAX_VALUES] The maximum number of values is ${selectMenu.maxValues}`);
+    }
+    values = values.map(value => {
+      switch (selectMenu.type) {
+        case 'STRING_SELECT': {
+          return selectMenu.options.find(obj => obj.value === value || obj.label === value).value;
+        }
+        case 'USER_SELECT': {
+          return this.client.users.resolveId(value);
+        }
+        case 'ROLE_SELECT': {
+          return this.guild.roles.resolveId(value);
+        }
+        case 'MENTIONABLE_SELECT': {
+          return this.client.users.resolveId(value) || this.guild.roles.resolveId(value);
+        }
+        case 'CHANNEL_SELECT': {
+          return this.client.channels.resolveId(value);
+        }
+        default: {
+          return value;
+        }
+      }
+    });
+    const nonce = SnowflakeUtil.generate();
+    const data = {
+      type: InteractionTypes.MESSAGE_COMPONENT,
+      guild_id: this.guildId,
+      channel_id: this.channelId,
+      message_id: this.id,
+      application_id: this.applicationId ?? this.author.id,
+      session_id: this.client.ws.shards.first()?.sessionId,
+      message_flags: this.flags.bitfield,
+      data: {
+        component_type: MessageComponentTypes[selectMenu.type],
+        custom_id: selectMenu.customId,
+        type: MessageComponentTypes[selectMenu.type],
+        values,
+      },
+      nonce,
+    };
+    this.client.api.interactions.post({
+      data,
+    });
+    return new Promise((resolve, reject) => {
+      const timeoutMs = 5_000;
+      // Waiting for MsgCreate / ModalCreate
+      const handler = data => {
+        // UnhandledPacket
+        if (data.d?.nonce == nonce && data.t == 'INTERACTION_SUCCESS') {
+          // Interaction#deferUpdate
+          this.client.removeListener(Events.MESSAGE_CREATE, handler);
+          this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+          this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+          resolve(this);
+        }
+        if (data.nonce !== nonce) return;
+        clearTimeout(timeout);
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        resolve(data);
+      };
+      const timeout = setTimeout(() => {
+        this.client.removeListener(Events.MESSAGE_CREATE, handler);
+        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
+        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
+        this.client.decrementMaxListeners();
+        reject(new Error('INTERACTION_FAILED'));
+      }, timeoutMs).unref();
+      this.client.incrementMaxListeners();
+      this.client.on(Events.MESSAGE_CREATE, handler);
+      this.client.on(Events.UNHANDLED_PACKET, handler);
+      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
+    });
+  }
+
   /**
    * Marks the message as unread.
-   * @returns {Promise<boolean>}
+   * @returns {Promise<void>}
    */
-  async markUnread() {
-    await this.client.api.channels[this.channelId].messages[this.id].ack.post({
+  markUnread() {
+    return this.client.api.channels[this.channelId].messages[this.id].ack.post({
       data: {
         manual: true,
         mention_count:
@@ -1042,145 +1188,18 @@ class Message extends Base {
             : 0,
       },
     });
-    return true;
   }
 
   /**
    * Marks the message as read.
-   * @returns {Promise<boolean>}
+   * @returns {Promise<void>}
    */
-  async markRead() {
-    await this.client.api.channels[this.channelId].messages[this.id].ack.post({
+  markRead() {
+    return this.client.api.channels[this.channelId].messages[this.id].ack.post({
       data: {
         token: null,
       },
     });
-    return true;
-  }
-
-  /**
-   * @typedef {Object} MessageButtonLocation
-   * @property {number} row Index of the row
-   * @property {number} col Index of the column
-   */
-
-  /**
-   * Click specific button or automatically click first button if no button is specified.
-   * @param {MessageButton|MessageButtonLocation|string} button Button ID
-   * @returns {Promise<InteractionResponse>}
-   * @example
-   * client.on('messageCreate', async message => {
-   *  if (message.components.length) {
-   *    // Find first button and click it
-   *    await message.clickButton();
-   *    // Click with button ID
-   *    await message.clickButton('button-id');
-   *    // Click with button location
-   *    await message.clickButton({ row: 0, col: 0 });
-   *    // Click with class MessageButton
-   *    const button = message.components[0].components[0];
-   *    await message.clickButton(button);
-   *    // Click with class MessageButton (2)
-   *    button.click(message);
-   *  }
-   * });
-   */
-  clickButton(button) {
-    if (!button) {
-      button = this.components.flatMap(row => row.components).find(b => b.type === 'BUTTON')?.customId;
-    } else if (button instanceof MessageButton) {
-      button = button.customId;
-    } else if (typeof button === 'object') {
-      if (!('row' in button) || !('col' in button)) throw new TypeError('INVALID_BUTTON_LOCATION');
-      button = this.components[button.row]?.components[button.col]?.customId;
-    }
-    if (!button) throw new TypeError('BUTTON_NOT_FOUND');
-    button = this.components.flatMap(row => row.components).find(b => b.customId === button && b.type === 'BUTTON');
-    return button ? button.click(this) : Promise.reject(new TypeError('BUTTON_NOT_FOUND'));
-  }
-  /**
-   * Select specific menu or First Menu
-   * @param {MessageSelectMenu|string|number|Array<any>} menuID MenuId / MessageSelectMenu / Row of Menu / Array of Values (first menu)
-   * @param {Array<any>} options Array of Values
-   * @returns {Promise<InteractionResponse>}
-   * @example
-   * client.on('messageCreate', async message => {
-   *  if (message.components.length) {
-   *    // Row
-   *    await message.selectMenu(1, [message.channel]); // row 1, type: Channel, multi: false
-   *    // Id
-   *    await message.selectMenu('menu-id', ['uid1', client.user, message.member]); // MenuId, type: User, multi: true
-   *    // First Menu
-   *    await message.selectMenu(['role-id']); // First Menu, type: role, multi: false
-   *    // class MessageSelectMenu
-   *    const menu = message.components[0].components[0];
-   *    await message.selectMenu(menu, ['option1', 'option2']);
-   *    // MessageSelectMenu (2)
-   *    menu.select(message, ['option1', 'option2']);
-   *  }
-   * });
-   */
-  selectMenu(menuID, options = []) {
-    if (!this.components[0]) throw new TypeError('MESSAGE_NO_COMPONENTS');
-    if (menuID instanceof MessageSelectMenu) {
-      //
-    } else if (/[0-4]/.test(menuID)) {
-      menuID = this.components[menuID]?.components[0];
-    } else {
-      const menuAll = this.components
-        .flatMap(row => row.components)
-        .filter(b =>
-          [
-            'STRING_SELECT',
-            'USER_SELECT',
-            'ROLE_SELECT',
-            'MENTIONABLE_SELECT',
-            'CHANNEL_SELECT',
-            'SELECT_MENU',
-          ].includes(b.type),
-        );
-      if (menuAll.length == 0) throw new TypeError('MENU_NOT_FOUND');
-      if (menuID) {
-        menuID = menuAll.find(b => b.customId === menuID);
-      } else {
-        menuID = menuAll[0];
-      }
-    }
-    if (!menuID.type.includes('SELECT')) throw new TypeError('MENU_NOT_FOUND');
-    return menuID.select(this, Array.isArray(menuID) ? menuID : options);
-  }
-  //
-  /**
-   * Send context Menu v2
-   * @param {Snowflake} botId Bot id
-   * @param {string} commandName Command name in Context Menu
-   * @returns {Promise<InteractionResponse>}
-   */
-  async contextMenu(botId, commandName) {
-    if (!botId) throw new Error('Bot ID is required');
-    const user = await this.client.users.fetch(botId).catch(() => {});
-    if (!user || !user.bot || !user.application) {
-      throw new Error('BotID is not a bot or does not have an application slash command');
-    }
-    if (!commandName || typeof commandName !== 'string') {
-      throw new Error('Command name is required');
-    }
-    let contextCMD;
-    const data = await this.channel.searchInteraction(botId, 'MESSAGE');
-    for (const command of data.application_commands) {
-      user.application?.commands?._add(command, true);
-    }
-    contextCMD = user.application?.commands?.cache.find(c => c.name == commandName && c.type === 'MESSAGE');
-    if (!contextCMD) {
-      throw new Error(
-        'INTERACTION_SEND_FAILURE',
-        `Command ${commandName} is not found (with search)\nList command avalible: ${user.application?.commands?.cache
-          .filter(a => a.type == 'MESSAGE')
-          .map(a => a.name)
-          .join(', ')}`,
-      );
-    }
-    return contextCMD.sendContextMenu(this, true);
   }
 }
 

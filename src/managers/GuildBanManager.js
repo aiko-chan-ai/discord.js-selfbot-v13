@@ -130,7 +130,7 @@ class GuildBanManager extends CachedManager {
    * @typedef {Object} BanOptions
    * @property {number} [days=0] Number of days of messages to delete, must be between 0 and 7, inclusive
    * <warn>This property is deprecated. Use `deleteMessageSeconds` instead.</warn>
-   * @property {number} [deleteMessageSeconds=0] Number of seconds of messages to delete,
+   * @property {number} [deleteMessageSeconds] Number of seconds of messages to delete,
    * must be between 0 and 604800 (7 days), inclusive
    * @property {string} [reason] The reason for the ban
    */

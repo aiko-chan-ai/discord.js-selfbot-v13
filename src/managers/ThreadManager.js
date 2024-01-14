@@ -2,7 +2,6 @@
 
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
 const ThreadChannel = require('../structures/ThreadChannel');
 
 /**
@@ -119,34 +118,8 @@ class ThreadManager extends CachedManager {
    * @param {boolean} [cache=true] Whether to cache the new thread objects if they aren't already
    * @returns {Promise<FetchedThreads>}
    */
-  async fetchArchived(options = {}, cache = true) {
-    if (this.client.user.bot) {
-      let { type = 'public', fetchAll = false, before, limit } = options;
-      let path = this.client.api.channels(this.channel.id);
-      if (type === 'private' && !fetchAll) {
-        path = path.users('@me');
-      }
-      let timestamp;
-      let id;
-      if (typeof before !== 'undefined') {
-        if (before instanceof ThreadChannel || /^\d{17,19}$/.test(String(before))) {
-          id = this.resolveId(before);
-          timestamp = this.resolve(before)?.archivedAt?.toISOString();
-        } else {
-          try {
-            timestamp = new Date(before).toISOString();
-          } catch {
-            throw new TypeError('INVALID_TYPE', 'before', 'DateResolvable or ThreadChannelResolvable');
-          }
-        }
-      }
-      const raw = await path.threads
-        .archived(type)
-        .get({ query: { before: type === 'private' && !fetchAll ? id : timestamp, limit } });
-      return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
-    } else {
-      return this.fetchActive(cache, { archived: true, ...options });
-    }
+  fetchArchived(options = {}, cache = true) {
+    return this.fetchActive(cache, { archived: true, ...options });
   }
 
   /**
@@ -165,22 +138,16 @@ class ThreadManager extends CachedManager {
    * @param {FetchChannelThreadsOptions} [options] Options for self-bots where advanced users can specify further options
    * @returns {Promise<FetchedThreads>}
    */
-  async fetchActive(cache = true, options = null) {
-    if (options && this.client.user.bot) {
-      throw new Error('INVALID_BOT_OPTIONS: Options can only be specified for user accounts.');
-    }
-
-    const raw = this.client.user.bot
-      ? await this.client.api.guilds(this.channel.guild.id).threads.active.get()
-      : await this.client.api.channels(this.channel.id).threads.search.get({
-          query: {
-            archived: options?.archived ?? false,
-            limit: options?.limit ?? 25,
-            offset: options?.offset ?? 0,
-            sort_by: options?.sortBy ?? 'last_message_time',
-            sort_order: options?.sortOrder ?? 'desc',
-          },
-        });
+  async fetchActive(cache = true, options = {}) {
+    const raw = await this.client.api.channels(this.channel.id).threads.search.get({
+      query: {
+        archived: options?.archived ?? false,
+        limit: options?.limit ?? 25,
+        offset: options?.offset ?? 0,
+        sort_by: options?.sortBy ?? 'last_message_time',
+        sort_order: options?.sortOrder ?? 'desc',
+      },
+    });
 
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }

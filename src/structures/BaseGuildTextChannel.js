@@ -3,7 +3,6 @@
 const GuildChannel = require('./GuildChannel');
 const TextBasedChannel = require('./interfaces/TextBasedChannel');
 const GuildTextThreadManager = require('../managers/GuildTextThreadManager');
-const InteractionManager = require('../managers/InteractionManager');
 const MessageManager = require('../managers/MessageManager');
 
 /**
@@ -20,12 +19,6 @@ class BaseGuildTextChannel extends GuildChannel {
      * @type {MessageManager}
      */
     this.messages = new MessageManager(this);
-
-    /**
-     * A manager of the interactions sent to this channel
-     * @type {InteractionManager}
-     */
-    this.interactions = new InteractionManager(this);
 
     /**
      * A manager of the threads belonging to this channel
@@ -187,15 +180,10 @@ class BaseGuildTextChannel extends GuildChannel {
   sendTyping() {}
   createMessageCollector() {}
   awaitMessages() {}
-  createMessageComponentCollector() {}
-  awaitMessageComponent() {}
-  bulkDelete() {}
   fetchWebhooks() {}
   createWebhook() {}
   setRateLimitPerUser() {}
   setNSFW() {}
-  sendSlash() {}
-  searchInteraction() {}
 }
 
 TextBasedChannel.applyToClass(BaseGuildTextChannel, true);

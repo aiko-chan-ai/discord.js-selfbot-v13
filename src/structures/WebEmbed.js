@@ -1,8 +1,8 @@
 'use strict';
+
 const baseURL = 'https://webembed-sb.onrender.com/embed?';
 const hiddenCharter =
   '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||';
-const fetch = require('node-fetch');
 const { RangeError } = require('../errors');
 const Util = require('../util/Util');
 
@@ -43,24 +43,6 @@ class WebEmbed {
      * @param {WebEmbed|WebEmbedOptions|APIEmbed} [data={}] WebEmbed to clone or raw embed data
      */
     this._setup(data);
-    /**
-     * Shorten the link
-     * @type {?boolean}
-     */
-    this.shorten = data.shorten ?? true;
-
-    /**
-     * Hidden Embed link
-     * @type {?boolean}
-     */
-    this.hidden = data.hidden ?? false;
-
-    /**
-     * Using Custom WebEmbed server ?
-     * @type {?string} https://webembed-sb.onrender.com/embed?
-     * @see https://github.com/aiko-chan-ai/WebEmbed
-     */
-    this.baseURL = data.baseURL ?? baseURL;
   }
   /**
    * @private
@@ -380,31 +362,6 @@ class WebEmbed {
       url.searchParams.set('redirect', this.redirect);
     }
     return url.toString();
-  }
-
-  /**
-   * Return Message Content + Embed (if hidden, pls check content length because it has 1000+ length)
-   * @returns {string} Message Content
-   */
-  async toMessage() {
-    const fullURL = this.toString();
-    if (this.shorten) {
-      const url = await this.constructor.getShorten(fullURL);
-      if (!url) console.log('Cannot shorten URL in WebEmbed');
-      return this.hidden ? `${hiddenCharter} ${url || fullURL}` : url || fullURL;
-    } else {
-      return this.hidden ? `${hiddenCharter} ${fullURL}` : fullURL;
-    }
-  }
-
-  static async getShorten(url) {
-    const shorten = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`;
-    try {
-      const res = await (await fetch(shorten)).text();
-      return res;
-    } catch {
-      return undefined;
-    }
   }
 }
 

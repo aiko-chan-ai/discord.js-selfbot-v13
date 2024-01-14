@@ -18,7 +18,6 @@ const {
   TimestampStyles,
   underscore,
   userMention,
-  chatInputApplicationCommandMention,
 } = require('@discordjs/builders');
 
 /**
@@ -66,7 +65,22 @@ Formatters.channelMention = channelMention;
  * @returns {string}
  * @static
  */
-Formatters.chatInputApplicationCommandMention = chatInputApplicationCommandMention;
+Formatters.chatInputApplicationCommandMention = function chatInputApplicationCommandMention(
+  commandName,
+  subcommandGroupOrSubOrId,
+  subcommandNameOrId,
+  commandId,
+) {
+  if (typeof commandId !== 'undefined') {
+    return `</${commandName} ${subcommandGroupOrSubOrId} ${subcommandNameOrId}:${commandId}>`;
+  }
+
+  if (typeof subcommandNameOrId !== 'undefined') {
+    return `</${commandName} ${subcommandGroupOrSubOrId}:${subcommandNameOrId}>`;
+  }
+
+  return `</${commandName}:${subcommandGroupOrSubOrId}>`;
+};
 
 /**
  * Wraps the content inside a code block with an optional language.

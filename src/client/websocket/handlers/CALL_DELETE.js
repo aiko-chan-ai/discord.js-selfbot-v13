@@ -1,5 +1,5 @@
 'use strict';
-const Call = require('../../../structures/Call');
+const CallState = require('../../../structures/CallState');
 const { Events } = require('../../../util/Constants');
 module.exports = (client, packet) => {
   /**
@@ -7,5 +7,5 @@ module.exports = (client, packet) => {
    * @event Client#callDelete
    * @param {Call} call Call
    */
-  client.emit(Events.CALL_DELETE, new Call(client, packet.d));
+  client.emit(Events.CALL_DELETE, new CallState(client, packet.d));
 };

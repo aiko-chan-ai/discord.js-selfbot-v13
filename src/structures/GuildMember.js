@@ -8,7 +8,6 @@ const { Error } = require('../errors');
 const GuildMemberRoleManager = require('../managers/GuildMemberRoleManager');
 const GuildMemberFlags = require('../util/GuildMemberFlags');
 const Permissions = require('../util/Permissions');
-const Util = require('../util/Util');
 
 /**
  * @type {WeakSet<GuildMember>}
@@ -102,7 +101,6 @@ class GuildMember extends Base {
       this.communicationDisabledUntilTimestamp =
         data.communication_disabled_until && Date.parse(data.communication_disabled_until);
     }
-
     if ('flags' in data) {
       /**
        * The flags of this member
@@ -112,51 +110,6 @@ class GuildMember extends Base {
     } else {
       this.flags ??= new GuildMemberFlags().freeze();
     }
-  }
-
-  _ProfilePatch(data) {
-    if ('accent_color' in data) {
-      /**
-       * The member's accent color
-       * <info>The user must be force fetched for this property to be present or be updated</info>
-       * @type {?number}
-       */
-      this.accentColor = data.accent_color;
-    }
-    if ('banner' in data) {
-      /**
-       * The member's banner hash
-       * <info>The user must be force fetched for this property to be present or be updated</info>
-       * @type {?string}
-       */
-      this.banner = data.banner;
-    }
-    if ('bio' in data) {
-      /**
-       * The member's biography (About me)
-       * <info>The user must be force fetched for this property to be present or be updated</info>
-       * @type {?string}
-       */
-      this.bio = data.bio;
-    }
-    if ('theme_colors' in data) {
-      /**
-       * The member's theme colors (Profile theme) [Primary, Accent]
-       * <info>The user must be force fetched for this property to be present or be updated</info>
-       * @type {?Array<number>}
-       */
-      this.themeColors = data.theme_colors;
-    }
-  }
-
-  /**
-   * The hexadecimal version of the user theme color, with a leading hash [Primary, Accent]
-   * <info>The user must be force fetched for this property to be present or be updated</info>
-   * @type {?Array<string>}
-   * @readonly
-   */
-  get hexThemeColor() {
-    return this.themeColors?.map(c => `#${c.toString(16).padStart(6, '0')}`) || null;
   }
 
   _clone() {
@@ -230,21 +183,6 @@ class GuildMember extends Base {
   avatarURL({ format, size, dynamic } = {}) {
     if (!this.avatar) return null;
     return this.client.rest.cdn.GuildMemberAvatar(this.guild.id, this.id, this.avatar, format, size, dynamic);
-  }
-
-  /**
-   * A link to the user's banner.
-   * <info>This method will throw an error if called before the user is force fetched Profile.
-   * See {@link GuildMember#banner} for more info</info>
-   * @param {ImageURLOptions} [options={}] Options for the Image URL
-   * @returns {?string}
-   */
-  bannerURL({ format, size, dynamic } = {}) {
-    if (typeof this.banner === 'undefined') {
-      throw new Error('USER_BANNER_NOT_FETCHED');
-    }
-    if (!this.banner) return null;
-    return this.client.rest.cdn.GuildMemberBanner(this.guild.id, this.id, this.banner, format, size, dynamic);
   }
 
   /**
@@ -445,79 +383,6 @@ class GuildMember extends Base {
   }
 
   /**
-   * Sets the guild avatar of the logged in client.
-   * @param {?(BufferResolvable|Base64Resolvable)} avatar The new avatar
-   * @returns {Promise<GuildMember>}
-   */
-  setAvatar(avatar) {
-    if (this.user.id !== this.client.user.id) {
-      throw new Error('ONLY_ME');
-    }
-    if (this.client.user.nitroType !== 'NITRO_BOOST') {
-      throw new Error('NITRO_BOOST_REQUIRED', 'avatar');
-    }
-    return this.edit({ avatar });
-  }
-
-  /**
-   * Sets the guild banner of the logged in client.
-   * @param {?(BufferResolvable|Base64Resolvable)} banner The new banner
-   * @returns {Promise<GuildMember>}
-   */
-  setBanner(banner) {
-    if (this.user.id !== this.client.user.id) {
-      throw new Error('ONLY_ME');
-    }
-    if (this.client.user.nitroType !== 'NITRO_BOOST') {
-      throw new Error('NITRO_BOOST_REQUIRED', 'banner');
-    }
-    return this.edit({ banner });
-  }
-
-  /**
-   * Set Guild About me
-   * @param {string | null} bio Bio to set
-   * @returns {Promise<GuildMember>}
-   */
-  setAboutMe(bio = null) {
-    if (this.user.id !== this.client.user.id) {
-      throw new Error('ONLY_ME');
-    }
-    if (this.client.user.nitroType !== 'NITRO_BOOST') {
-      throw new Error('NITRO_BOOST_REQUIRED', 'bio');
-    }
-    return this.edit({ bio });
-  }
-
-  /**
-   * Change Theme color
-   * @param {ColorResolvable} primary The primary color of the user's profile
-   * @param {ColorResolvable} accent The accent color of the user's profile
-   * @returns {Promise<GuildMember>}
-   */
-  async setThemeColors(primary, accent) {
-    if (this.user.id !== this.client.user.id) {
-      throw new Error('ONLY_ME');
-    }
-    if (!primary || !accent) throw new Error('PRIMARY_COLOR or ACCENT_COLOR are required.');
-    // Check nitro
-    if (this.nitroType !== 'NITRO_BOOST') {
-      throw new Error('NITRO_BOOST_REQUIRED', 'themeColors');
-    }
-    primary = Util.resolveColor(primary) || this.themeColors ? this.themeColors[0] : 0;
-    accent = Util.resolveColor(accent) || this.themeColors ? this.themeColors[1] : 0;
-    const data_ = await this.client.api.guilds[this.guild.id].profile['@me'].patch({
-      data: {
-        theme_colors: [primary, accent],
-      },
-    });
-    this._ProfilePatch({
-      guild_member_profile: data_,
-    });
-    return this;
-  }
-
-  /**
    * Creates a DM channel between the client and this member.
    * @param {boolean} [force=false] Whether to skip the cache check and request the API
    * @returns {Promise<DMChannel>}
@@ -619,22 +484,12 @@ class GuildMember extends Base {
       this.joinedTimestamp === member.joinedTimestamp &&
       this.nickname === member.nickname &&
       this.avatar === member.avatar &&
-      this.accentColor === member.accentColor &&
-      this.bio === member.bio &&
       this.pending === member.pending &&
       this.communicationDisabledUntilTimestamp === member.communicationDisabledUntilTimestamp &&
       this.flags.equals(member.flags) &&
       (this._roles === member._roles ||
         (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i])))
     );
-  }
-
-  /**
-   * Get profile guildMember
-   * @returns {Promise<User>}
-   */
-  getProfile() {
-    return this.user.getProfile(this.guild.id);
   }
 
   /**
@@ -658,6 +513,33 @@ class GuildMember extends Base {
     json.avatarURL = this.avatarURL();
     json.displayAvatarURL = this.displayAvatarURL();
     return json;
+  }
+
+  /**
+   * Sets the guild avatar of the logged in client.
+   * @param {?(BufferResolvable|Base64Resolvable)} avatar The new avatar
+   * @returns {Promise<GuildMember>}
+   */
+  setAvatar(avatar) {
+    return this.edit({ avatar });
+  }
+
+  /**
+   * Sets the guild banner of the logged in client.
+   * @param {?(BufferResolvable|Base64Resolvable)} banner The new banner
+   * @returns {Promise<GuildMember>}
+   */
+  setBanner(banner) {
+    return this.edit({ banner });
+  }
+
+  /**
+   * Set Guild About me
+   * @param {string | null} bio Bio to set
+   * @returns {Promise<GuildMember>}
+   */
+  setAboutMe(bio = null) {
+    return this.edit({ bio });
   }
 }
 

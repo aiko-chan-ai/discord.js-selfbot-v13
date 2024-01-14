@@ -5,12 +5,13 @@ const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
 const fetch = require('node-fetch');
 const { Colors } = require('./Constants');
-const { RangeError, TypeError, Error: DJSError } = require('../errors');
+const { Error: DiscordError, RangeError, TypeError } = require('../errors');
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const isObject = d => typeof d === 'object' && d !== null;
 
 let deprecationEmittedForSplitMessage = false;
 let deprecationEmittedForRemoveMentions = false;
+let deprecationEmittedForResolveAutoArchiveMaxLimit = false;
 
 const TextSortableGroupTypes = ['GUILD_TEXT', 'GUILD_ANNOUCMENT', 'GUILD_FORUM'];
 const VoiceSortableGroupTypes = ['GUILD_VOICE', 'GUILD_STAGE_VOICE'];
@@ -138,6 +139,7 @@ class Util extends null {
    * @property {boolean} [numberedList=false] Whether to escape numbered lists
    * @property {boolean} [maskedLink=false] Whether to escape masked links
    */
+
   /**
    * Escapes any Discord-flavour markdown in a string.
    * @param {string} text Content to escape
@@ -220,6 +222,7 @@ class Util extends null {
     if (maskedLink) text = Util.escapeMaskedLink(text);
     return text;
   }
+
   /**
    * Escapes code block markdown in a string.
    * @param {string} text Content to escape
@@ -228,6 +231,7 @@ class Util extends null {
   static escapeCodeBlock(text) {
     return text.replaceAll('```', '\\`\\`\\`');
   }
+
   /**
    * Escapes inline code markdown in a string.
    * @param {string} text Content to escape
@@ -236,6 +240,7 @@ class Util extends null {
   static escapeInlineCode(text) {
     return text.replace(/(?<=^|[^`])``?(?=[^`]|$)/g, match => (match.length === 2 ? '\\`\\`' : '\\`'));
   }
+
   /**
    * Escapes italic markdown in a string.
    * @param {string} text Content to escape
@@ -253,6 +258,7 @@ class Util extends null {
       return `\\_${match}`;
     });
   }
+
   /**
    * Escapes bold markdown in a string.
    * @param {string} text Content to escape
@@ -265,6 +271,7 @@ class Util extends null {
       return '\\*\\*';
     });
   }
+
   /**
    * Escapes underline markdown in a string.
    * @param {string} text Content to escape
@@ -277,6 +284,7 @@ class Util extends null {
       return '\\_\\_';
     });
   }
+
   /**
    * Escapes strikethrough markdown in a string.
    * @param {string} text Content to escape
@@ -285,6 +293,7 @@ class Util extends null {
   static escapeStrikethrough(text) {
     return text.replaceAll('~~', '\\~\\~');
   }
+
   /**
    * Escapes spoiler markdown in a string.
    * @param {string} text Content to escape
@@ -293,6 +302,7 @@ class Util extends null {
   static escapeSpoiler(text) {
     return text.replaceAll('||', '\\|\\|');
   }
+
   /**
    * Escapes escape characters in a string.
    * @param {string} text Content to escape
@@ -301,6 +311,7 @@ class Util extends null {
   static escapeEscape(text) {
     return text.replaceAll('\\', '\\\\');
   }
+
   /**
    * Escapes heading characters in a string.
    * @param {string} text Content to escape
@@ -309,6 +320,7 @@ class Util extends null {
   static escapeHeading(text) {
     return text.replaceAll(/^( {0,2}[*-] +)?(#{1,3} )/gm, '$1\\$2');
   }
+
   /**
    * Escapes bulleted list characters in a string.
    * @param {string} text Content to escape
@@ -317,6 +329,7 @@ class Util extends null {
   static escapeBulletedList(text) {
     return text.replaceAll(/^( *)[*-]( +)/gm, '$1\\-$2');
   }
+
   /**
    * Escapes numbered list characters in a string.
    * @param {string} text Content to escape
@@ -325,6 +338,7 @@ class Util extends null {
   static escapeNumberedList(text) {
     return text.replaceAll(/^( *\d+)\./gm, '$1\\.');
   }
+
   /**
    * Escapes masked link characters in a string.
    * @param {string} text Content to escape
@@ -332,6 +346,16 @@ class Util extends null {
    */
   static escapeMaskedLink(text) {
     return text.replaceAll(/\[.+\]\(.+\)/gm, '\\$&');
+  }
+
+  /**
+   * @typedef {Object} FetchRecommendedShardsOptions
+   * @property {number} [guildsPerShard=1000] Number of guilds assigned per shard
+   * @property {number} [multipleOf=1] The multiple the shard count should round up to. (16 for large bot sharding)
+   */
+
+  static fetchRecommendedShards() {
+    throw new DiscordError('INVALID_USER_API');
   }
 
   /**
@@ -623,24 +647,20 @@ class Util extends null {
 
   /**
    * Resolves the maximum time a guild's thread channels should automatically archive in case of no recent activity.
-   * @deprecated
+   * @param {Guild} guild The guild to resolve this limit from.
+   * @deprecated This will be removed in the next major version.
    * @returns {number}
    */
   static resolveAutoArchiveMaxLimit() {
+    if (!deprecationEmittedForResolveAutoArchiveMaxLimit) {
+      process.emitWarning(
+        // eslint-disable-next-line max-len
+        "The Util.resolveAutoArchiveMaxLimit method and the 'MAX' option are deprecated and will be removed in the next major version.",
+        'DeprecationWarning',
+      );
+      deprecationEmittedForResolveAutoArchiveMaxLimit = true;
+    }
     return 10080;
-  }
-
-  /**
-   * Lazily evaluates a callback function (yea it's v14 :yay:)
-   * @param {Function} cb The callback to lazily evaluate
-   * @returns {Function}
-   * @example
-   * const User = lazy(() => require('./User'));
-   * const user = new (User())(client, data);
-   */
-  static lazy(cb) {
-    let defaultValue;
-    return () => (defaultValue ??= cb());
   }
 
   /**
@@ -708,95 +728,6 @@ class Util extends null {
     };
   }
 
-  static async getAttachments(client, channelId, ...files) {
-    files = files.flat(2);
-    if (!files.length) return [];
-    files = files.map((file, i) => ({
-      filename: file.name ?? file.attachment?.name ?? file.attachment?.filename ?? 'file.jpg',
-      // 25MB = 26_214_400bytes
-      file_size: Math.floor((26_214_400 / 10) * Math.random()),
-      id: `${i}`,
-    }));
-    const { attachments } = await client.api.channels[channelId].attachments.post({
-      data: {
-        files,
-      },
-    });
-    return attachments;
-  }
-
-  static uploadFile(data, url) {
-    return new Promise((resolve, reject) => {
-      fetch(url, {
-        method: 'PUT',
-        body: data,
-      })
-        .then(res => {
-          if (res.ok) {
-            resolve(res);
-          } else {
-            reject(res);
-          }
-        })
-        .catch(reject);
-    });
-  }
-
-  static testImportModule(name) {
-    try {
-      require.resolve(name);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  static getProxyObject(proxy) {
-    const protocol = new URL(proxy).protocol.slice(0, -1);
-    const mapObject = {
-      http: 'https', // Cuz we can't use http for discord
-      https: 'https',
-      socks4: 'socks',
-      socks5: 'socks',
-      'pac+http': 'pac',
-      'pac+https': 'pac',
-    };
-    const proxyType = mapObject[protocol];
-    switch (proxyType) {
-      case 'https': {
-        if (!Util.testImportModule('https-proxy-agent')) {
-          throw new DJSError('MISSING_MODULE', 'https-proxy-agent', 'npm install https-proxy-agent');
-        }
-        const httpsProxyAgent = require('https-proxy-agent');
-        return new httpsProxyAgent.HttpsProxyAgent(proxy);
-      }
-
-      case 'socks': {
-        if (!Util.testImportModule('socks-proxy-agent')) {
-          throw new DJSError('MISSING_MODULE', 'socks-proxy-agent', 'npm install socks-proxy-agent');
-        }
-        const socksProxyAgent = require('socks-proxy-agent');
-        return new socksProxyAgent.SocksProxyAgent(proxy);
-      }
-
-      case 'pac': {
-        if (!Util.testImportModule('pac-proxy-agent')) {
-          throw new DJSError('MISSING_MODULE', 'pac-proxy-agent', 'npm install pac-proxy-agent');
-        }
-        const pacProxyAgent = require('pac-proxy-agent');
-        return new pacProxyAgent.PacProxyAgent(proxy);
-      }
-
-      default: {
-        if (!Util.testImportModule('proxy-agent')) {
-          throw new DJSError('MISSING_MODULE', 'proxy-agent', 'npm install proxy-agent@5');
-        }
-        const proxyAgent = require('proxy-agent');
-        return new proxyAgent(proxy);
-      }
-    }
-  }
-
   /**
    * Gets an array of the channel types that can be moved in the channel group. For example, a GuildText channel would
    * return an array containing the types that can be ordered within the text channels (always at the top), and a voice
@@ -831,94 +762,38 @@ class Util extends null {
     return Number(BigInt(userId) >> 22n) % 6;
   }
 
-  static clientRequiredAction(client, code) {
-    let msg = '';
-    let stopClient = false;
-    switch (code) {
-      case null: {
-        msg = 'All required actions have been completed.';
-        break;
-      }
-      case 'AGREEMENTS': {
-        msg = 'You need to accept the new Terms of Service and Privacy Policy.';
-        // https://discord.com/api/v9/users/@me/agreements
-        client.api
-          .users('@me')
-          .agreements.patch({
-            data: {
-              terms: true,
-              privacy: true,
-            },
-          })
-          .then(() => {
-            client.emit(
-              'debug',
-              '[USER_REQUIRED_ACTION] Successfully accepted the new Terms of Service and Privacy Policy.',
-            );
-          })
-          .catch(e => {
-            client.emit(
-              'debug',
-              `[USER_REQUIRED_ACTION] Failed to accept the new Terms of Service and Privacy Policy: ${e}`,
-            );
-          });
-        break;
-      }
-      case 'REQUIRE_CAPTCHA': {
-        msg = 'You need to complete a captcha.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_VERIFIED_EMAIL': {
-        msg = 'You need to verify your email.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_REVERIFIED_EMAIL': {
-        msg = 'You need to reverify your email.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_VERIFIED_PHONE': {
-        msg = 'You need to verify your phone number.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_REVERIFIED_PHONE': {
-        msg = 'You need to reverify your phone number.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_VERIFIED_EMAIL_OR_VERIFIED_PHONE': {
-        msg = 'You need to verify your email or verify your phone number.';
-        stopClient = true; // Maybe not
-        break;
-      }
-      case 'REQUIRE_REVERIFIED_EMAIL_OR_VERIFIED_PHONE': {
-        msg = 'You need to reverify your email or verify your phone number.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_VERIFIED_EMAIL_OR_REVERIFIED_PHONE': {
-        msg = 'You need to verify your email or reverify your phone number.';
-        stopClient = true;
-        break;
-      }
-      case 'REQUIRE_REVERIFIED_EMAIL_OR_REVERIFIED_PHONE': {
-        msg = 'You need to reverify your email or reverify your phone number.';
-        stopClient = true;
-        break;
-      }
-      default: {
-        msg = `Unknown required action: ${code}`;
-        break;
-      }
-    }
-    if (stopClient) {
-      client.emit('error', new Error(`[USER_REQUIRED_ACTION] ${msg}`));
-    } else {
-      client.emit('debug', `[USER_REQUIRED_ACTION] ${msg}`);
-    }
+  static async getUploadURL(client, channelId, files) {
+    if (!files.length) return [];
+    files = files.map((file, i) => ({
+      filename: file.name,
+      // 25MB = 26_214_400bytes
+      file_size: Math.floor((26_214_400 / 10) * Math.random()),
+      id: `${i}`,
+    }));
+    const { attachments } = await client.api.channels[channelId].attachments.post({
+      data: {
+        files,
+      },
+    });
+    return attachments;
+  }
+
+  static uploadFile(data, url) {
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: 'PUT',
+        body: data,
+        duplex: 'half', // Node.js v20
+      })
+        .then(res => {
+          if (res.ok) {
+            resolve(res);
+          } else {
+            reject(res);
+          }
+        })
+        .catch(reject);
+    });
   }
 }
 

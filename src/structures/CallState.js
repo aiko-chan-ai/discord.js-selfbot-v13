@@ -7,7 +7,7 @@ const Base = require('./Base');
  * Represents a call
  * @extends {Base}
  */
-class Call extends Base {
+class CallState extends Base {
   constructor(client, data) {
     super(client);
     /**
@@ -16,14 +16,11 @@ class Call extends Base {
      */
     this.channelId = data.channel_id;
 
-    /**
-     * The list of user ID who is ringing
-     * @type {Collection<Snowflake, User>}
-     */
-    this.ringing = new Collection();
+    this._ringing = [];
 
     this._patch(data);
   }
+
   _patch(data) {
     if ('region' in data) {
       /**
@@ -33,11 +30,10 @@ class Call extends Base {
       this.region = data.region;
     }
     if ('ringing' in data) {
-      for (const userId of data.ringing) {
-        this.ringing.set(userId, this.client.users.cache.get(userId));
-      }
+      this._ringing = data.ringing;
     }
   }
+
   /**
    * The channel of the call
    * @type {?DMChannel|PartialGroupDMChannel}
@@ -45,14 +41,23 @@ class Call extends Base {
   get channel() {
     return this.client.channels.cache.get(this.channelId);
   }
+
   /**
    * Sets the voice region of the call
    * @param {string} region Region of the call
    * @returns {Promise<void>}
    */
-  setVoiceRegion(region) {
+  setRTCRegion(region) {
     return this.client.api.channels(this.channelId).call.patch({ data: { region } });
+  }
+
+  /**
+   * The list of user ID who is ringing
+   * @type {Collection<Snowflake, User>}
+   */
+  get ringing() {
+    return new Collection(this._ringing.map(id => [id, this.client.users.cache.get(id)]));
   }
 }
 
-module.exports = Call;
+module.exports = CallState;

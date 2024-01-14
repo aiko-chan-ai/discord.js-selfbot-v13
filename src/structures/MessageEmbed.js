@@ -8,7 +8,7 @@ let deprecationEmittedForSetAuthor = false;
 let deprecationEmittedForSetFooter = false;
 let deprecationEmittedForAddField = false;
 
-// TODO: Remove the deprecated code for `setAuthor()`, `setFooter()` and `addField()`.
+// TODO: Remove the deprecated code for `setAuthor()` and `setFooter()`.
 
 /**
  * Represents an embed in a message (image/video preview, rich embed, etc.)

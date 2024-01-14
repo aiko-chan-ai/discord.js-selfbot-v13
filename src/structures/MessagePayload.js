@@ -3,7 +3,6 @@
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
-const WebEmbed = require('./WebEmbed');
 const { RangeError } = require('../errors');
 const ActivityFlags = require('../util/ActivityFlags');
 const DataResolver = require('../util/DataResolver');
@@ -42,7 +41,6 @@ class MessagePayload {
      * @property {Buffer|string|Stream} attachment The original attachment that generated this file
      * @property {string} name The name of this file
      * @property {Buffer|Stream} file The file to be sent to the API
-     * @extends {APIAttachment}
      */
 
     /**
@@ -50,15 +48,6 @@ class MessagePayload {
      * @type {?MessageFile[]}
      */
     this.files = null;
-  }
-
-  /**
-   * Whether or not using new API to upload files
-   * @type {boolean}
-   * @readonly
-   */
-  get usingNewAttachmentAPI() {
-    return Boolean(this.options?.usingNewAttachmentAPI);
   }
 
   /**
@@ -133,12 +122,12 @@ class MessagePayload {
    * Resolves data.
    * @returns {MessagePayload}
    */
-  async resolveData() {
+  resolveData() {
     if (this.data) return this;
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
 
-    let content = this.makeContent();
+    const content = this.makeContent();
     const tts = Boolean(this.options.tts);
 
     let nonce;
@@ -208,37 +197,6 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
-    if (this.options.embeds) {
-      if (!Array.isArray(this.options.embeds)) {
-        this.options.embeds = [this.options.embeds];
-      }
-
-      const webembeds = this.options.embeds.filter(e => e instanceof WebEmbed);
-      this.options.embeds = this.options.embeds.filter(e => !(e instanceof WebEmbed));
-
-      if (webembeds.length > 0) {
-        if (!content) content = '';
-        // Add hidden embed link
-        content += `\n${WebEmbed.hiddenEmbed} \n`;
-        if (webembeds.length > 1) {
-          console.warn('[WARN] Multiple webembeds are not supported, this will be ignored.');
-        }
-        // Const embed = webembeds[0];
-        for (const webE of webembeds) {
-          const data = await webE.toMessage();
-          content += `\n${data}`;
-        }
-      }
-      // Check content
-      if (typeof content == 'string' && content.length > 2000) {
-        console.warn('[WARN] Content is longer than 2000 characters.');
-      }
-      if (typeof content == 'string' && content.length > 4000) {
-        // Max length if user has nitro boost
-        throw new RangeError('MESSAGE_EMBED_LINK_LENGTH');
-      }
-    }
-
     // Activity
     let activity;
     if (
@@ -247,7 +205,7 @@ class MessagePayload {
       this.options.activity.type
     ) {
       const type = ActivityFlags.resolve(this.options.activity.type);
-      const sessionId = this.target.client.sessionId;
+      const sessionId = this.target.client.ws.shards.first()?.sessionId;
       const partyId = this.options.activity.partyId;
       activity = {
         type,
@@ -348,7 +306,7 @@ module.exports = MessagePayload;
 
 /**
  * A target for a message.
- * @typedef {TextBasedChannels|DMChannel|User|GuildMember|Webhook|WebhookClient|Interaction|InteractionWebhook|
+ * @typedef {TextBasedChannels|User|GuildMember|Webhook|WebhookClient|Interaction|InteractionWebhook|
  * Message|MessageManager} MessageTarget
  */
 

@@ -1,10 +1,3 @@
-## Setup
-```js
-const client = new Client({
-  syncStatus: false,
-});
-```
-
 ## Custom Status and RPC
 
 <strong>Custom Status</strong>
@@ -68,57 +61,7 @@ client.user.setActivity(r);
 
 > Tutorial:
 
-## Method 1:
-
-+ Step 1: Send image to Discord
-
-<img src='https://cdn.discordapp.com/attachments/820557032016969751/995297572732284968/unknown.png'>
-
-+ Step 2: Get Image URL
-
-<img src='https://cdn.discordapp.com/attachments/820557032016969751/995298082474426418/unknown.png'>
-
-```sh
-Demo URL: https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png
-```
-
-+ Step 3: Replace `https://cdn.discordapp.com/` or `https://media.discordapp.net/` with `mp:`
-
-```diff
-- https://cdn.discordapp.com/attachments/820557032016969751/991172011483218010/unknown.png
-
-- https://media.discordapp.net/attachments/820557032016969751/991172011483218010/unknown.png
-
-+ mp:attachments/820557032016969751/991172011483218010/unknown.png
-
-```
-
-+ Step 4:
-
-```js
-const Discord = require('discord.js-selfbot-v13');
-const r = new Discord.RichPresence()
-	.setApplicationId('817229550684471297')
-	.setType('PLAYING')
-	.setURL('https://youtube.com/watch?v=dQw4w9WgXcQ')
-	.setState('State')
-	.setName('Name')
-	.setDetails('Details')
-	.setParty({
-		max: 9,
-		current: 1,
-		id: Discord.getUUID(),
-	})
-	.setStartTimestamp(Date.now())
-	.setAssetsLargeImage('mp:attachments/820557032016969751/991172011483218010/unknown.png')
-	.setAssetsLargeText('Youtube')
-	.setAssetsSmallImage('895316294222635008')
-	.setAssetsSmallText('Bot')
-	.addButton('name', 'https://link.com/')
-client.user.setActivity(r);
-```
-
-## Method 2: (Discord URL, 2.3.78+)
+## Method 1: (Discord URL, v2.3.78+)
 
 ```js
 const Discord = require('discord.js-selfbot-v13');
@@ -145,7 +88,7 @@ client.user.setActivity(r);
 
 <img src='https://cdn.discordapp.com/attachments/820557032016969751/995301015257616414/unknown.png'>
 
-## Method 3 (Custom URL, 2.3.78+)
+## Method 2 (Custom URL, 2.3.78+)
 
 ```js
 const Discord = require('discord.js-selfbot-v13');
