@@ -363,7 +363,7 @@ class RequestHandler {
           // Retry the request after a captcha is solved
           this.manager.client.emit(
             DEBUG,
-            `Hit a captcha while executing a request. Solving captcha ...
+            `Hit a captcha while executing a request (${data.captcha_key.join(', ')})
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}

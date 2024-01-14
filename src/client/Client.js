@@ -535,7 +535,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Join this Guild using this invite (fast)
+   * Join this Guild using this invite
    * @param {InviteResolvable} invite Invite code or URL
    * @returns {Promise<void>}
    * @example
@@ -544,16 +544,22 @@ class Client extends BaseClient {
   async acceptInvite(invite) {
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
-    if (invite instanceof Invite) {
-      await invite.acceptInvite();
-    } else {
-      await this.api.invites(code).post({
-        DiscordContext: { location: 'Markdown Link' },
-        data: {
-          session_id: this.ws.shards.first()?.sessionId,
-        },
-      });
-    }
+    const i = await this.fetchInvite(code);
+    if (this.guilds.cache.has(i.guild?.id)) return;
+    /*
+{
+  location: 'Desktop Invite Modal',
+  location_guild_id: i.guild?.id,
+  location_channel_id: i.channelId,
+  location_channel_type: typeof i.channel.type == 'number' ? i.channel.type : ChannelTypes[i.channel.type],
+}
+*/
+    await this.api.invites(code).post({
+      DiscordContext: { location: 'Markdown Link' },
+      data: {
+        session_id: this.ws.shards.first()?.sessionId,
+      },
+    });
   }
 
   /**
