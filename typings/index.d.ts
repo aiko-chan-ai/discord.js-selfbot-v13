@@ -191,9 +191,9 @@ export class RichPresence {
   public type: ActivityType;
   public url: string | null;
   public ipc: boolean;
-  public setAssetsLargeImage(image?: any): this;
+  public setAssetsLargeImage(image?: string): this;
   public setAssetsLargeText(text?: string): this;
-  public setAssetsSmallImage(image?: any): this;
+  public setAssetsSmallImage(image?: string): this;
   public setAssetsSmallText(text?: string): this;
   public setName(name?: string): this;
   public setURL(url?: string): this;

@@ -34,24 +34,19 @@
 
 `discord.js-selfbot-v13` is currently in maintenance mode. New features are not actively being added but existing features and new versions of discord are supported as possible. There are some major architectural changes which need to be added to improve the stability and security of the project. I don't have as much spare time as I did when I started this project, so there is not currently any plan for these improvements.
 
-### <strong>[Document Website (recommend)](https://discordjs-self-v13.netlify.app/)</strong>
+### <strong>[Document Website](https://discordjs-self-v13.netlify.app/)</strong>
 
-### <strong>[Extend Document (With Example)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/Document)</strong>
+### <strong>[Example Code](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/examples)</strong>
 
 ## Features (User)
 - [x] Message: Embeds (WebEmbed)
-- [x] User: Settings, Status, Activity, DeveloperPortal, RemoteAuth, etc.
+- [x] User: Status, Activity, RemoteAuth, etc.
 - [X] Guild: Fetch Members, Join / Leave, Top emojis, ...
-- [X] Interactions: Slash Commands, Click Buttons, Menu, Modal, Context Menu, ...
+- [X] Interactions: Slash Commands, Buttons, Menu, Modal
 - [X] Captcha Handler (2captcha, capmonster, custom)
 - [X] Documentation
 - [x] Voice & [Video stream](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/293)
 - [ ] Everything
-
-### Optional packages
-
-- [2captcha](https://www.npmjs.com/package/2captcha) for solving captcha (`npm install 2captcha`)
-- [node-capmonster](https://www.npmjs.com/package/node-capmonster) for solving captcha (`npm install node-capmonster`)
 
 ## Installation
 
@@ -67,11 +62,7 @@ npm install discord.js-selfbot-v13@latest
 
 ```js
 const { Client } = require('discord.js-selfbot-v13');
-const client = new Client({
-	// See other options here
-	// https://discordjs-self-v13.netlify.app/#/docs/docs/main/typedef/ClientOptions
-	// All partials are loaded automatically
-});
+const client = new Client();
 
 client.on('ready', async () => {
   console.log(`${client.user.username} is ready!`);
@@ -109,7 +100,7 @@ console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
 ## Contributing
 
 - Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
-[documentation](https://discord.js.org/#/docs).  
+[documentation](https://discordjs-self-v13.netlify.app/).  
 - See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
 
 ## Need help?

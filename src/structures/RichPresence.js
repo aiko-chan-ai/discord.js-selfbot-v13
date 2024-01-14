@@ -181,8 +181,16 @@ class RichPresence {
     this.metadata = data.metadata;
   }
   /**
+   * @typedef {string} RichPresenceImage
+   * Support:
+   * - cdn.discordapp.com
+   * - media.discordapp.net
+   * - Asset ID (From https://discord.com/api/v9/oauth2/applications/:id/assets)
+   * - ExternalAssets (mp:external/)
+   */
+  /**
    * Set the large image of this activity
-   * @param {?any} image The large image asset's id
+   * @param {?RichPresenceImage} image The large image asset's id
    * @returns {RichPresence}
    */
   setAssetsLargeImage(image) {
@@ -198,14 +206,7 @@ class RichPresence {
         .replace('http://media.discordapp.net/', 'mp:');
       //
       if (!image.startsWith('mp:') && !this.ipc) {
-        throw new Error(
-          'INVALID_URL',
-          `
-If you want to set the URL directly, it should be the Discord URL (cdn.discordapp.com | media.discordapp.net)
-Or follow these instructions:
-https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichPresence.md#method-3-custom-url-2378
-`,
-        );
+        throw new Error('INVALID_URL');
       }
     } else if (/^[0-9]{17,19}$/.test(image)) {
       // ID Assets
@@ -219,7 +220,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
   }
   /**
    * Set the small image of this activity
-   * @param {?any} image The small image asset's id
+   * @param {?RichPresenceImage} image The small image asset's id
    * @returns {RichPresence}
    */
   setAssetsSmallImage(image) {
@@ -235,14 +236,7 @@ https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichP
         .replace('http://media.discordapp.net/', 'mp:');
       //
       if (!image.startsWith('mp:') && !this.ipc) {
-        throw new Error(
-          'INVALID_URL',
-          `
-If you want to set the URL directly, it should be the Discord URL (cdn.discordapp.com | media.discordapp.net)
-Or follow these instructions:
-https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Documents/RichPresence.md#method-3-custom-url-2378
-`,
-        );
+        throw new Error('INVALID_URL');
       }
     } else if (/^[0-9]{17,19}$/.test(image)) {
       // ID Assets

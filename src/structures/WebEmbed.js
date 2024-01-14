@@ -8,7 +8,11 @@ const Util = require('../util/Util');
 
 /**
  * Send Embedlink to Discord
- * Need to change WebEmbed API server (because heroku is no longer free)
+ * <info>Only works with Discord Web and Discord Client (no custom theme installed)</info>
+ * - No Timestamp, Footer, Fields, Author iconURL
+ * - Video with Embed working
+ * - Can only choose between image and thumbnail
+ * - Description limit 350 characters
  */
 class WebEmbed {
   /**
