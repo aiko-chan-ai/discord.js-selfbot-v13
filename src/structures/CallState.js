@@ -36,7 +36,7 @@ class CallState extends Base {
 
   /**
    * The channel of the call
-   * @type {?DMChannel|PartialGroupDMChannel}
+   * @type {?DMChannel|GroupDMChannel}
    */
   get channel() {
     return this.client.channels.cache.get(this.channelId);
