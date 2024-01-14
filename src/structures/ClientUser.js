@@ -187,7 +187,7 @@ class ClientUser extends User {
    * @typedef {Object} PresenceData
    * @property {PresenceStatusData} [status] Status of the user
    * @property {boolean} [afk] Whether the user is AFK
-   * @property {(ActivitiesOptions|CustomStatus|RichPresence|SpotifyRPC)[]} [activities] Activity the user is playing
+   * @property {ActivitiesOptions[]|CustomStatus[]|RichPresence[]|SpotifyRPC[]} [activities] Activity the user is playing
    * @property {number|number[]} [shardId] Shard id(s) to have the activity set on
    */
 
