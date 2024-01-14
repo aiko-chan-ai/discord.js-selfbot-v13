@@ -17,40 +17,10 @@
 
 ## Interaction
 <details open>
-<summary>Button Click</summary>
-
-```js
-await Button.click(Message);
-//
-await message.clickButton(buttonID);
-//
-await message.clickButton(); // first button
-//
-await message.clickButton({ row: 0, col: 0})
-```
-</details>
-<details open>
-<summary>Message Select Menu</summary>
-
-```js
-await MessageSelectMenu.select(Message, options); // (v1)
-// value: ['value1', 'value2' , ...]
-await message.selectMenu(menuID, options) // If message has >= 2 menu
-await message.selectMenu(options) // If message has 1 menu
-```
-</details>
-<details open>
 <summary>Slash Command</summary>
 
 ### [Click here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/blob/main/Document/SlashCommand.md)
 
-</details>
-<details open>
-<summary>Message Context Command</summary>
-
-```js
-await message.contextMenu(botID, commandName);
-```
 </details>
 <details open>
 
@@ -64,13 +34,7 @@ await message.contextMenu(botID, commandName);
 Code:
 ```js
 const Discord = require('discord.js-selfbot-v13');
-// Selfhost WebEmbed: https://github.com/aiko-chan-ai/WebEmbed
-const w = new Discord.WebEmbed({
-  shorten: true,
-  hidden: false, // if you send this embed with MessagePayload.options.embeds, it must set to false
-  baseURL: '', // if you want self-host API, else skip :v
-  shortenAPI: '', // if you want Custom shortenAPI (Method: Get, response: Text => URL), else skip :v
-})
+const w = new Discord.WebEmbed()
 	.setAuthor({ name: 'hello', url: 'https://google.com' })
 	.setColor('RED')
 	.setDescription('description uh')
@@ -83,7 +47,7 @@ const w = new Discord.WebEmbed({
 	.setVideo(
 		'https://cdn.discordapp.com/attachments/877060758092021801/957691816143097936/The_Quintessential_Quintuplets_And_Rick_Astley_Autotune_Remix.mp4',
 	);
-message.channel.send({ content: `Hello world`, embeds: [w] }) // Patched :)
+message.channel.send({ content: `Hello world ${Discord.WebEmbed.hiddenEmbed} ${w}` });
 
 ```
 ### Features & Issues

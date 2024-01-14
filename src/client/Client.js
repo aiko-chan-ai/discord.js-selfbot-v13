@@ -1,46 +1,40 @@
 'use strict';
 
 const process = require('node:process');
-const { setInterval, setTimeout } = require('node:timers');
+const { setInterval } = require('node:timers');
+const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
-const { getVoiceConnection } = require('@discordjs/voice');
-const chalk = require('chalk');
-const fetch = require('node-fetch');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
 const WebSocketManager = require('./websocket/WebSocketManager');
 const { Error, TypeError, RangeError } = require('../errors');
-const Discord = require('../index');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const BillingManager = require('../managers/BillingManager');
 const ChannelManager = require('../managers/ChannelManager');
-const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
-const DeveloperPortalManager = require('../managers/DeveloperPortalManager');
 const GuildManager = require('../managers/GuildManager');
+const PresenceManager = require('../managers/PresenceManager');
 const RelationshipManager = require('../managers/RelationshipManager');
-const SessionManager = require('../managers/SessionManager');
 const UserManager = require('../managers/UserManager');
+const UserNoteManager = require('../managers/UserNoteManager');
 const VoiceStateManager = require('../managers/VoiceStateManager');
 const ShardClientUtil = require('../sharding/ShardClientUtil');
 const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
 const GuildTemplate = require('../structures/GuildTemplate');
 const Invite = require('../structures/Invite');
-const { CustomStatus } = require('../structures/RichPresence');
 const { Sticker } = require('../structures/Sticker');
 const StickerPack = require('../structures/StickerPack');
 const VoiceRegion = require('../structures/VoiceRegion');
 const Webhook = require('../structures/Webhook');
 const Widget = require('../structures/Widget');
-const { Events, InviteScopes, Status, captchaServices } = require('../util/Constants');
+const { Events, Status } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
 const Options = require('../util/Options');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
-const { getProxyObject } = require('../util/Util');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -50,7 +44,7 @@ class Client extends BaseClient {
   /**
    * @param {ClientOptions} options Options for the client
    */
-  constructor(options = {}) {
+  constructor(options) {
     super(options);
 
     const data = require('node:worker_threads').workerData ?? process.env;
@@ -141,35 +135,12 @@ class Client extends BaseClient {
      */
     this.users = new UserManager(this);
 
-    // Patch
-    /**
-     * All of the relationships {@link User}
-     * @type {RelationshipManager}
-     */
-    this.relationships = new RelationshipManager(this);
-    /**
-     * All of the settings {@link Object}
-     * @type {ClientUserSettingManager}
-     */
-    this.settings = new ClientUserSettingManager(this);
     /**
      * All of the guilds the client is currently handling, mapped by their ids -
      * as long as sharding isn't being used, this will be *every* guild the bot is a member of
      * @type {GuildManager}
      */
     this.guilds = new GuildManager(this);
-
-    /**
-     * Manages the API methods
-     * @type {BillingManager}
-     */
-    this.billing = new BillingManager(this);
-
-    /**
-     * All of the sessions of the client
-     * @type {SessionManager}
-     */
-    this.sessions = new SessionManager(this);
 
     /**
      * All of the {@link Channel}s that the client is currently handling, mapped by their ids -
@@ -187,17 +158,35 @@ class Client extends BaseClient {
     this.sweepers = new Sweepers(this, this.options.sweepers);
 
     /**
-     * The developer portal manager of the client
-     * @type {DeveloperPortalManager}
-     */
-    this.developerPortal = new DeveloperPortalManager(this);
-
-    /**
      * The presence of the Client
      * @private
      * @type {ClientPresence}
      */
     this.presence = new ClientPresence(this, this.options.presence);
+
+    /**
+     * A manager of the presences belonging to this client
+     * @type {PresenceManager}
+     */
+    this.presences = new PresenceManager(this);
+
+    /**
+     * All of the note that have been cached at any point, mapped by their ids
+     * @type {UserManager}
+     */
+    this.notes = new UserNoteManager(this);
+
+    /**
+     * All of the relationships {@link User}
+     * @type {RelationshipManager}
+     */
+    this.relationships = new RelationshipManager(this);
+
+    /**
+     * Manages the API methods
+     * @type {BillingManager}
+     */
+    this.billing = new BillingManager(this);
 
     Object.defineProperty(this, 'token', { writable: true });
     if (!this.token && 'DISCORD_TOKEN' in process.env) {
@@ -212,8 +201,6 @@ class Client extends BaseClient {
       this.token = null;
     }
 
-    this._interactionCache = new Collection();
-
     /**
      * User that the client is logged in as
      * @type {?ClientUser}
@@ -221,23 +208,11 @@ class Client extends BaseClient {
     this.user = null;
 
     /**
-     * The application of this bot
-     * @type {?ClientApplication}
-     */
-    this.application = null;
-
-    /**
      * Time at which the client was last regarded as being in the `READY` state
      * (each time the client disconnects and successfully reconnects, this will be overwritten)
      * @type {?Date}
      */
     this.readyAt = null;
-
-    /**
-     * Password cache
-     * @type {?string}
-     */
-    this.password = this.options.password;
 
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
@@ -249,15 +224,6 @@ class Client extends BaseClient {
         this.options.messageSweepInterval * 1_000,
       ).unref();
     }
-  }
-
-  /**
-   * Session ID
-   * @type {?string}
-   * @readonly
-   */
-  get sessionId() {
-    return this.ws.shards.first()?.sessionId;
   }
 
   /**
@@ -292,19 +258,6 @@ class Client extends BaseClient {
   }
 
   /**
-   * @external VoiceConnection
-   * @see {@link https://discord.js.org/#/docs/voice/main/class/VoiceConnection}
-   */
-  /**
-   * Get connection to current call
-   * @type {?VoiceConnection}
-   * @readonly
-   */
-  get callVoice() {
-    return getVoiceConnection(null);
-  }
-
-  /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
    * @returns {Promise<string>} Token of the account used
@@ -320,8 +273,7 @@ class Client extends BaseClient {
       Logging on with a user token is unfortunately against the Discord
       \`Terms of Service\` <https://support.discord.com/hc/en-us/articles/115002192352>
       and doing so might potentially get your account banned.
-      Use this at your own risk.
-`,
+      Use this at your own risk.`,
     );
     this.emit(
       Events.DEBUG,
@@ -346,178 +298,10 @@ class Client extends BaseClient {
     }
   }
 
-  /**
-   * Login Discord with Username and Password
-   * @param {string} username Email or Phone Number
-   * @param {?string} password Password
-   * @param {?string} mfaCode 2FA Code / Backup Code
-   * @returns {Promise<string>}
-   */
-  async normalLogin(username, password = this.password, mfaCode) {
-    if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
-      throw new Error('NORMAL_LOGIN');
-    }
-    this.emit(
-      Events.DEBUG,
-      `Connecting to Discord with: 
-      username: ${username}
-      password: ${password.replace(/./g, '*')}`,
-    );
-    const data = await this.api.auth.login.post({
-      data: {
-        login: username,
-        password: password,
-        undelete: false,
-        captcha_key: null,
-        login_source: null,
-        gift_code_sku_id: null,
-      },
-      auth: false,
-    });
-    this.password = password;
-    if (!data.token && data.ticket && data.mfa) {
-      this.emit(Events.DEBUG, `Using 2FA Code: ${mfaCode}`);
-      const normal2fa = /(\d{6})/g;
-      const backupCode = /([a-z0-9]{4})-([a-z0-9]{4})/g;
-      if (!mfaCode || typeof mfaCode !== 'string') {
-        throw new Error('LOGIN_FAILED_2FA');
-      }
-      if (normal2fa.test(mfaCode) || backupCode.test(mfaCode)) {
-        const data2 = await this.api.auth.mfa.totp.post({
-          data: {
-            code: mfaCode,
-            ticket: data.ticket,
-            login_source: null,
-            gift_code_sku_id: null,
-          },
-          auth: false,
-        });
-        return this.login(data2.token);
-      } else {
-        throw new Error('LOGIN_FAILED_2FA');
-      }
-    } else if (data.token) {
-      return this.login(data.token);
-    } else {
-      throw new Error('LOGIN_FAILED_UNKNOWN');
-    }
-  }
-
-  /**
-   * Switch the user
-   * @param {string} token User Token
-   * @returns {Promise<string>}
-   */
-  switchUser(token) {
-    this._clearCache(this.emojis.cache);
-    this._clearCache(this.guilds.cache);
-    this._clearCache(this.channels.cache);
-    this._clearCache(this.users.cache);
-    this._clearCache(this.relationships.cache);
-    this._clearCache(this.sessions.cache);
-    this._clearCache(this.voiceStates.cache);
-    this.ws.status = Status.IDLE;
-    return this.login(token);
-  }
-
-  /**
-   * Sign in with the QR code on your phone.
-   * @param {DiscordAuthWebsocketOptions} options Options
-   * @returns {DiscordAuthWebsocket}
-   * @example
-   * client.QRLogin();
-   */
-  QRLogin(options = {}) {
-    const QR = new DiscordAuthWebsocket({ ...options, autoLogin: true });
-    this.emit(Events.DEBUG, `Preparing to connect to the gateway (QR Login)`, QR);
-    return QR.connect(this);
-  }
-
-  /**
-   * Implement `remoteAuth`, like using your phone to scan a QR code
-   * @param {string} url URL from QR code
-   * @returns {Promise<void>}
-   */
-  async remoteAuth(url) {
-    if (!this.isReady()) throw new Error('CLIENT_NOT_READY', 'Remote Auth');
-    // Step 1: Parse URL
-    url = new URL(url);
-    if (
-      !['discordapp.com', 'discord.com'].includes(url.hostname) ||
-      !url.pathname.startsWith('/ra/') ||
-      url.pathname.length <= 4
-    ) {
-      throw new Error('INVALID_REMOTE_AUTH_URL');
-    }
-    const hash = url.pathname.replace('/ra/', '');
-    // Step 2: Post > Get handshake_token
-    const res = await this.api.users['@me']['remote-auth'].post({
-      data: {
-        fingerprint: hash,
-      },
-    });
-    const handshake_token = res.handshake_token;
-    // Step 3: Post
-    return this.api.users['@me']['remote-auth'].finish.post({ data: { handshake_token, temporary_token: false } });
-    // Cancel
-    // this.api.users['@me']['remote-auth'].cancel.post({ data: { handshake_token } });
-  }
-
-  /**
-   * Create a new token based on the current token
-   * @returns {Promise<string>} New Discord Token
-   */
-  createToken() {
-    return new Promise((resolve, reject) => {
-      // Step 1: Create DiscordAuthWebsocket
-      const QR = new DiscordAuthWebsocket({
-        hiddenLog: true,
-        generateQR: false,
-        autoLogin: false,
-        debug: false,
-        failIfError: false,
-        userAgent: this.options.http.headers['User-Agent'],
-        wsProperties: this.options.ws.properties,
-      });
-      // Step 2: Add event
-      QR.once('ready', async (_, url) => {
-        try {
-          await this.remoteAuth(url);
-        } catch (e) {
-          reject(e);
-        }
-      }).once('finish', (user, token) => {
-        resolve(token);
-      });
-      // Step 3: Connect
-      QR.connect();
-    });
-  }
-
-  /**
-   * Emitted whenever clientOptions.checkUpdate = false
-   * @event Client#update
-   * @param {string} oldVersion Current version
-   * @param {string} newVersion Latest version
-   */
-
-  /**
-   * Check for updates
-   * @returns {Promise<Client>}
-   */
-  async checkUpdate() {
-    const res_ = await (
-      await fetch(`https://registry.npmjs.com/${encodeURIComponent('discord.js-selfbot-v13')}`)
-    ).json();
-    try {
-      const latest_tag = res_['dist-tags'].latest;
-      this.emit('update', Discord.version, latest_tag);
-      this.emit('debug', `${chalk.greenBright('[OK]')} Check Update success`);
-    } catch {
-      this.emit('debug', `${chalk.redBright('[Fail]')} Check Update error`);
-      this.emit('update', Discord.version, false);
-    }
-    return this;
+  QRLogin() {
+    const ws = new DiscordAuthWebsocket();
+    ws.once('ready', () => ws.generateQR());
+    return ws.connect(this);
   }
 
   /**
@@ -544,7 +328,6 @@ class Client extends BaseClient {
     this.sweepers.destroy();
     this.ws.destroy();
     this.token = null;
-    this.password = null;
   }
 
   /**
@@ -558,7 +341,7 @@ class Client extends BaseClient {
         voip_provider: null,
       },
     });
-    await this.destroy();
+    return this.destroy();
   }
 
   /**
@@ -584,51 +367,6 @@ class Client extends BaseClient {
       query: { with_counts: true, with_expiration: true, guild_scheduled_event_id: options?.guildScheduledEventId },
     });
     return new Invite(this, data);
-  }
-
-  /**
-   * Join this Guild using this invite (fast)
-   * @param {InviteResolvable} invite Invite code or URL
-   * @returns {Promise<void>}
-   * @example
-   * await client.acceptInvite('https://discord.gg/genshinimpact')
-   */
-  async acceptInvite(invite) {
-    const code = DataResolver.resolveInviteCode(invite);
-    if (!code) throw new Error('INVITE_RESOLVE_CODE');
-    if (invite instanceof Invite) {
-      await invite.acceptInvite();
-    } else {
-      await this.api.invites(code).post({
-        headers: {
-          'X-Context-Properties': 'eyJsb2NhdGlvbiI6Ik1hcmtkb3duIExpbmsifQ==', // Markdown Link
-        },
-        data: {
-          session_id: this.sessionId,
-        },
-      });
-    }
-  }
-
-  /**
-   * Redeem nitro from code or url.
-   * @param {string} nitro Nitro url or code
-   * @param {TextChannelResolvable} channel Channel that the code was sent in
-   * @param {Snowflake} [paymentSourceId] Payment source id
-   * @returns {Promise<any>}
-   */
-  redeemNitro(nitro, channel, paymentSourceId) {
-    if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
-    const nitroCode =
-      nitro.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/) ||
-      nitro.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/);
-    if (!nitroCode) return false;
-    const code = nitroCode[2];
-    channel = this.channels.resolveId(channel);
-    return this.api.entitlements['gift-codes'](code).redeem.post({
-      auth: true,
-      data: { channel_id: channel || null, payment_source_id: paymentSourceId || null },
-    });
   }
 
   /**
@@ -722,16 +460,6 @@ class Client extends BaseClient {
   }
 
   /**
-   * Clear a cache
-   * @param {Collection} cache The cache to clear
-   * @returns {number} The number of removed entries
-   * @private
-   */
-  _clearCache(cache) {
-    return cache.sweep(() => true);
-  }
-
-  /**
    * Sweeps all text-based channels' messages and removes the ones older than the max message lifetime.
    * If the message has been edited, the time of the edit is used rather than the time of the original message.
    * @param {number} [lifetime=this.options.messageCacheLifetime] Messages that are older than this (in seconds)
@@ -791,65 +519,13 @@ class Client extends BaseClient {
    */
 
   /**
-   * Generates a link that can be used to invite the bot to a guild.
-   * @param {InviteGenerationOptions} [options={}] Options for the invite
-   * @returns {string}
-   * @example
-   * const link = client.generateInvite({
-   *   scopes: ['applications.commands'],
-   * });
-   * console.log(`Generated application invite link: ${link}`);
-   * @example
-   * const link = client.generateInvite({
-   *   permissions: [
-   *     Permissions.FLAGS.SEND_MESSAGES,
-   *     Permissions.FLAGS.MANAGE_GUILD,
-   *     Permissions.FLAGS.MENTION_EVERYONE,
-   *   ],
-   *   scopes: ['bot'],
-   * });
-   * console.log(`Generated bot invite link: ${link}`);
+   * The sleep function in JavaScript returns a promise that resolves after a specified timeout.
+   * @param {number} timeout - The timeout parameter is the amount of time, in milliseconds, that the sleep
+   * function will wait before resolving the promise and continuing execution.
+   * @returns {void} The `sleep` function is returning a Promise.
    */
-  generateInvite(options = {}) {
-    if (typeof options !== 'object') throw new TypeError('INVALID_TYPE', 'options', 'object', true);
-    if (!this.application) throw new Error('CLIENT_NOT_READY', 'generate an invite link');
-
-    const query = new URLSearchParams({
-      client_id: this.application.id,
-    });
-
-    const { scopes } = options;
-    if (typeof scopes === 'undefined') {
-      throw new TypeError('INVITE_MISSING_SCOPES');
-    }
-    if (!Array.isArray(scopes)) {
-      throw new TypeError('INVALID_TYPE', 'scopes', 'Array of Invite Scopes', true);
-    }
-    if (!scopes.some(scope => ['bot', 'applications.commands'].includes(scope))) {
-      throw new TypeError('INVITE_MISSING_SCOPES');
-    }
-    const invalidScope = scopes.find(scope => !InviteScopes.includes(scope));
-    if (invalidScope) {
-      throw new TypeError('INVALID_ELEMENT', 'Array', 'scopes', invalidScope);
-    }
-    query.set('scope', scopes.join(' '));
-
-    if (options.permissions) {
-      const permissions = Permissions.resolve(options.permissions);
-      if (permissions) query.set('permissions', permissions);
-    }
-
-    if (options.disableGuildSelect) {
-      query.set('disable_guild_select', true);
-    }
-
-    if (options.guild) {
-      const guildId = this.guilds.resolveId(options.guild);
-      if (!guildId) throw new TypeError('INVALID_TYPE', 'options.guild', 'GuildResolvable');
-      query.set('guild_id', guildId);
-    }
-
-    return `${this.options.http.api}${this.api.oauth2.authorize}?${query}`;
+  sleep(timeout) {
+    return new Promise(r => setTimeout(r, timeout));
   }
 
   toJSON() {
@@ -859,41 +535,46 @@ class Client extends BaseClient {
   }
 
   /**
-   * Calls {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval} on a script
-   * with the client as `this`.
-   * @param {string} script Script to eval
-   * @returns {*}
-   * @private
+   * Join this Guild using this invite (fast)
+   * @param {InviteResolvable} invite Invite code or URL
+   * @returns {Promise<void>}
+   * @example
+   * await client.acceptInvite('https://discord.gg/genshinimpact')
    */
-  _eval(script) {
-    return eval(script);
+  async acceptInvite(invite) {
+    const code = DataResolver.resolveInviteCode(invite);
+    if (!code) throw new Error('INVITE_RESOLVE_CODE');
+    if (invite instanceof Invite) {
+      await invite.acceptInvite();
+    } else {
+      await this.api.invites(code).post({
+        DiscordContext: { location: 'Markdown Link' },
+        data: {
+          session_id: this.ws.shards.first()?.sessionId,
+        },
+      });
+    }
   }
 
   /**
-   * Sets the client's presence. (Sync Setting).
-   * @param {Client} client Discord Client
-   * @private
+   * Redeem nitro from code or url.
+   * @param {string} nitro Nitro url or code
+   * @param {TextChannelResolvable} [channel] Channel that the code was sent in
+   * @param {Snowflake} [paymentSourceId] Payment source id
+   * @returns {Promise<any>}
    */
-  customStatusAuto(client) {
-    client = client ?? this;
-    if (!client.user) return;
-    const custom_status = new CustomStatus();
-    if (!client.settings.rawSetting.custom_status?.text && !client.settings.rawSetting.custom_status?.emoji_name) {
-      client.user.setPresence({
-        activities: this.presence.activities.filter(a => a.type !== 'CUSTOM'),
-        status: client.settings.rawSetting.status ?? 'invisible',
-      });
-    } else {
-      custom_status.setEmoji({
-        name: client.settings.rawSetting.custom_status?.emoji_name,
-        id: client.settings.rawSetting.custom_status?.emoji_id,
-      });
-      custom_status.setState(client.settings.rawSetting.custom_status?.text);
-      client.user.setPresence({
-        activities: [custom_status.toJSON(), ...this.presence.activities.filter(a => a.type !== 'CUSTOM')],
-        status: client.settings.rawSetting.status ?? 'invisible',
-      });
-    }
+  redeemNitro(nitro, channel, paymentSourceId) {
+    if (typeof nitro !== 'string') throw new Error('INVALID_NITRO');
+    const nitroCode =
+      nitro.match(/(discord.gift|discord.com|discordapp.com\/gifts)\/(\w{16,25})/) ||
+      nitro.match(/(discord\.gift\/|discord\.com\/gifts\/|discordapp\.com\/gifts\/)(\w+)/);
+    if (!nitroCode) return false;
+    const code = nitroCode[2];
+    channel = this.channels.resolveId(channel);
+    return this.api.entitlements['gift-codes'](code).redeem.post({
+      auth: true,
+      data: { channel_id: channel || null, payment_source_id: paymentSourceId || null },
+    });
   }
 
   /**
@@ -909,7 +590,7 @@ class Client extends BaseClient {
    * Authorize an application.
    * @param {string} url Discord Auth URL
    * @param {OAuth2AuthorizeOptions} options Oauth2 options
-   * @returns {Promise<Object>}
+   * @returns {Promise<any>}
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
       guild_id: "guildID",
@@ -937,12 +618,14 @@ class Client extends BaseClient {
   }
 
   /**
-   * Makes waiting time for Client.
-   * @param {number} miliseconds Sleeping time as milliseconds.
-   * @returns {Promise<void> | null}
+   * Calls {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval} on a script
+   * with the client as `this`.
+   * @param {string} script Script to eval
+   * @returns {*}
+   * @private
    */
-  sleep(miliseconds) {
-    return typeof miliseconds === 'number' ? new Promise(r => setTimeout(r, miliseconds).unref()) : null;
+  _eval(script) {
+    return eval(script);
   }
 
   /**
@@ -956,73 +639,8 @@ class Client extends BaseClient {
     } else {
       options.intents = Intents.resolve(options.intents);
     }
-    if (options && typeof options.checkUpdate !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'checkUpdate', 'a boolean');
-    }
-    if (options && typeof options.syncStatus !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'syncStatus', 'a boolean');
-    }
-    if (options && typeof options.autoRedeemNitro !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'autoRedeemNitro', 'a boolean');
-    }
-    if (options && options.captchaService && !captchaServices.includes(options.captchaService)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaService', captchaServices.join(', '));
-    }
-    // Parse captcha key
-    if (options && captchaServices.includes(options.captchaService) && options.captchaService !== 'custom') {
-      if (typeof options.captchaKey !== 'string') {
-        throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a string');
-      }
-      switch (options.captchaService) {
-        case '2captcha':
-          if (options.captchaKey.length !== 32) {
-            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
-          }
-          break;
-        case 'capmonster':
-          if (options.captchaKey.length !== 32) {
-            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 32 character string');
-          }
-          break;
-        case 'nopecha': {
-          if (options.captchaKey.length !== 16) {
-            throw new TypeError('CLIENT_INVALID_OPTION', 'captchaKey', 'a 16 character string');
-          }
-          break;
-        }
-      }
-    }
-    if (typeof options.captchaRetryLimit !== 'number' || isNaN(options.captchaRetryLimit)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaRetryLimit', 'a number');
-    }
-    if (options && typeof options.captchaSolver !== 'function') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaSolver', 'a function');
-    }
-    if (options && typeof options.captchaWithProxy !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaWithProxy', 'a boolean');
-    }
-    if (options && typeof options.DMSync !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'DMSync', 'a boolean');
-    }
-    if (options && typeof options.patchVoice !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'patchVoice', 'a boolean');
-    }
-    if (options && options.password && typeof options.password !== 'string') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'password', 'a string');
-    }
-    if (options && options.usingNewAttachmentAPI && typeof options.usingNewAttachmentAPI !== 'boolean') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'usingNewAttachmentAPI', 'a boolean');
-    }
-    if (options && options.interactionTimeout && typeof options.interactionTimeout !== 'number') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'interactionTimeout', 'a number');
-    }
-    if (options && typeof options.proxy !== 'string') {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'proxy', 'a string');
-    } else if (options && options.proxy && typeof options.proxy === 'string') {
-      getProxyObject(options.proxy);
-    }
-    if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount < 1) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number greater than or equal to 1');
+    if (typeof options.shardCount !== 'number' || isNaN(options.shardCount) || options.shardCount !== 1) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'shardCount', 'a number equal to 1');
     }
     if (options.shards && !(options.shards === 'auto' || Array.isArray(options.shards))) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'shards', "'auto', a number or array of numbers");
@@ -1046,11 +664,14 @@ class Client extends BaseClient {
     if (!Array.isArray(options.partials)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'partials', 'an Array');
     }
-    if (typeof options.waitGuildTimeout !== 'number' || isNaN(options.waitGuildTimeout)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'waitGuildTimeout', 'a number');
-    }
     if (typeof options.messageCreateEventGuildTimeout !== 'number' || isNaN(options.messageCreateEventGuildTimeout)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'messageCreateEventGuildTimeout', 'a number');
+    }
+    if (typeof options.DMChannelVoiceStatusSync !== 'number' || isNaN(options.DMChannelVoiceStatusSync)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'DMChannelVoiceStatusSync', 'a number');
+    }
+    if (typeof options.waitGuildTimeout !== 'number' || isNaN(options.waitGuildTimeout)) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'waitGuildTimeout', 'a number');
     }
     if (typeof options.restWsBridgeTimeout !== 'number' || isNaN(options.restWsBridgeTimeout)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'restWsBridgeTimeout', 'a number');
