@@ -14,7 +14,8 @@
 		"node": true
 	},
 	"ignorePatterns": [
-		"**/src/util/Voice.js"
+		"**/src/util/Voice.js",
+		"**/examples/**"
 	],
 	"rules": {
 		"import/order": [
