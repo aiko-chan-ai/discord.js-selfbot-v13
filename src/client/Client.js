@@ -42,7 +42,7 @@ const Sweepers = require('../util/Sweepers');
  */
 class Client extends BaseClient {
   /**
-   * @param {ClientOptions} options Options for the client
+   * @param {ClientOptions} [options] Options for the client
    */
   constructor(options) {
     super(options);
