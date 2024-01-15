@@ -147,15 +147,16 @@ class ClientUser extends User {
    * <info>Changing usernames in Discord is heavily rate limited, with only 2 requests
    * every hour. Use this sparingly!</info>
    * @param {string} username The new username
+   * @param {string} password Current Password
    * @returns {Promise<ClientUser>}
    * @example
    * // Set username
-   * client.user.setUsername('discordjs')
+   * client.user.setUsername('discordjs', 'passw@rd')
    *   .then(user => console.log(`My new username is ${user.username}`))
    *   .catch(console.error);
    */
-  setUsername(username) {
-    return this.edit({ username });
+  setUsername(username, password) {
+    return this.edit({ username, password });
   }
 
   /**

@@ -860,7 +860,7 @@ export class ClientUser extends User {
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
-  public setUsername(username: string): Promise<this>;
+  public setUsername(username: string, password: string): Promise<this>;
   public purchasedFlags: PurchasedFlags;
   public premiumUsageFlags: PremiumUsageFlags;
   public phone: string | null;
