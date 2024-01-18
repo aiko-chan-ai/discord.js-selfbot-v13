@@ -56,7 +56,7 @@ class UserManager extends CachedManager {
       if (dmChannel && !dmChannel.partial) return dmChannel;
     }
 
-    const data = await this.client.api.users(this.client.user.id).channels.post({
+    const data = await this.client.api.users['@me'].channels.post({
       data: {
         recipients: [id],
       },
