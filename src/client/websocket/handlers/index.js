@@ -73,6 +73,7 @@ const handlers = Object.fromEntries([
   ['CALL_CREATE', require('./CALL_CREATE')],
   ['CALL_UPDATE', require('./CALL_UPDATE')],
   ['CALL_DELETE', require('./CALL_DELETE')],
+  ['USER_SETTINGS_UPDATE', require('./USER_SETTINGS_UPDATE')],
 ]);
 
 module.exports = handlers;

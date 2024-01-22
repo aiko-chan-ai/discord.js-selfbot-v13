@@ -11,7 +11,6 @@ const Webhook = require('./Webhook');
 const WelcomeScreen = require('./WelcomeScreen');
 const { Error } = require('../errors');
 const AutoModerationRuleManager = require('../managers/AutoModerationRuleManager');
-const GuildApplicationCommandManager = require('../managers/GuildApplicationCommandManager');
 const GuildBanManager = require('../managers/GuildBanManager');
 const GuildChannelManager = require('../managers/GuildChannelManager');
 const GuildEmojiManager = require('../managers/GuildEmojiManager');
@@ -57,12 +56,6 @@ const deletedGuilds = new WeakSet();
 class Guild extends AnonymousGuild {
   constructor(client, data) {
     super(client, data, false);
-
-    /**
-     * A manager of the application commands belonging to this guild
-     * @type {GuildApplicationCommandManager}
-     */
-    this.commands = new GuildApplicationCommandManager(this);
 
     /**
      * A manager of the members belonging to this guild

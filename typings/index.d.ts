@@ -788,6 +788,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public voiceStates: VoiceStateManager;
   public presences: PresenceManager;
   public billing: BillingManager;
+  public settings: ClientUserSettingManager;
   public destroy(): void;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
@@ -1174,7 +1175,6 @@ export class Guild extends AnonymousGuild {
   public available: boolean;
   public bans: GuildBanManager;
   public channels: GuildChannelManager;
-  public commands: GuildApplicationCommandManager;
   public defaultMessageNotifications: DefaultMessageNotificationLevel | number;
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
   public deleted: boolean;
@@ -3678,8 +3678,8 @@ export class ApplicationCommandPermissionsManager<
   GuildType,
   CommandIdType,
 > extends BaseManager {
-  private constructor(manager: ApplicationCommandManager | GuildApplicationCommandManager | ApplicationCommand);
-  private manager: ApplicationCommandManager | GuildApplicationCommandManager | ApplicationCommand;
+  private constructor(manager: ApplicationCommandManager | ApplicationCommand);
+  private manager: ApplicationCommandManager | ApplicationCommand;
 
   public client: Client;
   public commandId: CommandIdType;
@@ -3767,22 +3767,80 @@ export class UserNoteManager extends BaseManager {
 
 export type FetchGuildApplicationCommandFetchOptions = Omit<FetchApplicationCommandOptions, 'guildId'>;
 
-export class GuildApplicationCommandManager extends ApplicationCommandManager<ApplicationCommand, {}, Guild> {
-  private constructor(guild: Guild, iterable?: Iterable<RawApplicationCommandData>);
-  public guild: Guild;
-  public create(command: ApplicationCommandDataResolvable): Promise<ApplicationCommand>;
-  public delete(command: ApplicationCommandResolvable): Promise<ApplicationCommand | null>;
-  public edit(
-    command: ApplicationCommandResolvable,
-    data: Partial<ApplicationCommandDataResolvable>,
-  ): Promise<ApplicationCommand>;
-  public fetch(id: Snowflake, options?: FetchGuildApplicationCommandFetchOptions): Promise<ApplicationCommand>;
-  public fetch(options: FetchGuildApplicationCommandFetchOptions): Promise<Collection<Snowflake, ApplicationCommand>>;
-  public fetch(
-    id?: undefined,
-    options?: FetchGuildApplicationCommandFetchOptions,
-  ): Promise<Collection<Snowflake, ApplicationCommand>>;
-  public set(commands: ApplicationCommandDataResolvable[]): Promise<Collection<Snowflake, ApplicationCommand>>;
+export class ClientUserSettingManager extends BaseManager {
+  private constructor(client: Client);
+  public readonly raw: RawUserSettingsData;
+  public locale?: string;
+  public activityDisplay?: boolean;
+  public allowDMsFromGuild?: boolean;
+  public displayImage?: boolean;
+  public linkedImageDisplay?: boolean;
+  public autoplayGIF?: boolean;
+  public previewLink?: boolean;
+  public animatedEmoji?: boolean;
+  public allowTTS?: boolean;
+  public compactMode?: boolean;
+  public convertEmoticons?: boolean;
+  public DMScanLevel?: 0 | 1 | 2;
+  public theme?: 'dark' | 'light';
+  public developerMode?: boolean;
+  public afkTimeout?: number;
+  public stickerAnimationMode?: 0 | 1 | 2;
+  public showEmojiReactions?: boolean;
+  public disableDMfromGuilds: Collection<Snowflake, Guild>;
+  public fetch(): Promise<this>;
+  public edit(data: Partial<RawUserSettingsData>): Promise<this>;
+  public toggleCompactMode(): Promise<this>;
+  public setTheme(value: 'dark' | 'light'): Promise<this>;
+  public setCustomStatus(value?: CustomStatusOption | CustomStatus): Promise<this>;
+  public restrictedGuilds(status: boolean): Promise<void>;
+  public addRestrictedGuild(guildId: GuildResolvable): Promise<void>;
+  public removeRestrictedGuild(guildId: GuildResolvable): Promise<void>;
+}
+
+export interface CustomStatusOption {
+  text?: string | null;
+  expires_at?: string | null;
+  emoji?: EmojiIdentifierResolvable | null;
+  status?: PresenceStatusData | null;
+}
+
+/**
+ * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
+ */
+export interface RawUserSettingsData {
+  afk_timeout?: number;
+  allow_accessibility_detection?: boolean;
+  animate_emoji?: boolean;
+  animate_stickers?: number;
+  contact_sync_enabled?: boolean;
+  convert_emoticons?: boolean;
+  custom_status?: { text?: string; expires_at?: string | null; emoji_name?: string; emoji_id?: Snowflake | null };
+  default_guilds_restricted?: boolean;
+  detect_platform_accounts?: boolean;
+  developer_mode?: boolean;
+  disable_games_tab?: boolean;
+  enable_tts_command?: boolean;
+  explicit_content_filter?: number;
+  friend_discovery_flags?: number;
+  friend_source_flags?: { all?: boolean; mutual_friends?: boolean; mututal_guilds?: boolean };
+  gif_auto_play?: boolean;
+  guild_folders?: { id?: Snowflake; guild_ids?: Snowflake[]; name?: string }[];
+  guild_positions?: number[];
+  inline_attachment_media?: boolean;
+  inline_embed_media?: boolean;
+  locale?: string;
+  message_display_compact?: boolean;
+  native_phone_integration_enabled?: boolean;
+  render_embeds?: boolean;
+  render_reactions?: boolean;
+  restricted_guilds?: any[];
+  show_current_game?: boolean;
+  status?: PresenceStatusData;
+  stream_notifications_enabled?: boolean;
+  theme?: 'dark' | 'light';
+  timezone_offset?: number;
+  view_nsfw_guilds?: boolean;
 }
 
 export type MappedGuildChannelTypes = EnumValueMapped<

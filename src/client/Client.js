@@ -12,6 +12,7 @@ const { Error, TypeError, RangeError } = require('../errors');
 const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const BillingManager = require('../managers/BillingManager');
 const ChannelManager = require('../managers/ChannelManager');
+const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 const GuildManager = require('../managers/GuildManager');
 const PresenceManager = require('../managers/PresenceManager');
 const RelationshipManager = require('../managers/RelationshipManager');
@@ -187,6 +188,12 @@ class Client extends BaseClient {
      * @type {BillingManager}
      */
     this.billing = new BillingManager(this);
+
+    /**
+     * All of the settings {@link Object}
+     * @type {ClientUserSettingManager}
+     */
+    this.settings = new ClientUserSettingManager(this);
 
     Object.defineProperty(this, 'token', { writable: true });
     if (!this.token && 'DISCORD_TOKEN' in process.env) {

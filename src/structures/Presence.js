@@ -90,7 +90,7 @@ class Presence extends Base {
 
     if ('activities' in data) {
       /**
-       * The activities of this presence
+       * The activities of this presence (Always `Activity[]` if not ClientUser)
        * @type {Activity[]|CustomStatus[]|RichPresence[]|SpotifyRPC[]}
        */
       this.activities = data.activities.map(activity => {

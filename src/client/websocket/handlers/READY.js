@@ -35,6 +35,9 @@ module.exports = (client, { d: data }, shard) => {
   // Relationship
   client.relationships._setup(data.relationships);
 
+  // ClientSetting
+  client.settings._patch(data.user_settings);
+
   Promise.all(
     largeGuilds.map(async (guild, index) => {
       client.ws.broadcast({
