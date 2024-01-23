@@ -49,7 +49,6 @@ const Intents = require('./Intents');
 /**
  * Options for a client.
  * @typedef {Object} ClientOptions
- * @property {number} [messageCreateEventGuildTimeout=100] The amount of time in milliseconds that the Client to register for messages with each guild
  * @property {number} [DMChannelVoiceStatusSync=0] The amount of time in milliseconds that the Client to register the event with each DM channel (0=Disable)
  * @property {number} [captchaRetryLimit=3] Captcha retry limit
  * @property {CaptchaSolver} [captchaSolver] Captcha Solver
@@ -154,7 +153,6 @@ class Options extends null {
    */
   static createDefault() {
     return {
-      messageCreateEventGuildTimeout: 100,
       DMChannelVoiceStatusSync: 0,
       captchaRetryLimit: 3,
       captchaSolver: () => Promise.reject(new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED')),
@@ -181,19 +179,19 @@ class Options extends null {
         capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
         properties: {
           os: 'Windows',
-          browser: 'Discord Client',
-          release_channel: 'stable',
-          client_version: '1.0.9023',
-          os_version: '10.0.19045',
-          os_arch: 'x64',
-          app_arch: 'ia32',
+          browser: 'Chrome',
+          device: '',
           system_locale: 'en-US',
           browser_user_agent: UserAgent,
-          browser_version: '22.3.26',
-          client_build_number: 244874,
-          native_build_number: 39515,
+          browser_version: '120.0.0.0',
+          os_version: '10',
+          referrer: '',
+          referring_domain: '',
+          referrer_current: '',
+          referring_domain_current: '',
+          release_channel: 'stable',
+          client_build_number: 260292,
           client_event_source: null,
-          design_id: 0,
         },
         compress: false,
         client_state: {

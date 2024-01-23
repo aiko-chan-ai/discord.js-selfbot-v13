@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9023 Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 /**
  * The types of WebSocket error codes:
@@ -172,8 +172,10 @@ exports.Status = {
  * * REQUEST_SOUNDBOARD_SOUNDS: 31
  * * SPEED_TEST_CREATE: 32 => Create a voice speed test.
  * * SPEED_TEST_DELETE: 33 => Delete a voice speed test.
- * * REQUEST_LAST_MESSAGES: 34 => 	Request last messages for a guild's channels.
+ * * REQUEST_LAST_MESSAGES: 34 => Request last messages for a guild's channels.
  * * SEARCH_RECENT_MEMBERS: 35 => ~ Opcode 8 (Member Safety)
+ * * REQUEST_CHANNEL_STATUSES: 36 => Request Voice Channel status.
+ * * GUILD_SUBSCRIPTIONS_BULK: 37 => ~ Opcode 14
  * @typedef {Object<string, number>} Opcodes
  */
 exports.Opcodes = {
@@ -212,7 +214,9 @@ exports.Opcodes = {
   SPEED_TEST_DELETE: 33, // Payload: null
   REQUEST_LAST_MESSAGES: 34, // Payload: { guild_id: string, channel_ids: string[] }
   SEARCH_RECENT_MEMBERS: 35, // Payload: { guild_id: string, query: string, continuation_token?: Snowflake }
-  // Update: 17/7/2023
+  REQUEST_CHANNEL_STATUSES: 36, // Payload: { guild_id: string } | Response: CHANNEL_STATUSES | { guild_id, channels: { status, id }[] }
+  GUILD_SUBSCRIPTIONS_BULK: 37, // Payload: { subscriptions: Object<guild_id, { Payload_op14 - guild_id }> } | Response: Opcode 14
+  // Updated: 23/1/2024
 };
 
 /**

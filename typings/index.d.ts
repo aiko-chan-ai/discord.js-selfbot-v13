@@ -5188,7 +5188,6 @@ export interface ClientFetchInviteOptions {
 export type CaptchaSolver = (captcha: Captcha, UserAgent: string) => Promise<string>;
 
 export interface ClientOptions {
-  messageCreateEventGuildTimeout?: number;
   DMChannelVoiceStatusSync?: number;
   captchaRetryLimit?: number;
   captchaSolver?: CaptchaSolver;
@@ -5496,6 +5495,8 @@ export interface ConstantsOpcodes {
   SPEED_TEST_DELETE: 33;
   REQUEST_LAST_MESSAGES: 34;
   SEARCH_RECENT_MEMBERS: 35;
+  REQUEST_CHANNEL_STATUSES: 36;
+  GUILD_SUBSCRIPTIONS_BULK: 37;
 }
 
 export interface ConstantsShardEvents {
