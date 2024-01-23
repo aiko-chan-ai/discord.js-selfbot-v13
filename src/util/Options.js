@@ -159,6 +159,7 @@ class Options extends null {
       closeTimeout: 5_000,
       waitGuildTimeout: 15_000,
       shardCount: 1,
+      shards: [0],
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
