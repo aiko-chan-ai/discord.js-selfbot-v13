@@ -31,6 +31,7 @@ const Webhook = require('../structures/Webhook');
 const Widget = require('../structures/Widget');
 const { Events, Status } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const Intents = require('../util/Intents');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
@@ -663,6 +664,10 @@ class Client extends BaseClient {
     ) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'rejectOnRateLimit', 'an array or a function');
     }
+    // Hardcode
+    this.options.shardCount = 1;
+    this.options.shards = [0];
+    this.options.intents = Intents.ALL;
   }
 }
 
