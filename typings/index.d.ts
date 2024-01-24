@@ -100,6 +100,7 @@ import {
   ApplicationRoleConnectionMetadataTypes,
   RelationshipTypes,
   SelectMenuComponentTypes,
+  InviteType,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -806,7 +807,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
   public toJSON(): unknown;
-  public acceptInvite(invite: InviteResolvable): Promise<void>;
+  public acceptInvite(invite: InviteResolvable): Promise<Guild | DMChannel | GroupDMChannel>;
   public redeemNitro(nitro: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): Promise<any>;
   public authorizeURL(url: string, options?: OAuth2AuthorizeOptions): Promise<any>;
 
@@ -1727,6 +1728,7 @@ export class Invite extends Base {
   public maxUses: number | null;
   public memberCount: number;
   public presenceCount: number;
+  public type: InviteType | null;
   public targetApplication: IntegrationApplication | null;
   public targetUser: User | null;
   public targetType: InviteTargetType | null;
@@ -5261,7 +5263,6 @@ export interface ClientOptions {
   restSweepInterval?: number;
   retryLimit?: number;
   failIfNotExists?: boolean;
-  userAgentSuffix?: string[];
   presence?: PresenceData;
   waitGuildTimeout?: number;
   sweepers?: SweeperOptions;

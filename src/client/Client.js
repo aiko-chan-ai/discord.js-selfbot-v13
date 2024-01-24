@@ -510,7 +510,7 @@ class Client extends BaseClient {
   /**
    * Join this Guild using this invite
    * @param {InviteResolvable} invite Invite code or URL
-   * @returns {Promise<void>}
+   * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
    * @example
    * await client.acceptInvite('https://discord.gg/genshinimpact')
    */
@@ -518,7 +518,8 @@ class Client extends BaseClient {
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
     const i = await this.fetchInvite(code);
-    if (this.guilds.cache.has(i.guild?.id)) return;
+    if (i.guild?.id && this.guilds.cache.has(i.guild?.id)) return this.guilds.cache.get(i.guild?.id);
+    if (this.channels.cache.has(i.channelId)) return this.channels.cache.get(i.channelId);
     /*
 {
   location: 'Desktop Invite Modal',
@@ -527,12 +528,62 @@ class Client extends BaseClient {
   location_channel_type: typeof i.channel.type == 'number' ? i.channel.type : ChannelTypes[i.channel.type],
 }
 */
-    await this.api.invites(code).post({
+    const data = await this.api.invites(code).post({
       DiscordContext: { location: 'Markdown Link' },
       data: {
         session_id: this.ws.shards.first()?.sessionId,
       },
     });
+    this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Joined`);
+    // Guild
+    if (i.guild?.id) {
+      // Onboarding
+      const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
+      if (onboardingData.enabled) {
+        // Bypass
+        this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypass onboarding`);
+        const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
+
+        const onboarding_prompts_seen = {};
+        const onboarding_responses = [];
+        const onboarding_responses_seen = {};
+
+        const currentDate = Date.now();
+
+        prompts.forEach(prompt => {
+          onboarding_prompts_seen[prompt.id] = currentDate;
+          if (prompt.required) onboarding_responses.push(prompt.options[0].id);
+          prompt.options.forEach(option => {
+            onboarding_responses_seen[option.id] = currentDate;
+          });
+        });
+
+        await this.api.guilds[i.guild?.id]['onboarding-responses'].post({
+          data: {
+            onboarding_prompts_seen,
+            onboarding_responses,
+            onboarding_responses_seen,
+          },
+        });
+      }
+      // Read rule
+      if (data.show_verification_form) {
+        const getForm = await this.api
+          .guilds(i.guild?.id)
+          ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
+          .catch(() => {});
+        if (getForm) {
+          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypass rule verify`);
+          const form = Object.assign(getForm.form_fields[0], { response: true });
+          await this.api
+            .guilds(i.guild?.id)
+            .requests['@me'].put({ data: { form_fields: [form], version: getForm.version } });
+        }
+      }
+      return this.guilds.cache.get(i.guild?.id);
+    } else {
+      return this.channels.cache.has(i.channelId);
+    }
   }
 
   /**
@@ -654,9 +705,6 @@ class Client extends BaseClient {
     }
     if (typeof options.failIfNotExists !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'failIfNotExists', 'a boolean');
-    }
-    if (!Array.isArray(options.userAgentSuffix)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'userAgentSuffix', 'an array of strings');
     }
     if (
       typeof options.rejectOnRateLimit !== 'undefined' &&
