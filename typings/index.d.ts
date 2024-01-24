@@ -1205,6 +1205,7 @@ export class Guild extends AnonymousGuild {
   public readonly safetyAlertsChannel: TextChannel | null;
   public safetyAlertsChannelId: Snowflake | null;
   public scheduledEvents: GuildScheduledEventManager;
+  public settings: GuildSettingManager;
   public readonly shard: WebSocketShard;
   public shardId: number;
   public stageInstances: StageInstanceManager;
@@ -3799,6 +3800,26 @@ export class ClientUserSettingManager extends BaseManager {
   public removeRestrictedGuild(guildId: GuildResolvable): Promise<void>;
 }
 
+export class GuildSettingManager extends BaseManager {
+  private constructor(guild: Guild);
+  public readonly raw?: RawGuildSettingsData;
+  public suppressEveryone?: boolean;
+  public suppressRoles?: boolean;
+  public muteScheduledEvents?: boolean;
+  public messageNotifications?: number;
+  public flags?: number;
+  public mobilePush?: boolean;
+  public muted?: boolean;
+  public muteConfig?: MuteConfigData;
+  public hideMutedChannels?: boolean;
+  public channelOverrides?: object[];
+  public notifyHighlights?: number;
+  public version?: number;
+  public guildId?: Snowflake;
+  public readonly guild?: Guild;
+  public edit(data: Partial<RawGuildSettingsData>): Promise<this>;
+}
+
 export interface CustomStatusOption {
   text?: string | null;
   expires_at?: string | null;
@@ -3840,6 +3861,40 @@ export interface RawUserSettingsData {
   theme?: 'dark' | 'light';
   timezone_offset?: number;
   view_nsfw_guilds?: boolean;
+}
+
+export interface RawGuildSettingsData {
+  guild_id: Snowflake;
+  suppress_everyone: boolean;
+  suppress_roles: boolean;
+  mute_scheduled_events: boolean;
+  message_notifications: 2;
+  flags: 0;
+  mobile_push: boolean;
+  muted: boolean;
+  mute_config?: RawMuteConfigData;
+  hide_muted_channels: boolean;
+  channel_overrides: RawGuildChannelSettingsData[];
+  notify_highlights: number;
+  version: number;
+}
+
+export interface RawGuildChannelSettingsData {
+  channel_id: Snowflake;
+  message_notifications: number;
+  muted: boolean;
+  mute_config?: RawMuteConfigData;
+  collapsed: boolean;
+}
+
+export interface RawMuteConfigData {
+  end_time: string;
+  selected_time_window: number;
+}
+
+export interface MuteConfigData {
+  endTime: Date;
+  selectedTimeWindow: number;
 }
 
 export type MappedGuildChannelTypes = EnumValueMapped<
