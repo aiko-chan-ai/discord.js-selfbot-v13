@@ -155,6 +155,8 @@ class Invite extends Base {
      * The type of the invite target:
      * * 1: STREAM
      * * 2: EMBEDDED_APPLICATION
+     * * 3: ROLE_SUBSCRIPTIONS
+     * * 4: CREATOR_PAGE
      * @typedef {number} TargetType
      * @see {@link https://discord.com/developers/docs/resources/invite#invite-object-invite-target-types}
      */
@@ -167,6 +169,24 @@ class Invite extends Base {
       this.targetType = data.target_type;
     } else {
       this.targetType ??= null;
+    }
+
+    /**
+     * The type of the invite:
+     * * 0: GUILD
+     * * 1: GROUP_DM
+     * * 2: FRIEND
+     * @typedef {number} InviteType
+     * @see {@link https://docs.discord.sex/resources/invite#invite-type}
+     */
+    if ('type' in data) {
+      /**
+       * The type of invite
+       * @type {?InviteType}
+       */
+      this.type = data.type;
+    } else {
+      this.type ??= null;
     }
 
     if ('channel_id' in data) {

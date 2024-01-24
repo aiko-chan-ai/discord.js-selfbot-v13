@@ -162,7 +162,15 @@ export const enum InteractionTypes {
 
 export const enum InviteTargetType {
   STREAM = 1,
-  EMBEDDED_APPLICATION = 2,
+  EMBEDDED_APPLICATION,
+  ROLE_SUBSCRIPTIONS,
+  CREATOR_PAGE,
+}
+
+export const enum InviteType {
+  GUILD,
+  GROUP_DM,
+  FRIEND,
 }
 
 export const enum MembershipStates {
