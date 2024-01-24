@@ -89,8 +89,6 @@ const Intents = require('./Intents');
  * @property {number} [retryLimit=1] How many times to retry on 5XX errors
  * (Infinity for an indefinite amount of retries)
  * @property {boolean} [failIfNotExists=true] Default value for {@link ReplyMessageOptions#failIfNotExists}
- * @property {string[]} [userAgentSuffix] An array of additional bot info to be appended to the end of the required
- * [User Agent](https://discord.com/developers/docs/reference#user-agent) header
  * @property {PresenceData} [presence={ status: 'online', since: 0, activities: [], afk: false }] Presence data to use upon login
  * @property {number} [waitGuildTimeout=15_000] Time in milliseconds that Clients with the GUILDS intent should wait for
  * missing guilds to be received before starting the bot. If not specified, the default is 15 seconds.
@@ -173,25 +171,23 @@ class Options extends null {
       restTimeOffset: 500,
       restSweepInterval: 60,
       failIfNotExists: true,
-      userAgentSuffix: [],
       presence: { status: 'online', since: 0, activities: [], afk: false },
       sweepers: {},
       ws: {
         capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
         properties: {
           os: 'Windows',
-          browser: 'Chrome',
-          device: '',
+          browser: 'Discord Client',
+          release_channel: 'stable',
+          client_version: '1.0.9031',
+          os_version: '10.0.19045',
+          os_arch: 'x64',
+          app_arch: 'ia32',
           system_locale: 'en-US',
           browser_user_agent: UserAgent,
-          browser_version: '120.0.0.0',
-          os_version: '10',
-          referrer: '',
-          referring_domain: '',
-          referrer_current: '',
-          referring_domain_current: '',
-          release_channel: 'stable',
-          client_build_number: 260292,
+          browser_version: '22.3.26',
+          client_build_number: 260725,
+          native_build_number: 42899,
           client_event_source: null,
         },
         compress: false,

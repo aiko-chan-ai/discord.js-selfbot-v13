@@ -8,7 +8,6 @@ const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
 const { CookieJar } = require('tough-cookie');
-const { UserAgent } = require('../util/Constants');
 
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);
@@ -24,8 +23,9 @@ class APIRequest {
     this.options = options;
     this.retries = 0;
 
-    const { userAgentSuffix } = this.client.options;
-    this.fullUserAgent = `${UserAgent}${userAgentSuffix.length ? `, ${userAgentSuffix.join(', ')}` : ''}`;
+    this.fullUserAgent = this.client.options.http.headers['User-Agent'];
+
+    this.client.options.ws.properties.browser_user_agent = this.fullUserAgent;
 
     let queryString = '';
     if (options.query) {
