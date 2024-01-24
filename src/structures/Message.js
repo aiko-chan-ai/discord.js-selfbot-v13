@@ -1201,6 +1201,34 @@ class Message extends Base {
       },
     });
   }
+
+  /**
+   * Report Message
+   * @param {Arrray<number>} breadcrumbs Options for reporting
+   * @param {Object} [elements={}] Metadata
+   * @returns {Promise<{ report_id: Snowflake }>}
+   * @example
+   * // Report Category
+   * // - <hidden>MESSAGE_WELCOME (3)</hidden>
+   * // - Something else (28)
+   * // - Hacks, cheats, phishing or malicious links (72)
+   * message.report([3, 28, 72]).then(console.log);
+   * // { "report_id": "1199663489988440124" }
+   */
+  report(breadcrumbs, elements = {}) {
+    return this.client.api.reporting.message.post({
+      data: {
+        version: '1.0',
+        variant: '4',
+        language: 'en',
+        breadcrumbs,
+        elements,
+        channel_id: this.channelId,
+        message_id: this.id,
+        name: 'message',
+      },
+    });
+  }
 }
 
 exports.Message = Message;

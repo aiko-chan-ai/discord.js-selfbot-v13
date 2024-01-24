@@ -1895,6 +1895,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   ): Promise<Message | Modal>;
   public markUnread(): Promise<void>;
   public markRead(): Promise<void>;
+  public report(breadcrumbs: number[], elements?: object): Promise<{ report_id: Snowflake }>;
 }
 
 export class CallState extends Base {
@@ -3805,9 +3806,7 @@ export interface CustomStatusOption {
   status?: PresenceStatusData | null;
 }
 
-/**
- * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
- */
+// Source: https://luna.gitlab.io/discord-unofficial-docs/user_settings.html
 export interface RawUserSettingsData {
   afk_timeout?: number;
   allow_accessibility_detection?: boolean;
