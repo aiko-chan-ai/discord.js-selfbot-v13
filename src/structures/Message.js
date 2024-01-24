@@ -1208,6 +1208,7 @@ class Message extends Base {
    * @param {Object} [elements={}] Metadata
    * @returns {Promise<{ report_id: Snowflake }>}
    * @example
+   * // GET https://discord.com/api/v9/reporting/menu/message?variant=4
    * // Report Category
    * // - <hidden>MESSAGE_WELCOME (3)</hidden>
    * // - Something else (28)
