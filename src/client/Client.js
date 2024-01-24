@@ -537,11 +537,9 @@ class Client extends BaseClient {
     this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Joined`);
     // Guild
     if (i.guild?.id) {
-      // Onboarding
       const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
+      // Onboarding
       if (onboardingData.enabled) {
-        // Bypass
-        this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypass onboarding`);
         const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
 
         const onboarding_prompts_seen = {};
@@ -565,6 +563,7 @@ class Client extends BaseClient {
             onboarding_responses_seen,
           },
         });
+        this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed onboarding`);
       }
       // Read rule
       if (data.show_verification_form) {
@@ -573,11 +572,11 @@ class Client extends BaseClient {
           ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
           .catch(() => {});
         if (getForm) {
-          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypass rule verify`);
           const form = Object.assign(getForm.form_fields[0], { response: true });
           await this.api
             .guilds(i.guild?.id)
             .requests['@me'].put({ data: { form_fields: [form], version: getForm.version } });
+          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed verify`);
         }
       }
       return this.guilds.cache.get(i.guild?.id);
