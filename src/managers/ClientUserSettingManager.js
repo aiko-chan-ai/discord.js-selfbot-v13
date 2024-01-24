@@ -34,6 +34,7 @@ class ClientUserSettingManager extends BaseManager {
    */
   _patch(data = {}) {
     this.#rawSetting = Object.assign(this.#rawSetting, data);
+    this.client.emit('debug', `[SETTING > ClientUser] Sync setting`);
     if ('locale' in data) {
       /**
        * The user's chosen language option

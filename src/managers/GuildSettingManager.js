@@ -7,7 +7,7 @@ const BaseManager = require('./BaseManager');
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
  */
 class GuildSettingManager extends BaseManager {
-  #raw = {};
+  #rawSetting = {};
   constructor(guild) {
     super(guild.client);
     /**
@@ -22,7 +22,7 @@ class GuildSettingManager extends BaseManager {
    * @type {Object}
    */
   get raw() {
-    return this.#raw;
+    return this.#rawSetting;
   }
 
   /**
@@ -40,7 +40,8 @@ class GuildSettingManager extends BaseManager {
    * @param {Object} data Raw Data to patch
    */
   _patch(data = {}) {
-    this.#raw = Object.assign(this.#raw, data);
+    this.#rawSetting = Object.assign(this.#rawSetting, data);
+    this.client.emit('debug', `[SETTING > Guild ${this.guildId}] Sync setting`);
     if ('suppress_everyone' in data) {
       /**
        * Notification setting > Suppress `@everyone` and `@here`
