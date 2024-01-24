@@ -38,6 +38,12 @@ module.exports = (client, { d: data }, shard) => {
   // ClientSetting
   client.settings._patch(data.user_settings);
 
+  // GuildSetting
+  for (const gSetting of Array.isArray(data.user_guild_settings) ? data.user_guild_settings : []) {
+    const guild = client.guilds.cache.get(gSetting.guild_id);
+    if (guild) guild.settings._patch(gSetting);
+  }
+
   if (largeGuilds.length) {
     client.ws.broadcast({
       op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
