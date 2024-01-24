@@ -179,7 +179,7 @@ class ClientUserSettingManager extends BaseManager {
     if ('status' in data) {
       this.client.presence.status = data.status;
       if (!('custom_status' in data)) {
-        this.client.emit('debug', '[SETTING] Sync status');
+        this.client.emit('debug', '[SETTING > ClientUser] Sync status');
         this.client.user.setStatus(data.status);
       }
     }
@@ -200,7 +200,7 @@ class ClientUserSettingManager extends BaseManager {
         if (emoji) custom.setEmoji(emoji);
         activities.push(custom);
       }
-      this.client.emit('debug', '[SETTING] Sync activities & status');
+      this.client.emit('debug', '[SETTING > ClientUser] Sync activities & status');
       this.client.user.setPresence({ activities });
     }
     if ('friend_source_flags' in data) {
