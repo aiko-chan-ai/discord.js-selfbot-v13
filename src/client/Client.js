@@ -508,13 +508,21 @@ class Client extends BaseClient {
   }
 
   /**
+   * Options for {@link Client#acceptInvite}.
+   * @typedef {Object} AcceptInviteOptions
+   * @property {boolean} [bypassOnboarding=true] Whether to bypass onboarding
+   * @property {boolean} [bypassVerify=true] Whether to bypass rule screening
+   */
+
+  /**
    * Join this Guild using this invite
    * @param {InviteResolvable} invite Invite code or URL
+   * @param {AcceptInviteOptions} [options={ bypassOnboarding: true, bypassVerify: true }] Options
    * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
    * @example
-   * await client.acceptInvite('https://discord.gg/genshinimpact')
+   * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })
    */
-  async acceptInvite(invite) {
+  async acceptInvite(invite, options = { bypassOnboarding: true, bypassVerify: true }) {
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
     const i = await this.fetchInvite(code);
@@ -539,7 +547,7 @@ class Client extends BaseClient {
     if (i.guild?.id) {
       const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
       // Onboarding
-      if (onboardingData.enabled) {
+      if (onboardingData.enabled && options.bypassOnboarding) {
         const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
         if (prompts.length) {
           const onboarding_prompts_seen = {};
@@ -567,7 +575,7 @@ class Client extends BaseClient {
         }
       }
       // Read rule
-      if (data.show_verification_form) {
+      if (data.show_verification_form && options.bypassVerify) {
         // Check Guild
         if (i.guild.verificationLevel == 'VERY_HIGH' && !this.user.phone) {
           this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Cannot bypass verify (Phone required)`);
