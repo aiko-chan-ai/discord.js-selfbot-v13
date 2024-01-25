@@ -3580,6 +3580,7 @@ export const Constants: {
   TextInputStyles: EnumHolder<typeof TextInputStyles>;
   ThreadChannelTypes: ThreadChannelTypes[];
   UserAgent: string;
+  ciphers: string[];
   VerificationLevels: EnumHolder<typeof VerificationLevels>;
   VideoQualityModes: EnumHolder<typeof VideoQualityModes>;
   VoiceBasedChannelTypes: VoiceBasedChannelTypes[];
