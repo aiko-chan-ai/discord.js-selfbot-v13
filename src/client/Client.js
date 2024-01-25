@@ -545,33 +545,35 @@ class Client extends BaseClient {
     this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Joined`);
     // Guild
     if (i.guild?.id) {
-      const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
-      // Onboarding
-      if (onboardingData.enabled && options.bypassOnboarding) {
-        const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
-        if (prompts.length) {
-          const onboarding_prompts_seen = {};
-          const onboarding_responses = [];
-          const onboarding_responses_seen = {};
+      if (options.bypassOnboarding) {
+        const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
+        // Onboarding
+        if (onboardingData.enabled) {
+          const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
+          if (prompts.length) {
+            const onboarding_prompts_seen = {};
+            const onboarding_responses = [];
+            const onboarding_responses_seen = {};
 
-          const currentDate = Date.now();
+            const currentDate = Date.now();
 
-          prompts.forEach(prompt => {
-            onboarding_prompts_seen[prompt.id] = currentDate;
-            if (prompt.required) onboarding_responses.push(prompt.options[0].id);
-            prompt.options.forEach(option => {
-              onboarding_responses_seen[option.id] = currentDate;
+            prompts.forEach(prompt => {
+              onboarding_prompts_seen[prompt.id] = currentDate;
+              if (prompt.required) onboarding_responses.push(prompt.options[0].id);
+              prompt.options.forEach(option => {
+                onboarding_responses_seen[option.id] = currentDate;
+              });
             });
-          });
 
-          await this.api.guilds[i.guild?.id]['onboarding-responses'].post({
-            data: {
-              onboarding_prompts_seen,
-              onboarding_responses,
-              onboarding_responses_seen,
-            },
-          });
-          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed onboarding`);
+            await this.api.guilds[i.guild?.id]['onboarding-responses'].post({
+              data: {
+                onboarding_prompts_seen,
+                onboarding_responses,
+                onboarding_responses_seen,
+              },
+            });
+            this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed onboarding`);
+          }
         }
       }
       // Read rule
