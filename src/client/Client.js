@@ -541,32 +541,42 @@ class Client extends BaseClient {
       // Onboarding
       if (onboardingData.enabled) {
         const prompts = onboardingData.prompts.filter(o => o.in_onboarding);
+        if (prompts.length) {
+          const onboarding_prompts_seen = {};
+          const onboarding_responses = [];
+          const onboarding_responses_seen = {};
 
-        const onboarding_prompts_seen = {};
-        const onboarding_responses = [];
-        const onboarding_responses_seen = {};
+          const currentDate = Date.now();
 
-        const currentDate = Date.now();
-
-        prompts.forEach(prompt => {
-          onboarding_prompts_seen[prompt.id] = currentDate;
-          if (prompt.required) onboarding_responses.push(prompt.options[0].id);
-          prompt.options.forEach(option => {
-            onboarding_responses_seen[option.id] = currentDate;
+          prompts.forEach(prompt => {
+            onboarding_prompts_seen[prompt.id] = currentDate;
+            if (prompt.required) onboarding_responses.push(prompt.options[0].id);
+            prompt.options.forEach(option => {
+              onboarding_responses_seen[option.id] = currentDate;
+            });
           });
-        });
 
-        await this.api.guilds[i.guild?.id]['onboarding-responses'].post({
-          data: {
-            onboarding_prompts_seen,
-            onboarding_responses,
-            onboarding_responses_seen,
-          },
-        });
-        this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed onboarding`);
+          await this.api.guilds[i.guild?.id]['onboarding-responses'].post({
+            data: {
+              onboarding_prompts_seen,
+              onboarding_responses,
+              onboarding_responses_seen,
+            },
+          });
+          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed onboarding`);
+        }
       }
       // Read rule
       if (data.show_verification_form) {
+        // Check Guild
+        if (i.guild.verificationLevel == 'VERY_HIGH' && !this.user.phone) {
+          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Cannot bypass verify (Phone required)`);
+          return this.guilds.cache.get(i.guild?.id);
+        }
+        if (i.guild.verificationLevel !== 'NONE' && !this.user.email) {
+          this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Cannot bypass verify (Email required)`);
+          return this.guilds.cache.get(i.guild?.id);
+        }
         const getForm = await this.api
           .guilds(i.guild?.id)
           ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
