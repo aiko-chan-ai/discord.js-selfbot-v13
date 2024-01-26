@@ -106,6 +106,9 @@ class APIRequest {
         'base64',
       );
     }
+    if (this.options.mfaToken) {
+      headers['X-Discord-Mfa-Authorization'] = this.options.mfaToken;
+    }
 
     let body;
     if (this.options.files?.length) {
