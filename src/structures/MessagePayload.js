@@ -205,7 +205,7 @@ class MessagePayload {
       this.options.activity.type
     ) {
       const type = ActivityFlags.resolve(this.options.activity.type);
-      const sessionId = this.target.client.ws.shards.first()?.sessionId;
+      const sessionId = this.target.client.sessionId;
       const partyId = this.options.activity.partyId;
       activity = {
         type,

@@ -508,6 +508,14 @@ class Client extends BaseClient {
   }
 
   /**
+   * The current session id of the shard
+   * @type {?string}
+   */
+  get sessionId() {
+    return this.ws.shards.first()?.sessionId;
+  }
+
+  /**
    * Options for {@link Client#acceptInvite}.
    * @typedef {Object} AcceptInviteOptions
    * @property {boolean} [bypassOnboarding=true] Whether to bypass onboarding
@@ -539,7 +547,7 @@ class Client extends BaseClient {
     const data = await this.api.invites(code).post({
       DiscordContext: { location: 'Markdown Link' },
       data: {
-        session_id: this.ws.shards.first()?.sessionId,
+        session_id: this.sessionId,
       },
     });
     this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Joined`);

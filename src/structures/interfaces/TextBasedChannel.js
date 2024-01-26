@@ -703,7 +703,7 @@ function createPostData(
     application_id: applicationId,
     guild_id: guildId,
     channel_id: channelId,
-    session_id: client.ws.shards.first()?.sessionId,
+    session_id: client.sessionId,
     data: {
       version: commandVersion,
       id: commandId,

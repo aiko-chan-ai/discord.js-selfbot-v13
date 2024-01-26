@@ -132,7 +132,7 @@ class Modal {
       channel_id: this.channelId,
       data: dataFinal,
       nonce,
-      session_id: this.client.ws.shards.first()?.sessionId,
+      session_id: this.client.sessionId,
     };
     this.client.api.interactions.post({
       data: postData,

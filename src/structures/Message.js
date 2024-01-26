@@ -1025,7 +1025,7 @@ class Message extends Base {
       channel_id: this.channelId,
       message_id: this.id,
       application_id: this.applicationId ?? this.author.id,
-      session_id: this.client.ws.shards.first()?.sessionId,
+      session_id: this.client.sessionId,
       message_flags: this.flags.bitfield,
       data: {
         component_type: MessageComponentTypes.BUTTON,
@@ -1124,7 +1124,7 @@ class Message extends Base {
       channel_id: this.channelId,
       message_id: this.id,
       application_id: this.applicationId ?? this.author.id,
-      session_id: this.client.ws.shards.first()?.sessionId,
+      session_id: this.client.sessionId,
       message_flags: this.flags.bitfield,
       data: {
         component_type: MessageComponentTypes[selectMenu.type],

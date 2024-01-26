@@ -791,6 +791,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public presences: PresenceManager;
   public billing: BillingManager;
   public settings: ClientUserSettingManager;
+  public readonly sessionId: If<Ready, string, undefined>;
   public destroy(): void;
   public fetchGuildPreview(guild: GuildResolvable): Promise<GuildPreview>;
   public fetchInvite(invite: InviteResolvable, options?: ClientFetchInviteOptions): Promise<Invite>;
