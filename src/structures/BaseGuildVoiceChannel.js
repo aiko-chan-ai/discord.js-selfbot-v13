@@ -90,6 +90,14 @@ class BaseGuildVoiceChannel extends GuildChannel {
     if ('nsfw' in data) {
       this.nsfw = data.nsfw;
     }
+
+    if ('status' in data) {
+      /**
+       * The status of the voice channel (max 500 characters)
+       * @type {?string}
+       */
+      this.status = data.status;
+    }
   }
 
   /**
