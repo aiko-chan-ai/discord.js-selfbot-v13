@@ -642,6 +642,7 @@ export class BaseGuildVoiceChannel extends TextBasedChannelMixin(GuildChannel, [
   public rateLimitPerUser: number | null;
   public userLimit: number;
   public videoQualityMode: VideoQualityMode | null;
+  public status?: string;
   public createInvite(options?: CreateInviteOptions): Promise<Invite>;
   public setRTCRegion(rtcRegion: string | null, reason?: string): Promise<this>;
   public fetchInvites(cache?: boolean): Promise<Collection<string, Invite>>;
@@ -6769,7 +6770,9 @@ export type PermissionString =
   | 'MANAGE_EVENTS'
   | 'VIEW_CREATOR_MONETIZATION_ANALYTICS'
   | 'USE_SOUNDBOARD'
-  | 'SEND_VOICE_MESSAGES';
+  | 'SEND_VOICE_MESSAGES'
+  | 'USE_CLYDE_AI'
+  | 'SET_VOICE_CHANNEL_STATUS';
 
 export type RecursiveArray<T> = ReadonlyArray<T | RecursiveArray<T>>;
 
