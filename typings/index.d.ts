@@ -5136,9 +5136,13 @@ export interface ClientEvents extends BaseClientEvents {
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   applicationCommandUpdate: [oldCommand: ApplicationCommand | null, newCommand: ApplicationCommand];
   applicationCommandPermissionsUpdate: [data: ApplicationCommandPermissionsUpdateData];
+  /** @deprecated This event is not received by user accounts. */
   autoModerationActionExecution: [autoModerationActionExecution: AutoModerationActionExecution];
+  /** @deprecated This event is not received by user accounts. */
   autoModerationRuleCreate: [autoModerationRule: AutoModerationRule];
+  /** @deprecated This event is not received by user accounts. */
   autoModerationRuleDelete: [autoModerationRule: AutoModerationRule];
+  /** @deprecated This event is not received by user accounts. */
   autoModerationRuleUpdate: [
     oldAutoModerationRule: AutoModerationRule | null,
     newAutoModerationRule: AutoModerationRule,
@@ -5441,9 +5445,13 @@ export interface ConstantsEvents {
   APPLICATION_COMMAND_PERMISSIONS_UPDATE: 'applicationCommandPermissionsUpdate';
   /** @deprecated See [this issue](https://github.com/discord/discord-api-docs/issues/3690) for more information. */
   APPLICATION_COMMAND_UPDATE: 'applicationCommandUpdate';
+  /** @deprecated This event is not received by user accounts. */
   AUTO_MODERATION_ACTION_EXECUTION: 'autoModerationActionExecution';
+  /** @deprecated This event is not received by user accounts. */
   AUTO_MODERATION_RULE_CREATE: 'autoModerationRuleCreate';
+  /** @deprecated This event is not received by user accounts. */
   AUTO_MODERATION_RULE_DELETE: 'autoModerationRuleDelete';
+  /** @deprecated This event is not received by user accounts. */
   AUTO_MODERATION_RULE_UPDATE: 'autoModerationRuleUpdate';
   GUILD_AVAILABLE: 'guildAvailable';
   GUILD_CREATE: 'guildCreate';

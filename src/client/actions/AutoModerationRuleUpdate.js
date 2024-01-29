@@ -18,6 +18,7 @@ class AutoModerationRuleUpdateAction extends Action {
        * @event Client#autoModerationRuleUpdate
        * @param {?AutoModerationRule} oldAutoModerationRule The auto moderation rule before the update
        * @param {AutoModerationRule} newAutoModerationRule The auto moderation rule after the update
+       * @deprecated This event is not received by user accounts.
        */
       client.emit(Events.AUTO_MODERATION_RULE_UPDATE, oldAutoModerationRule, newAutoModerationRule);
     }

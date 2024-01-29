@@ -16,6 +16,7 @@ class AutoModerationRuleCreateAction extends Action {
        * <info>This event requires the {@link Permissions.FLAGS.MANAGE_GUILD} permission.</info>
        * @event Client#autoModerationRuleCreate
        * @param {AutoModerationRule} autoModerationRule The created auto moderation rule
+       * @deprecated This event is not received by user accounts.
        */
       client.emit(Events.AUTO_MODERATION_RULE_CREATE, autoModerationRule);
     }

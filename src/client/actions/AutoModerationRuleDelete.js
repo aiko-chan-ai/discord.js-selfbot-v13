@@ -19,6 +19,7 @@ class AutoModerationRuleDeleteAction extends Action {
          * <info>This event requires the {@link Permissions.FLAGS.MANAGE_GUILD} permission.</info>
          * @event Client#autoModerationRuleDelete
          * @param {AutoModerationRule} autoModerationRule The deleted auto moderation rule
+         * @deprecated This event is not received by user accounts.
          */
         client.emit(Events.AUTO_MODERATION_RULE_DELETE, autoModerationRule);
       }
