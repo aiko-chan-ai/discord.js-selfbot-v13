@@ -47,17 +47,21 @@ class ClientUser extends User {
     if ('purchased_flags' in data) {
       /**
        * Purchased state of the client user.
-       * @type {?PurchasedFlags}
+       * @type {Readonly<PurchasedFlags>}
        */
-      this.purchasedFlags = new PurchasedFlags(data.purchased_flags || 0);
+      this.purchasedFlags = new PurchasedFlags(data.purchased_flags || 0).freeze();
+    } else {
+      this.purchasedFlags = new PurchasedFlags().freeze();
     }
 
     if ('premium_usage_flags' in data) {
       /**
        * Premium usage state of the client user.
-       * @type {?PremiumUsageFlags}
+       * @type {Readonly<PremiumUsageFlags>}
        */
       this.premiumUsageFlags = new PremiumUsageFlags(data.premium_usage_flags || 0);
+    } else {
+      this.premiumUsageFlags = new PremiumUsageFlags().freeze();
     }
 
     if ('phone' in data) {

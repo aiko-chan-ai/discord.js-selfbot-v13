@@ -334,6 +334,11 @@ export class PremiumUsageFlags extends BitField<PremiumUsageFlagsString> {
   public static resolve(bit?: BitFieldResolvable<PremiumUsageFlagsString, number>): number;
 }
 
+export class InviteFlags extends BitField<InviteFlagsString> {
+  public static FLAGS: Record<InviteFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<InviteFlagsString, number>): number;
+}
+
 export abstract class AnonymousGuild extends BaseGuild {
   protected constructor(client: Client, data: RawAnonymousGuildData, immediatePatch?: boolean);
   public banner: string | null;
@@ -873,8 +878,8 @@ export class ClientUser extends User {
   public setPresence(data: PresenceData): ClientPresence;
   public setStatus(status: PresenceStatusData, shardId?: number | number[]): ClientPresence;
   public setUsername(username: string, password: string): Promise<this>;
-  public purchasedFlags: PurchasedFlags;
-  public premiumUsageFlags: PremiumUsageFlags;
+  public purchasedFlags: Readonly<PurchasedFlags>;
+  public premiumUsageFlags: Readonly<PremiumUsageFlags>;
   public phone: string | null;
   public nsfwAllowed?: boolean;
   public email: string | null;
@@ -1751,6 +1756,7 @@ export class Invite extends Base {
   public static INVITES_PATTERN: RegExp;
   public stageInstance: InviteStageInstance | null;
   public guildScheduledEvent: GuildScheduledEvent | null;
+  public flags: Readonly<InviteFlags>;
 }
 
 export class InviteStageInstance extends Base {
@@ -4364,6 +4370,8 @@ export type ActivityFlagsString =
 export type PurchasedFlagsString = 'NITRO_CLASSIC' | 'NITRO' | 'GUILD_BOOST' | 'NITRO_BASIC';
 
 export type PremiumUsageFlagsString = 'PREMIUM_DISCRIMINATOR' | 'ANIMATED_AVATAR' | 'PROFILE_BANNER';
+
+export type InviteFlagsString = 'GUEST' | 'VIEWED';
 
 export type ActivitiesOptions = Omit<ActivityOptions, 'shardId'>;
 

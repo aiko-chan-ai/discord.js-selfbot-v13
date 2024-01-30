@@ -553,6 +553,11 @@ class Client extends BaseClient {
     this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Joined`);
     // Guild
     if (i.guild?.id) {
+      const guild = this.guilds.cache.get(i.guild?.id);
+      if (i.flags.has('GUEST')) {
+        this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Guest invite`);
+        return guild;
+      }
       if (options.bypassOnboarding) {
         const onboardingData = await this.api.guilds[i.guild?.id].onboarding.get();
         // Onboarding
@@ -607,7 +612,7 @@ class Client extends BaseClient {
           this.emit(Events.DEBUG, `[Invite > Guild ${i.guild?.id}] Bypassed verify`);
         }
       }
-      return this.guilds.cache.get(i.guild?.id);
+      return guild;
     } else {
       return this.channels.cache.has(i.channelId);
     }

@@ -6,6 +6,7 @@ const IntegrationApplication = require('./IntegrationApplication');
 const InviteStageInstance = require('./InviteStageInstance');
 const { Error } = require('../errors');
 const { Endpoints } = require('../util/Constants');
+const InviteFlags = require('../util/InviteFlags');
 const Permissions = require('../util/Permissions');
 
 // TODO: Convert `inviter` and `channel` in this class to a getter.
@@ -241,6 +242,16 @@ class Invite extends Base {
       this.guildScheduledEvent = new GuildScheduledEvent(this.client, data.guild_scheduled_event);
     } else {
       this.guildScheduledEvent ??= null;
+    }
+
+    if ('flags' in data) {
+      /**
+       * The flags that are applied to the invite.
+       * @type {?Readonly<InviteFlags>}
+       */
+      this.flags = new InviteFlags(data.flags).freeze();
+    } else {
+      this.flags ??= new InviteFlags().freeze();
     }
   }
 
