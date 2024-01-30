@@ -122,7 +122,7 @@ class Modal {
         };
         return c;
       })
-      .filter(c => c.components[0].value && c.components[0].value !== '');
+      .filter(c => typeof c.components[0].value == 'string');
     delete dataFinal.title;
     const nonce = SnowflakeUtil.generate();
     const postData = {
