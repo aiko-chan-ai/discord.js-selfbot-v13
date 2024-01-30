@@ -503,13 +503,17 @@ class GuildMemberManager extends CachedManager {
   fetchByMemberSafety(timeout = 15_000) {
     return new Promise(resolve => {
       const nonce = SnowflakeUtil.generate();
+      const fetchedMembers = new Collection();
       let timeout_ = setTimeout(() => {
-        this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
-        resolve(this.guild.members.cache);
+        this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
+        resolve(fetchedMembers);
       }, timeout).unref();
-      const handler = (members, guild, raw) => {
-        if (guild.id == this.guild.id && raw.nonce == nonce) {
+      const handler = (members, guild, chunk) => {
+        if (guild.id == this.guild.id && chunk.nonce == nonce) {
           if (members.size > 0) {
+            for (const member of members.values()) {
+              fetchedMembers.set(member.id, member);
+            }
             this.client.ws.broadcast({
               op: Opcodes.SEARCH_RECENT_MEMBERS,
               d: {
@@ -521,12 +525,12 @@ class GuildMemberManager extends CachedManager {
             });
           } else {
             clearTimeout(timeout_);
-            this.client.removeListener(Events.GUILD_MEMBER_LIST_UPDATE, handler);
-            resolve(this.guild.members.cache);
+            this.client.removeListener(Events.GUILD_MEMBERS_CHUNK, handler);
+            resolve(fetchedMembers);
           }
         }
       };
-      this.client.on('guildMembersChunk', handler);
+      this.client.on(Events.GUILD_MEMBERS_CHUNK, handler);
       this.client.ws.broadcast({
         op: Opcodes.SEARCH_RECENT_MEMBERS,
         d: {
