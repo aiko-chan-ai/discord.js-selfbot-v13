@@ -525,7 +525,7 @@ class Client extends BaseClient {
   /**
    * Join this Guild / GroupDMChannel using this invite
    * @param {InviteResolvable} invite Invite code or URL
-   * @param {AcceptInviteOptions} [options={ bypassOnboarding: true, bypassVerify: true }] Options
+   * @param {AcceptInviteOptions} [options] Options
    * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
    * @example
    * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })
