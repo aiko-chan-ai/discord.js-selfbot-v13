@@ -523,7 +523,7 @@ class Client extends BaseClient {
    */
 
   /**
-   * Join this Guild using this invite
+   * Join this Guild / GroupDMChannel using this invite
    * @param {InviteResolvable} invite Invite code or URL
    * @param {AcceptInviteOptions} [options={ bypassOnboarding: true, bypassVerify: true }] Options
    * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
@@ -614,7 +614,7 @@ class Client extends BaseClient {
       }
       return guild;
     } else {
-      return this.channels.cache.has(i.channelId);
+      return this.channels.cache.has(i.channelId || data.channel?.id);
     }
   }
 

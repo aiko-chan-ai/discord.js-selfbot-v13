@@ -193,16 +193,16 @@ class Invite extends Base {
     if ('channel_id' in data) {
       /**
        * The channel's id this invite is for
-       * @type {Snowflake}
+       * @type {?Snowflake}
        */
       this.channelId = data.channel_id;
       this.channel = this.client.channels.cache.get(data.channel_id);
     }
 
-    if ('channel' in data) {
+    if ('channel' in data && data.channel !== null) {
       /**
        * The channel this invite is for
-       * @type {Channel}
+       * @type {?Channel}
        */
       this.channel ??= this.client.channels._add(data.channel, this.guild, { cache: false });
       this.channelId ??= data.channel.id;
