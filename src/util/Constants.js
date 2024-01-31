@@ -755,10 +755,11 @@ exports.SystemMessageTypes = exports.MessageTypes.filter(
  * * WATCHING
  * * CUSTOM
  * * COMPETING
+ * * HANG
  * @typedef {string} ActivityType
  * @see {@link https://discord.com/developers/docs/game-sdk/activities#data-models-activitytype-enum}
  */
-exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHING', 'CUSTOM', 'COMPETING']);
+exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHING', 'CUSTOM', 'COMPETING', 'HANG']);
 
 /**
  * All available channel types:

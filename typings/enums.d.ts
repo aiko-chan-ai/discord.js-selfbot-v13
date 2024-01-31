@@ -8,6 +8,7 @@ export const enum ActivityTypes {
   WATCHING = 3,
   CUSTOM = 4,
   COMPETING = 5,
+  HANG = 6,
 }
 
 export const enum ApplicationCommandTypes {
