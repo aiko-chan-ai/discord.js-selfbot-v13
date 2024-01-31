@@ -90,15 +90,19 @@ class Presence extends Base {
     if ('activities' in data) {
       /**
        * The activities of this presence (Always `Activity[]` if not ClientUser)
-       * @type {CustomStatus[]|RichPresence[]|SpotifyRPC[]}
+       * @type {CustomStatus[]|RichPresence[]|SpotifyRPC[]|Activity[]}
        */
       this.activities = data.activities.map(activity => {
-        if ([ActivityTypes.CUSTOM, 'CUSTOM'].includes(activity.type)) {
-          return new CustomStatus(this.client, activity);
-        } else if (activity.id == 'spotify:1') {
-          return new SpotifyRPC(this.client, activity);
+        if (this.userId == this.client.user.id) {
+          if ([ActivityTypes.CUSTOM, 'CUSTOM'].includes(activity.type)) {
+            return new CustomStatus(this.client, activity);
+          } else if (activity.id == 'spotify:1') {
+            return new SpotifyRPC(this.client, activity);
+          } else {
+            return new RichPresence(this.client, activity);
+          }
         } else {
-          return new RichPresence(this.client, activity);
+          return new Activity(this, activity);
         }
       });
     } else {
@@ -621,7 +625,7 @@ class CustomStatus extends Activity {
    * @param {CustomStatus|CustomStatusOptions} [data={}] CustomStatus to clone or raw data
    */
   constructor(client, data = {}) {
-    super(client.presence, {
+    super('presence' in client ? client.presence : client, {
       name: 'Custom Status',
       type: ActivityTypes.CUSTOM,
       ...data,
@@ -670,7 +674,7 @@ class RichPresence extends Activity {
    * @param {RichPresence} [data={}] RichPresence to clone or raw data
    */
   constructor(client, data = {}) {
-    super(client.presence, { type: 0, ...data });
+    super('presence' in client ? client.presence : client, { type: 0, ...data });
     this.setup(data);
   }
 
