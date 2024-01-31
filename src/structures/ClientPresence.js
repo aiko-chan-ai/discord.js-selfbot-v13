@@ -22,7 +22,7 @@ class ClientPresence extends Presence {
    */
   set(presence) {
     const packet = this._parse(presence);
-    this._patch(packet, true);
+    this._patch(packet);
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
     } else if (Array.isArray(presence.shardId)) {

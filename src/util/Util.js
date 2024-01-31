@@ -795,6 +795,19 @@ class Util extends null {
         .catch(reject);
     });
   }
+
+  /**
+   * Lazily evaluates a callback function (yea it's v14 :yay:)
+   * @param {Function} cb The callback to lazily evaluate
+   * @returns {Function}
+   * @example
+   * const User = lazy(() => require('./User'));
+   * const user = new (User())(client, data);
+   */
+  static lazy(cb) {
+    let defaultValue;
+    return () => (defaultValue ??= cb());
+  }
 }
 
 module.exports = Util;

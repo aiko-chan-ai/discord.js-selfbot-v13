@@ -150,9 +150,9 @@ exports.WelcomeScreen = require('./structures/WelcomeScreen');
 
 exports.WebSocket = require('./WebSocket');
 
-exports.CustomStatus = require('./structures/RichPresence').CustomStatus;
-exports.RichPresence = require('./structures/RichPresence').RichPresence;
-exports.SpotifyRPC = require('./structures/RichPresence').SpotifyRPC;
+exports.CustomStatus = require('./structures/Presence').CustomStatus;
+exports.RichPresence = require('./structures/Presence').RichPresence;
+exports.SpotifyRPC = require('./structures/Presence').SpotifyRPC;
 exports.WebEmbed = require('./structures/WebEmbed');
 exports.DiscordAuthWebsocket = require('./util/RemoteAuth');
 exports.PurchasedFlags = require('./util/PurchasedFlags');

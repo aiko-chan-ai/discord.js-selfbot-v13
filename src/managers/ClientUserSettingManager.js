@@ -3,7 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const BaseManager = require('./BaseManager');
 const { TypeError } = require('../errors/DJSError');
-const { CustomStatus } = require('../structures/RichPresence');
+const { CustomStatus } = require('../structures/Presence');
 const { ActivityTypes } = require('../util/Constants');
 
 /**
