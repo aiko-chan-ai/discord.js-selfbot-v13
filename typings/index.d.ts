@@ -176,13 +176,9 @@ export interface RichButton {
 export class RichPresence extends Activity {
   public constructor(client: Client, data?: object);
   public metadata: RichPresenceMetadata;
-  /** @deprecated */
   public setAssetsLargeImage(image?: string): this;
-  /** @deprecated */
   public setAssetsLargeText(text?: string): this;
-  /** @deprecated */
   public setAssetsSmallImage(image?: string): this;
-  /** @deprecated */
   public setAssetsSmallText(text?: string): this;
   public setName(name?: string): this;
   public setURL(url?: string): this;
@@ -195,6 +191,7 @@ export class RichPresence extends Activity {
   public setEndTimestamp(timestamp: Date | number | null): this;
   public setButtons(...button: RichButton[]): this;
   public addButton(name: string, url: string): this;
+  public setJoinSecret(join?: string): this;
   public static getExternal(
     client: Client,
     applicationId: Snowflake,

@@ -404,7 +404,10 @@ class Activity {
   }
 
   toJSON(...props) {
-    return Util.flatten(this, ...props);
+    return {
+      ...Util.flatten(this, ...props),
+      type: typeof this.type === 'number' ? this.type : ActivityTypes[this.type],
+    };
   }
 }
 
@@ -692,7 +695,6 @@ class RichPresence extends Activity {
    * Set the large image of this activity
    * @param {?RichPresenceImage} image The large image asset's id
    * @returns {RichPresence}
-   * @deprecated
    */
   setAssetsLargeImage(image) {
     this.assets.setLargeImage(image);
@@ -703,7 +705,6 @@ class RichPresence extends Activity {
    * Set the small image of this activity
    * @param {?RichPresenceImage} image The small image asset's id
    * @returns {RichPresence}
-   * @deprecated
    */
   setAssetsSmallImage(image) {
     this.assets.setSmallImage(image);
@@ -714,7 +715,6 @@ class RichPresence extends Activity {
    * Hover text for the large image
    * @param {string} text Assets text
    * @returns {RichPresence}
-   * @deprecated
    */
   setAssetsLargeText(text) {
     this.assets.setLargeText(text);
@@ -725,7 +725,6 @@ class RichPresence extends Activity {
    * Hover text for the small image
    * @param {string} text Assets text
    * @returns {RichPresence}
-   * @deprecated
    */
   setAssetsSmallText(text) {
     this.assets.setSmallText(text);
@@ -876,6 +875,16 @@ class RichPresence extends Activity {
         throw new Error('Button must have name and url');
       }
     });
+    return this;
+  }
+
+  /**
+   * Secrets for rich presence joining and spectating (send-only)
+   * @param {?string} join Secrets for rich presence joining
+   * @returns {RichPresence}
+   */
+  setJoinSecret(join) {
+    this.secrets.join = join;
     return this;
   }
 
@@ -1056,6 +1065,13 @@ class SpotifyRPC extends RichPresence {
     this.metadata.album_id = id;
     this.metadata.context_uri = `spotify:album:${id}`;
     return this;
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON({ id: false, emoji: false, platform: false, buttons: false }),
+      session_id: this.presence.client.sessionId,
+    };
   }
 }
 
