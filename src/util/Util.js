@@ -1,5 +1,6 @@
 'use strict';
 
+const { Agent } = require('node:http');
 const { parse } = require('node:path');
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
@@ -807,6 +808,15 @@ class Util extends null {
   static lazy(cb) {
     let defaultValue;
     return () => (defaultValue ??= cb());
+  }
+
+  /**
+   * Hacking check object instanceof Proxy-agent
+   * @param {Object} object any
+   * @returns {boolean}
+   */
+  static verifyProxyAgent(object) {
+    return typeof object == 'object' && object.httpAgent instanceof Agent && object.httpsAgent instanceof Agent;
   }
 }
 

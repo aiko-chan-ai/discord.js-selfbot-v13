@@ -1,11 +1,11 @@
 'use strict';
 
 const EventEmitter = require('node:events');
-const http = require('node:http');
 const { setTimeout, setInterval, clearTimeout } = require('node:timers');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
+const Util = require('../../util/Util');
 
 const STATUS_KEYS = Object.keys(Status);
 const CONNECTION_STATE = Object.keys(WebSocket.WebSocket);
@@ -272,7 +272,7 @@ class WebSocketShard extends EventEmitter {
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
-    Agent      : ${client.options.ws.agent instanceof http.Agent}`,
+    Agent      : ${Util.verifyProxyAgent(client.options.ws.agent)}`,
       );
 
       this.status = this.status === Status.DISCONNECTED ? Status.RECONNECTING : Status.CONNECTING;
@@ -283,7 +283,7 @@ class WebSocketShard extends EventEmitter {
       // Adding a handshake timeout to just make sure no zombie connection appears.
       const ws = (this.connection = WebSocket.create(gateway, wsQuery, {
         handshakeTimeout: 30_000,
-        agent: client.options.ws.agent instanceof http.Agent ? client.options.ws.agent : undefined,
+        agent: Util.verifyProxyAgent(client.options.ws.agent) ? client.options.ws.agent : undefined,
       }));
       ws.onopen = this.onOpen.bind(this);
       ws.onmessage = this.onMessage.bind(this);
