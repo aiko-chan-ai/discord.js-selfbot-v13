@@ -604,7 +604,7 @@ class Util extends null {
           return user ? Util._removeMentions(`@${user.username}`) : input;
         }
 
-        const member = channel.guild.members.cache.get(id);
+        const member = channel.guild?.members.cache.get(id);
         if (member) {
           return Util._removeMentions(`@${member.displayName}`);
         } else {
