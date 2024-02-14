@@ -45,7 +45,7 @@ class ClientPresence extends Presence {
     const data = {
       activities: [],
       afk: typeof afk === 'boolean' ? afk : false,
-      since: typeof since === 'number' && !Number.isNaN(since) ? since : null,
+      since: typeof since === 'number' && !Number.isNaN(since) ? since : 0,
       status: status ?? this.status,
     };
     if (activities?.length) {
