@@ -89,3 +89,31 @@ await message.channel.sendSlash('718642000898818048', 'sauce', a)
 	}
 
 ```
+
+### Receive messages after bot has replied `{botname} is thinking...`
+
+> [aiko-chan-ai/discord.js-selfbot-v13#1055 (comment)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/1055#issuecomment-1949653100)
+
+![image](https://cdn.discordapp.com/attachments/820557032016969751/1208363574477590538/image.png?ex=65e30346&is=65d08e46&hm=72771d6aa0d23f817f5daf8d2f33906ff74200aace7787c3cd02d2e30e58f8d5&)
+
+```js
+const channel = client.channels.cache.get('id');
+channel
+	.sendSlash('289066747443675143', 'osu', 'Accolibed')
+	.then(async (message) => {
+		if (message.flags.has('LOADING')) { // owo is thinking...
+			return new Promise((r, rej) => {
+				let t = setTimeout(() => rej('timeout'), 15 * 60 * 1000); // 15m (DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE)
+				message.client.on('messageUpdate', (_, m) => {
+					if (_.id == message.id) {
+						clearTimeout(t);
+						r(m);
+					}
+				});
+			});
+		} else {
+			return Promise.resolve(message);
+		}
+	})
+	.then(console.log);
+```
