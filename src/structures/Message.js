@@ -1076,10 +1076,10 @@ class Message extends Base {
    * @returns {Promise<Message|Modal>}
    */
   selectMenu(menu, values = []) {
-    let selectMenu;
+    let selectMenu = menu;
     if (/[0-4]/.test(menu)) {
       selectMenu = this.components[menu]?.components[0];
-    } else {
+    } else if (typeof menu == 'string') {
       selectMenu = this.components
         .flatMap(row => row.components)
         .find(
@@ -1092,7 +1092,7 @@ class Message extends Base {
     if (values.length < selectMenu.minValues) {
       throw new RangeError(`[SELECT_MENU_MIN_VALUES] The minimum number of values is ${selectMenu.minValues}`);
     }
-    if (values.length > selectMenu.maxValues) {
+    if (values.length > selectMenu?.maxValues) {
       throw new RangeError(`[SELECT_MENU_MAX_VALUES] The maximum number of values is ${selectMenu.maxValues}`);
     }
     values = values.map(value => {
