@@ -59,7 +59,7 @@
     "@types/node-fetch": "^2.6.10",
     "@types/ws": "^8.5.10",
     "discord-api-types": "^0.37.61",
-    "fetch-cookie": "^2.1.0",
+    "fetch-cookie": "^3.0.1",
     "form-data": "^4.0.0",
     "node-fetch": "^2.6.9",
     "tough-cookie": "^4.1.3",
