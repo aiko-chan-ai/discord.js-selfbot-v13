@@ -278,6 +278,39 @@ class Client extends BaseClient {
   }
 
   /**
+   * Logs the client in, establishing a WebSocket connection to Discord.
+   * @param {string} email The email associated with the account
+   * @param {string} password The password assicated with the account
+   * @param {string | number} [code = null] The mfa code if you have it enabled
+   * @returns {string | null} Token of the account used
+   *
+   * @example
+   * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
+   */
+  async passLogin(email, password, code = null) {
+    const initial = await this.api.auth.login.post({
+      auth: false,
+      versioned: true,
+      data: { gift_code_sku_id: null, login_source: null, undelete: false, login: email, password },
+    });
+
+    if ('token' in initial) {
+      return this.login(initial.token);
+    } else if ('ticket' in initial) {
+      const totp = await this.api.auth.mfa.totp.post({
+        auth: false,
+        versioned: true,
+        data: { gift_code_sku_id: null, login_source: null, code, ticket: initial.ticket },
+      });
+      if ('token' in totp) {
+        return this.login(totp.token);
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Returns whether the client has logged in, indicative of being able to access
    * properties such as `user` and `application`.
    * @returns {boolean}
