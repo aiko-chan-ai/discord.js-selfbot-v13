@@ -83,3 +83,4 @@ data/
 update.mjs
 yarn.lock
 package-lock.json
+.vscode/*
