@@ -9,6 +9,7 @@ const RateLimitError = require('./RateLimitError');
 const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
+const { TextEncoder } = require('node:util');
 
 const captchaMessage = [
   'incorrect-captcha',
@@ -224,15 +225,14 @@ class RequestHandler {
       else res.ok = false;
 
       res.json = () => {
-        if (typeof this.body == 'string') return JSON.parse(this.body);
-        else return this.body;
+        if (typeof res.body == 'string') return JSON.parse(res.body);
+        else return res.body;
       };
 
-      res.arrayBuffer = () =>
-        console.log(
-          `This hasn't been fully inplemented yet, please open an issue and insert the following data\n\n${this.body}`,
-        );
-
+      res.arrayBuffer = () => {
+        const enc = new TextEncoder();
+        return enc.encode(res.body);
+      };
       this.manager.client.tls = null;
     }
 
