@@ -3,6 +3,7 @@
 const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
+const initCycleTLS = require('cycletls');
 const makeFetchCookie = require('fetch-cookie');
 const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
@@ -11,7 +12,6 @@ const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
 // JA3
-const initCycleTLS = require('cycletls');
 
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);

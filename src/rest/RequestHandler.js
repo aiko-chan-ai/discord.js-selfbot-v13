@@ -223,16 +223,15 @@ class RequestHandler {
       if (res.status >= 200 && res.status < 400) res.ok = true;
       else res.ok = false;
 
-      res.json = function () {
+      res.json = () => {
         if (typeof this.body == 'string') return JSON.parse(this.body);
         else return this.body;
       };
 
-      res.arrayBuffer = function () {
-        return console.log(
+      res.arrayBuffer = () =>
+        console.log(
           `This hasn't been fully inplemented yet, please open an issue and insert the following data\n\n${this.body}`,
         );
-      };
 
       this.manager.client.tls = null;
     }
