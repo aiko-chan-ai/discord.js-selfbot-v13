@@ -738,7 +738,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions);
   private actions: unknown;
   private presence: ClientPresence;
-  private tls: CycleTLSClient;
+  private tls: CycleTLSClient | null;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
   public channels: ChannelManager;
