@@ -180,6 +180,9 @@ class Client extends BaseClient {
      */
     this.user = null;
 
+    /** @private */
+    this.tls = null;
+
     /**
      * Time at which the client was last regarded as being in the `READY` state
      * (each time the client disconnects and successfully reconnects, this will be overwritten)

@@ -10,6 +10,9 @@ const { CookieJar } = require('tough-cookie');
 const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
+// JA3
+const initCycleTLS = require('cycletls');
+
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);
 
@@ -38,7 +41,7 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  make(captchaKey, captchaRqToken) {
+  async make(captchaKey, captchaRqToken) {
     if (!agent) {
       if (Util.verifyProxyAgent(this.client.options.http.agent)) {
         // Bad code
@@ -147,6 +150,23 @@ class APIRequest {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
+
+    if (this.client.options.useJa3) {
+      const tls = await initCycleTLS();
+      this.client.tls = tls;
+
+      return tls(
+        url,
+        {
+          headers,
+          ja3: '771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,13-51-0-16-43-35-23-10-27-65037-18-5-11-65281-45-17513-41,29-23-24,0',
+          userAgent: agent,
+          body,
+        },
+        this.method,
+      );
+    }
+
     return fetch(url, {
       method: this.method,
       headers,

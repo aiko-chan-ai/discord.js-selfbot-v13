@@ -20,6 +20,8 @@ import {
   underscore,
   userMention,
 } from '@discordjs/builders';
+
+import { CycleTLSClient } from 'cycletls';
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
@@ -736,6 +738,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions);
   private actions: unknown;
   private presence: ClientPresence;
+  private tls: CycleTLSClient;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
   public channels: ChannelManager;
@@ -5260,6 +5263,7 @@ export interface ClientOptions {
   sweepers?: SweeperOptions;
   ws?: WebSocketOptions;
   http?: HTTPOptions;
+  useJa3?: boolean;
   rejectOnRateLimit?: string[] | ((data: RateLimitData) => boolean | Promise<boolean>);
 }
 

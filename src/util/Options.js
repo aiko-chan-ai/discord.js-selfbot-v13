@@ -216,6 +216,7 @@ class Options extends null {
         template: 'https://discord.new',
         scheduledEvent: 'https://discord.com/events',
       },
+      useJa3: false,
     };
   }
 

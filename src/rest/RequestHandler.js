@@ -207,6 +207,7 @@ class RequestHandler {
     let res;
     try {
       res = await request.make(captchaKey, captchaToken);
+      if (this.manager.client.tls !== null) this.manager.client.tls.exit();
     } catch (error) {
       // Retry the specified number of times for request abortions
       if (request.retries === this.manager.client.options.retryLimit) {
@@ -214,7 +215,26 @@ class RequestHandler {
       }
 
       request.retries++;
+      if (this.manager.client.tls !== null) this.manager.client.tls.exit();
       return this.execute(request);
+    }
+
+    if (this.manager.client.tls !== null) {
+      if (res.status >= 200 && res.status < 400) res.ok = true;
+      else res.ok = false;
+
+      res.json = function () {
+        if (typeof this.body == 'string') return JSON.parse(this.body);
+        else return this.body;
+      };
+
+      res.arrayBuffer = function () {
+        return console.log(
+          `This hasn't been fully inplemented yet, please open an issue and insert the following data\n\n${this.body}`,
+        );
+      };
+
+      this.manager.client.tls = null;
     }
 
     if (this.manager.client.listenerCount(API_RESPONSE)) {
