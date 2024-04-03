@@ -230,6 +230,40 @@ class Client extends BaseClient {
     return this.readyAt ? Date.now() - this.readyAt : null;
   }
 
+  /** @private */
+  async updateClientBuildNumber() {
+    const BUILD_NUMBER_STRING = 'build_number:"';
+    const doc = await fetch('https://discord.com/app').then(r => r.text());
+    const scripts = doc.match(/\/assets\/[0-9]{1,5}.*?.js/gim);
+
+    for (const script of scripts.reverse()) {
+      try {
+        const js = await fetch(`https://discord.com${script}`, {
+          headers: {
+            Origin: 'https://discord.com',
+            Referer: 'https://discord.com/app',
+          },
+        }).then(r => r.text());
+
+        const idx = js.indexOf(BUILD_NUMBER_STRING);
+        if (idx == -1) continue;
+
+        const start = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + 10);
+
+        let end = start.indexOf('"');
+        if (end == -1) end = 10;
+
+        const build = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + end);
+        const number = Number(build);
+
+        this.options.ws.properties.client_build_number = number;
+        break;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
   /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
@@ -261,6 +295,8 @@ class Client extends BaseClient {
     }
 
     this.emit(Events.DEBUG, 'Preparing to connect to the gateway...');
+
+    await this.updateClientBuildNumber();
 
     try {
       await this.ws.connect();

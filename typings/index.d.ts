@@ -738,6 +738,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private presence: ClientPresence;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
+  private updateClientBuildNumber(): Promise<void>;
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;
