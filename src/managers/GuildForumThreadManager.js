@@ -85,23 +85,23 @@ class GuildForumThreadManager extends ThreadManager {
     });
     const attachmentsData = await Promise.all(requestPromises);
     attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-    data.attachments = attachmentsData;
 
     if (autoArchiveDuration === 'MAX') autoArchiveDuration = resolveAutoArchiveMaxLimit(this.channel.guild);
 
-    const data = await this.client.api.channels(this.channel.id).threads.post({
+    const post_data = await this.client.api.channels(this.channel.id).threads.post({
       data: {
         name,
         auto_archive_duration: autoArchiveDuration,
         rate_limit_per_user: rateLimitPerUser,
         applied_tags: appliedTags,
         message: body,
+        attachments: attachmentsData,
       },
       files: [],
       reason,
     });
 
-    return this.client.actions.ThreadCreate.handle(data).thread;
+    return this.client.actions.ThreadCreate.handle(post_data).thread;
   }
 }
 
