@@ -739,6 +739,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
   private updateClientBuildNumber(): Promise<void>;
+  public static getClientBuildNumber(type: 'www' | 'ptb' | 'canary'): Promise<number | null>;
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;

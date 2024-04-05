@@ -230,18 +230,22 @@ class Client extends BaseClient {
     return this.readyAt ? Date.now() - this.readyAt : null;
   }
 
-  /** @private */
-  async updateClientBuildNumber() {
+  /**
+   * @param {"www" | "canary" | "ptb"} type The type of discord build number to get ( www = normal discord )
+   * @returns {Promise<number | null>}
+   */
+  static async getClientBuildNumber(type = 'www') {
     const BUILD_NUMBER_STRING = 'build_number:"';
-    const doc = await fetch('https://discord.com/app').then(r => r.text());
+    const doc = await fetch(`https://${type}.discord.com/app`).then(r => r.text());
     const scripts = doc.match(/\/assets\/[0-9]{1,5}.*?.js/gim);
+    let number = null;
 
     for (const script of scripts.reverse()) {
       try {
-        const js = await fetch(`https://discord.com${script}`, {
+        const js = await fetch(`https://${type}.discord.com${script}`, {
           headers: {
-            Origin: 'https://discord.com',
-            Referer: 'https://discord.com/app',
+            Origin: `https://${type}.discord.com`,
+            Referer: `https://${type}.discord.com/app`,
           },
         }).then(r => r.text());
 
@@ -254,14 +258,15 @@ class Client extends BaseClient {
         if (end == -1) end = 10;
 
         const build = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + end);
-        const number = Number(build);
+        number = Number(build);
 
-        this.options.ws.properties.client_build_number = number;
         break;
       } catch (e) {
-        console.error(e);
+        break;
       }
     }
+
+    return number;
   }
 
   /**
