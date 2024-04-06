@@ -303,8 +303,6 @@ class Client extends BaseClient {
 
     this.emit(Events.DEBUG, 'Preparing to connect to the gateway...');
 
-    await this.updateClientBuildNumber();
-
     try {
       await this.ws.connect();
       return this.token;
