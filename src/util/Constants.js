@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.310 Chrome/120.0.6099.291 Electron/28.2.7 Safari/537.36';
 
 /**
  * Google Chrome v108 TLS ciphers
