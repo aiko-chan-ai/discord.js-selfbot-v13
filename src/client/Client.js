@@ -35,6 +35,7 @@ const Intents = require('../util/Intents');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
+const Util = require('../util/Util');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -330,9 +331,23 @@ class Client extends BaseClient {
    * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
    */
   async passLogin(email, password, code = null) {
+    let fingerprint = await this.api.experiments.get({
+      auth: false,
+      DiscordContext: '/app',
+    });
+
+    if (!fingerprint.fingerprint) {
+      fingerprint = `${Util.calculateNonce()}:${Util.randomChars(27)}`;
+    } else {
+      fingerprint = fingerprint.fingerprint;
+    }
+
     const initial = await this.api.auth.login.post({
       auth: false,
       versioned: true,
+      headers: {
+        'X-Fingerprint': fingerprint,
+      },
       data: { gift_code_sku_id: null, login_source: null, undelete: false, login: email, password },
     });
 
@@ -342,6 +357,9 @@ class Client extends BaseClient {
       const totp = await this.api.auth.mfa.totp.post({
         auth: false,
         versioned: true,
+        headers: {
+          'X-Fingerprint': fingerprint,
+        },
         data: { gift_code_sku_id: null, login_source: null, code, ticket: initial.ticket },
       });
       if ('token' in totp) {

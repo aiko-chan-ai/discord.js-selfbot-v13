@@ -818,6 +818,30 @@ class Util extends null {
   static verifyProxyAgent(object) {
     return typeof object == 'object' && object.httpAgent instanceof Agent && object.httpsAgent instanceof Agent;
   }
+
+  /**
+   * Calculate discords nonce
+   * @param {number} date The amount of ms from January 1st 1970 UTC
+   * @returns {string}
+   */
+  static calculateNonce(date = Date.now()) {
+    return String((Math.round(date / 1000) * 1000 - 1420070400000) * 4194304);
+  }
+
+  /**
+   * Generates a random string of ascii letters and numbers
+   * @param {number} size The size of the string you want to generate
+   * @returns {string}
+   */
+  static randomChars(size) {
+    const chars = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890';
+    let ran = '';
+    for (let i = 0; i < size; i++) {
+      ran += chars[Math.round(Math.random() * chars.length)];
+    }
+
+    return ran;
+  }
 }
 
 module.exports = Util;
