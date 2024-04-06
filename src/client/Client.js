@@ -231,10 +231,11 @@ class Client extends BaseClient {
   }
 
   /**
-   * @param {"www" | "canary" | "ptb"} type The type of discord build number to get ( www = normal discord )
+   * @param {"stable" | "canary" | "ptb"} type The type of discord build number to get
    * @returns {Promise<number | null>}
    */
-  static async getClientBuildNumber(type = 'www') {
+  async getClientBuildNumber(type = this.options.ws.properties.release_channel) {
+    if (type == 'stable') type = 'www';
     const BUILD_NUMBER_STRING = 'build_number:"';
     const doc = await fetch(`https://${type}.discord.com/app`).then(r => r.text());
     const scripts = doc.match(/\/assets\/[0-9]{1,5}.*?.js/gim);
