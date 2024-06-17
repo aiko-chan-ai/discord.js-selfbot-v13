@@ -1014,8 +1014,8 @@ class Message extends Base {
     } else {
       button = this.components[button.Y]?.components[button.X];
     }
-    button = button.toJSON();
     if (!button) throw new TypeError('BUTTON_NOT_FOUND');
+    button = button.toJSON();
     if (!button.custom_id || button.disabled) throw new TypeError('BUTTON_CANNOT_CLICK');
     const nonce = SnowflakeUtil.generate();
     const data = {
