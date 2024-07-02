@@ -26,9 +26,6 @@ module.exports = (client, { d: data }, shard) => {
     client.guilds._add(guild);
   }
 
-  const largeGuilds = data.guilds.filter(g => g.large);
-  client.emit('debug', `[READY] Received ${data.guilds.length} guilds, ${largeGuilds.length} large guilds`);
-
   // User Notes
   client.notes._reload(data.notes);
 
@@ -45,11 +42,11 @@ module.exports = (client, { d: data }, shard) => {
   }
   // Todo: data.auth_session_id_hash
 
-  if (largeGuilds.length) {
+  if (data.guilds.length) {
     client.ws.broadcast({
       op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
       d: {
-        subscriptions: largeGuilds.reduce((accumulator, guild) => {
+        subscriptions: data.guilds.reduce((accumulator, guild) => {
           accumulator[guild.id] = {
             typing: true,
             threads: true,
