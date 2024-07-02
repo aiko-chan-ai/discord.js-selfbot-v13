@@ -35,6 +35,7 @@ const Intents = require('../util/Intents');
 const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
+const Util = require('../util/Util');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -231,6 +232,46 @@ class Client extends BaseClient {
   }
 
   /**
+   * @param {"stable" | "canary" | "ptb"} type The type of discord build number to get
+   * @returns {Promise<number | null>}
+   */
+  async getClientBuildNumber(type = this.options.ws.properties.release_channel) {
+    if (type == 'stable') type = 'www';
+    const BUILD_NUMBER_STRING = 'build_number:"';
+    const doc = await fetch(`https://${type}.discord.com/app`).then(r => r.text());
+    const scripts = doc.match(/\/assets\/[0-9]{1,5}.*?.js/gim);
+    let number = null;
+
+    for (const script of scripts.reverse()) {
+      try {
+        const js = await fetch(`https://${type}.discord.com${script}`, {
+          headers: {
+            Origin: `https://${type}.discord.com`,
+            Referer: `https://${type}.discord.com/app`,
+          },
+        }).then(r => r.text());
+
+        const idx = js.indexOf(BUILD_NUMBER_STRING);
+        if (idx == -1) continue;
+
+        const start = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + 10);
+
+        let end = start.indexOf('"');
+        if (end == -1) end = 10;
+
+        const build = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + end);
+        number = Number(build);
+
+        break;
+      } catch (e) {
+        break;
+      }
+    }
+
+    return number;
+  }
+
+  /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
    * @returns {Promise<string>} Token of the account used
@@ -288,9 +329,23 @@ class Client extends BaseClient {
    * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
    */
   async passLogin(email, password, code = null) {
+    let fingerprint = await this.api.experiments.get({
+      auth: false,
+      DiscordContext: '/app',
+    });
+
+    if (!fingerprint.fingerprint) {
+      fingerprint = `${Util.calculateNonce()}:${Util.randomChars(27)}`;
+    } else {
+      fingerprint = fingerprint.fingerprint;
+    }
+
     const initial = await this.api.auth.login.post({
       auth: false,
       versioned: true,
+      headers: {
+        'X-Fingerprint': fingerprint,
+      },
       data: { gift_code_sku_id: null, login_source: null, undelete: false, login: email, password },
     });
 
@@ -300,6 +355,9 @@ class Client extends BaseClient {
       const totp = await this.api.auth.mfa.totp.post({
         auth: false,
         versioned: true,
+        headers: {
+          'X-Fingerprint': fingerprint,
+        },
         data: { gift_code_sku_id: null, login_source: null, code, ticket: initial.ticket },
       });
       if ('token' in totp) {

@@ -768,6 +768,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
+  public getClientBuildNumber(type: 'stable' | 'ptb' | 'canary'): Promise<number | null>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   public passLogin(email: string, password: string, code?: string | number): Promise<string | null>;
@@ -3130,6 +3131,7 @@ export class Util extends null {
   /** @deprecated Use {@link MessageOptions.allowedMentions} to control mentions in a message instead. */
   public static removeMentions(str: string): string;
   private static _removeMentions(str: string): string;
+  public static calculateNonce(date: number): string;
   public static cloneObject(obj: unknown): unknown;
   public static discordSort<K, V extends { rawPosition: number; id: Snowflake }>(
     collection: Collection<K, V>,
@@ -3155,6 +3157,7 @@ export class Util extends null {
   public static mergeDefault(def: unknown, given: unknown): unknown;
   public static moveElementInArray(array: unknown[], element: unknown, newIndex: number, offset?: boolean): number;
   public static parseEmoji(text: string): { animated: boolean; name: string; id: Snowflake | null } | null;
+  public static randomChars(size: number): string;
   public static resolveColor(color: ColorResolvable): number;
   public static resolvePartialEmoji(emoji: EmojiIdentifierResolvable): Partial<APIPartialEmoji> | null;
   public static verifyString(data: string, error?: typeof Error, errorMessage?: string, allowEmpty?: boolean): string;
