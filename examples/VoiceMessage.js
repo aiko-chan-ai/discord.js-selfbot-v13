@@ -8,7 +8,7 @@ client.on('ready', async () => {
     './test.mp3', // path file
     'random_file_name.ogg', // must be .ogg
     {
-      waveform: '=',
+      waveform: 'AAAAAAAAAAAA',
       duration_secs: 1, // any number you want
     },
   );
