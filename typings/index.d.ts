@@ -785,6 +785,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   ): Promise<Guild | DMChannel | GroupDMChannel>;
   public redeemNitro(nitro: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): Promise<any>;
   public authorizeURL(url: string, options?: OAuth2AuthorizeOptions): Promise<any>;
+  public installUserApps(applicationId: Snowflake): Promise<void>;
+  public deauthorize(applicationId: Snowflake): Promise<void>;
 
   public on<K extends keyof ClientEvents>(event: K, listener: (...args: ClientEvents[K]) => Awaitable<void>): this;
   public on<S extends string | symbol>(

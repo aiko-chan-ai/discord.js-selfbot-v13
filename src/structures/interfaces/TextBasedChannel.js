@@ -187,7 +187,7 @@ class TextBasedChannel {
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
 
-  searchInteraction() {
+  searchInteractionFromGuildAndPrivateChannel() {
     // Support Slash / ContextMenu
     // API https://canary.discord.com/api/v9/guilds/:id/application-command-index // Guild
     //     https://canary.discord.com/api/v9/channels/:id/application-command-index // DM Channel
@@ -195,6 +195,19 @@ class TextBasedChannel {
     return this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id][
       'application-command-index'
     ].get();
+  }
+
+  searchInteractionUserApps() {
+    return this.client.api.users['@me']['application-command-index'].get();
+  }
+
+  searchInteraction() {
+    return Promise.all([this.searchInteractionFromGuildAndPrivateChannel(), this.searchInteractionUserApps()]).then(
+      ([dataA, dataB]) => ({
+        applications: [...dataA.applications, ...dataB.applications],
+        application_commands: [...dataA.application_commands, ...dataB.application_commands],
+      }),
+    );
   }
 
   async sendSlash(botOrApplicationId, commandNameString, ...args) {
@@ -226,7 +239,9 @@ class TextBasedChannel {
     );
     // Find Command with application
     const command = filterCommand.find(command => command.application_id == application.id);
-
+    if (!command) {
+      throw new Error('INVALID_APPLICATION_COMMAND', application.id);
+    }
     args = args.flat(2);
     let optionFormat = [];
     let attachments = [];
@@ -472,6 +487,8 @@ class TextBasedChannel {
       props.push(
         'sendSlash',
         'searchInteraction',
+        'searchInteractionFromGuildAndPrivateChannel',
+        'searchInteractionUserApps',
         'lastMessage',
         'lastPinAt',
         'sendTyping',

@@ -722,6 +722,51 @@ class Client extends BaseClient {
   }
 
   /**
+   * Install User Apps
+   * @param {Snowflake} applicationId  Discord Application id
+   * @returns {Promise<void>}
+   */
+  installUserApps(applicationId) {
+    return this.api
+      .applications(applicationId)
+      .public.get({
+        query: {
+          with_guild: false,
+        },
+      })
+      .then(rawData => {
+        const installTypes = rawData.integration_types_config['1'];
+        if (installTypes) {
+          return this.api.oauth2.authorize.post({
+            query: {
+              client_id: applicationId,
+              scope: installTypes.oauth2_install_params.scopes.join(' '),
+            },
+            data: {
+              permissions: '0',
+              authorize: true,
+              integration_type: 1,
+            },
+          });
+        } else {
+          return false;
+        }
+      });
+  }
+
+  /**
+   * Deauthorize an application.
+   * @param {Snowflake} applicationId Discord Application id
+   * @returns {Promise<void>}
+   */
+  deauthorize(applicationId) {
+    return this.api.oauth2.tokens
+      .get()
+      .then(data => data.find(o => o.application.id == applicationId))
+      .then(o => this.api.oauth2.tokens(o.id).delete());
+  }
+
+  /**
    * Calls {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval} on a script
    * with the client as `this`.
    * @param {string} script Script to eval

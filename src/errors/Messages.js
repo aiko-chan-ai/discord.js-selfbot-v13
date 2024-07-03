@@ -169,6 +169,7 @@ const Messages = {
 
   // Selfbot
   INVALID_USER_API: 'User accounts cannot use this endpoint',
+  INVALID_APPLICATION_COMMAND: id => `Could not find a valid command for this bot: ${id}`,
   INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
   INVALID_SLASH_COMMAND_CHOICES: (parentOptions, value) =>
     `${value} is not a valid choice for this option (${parentOptions})`,
