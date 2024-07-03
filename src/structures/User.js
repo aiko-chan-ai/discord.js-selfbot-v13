@@ -151,6 +151,30 @@ class User extends Base {
       this.avatarDecoration ??= null;
       this.avatarDecorationSKUId ??= null;
     }
+
+    if ('clan' in data && data.clan) {
+      /**
+       * User Clan Structure
+       * @see {@link https://docs.discord.sex/resources/user#user-clan-structure}
+       * @typedef {Object} UserClan
+       * @property {?Snowflake} identityGuildId The ID of the user's primary clan
+       * @property {boolean} identityEnabled Whether the user is displaying their clan tag
+       * @property {?string} tag The text of the user's clan tag (max 4 characters)
+       * @property {?string} badge The clan's badge hash
+       */
+      /**
+       * The primary clan the user is in
+       * @type {?UserClan}
+       */
+      this.clan = {
+        identityGuildId: data.clan.identity_guild_id,
+        identityEnabled: data.clan.identity_enabled,
+        tag: data.clan.tag,
+        badge: data.clan.badge,
+      };
+    } else {
+      this.clan ??= null;
+    }
   }
 
   /**
@@ -198,6 +222,15 @@ class User extends Base {
   avatarDecorationURL({ format, size } = {}) {
     if (!this.avatarDecoration) return null;
     return this.client.rest.cdn.AvatarDecoration(this.id, this.avatarDecoration, format, size);
+  }
+
+  /**
+   * A link to the user's clan badge.
+   * @returns {?string}
+   */
+  clanBadgeURL() {
+    if (!this.clan || !this.clan.identityGuildId || !this.clan.badge) return null;
+    return this.client.rest.cdn.ClanBadge(this.clan.identityGuildId, this.clan.badge);
   }
 
   /**
@@ -468,7 +501,7 @@ class User extends Base {
 
   /**
    * Check relationship status (Client -> User)
-   * @type {RelationshipTypes}
+   * @type {RelationshipType}
    * @readonly
    */
   get relationship() {
