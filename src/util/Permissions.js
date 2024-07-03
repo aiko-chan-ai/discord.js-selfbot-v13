@@ -110,9 +110,14 @@ class Permissions extends BitField {
  * * `MODERATE_MEMBERS`
  * * `VIEW_CREATOR_MONETIZATION_ANALYTICS`
  * * `USE_SOUNDBOARD`
+ * * `CREATE_GUILD_EXPRESSIONS`
+ * * `CREATE_EVENTS`
+ * * `USE_EXTERNAL_SOUNDS`
  * * `SEND_VOICE_MESSAGES`
  * * `USE_CLYDE_AI`
  * * `SET_VOICE_CHANNEL_STATUS`
+ * * `SEND_POLLS`
+ * * `USE_EXTERNAL_APPS`
  * @type {Object<string, bigint>}
  * @see {@link https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags}
  */
@@ -163,9 +168,14 @@ Permissions.FLAGS = {
   MODERATE_MEMBERS: 1n << 40n,
   VIEW_CREATOR_MONETIZATION_ANALYTICS: 1n << 41n,
   USE_SOUNDBOARD: 1n << 42n,
+  CREATE_GUILD_EXPRESSIONS: 1n << 43n,
+  CREATE_EVENTS: 1n << 44n,
+  USE_EXTERNAL_SOUNDS: 1n << 45n,
   SEND_VOICE_MESSAGES: 1n << 46n,
   USE_CLYDE_AI: 1n << 47n,
   SET_VOICE_CHANNEL_STATUS: 1n << 48n,
+  SEND_POLLS: 1n << 49n,
+  USE_EXTERNAL_APPS: 1n << 50n,
 };
 
 /**
