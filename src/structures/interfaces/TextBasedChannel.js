@@ -75,6 +75,7 @@ class TextBasedChannel {
    * @property {Array<(MessageActionRow|MessageActionRowOptions)>} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {MessageAttachment[]} [attachments] Attachments to send in the message
+   * @property {MessagePoll} [poll] A poll!
    */
 
   /**

@@ -9,6 +9,7 @@ const MessageAttachment = require('./MessageAttachment');
 const Embed = require('./MessageEmbed');
 const Mentions = require('./MessageMentions');
 const MessagePayload = require('./MessagePayload');
+const MessagePoll = require('./MessagePoll');
 const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
 const Application = require('./interfaces/Application');
@@ -255,6 +256,16 @@ class Message extends Base {
       this.webhookId = data.webhook_id;
     } else {
       this.webhookId ??= null;
+    }
+
+    /**
+     * A poll!
+     * @type {?MessagePoll}
+     */
+    if ('poll' in data) {
+      this.poll = new MessagePoll(data.poll, this.client);
+    } else {
+      this.poll = null;
     }
 
     if ('application' in data) {
@@ -844,6 +855,55 @@ class Message extends Base {
     }
     if (this.hasThread) return Promise.reject(new Error('MESSAGE_EXISTING_THREAD'));
     return this.channel.threads.create({ ...options, startMessage: this });
+  }
+
+  /**
+   * Submits a poll vote for the current user. Returns a 204 empty response on success.
+   * @param  {...number[]} ids ID of the answer
+   * @returns {Promise<void>}
+   * @example
+   * // Vote multi choices
+   * message.vote(1,2);
+   * // Remove vote
+   * message.vote();
+   */
+  vote(...ids) {
+    return this.client.api
+      .channels(this.channel.id)
+      .polls(this.id)
+      .answers['@me'].put({
+        data: {
+          answer_ids: ids.flat(1).map(value => value.toString()),
+        },
+      });
+  }
+
+  /**
+   * Immediately ends the poll. You cannot end polls from other users.
+   * @returns {Promise<RawMessage>}
+   */
+  endPoll() {
+    return this.client.api.channels(this.channel.id).polls(this.id).expire.post();
+  }
+
+  /**
+   * Get a list of users that voted for this specific answer.
+   * @param {number} answerId Answer Id
+   * @param {Snowflake} [afterUserId] Get users after this user ID
+   * @param {number} [limit=25] Max number of users to return (1-100, default 25)
+   * @returns {Promise<{ users: Partial<RawUser> }>}
+   */
+  getAnswerVoter(answerId, afterUserId, limit = 25) {
+    return this.client.api
+      .channels(this.channel.id)
+      .polls(this.id)
+      .answers(answerId)
+      .get({
+        query: {
+          after: afterUserId,
+          limit,
+        },
+      });
   }
 
   /**

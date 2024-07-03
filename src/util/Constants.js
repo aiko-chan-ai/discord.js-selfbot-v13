@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.215 Safari/537.36';
 
 /**
  * Google Chrome v108 TLS ciphers
@@ -98,6 +98,7 @@ exports.Endpoints = {
       },
       AvatarDecoration: (userId, hash, format = 'png', size) =>
         makeImageUrl(`${root}/avatar-decorations/${userId}/${hash}`, { format, size }),
+      ClanBadge: (guildId, hash) => `${root}/clan-badges/${guildId}/${hash}.png`,
       GuildMemberAvatar: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/avatars/${hash}`, { format, size });
@@ -430,6 +431,8 @@ exports.Events = {
   CALL_CREATE: 'callCreate',
   CALL_UPDATE: 'callUpdate',
   CALL_DELETE: 'callDelete',
+  MESSAGE_POLL_VOTE_ADD: 'messagePollVoteAdd',
+  MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
 };
 
 /**
@@ -1650,6 +1653,15 @@ exports.SortOrderTypes = createEnum([null, 'LATEST_ACTIVITY', 'CREATION_DATE']);
 exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
 
 /**
+ * Different layouts for {@link MessagePoll} will come in the future. For now though, this value will always be `DEFAULT`.
+ * * DEFAULT
+ * * IMAGE_ONLY_ANSWERS
+ * @typedef {string} MessagePollLayoutType
+ * @see {@link https://docs.discord.sex/resources/message#poll-layout-type}
+ */
+exports.MessagePollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
+
+/**
  * Relationship Enums:
  * * 0: NONE
  * * 1: FRIEND
@@ -1657,7 +1669,7 @@ exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
  * * 3: PENDING_INCOMING
  * * 4: PENDING_OUTGOING
  * * 5: IMPLICIT
- * @typedef {string} RelationshipTypes
+ * @typedef {string} RelationshipType
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/relationships.html}
  */
 
@@ -1728,7 +1740,7 @@ function createEnum(keys) {
  * @property {Object<InteractionResponseType, number>} InteractionResponseTypes The type of an interaction response.
  * @property {Object<InteractionType, number>} InteractionTypes The type of an {@link Interaction} object.
  * @property {InviteScope[]} InviteScopes The scopes of an invite.
- * @property {Object<RelationshipTypes, number>} RelationshipTypes Relationship Enums
+ * @property {Object<RelationshipType, number>} RelationshipTypes Relationship Enums
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
  * @property {Object<MessageComponentType, number>} MessageComponentTypes The type of a message component.

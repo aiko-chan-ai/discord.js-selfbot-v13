@@ -87,6 +87,11 @@ export const enum ForumLayoutType {
   GALLERY_VIEW = 2,
 }
 
+export const enum MessagePollLayoutType {
+  DEFAULT = 1,
+  IMAGE_ONLY_ANSWERS,
+}
+
 export const enum MessageTypes {
   DEFAULT,
   RECIPIENT_ADD,
@@ -282,7 +287,7 @@ export enum ApplicationRoleConnectionMetadataTypes {
   BOOLEAN_NOT_EQUAL,
 }
 
-export const enum RelationshipTypes {
+export const enum RelationshipType {
   NONE = 0,
   FRIEND = 1,
   BLOCKED = 2,

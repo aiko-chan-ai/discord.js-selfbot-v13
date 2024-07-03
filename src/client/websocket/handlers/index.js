@@ -76,6 +76,8 @@ const handlers = Object.fromEntries([
   ['USER_SETTINGS_UPDATE', require('./USER_SETTINGS_UPDATE')],
   ['USER_GUILD_SETTINGS_UPDATE', require('./USER_GUILD_SETTINGS_UPDATE')],
   ['VOICE_CHANNEL_STATUS_UPDATE', require('./VOICE_CHANNEL_STATUS_UPDATE')],
+  ['MESSAGE_POLL_VOTE_ADD', require('./MESSAGE_POLL_VOTE_ADD')],
+  ['MESSAGE_POLL_VOTE_REMOVE', require('./MESSAGE_POLL_VOTE_REMOVE')],
 ]);
 
 module.exports = handlers;

@@ -3,6 +3,7 @@
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
+const MessagePoll = require('./MessagePoll');
 const { RangeError } = require('../errors');
 const ActivityFlags = require('../util/ActivityFlags');
 const DataResolver = require('../util/DataResolver');
@@ -230,6 +231,7 @@ class MessagePayload {
       attachments: this.options.attachments,
       sticker_ids: this.options.stickers?.map(sticker => sticker.id ?? sticker),
       thread_name: threadName,
+      poll: this.options.poll instanceof MessagePoll ? this.options.poll.toJSON() : this.options.poll,
     };
     return this;
   }

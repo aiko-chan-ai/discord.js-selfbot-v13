@@ -16,7 +16,7 @@ class RelationshipManager extends BaseManager {
     super(client);
     /**
      * A collection of users this manager is caching. (Type: Number)
-     * @type {Collection<Snowflake, RelationshipTypes>}
+     * @type {Collection<Snowflake, RelationshipType>}
      */
     this.cache = new Collection();
     /**
@@ -81,7 +81,7 @@ class RelationshipManager extends BaseManager {
   /**
    * @typedef {Object} RelationshipJSONData
    * @property {Snowflake} id The ID of the target user
-   * @property {RelationshipTypes} type The type of relationship
+   * @property {RelationshipType} type The type of relationship
    * @property {string | null} nickname The nickname of the user in this relationship (1-32 characters)
    * @property {string} since When the user requested a relationship (ISO8601 timestamp)
    */
@@ -130,7 +130,7 @@ class RelationshipManager extends BaseManager {
    * Obtains a user from Discord, or the user cache if it's already available.
    * @param {UserResolvable} [user] The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @returns {Promise<RelationshipTypes|RelationshipManager>}
+   * @returns {Promise<RelationshipType|RelationshipManager>}
    */
   async fetch(user, { force = false } = {}) {
     if (user) {

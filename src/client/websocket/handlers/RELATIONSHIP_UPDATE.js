@@ -5,7 +5,7 @@ const { Events } = require('../../../util/Constants');
 module.exports = (client, { d: data }) => {
   /**
    * @typedef {Object} RelationshipUpdateObject
-   * @property {RelationshipTypes} type The type of relationship
+   * @property {RelationshipType} type The type of relationship
    * @property {Date} since When the user requested a relationship
    * @property {string | null} nickname The nickname of the user in this relationship (1-32 characters)
    */
