@@ -162,7 +162,6 @@ class GuildManager extends CachedManager {
 
   /**
    * Creates a guild.
-   * <warn>This is only available to bots in fewer than 10 guilds.</warn>
    * @param {string} name The name of the guild
    * @param {GuildCreateOptions} [options] Options for creating the guild
    * @returns {Promise<Guild>} The guild that was created
@@ -238,6 +237,7 @@ class GuildManager extends CachedManager {
         afk_timeout: afkTimeout,
         system_channel_id: systemChannelId,
         system_channel_flags: systemChannelFlags,
+        guild_template_code: '2TffvPucqHkN', // From Discord
       },
     });
 

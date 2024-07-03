@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 'use strict';
 
 const process = require('node:process');
@@ -560,10 +561,18 @@ class Client extends BaseClient {
    * @param {InviteResolvable} invite Invite code or URL
    * @param {AcceptInviteOptions} [options] Options
    * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
+   * @deprecated I will temporarily disable this feature because it can cause the account to be locked (and I also don't have tokens to test anymore).
    * @example
    * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })
    */
   async acceptInvite(invite, options = { bypassOnboarding: true, bypassVerify: true }) {
+    return new Promise((_, e) =>
+      // eslint-disable-next-line prefer-promise-reject-errors
+      e({
+        success: false,
+        msg: "I will temporarily disable this feature because it can cause the account to be locked (and I also don't have tokens to test anymore).",
+      }),
+    );
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
     const i = await this.fetchInvite(code);

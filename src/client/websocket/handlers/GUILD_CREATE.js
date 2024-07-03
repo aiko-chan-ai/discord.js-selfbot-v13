@@ -2,33 +2,32 @@
 
 const { Events, Opcodes, Status } = require('../../../util/Constants');
 
-// Receive messages in large guilds
 const run = (client, guild) => {
-  if (!guild.large) return;
+  const subs = {};
+  subs[guild.id] = {
+    typing: true,
+    threads: true,
+    activities: true,
+    member_updates: true,
+    thread_member_lists: [],
+    members: [],
+    channels: {},
+  };
   client.ws.broadcast({
-    op: Opcodes.GUILD_SUBSCRIPTIONS,
+    op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
     d: {
-      guild_id: guild.id,
-      typing: true,
-      threads: false,
-      activities: true,
-      thread_member_lists: [],
-      members: [],
-      channels: {
-        // [guild.channels.cache.first().id]: [[0, 99]],
-      },
+      subscriptions: subs,
     },
   });
 };
 
 module.exports = (client, { d: data }, shard) => {
   let guild = client.guilds.cache.get(data.id);
+  run(client, data);
   if (guild) {
     if (!guild.available && !data.unavailable) {
       // A newly available guild
       guild._patch(data);
-      run(client, guild);
-
       /**
        * Emitted whenever a guild becomes available.
        * @event Client#guildAvailable

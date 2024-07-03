@@ -43,23 +43,63 @@ module.exports = (client, { d: data }, shard) => {
   // Todo: data.auth_session_id_hash
 
   if (data.guilds.length) {
-    client.ws.broadcast({
-      op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
-      d: {
-        subscriptions: data.guilds.reduce((accumulator, guild) => {
-          accumulator[guild.id] = {
-            typing: true,
-            threads: true,
-            activities: true,
-            member_updates: true,
-            thread_member_lists: [],
-            members: [],
-            channels: {},
-          };
-          return accumulator;
-        }, {}),
-      },
-    });
+    if (data.guilds.length > 80) {
+      // Split data bc 15kb
+      const data1 = data.guilds.slice(0, Math.floor(data.guilds.length / 2));
+      const data2 = data.guilds.slice(Math.floor(data.guilds.length / 2));
+      client.ws.broadcast({
+        op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
+        d: {
+          subscriptions: data1.reduce((accumulator, guild) => {
+            accumulator[guild.id] = {
+              typing: true,
+              threads: true,
+              activities: true,
+              member_updates: true,
+              thread_member_lists: [],
+              members: [],
+              channels: {},
+            };
+            return accumulator;
+          }, {}),
+        },
+      });
+      client.ws.broadcast({
+        op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
+        d: {
+          subscriptions: data2.reduce((accumulator, guild) => {
+            accumulator[guild.id] = {
+              typing: true,
+              threads: true,
+              activities: true,
+              member_updates: true,
+              thread_member_lists: [],
+              members: [],
+              channels: {},
+            };
+            return accumulator;
+          }, {}),
+        },
+      });
+    } else {
+      client.ws.broadcast({
+        op: Opcodes.GUILD_SUBSCRIPTIONS_BULK,
+        d: {
+          subscriptions: data.guilds.reduce((accumulator, guild) => {
+            accumulator[guild.id] = {
+              typing: true,
+              threads: true,
+              activities: true,
+              member_updates: true,
+              thread_member_lists: [],
+              members: [],
+              channels: {},
+            };
+            return accumulator;
+          }, {}),
+        },
+      });
+    }
   }
 
   Promise.all(

@@ -777,6 +777,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
   public toJSON(): unknown;
+  /** @deprecated */
   public acceptInvite(
     invite: InviteResolvable,
     options?: AcceptInviteOptions,
@@ -3934,7 +3935,6 @@ export class GuildChannelManager extends CachedManager<Snowflake, GuildBasedChan
     options?: SetChannelPositionOptions,
   ): Promise<GuildChannel>;
   public setPositions(channelPositions: readonly ChannelPosition[]): Promise<Guild>;
-  public fetchActiveThreads(cache?: boolean): Promise<FetchedThreads>;
   public delete(channel: GuildChannelResolvable, reason?: string): Promise<void>;
 }
 

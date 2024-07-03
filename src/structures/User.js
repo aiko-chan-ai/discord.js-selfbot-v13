@@ -369,6 +369,7 @@ class User extends Base {
     return this.client.api.users(this.id).profile.get({
       query: {
         with_mutual_guilds: true,
+        with_mutual_friends: true,
         with_mutual_friends_count: true,
         guild_id: guildId,
       },

@@ -3,7 +3,6 @@
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
-const ThreadManager = require('./ThreadManager');
 const { Error, TypeError } = require('../errors');
 const GuildChannel = require('../structures/GuildChannel');
 const PermissionOverwrites = require('../structures/PermissionOverwrites');
@@ -466,21 +465,6 @@ class GuildChannelManager extends CachedManager {
       guild_id: this.guild.id,
       channels: channelPositions,
     }).guild;
-  }
-
-  /**
-   * Obtains all active thread channels in the guild from Discord
-   * @param {boolean} [cache=true] Whether to cache the fetched data
-   * @returns {Promise<FetchedThreads>}
-   * @example
-   * // Fetch all threads from the guild
-   * message.guild.channels.fetchActiveThreads()
-   *   .then(fetched => console.log(`There are ${fetched.threads.size} threads.`))
-   *   .catch(console.error);
-   */
-  async fetchActiveThreads(cache = true) {
-    const raw = await this.client.api.guilds(this.guild.id).threads.active.get();
-    return ThreadManager._mapThreads(raw, this.client, { guild: this.guild, cache });
   }
 
   /**
