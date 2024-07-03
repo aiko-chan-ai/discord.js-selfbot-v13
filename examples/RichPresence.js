@@ -11,7 +11,7 @@ client.on('ready', async () => {
   const status = new RichPresence(client)
     .setApplicationId('367827983903490050')
     .setType('PLAYING')
-    .setURL('https://www.youtube.com/watch?v=5icFcPkVzMg')
+    .setURL('https://www.youtube.com/watch?v=5icFcPkVzMg') // If you set a URL, it will automatically change to STREAMING type
     .setState('Arcade Game')
     .setName('osu!')
     .setDetails('MariannE - Yooh')
