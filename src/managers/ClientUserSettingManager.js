@@ -189,7 +189,7 @@ class ClientUserSettingManager extends BaseManager {
         a => ![ActivityTypes.CUSTOM, 'CUSTOM'].includes(a.type),
       );
       if (data.custom_status) {
-        const custom = new CustomStatus();
+        const custom = new CustomStatus(this.client);
         custom.setState(data.custom_status.text);
         let emoji;
         if (data.custom_status.emoji_id) {

@@ -175,6 +175,9 @@ class Presence extends Base {
  */
 class Activity {
   constructor(presence, data) {
+    if (!(presence instanceof Presence)) {
+      throw new Error("Class constructor Activity cannot be invoked without 'presence'");
+    }
     /**
      * The presence of the Activity
      * @type {Presence}
@@ -628,6 +631,7 @@ class CustomStatus extends Activity {
    * @param {CustomStatus|CustomStatusOptions} [data={}] CustomStatus to clone or raw data
    */
   constructor(client, data = {}) {
+    if (!client) throw new Error("Class constructor CustomStatus cannot be invoked without 'client'");
     super('presence' in client ? client.presence : client, {
       name: 'Custom Status',
       type: ActivityTypes.CUSTOM,
@@ -677,6 +681,7 @@ class RichPresence extends Activity {
    * @param {RichPresence} [data={}] RichPresence to clone or raw data
    */
   constructor(client, data = {}) {
+    if (!client) throw new Error("Class constructor RichPresence cannot be invoked without 'client'");
     super('presence' in client ? client.presence : client, { type: 0, ...data });
     this.setup(data);
   }
@@ -984,6 +989,7 @@ class SpotifyRPC extends RichPresence {
    * @param {SpotifyRPC} [options] Options for the Spotify RPC
    */
   constructor(client, options = {}) {
+    if (!client) throw new Error("Class constructor SpotifyRPC cannot be invoked without 'client'");
     super(client, {
       name: 'Spotify',
       type: ActivityTypes.LISTENING,
