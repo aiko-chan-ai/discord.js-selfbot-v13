@@ -9,6 +9,9 @@ module.exports = (client, { d: data }, shard) => {
   // Check
   USER_REQUIRED_ACTION(client, { d: data });
 
+  // Overwrite ClientPresence
+  client.presence.userId = data.user.id;
+
   if (client.user) {
     client.user._patch(data.user);
   } else {

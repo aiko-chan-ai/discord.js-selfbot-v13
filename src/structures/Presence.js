@@ -229,12 +229,12 @@ class Activity {
       this.url = null;
     }
 
-    if ('created_at' in data) {
+    if ('created_at' in data || 'createdTimestamp' in data) {
       /**
        * Creation date of the activity
        * @type {number}
        */
-      this.createdTimestamp = data.created_at;
+      this.createdTimestamp = data.created_at || data.createdTimestamp;
     }
 
     if ('session_id' in data) {
@@ -277,12 +277,12 @@ class Activity {
       this.timestamps = null;
     }
 
-    if ('application_id' in data) {
+    if ('application_id' in data || 'applicationId' in data) {
       /**
        * The id of the application associated with this activity
        * @type {?Snowflake}
        */
-      this.applicationId = data.application_id;
+      this.applicationId = data.application_id || data.applicationId;
     } else {
       this.applicationId = null;
     }
@@ -307,12 +307,12 @@ class Activity {
       this.state = null;
     }
 
-    if ('sync_id' in data) {
+    if ('sync_id' in data || 'syncId' in data) {
       /**
        * The Spotify song's id
        * @type {?string}
        */
-      this.syncId = data.sync_id;
+      this.syncId = data.sync_id || data.syncId;
     } else {
       this.syncId = null;
     }
@@ -436,42 +436,42 @@ class RichPresenceAssets {
   }
 
   _patch(assets = {}) {
-    if ('large_text' in assets) {
+    if ('large_text' in assets || 'largeText' in assets) {
       /**
        * Hover text for the large image
        * @type {?string}
        */
-      this.largeText = assets.large_text;
+      this.largeText = assets.large_text || assets.largeText;
     } else {
       this.largeText = null;
     }
 
-    if ('small_text' in assets) {
+    if ('small_text' in assets || 'smallText' in assets) {
       /**
        * Hover text for the small image
        * @type {?string}
        */
-      this.smallText = assets.small_text;
+      this.smallText = assets.small_text || assets.smallText;
     } else {
       this.smallText = null;
     }
 
-    if ('large_image' in assets) {
+    if ('large_image' in assets || 'largeImage' in assets) {
       /**
        * The large image asset's id
        * @type {?Snowflake}
        */
-      this.largeImage = assets.large_image;
+      this.largeImage = assets.large_image || assets.largeImage;
     } else {
       this.largeImage = null;
     }
 
-    if ('small_image' in assets) {
+    if ('small_image' in assets || 'smallImage' in assets) {
       /**
        * The small image asset's id
        * @type {?Snowflake}
        */
-      this.smallImage = assets.small_image;
+      this.smallImage = assets.small_image || assets.smallImage;
     } else {
       this.smallImage = null;
     }
