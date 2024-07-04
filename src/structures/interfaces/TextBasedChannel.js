@@ -342,27 +342,7 @@ class TextBasedChannel {
       data: body,
       usePayloadJSON: true,
     });
-    return new Promise((resolve, reject) => {
-      const timeoutMs = 5_000;
-      // Waiting for MsgCreate / ModalCreate
-      const handler = data => {
-        if (data.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        resolve(data);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_FAILED'));
-      }, timeoutMs).unref();
-      this.client.incrementMaxListeners();
-      this.client.on(Events.MESSAGE_CREATE, handler);
-      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
-    });
+    return Util.createPromiseInteraction(this.client, nonce, 5000);
   }
 
   /**

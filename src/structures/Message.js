@@ -1,7 +1,6 @@
 'use strict';
 
 const process = require('node:process');
-const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const Base = require('./Base');
 const BaseMessageComponent = require('./BaseMessageComponent');
@@ -15,13 +14,7 @@ const { Sticker } = require('./Sticker');
 const Application = require('./interfaces/Application');
 const { Error } = require('../errors');
 const ReactionManager = require('../managers/ReactionManager');
-const {
-  InteractionTypes,
-  MessageTypes,
-  SystemMessageTypes,
-  MessageComponentTypes,
-  Events,
-} = require('../util/Constants');
+const { InteractionTypes, MessageTypes, SystemMessageTypes, MessageComponentTypes } = require('../util/Constants');
 const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -1095,38 +1088,7 @@ class Message extends Base {
     this.client.api.interactions.post({
       data,
     });
-    return new Promise((resolve, reject) => {
-      const timeoutMs = 5_000;
-      // Waiting for MsgCreate / ModalCreate
-      const handler = data => {
-        // UnhandledPacket
-        if (data.d?.nonce == nonce && data.t == 'INTERACTION_SUCCESS') {
-          // Interaction#deferUpdate
-          this.client.removeListener(Events.MESSAGE_CREATE, handler);
-          this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-          this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-          resolve(this);
-        }
-        if (data.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        resolve(data);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_FAILED'));
-      }, timeoutMs).unref();
-      this.client.incrementMaxListeners();
-      this.client.on(Events.MESSAGE_CREATE, handler);
-      this.client.on(Events.UNHANDLED_PACKET, handler);
-      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
-    });
+    return Util.createPromiseInteraction(this.client, nonce, 5_000, true, this);
   }
 
   /**
@@ -1197,38 +1159,7 @@ class Message extends Base {
     this.client.api.interactions.post({
       data,
     });
-    return new Promise((resolve, reject) => {
-      const timeoutMs = 5_000;
-      // Waiting for MsgCreate / ModalCreate
-      const handler = data => {
-        // UnhandledPacket
-        if (data.d?.nonce == nonce && data.t == 'INTERACTION_SUCCESS') {
-          // Interaction#deferUpdate
-          this.client.removeListener(Events.MESSAGE_CREATE, handler);
-          this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-          this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-          resolve(this);
-        }
-        if (data.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        resolve(data);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.UNHANDLED_PACKET, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_FAILED'));
-      }, timeoutMs).unref();
-      this.client.incrementMaxListeners();
-      this.client.on(Events.MESSAGE_CREATE, handler);
-      this.client.on(Events.UNHANDLED_PACKET, handler);
-      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
-    });
+    return Util.createPromiseInteraction(this.client, nonce, 5_000, true, this);
   }
 
   /**

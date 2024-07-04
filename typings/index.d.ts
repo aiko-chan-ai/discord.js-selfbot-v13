@@ -2278,6 +2278,7 @@ export class Modal {
   public channelId: Snowflake;
   public readonly channel: TextBasedChannel;
   public readonly guild: Guild | null;
+  public readonly replied: boolean;
   public reply(): Promise<Message | Modal>;
   public toJSON(): RawModalSubmitInteractionData;
 }

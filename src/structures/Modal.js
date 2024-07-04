@@ -1,9 +1,9 @@
 'use strict';
 
-const { setTimeout } = require('node:timers');
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { InteractionTypes, Events } = require('../util/Constants');
+const { InteractionTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
+const Util = require('../util/Util');
 
 /**
  * Represents a modal (form) to be shown in response to an interaction
@@ -55,6 +55,12 @@ class Modal {
      * @type {Snowflake}
      */
     this.channelId = data.channel_id;
+
+    /**
+     * Whether this interaction has already been replied to
+     * @type {boolean}
+     */
+    this.replied = false;
 
     Object.defineProperty(this, 'client', {
       value: client,
@@ -110,7 +116,7 @@ class Modal {
    * })
    */
   reply() {
-    if (!this.applicationId || !this.client || !this.channelId) throw new Error('Modal cannot reply');
+    if (!this.applicationId || !this.client || !this.channelId || this.replied) throw new Error('Modal cannot reply');
     // Get Object
     const dataFinal = this.toJSON();
     dataFinal.components = dataFinal.components
@@ -137,27 +143,8 @@ class Modal {
     this.client.api.interactions.post({
       data: postData,
     });
-    return new Promise((resolve, reject) => {
-      const timeoutMs = 5_000;
-      // Waiting for MsgCreate / ModalCreate
-      const handler = data => {
-        if (data.nonce !== nonce) return;
-        clearTimeout(timeout);
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        resolve(data);
-      };
-      const timeout = setTimeout(() => {
-        this.client.removeListener(Events.MESSAGE_CREATE, handler);
-        this.client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
-        this.client.decrementMaxListeners();
-        reject(new Error('INTERACTION_FAILED'));
-      }, timeoutMs).unref();
-      this.client.incrementMaxListeners();
-      this.client.on(Events.MESSAGE_CREATE, handler);
-      this.client.on(Events.INTERACTION_MODAL_CREATE, handler);
-    });
+    this.replied = true;
+    return Util.createPromiseInteraction(this.client, nonce, 5_000, true, this);
   }
 
   // TypeScript
