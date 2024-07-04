@@ -23,6 +23,7 @@ class ClientPresence extends Presence {
   set(presence) {
     const packet = this._parse(presence);
     this._patch(packet);
+    packet.activities = this.activities.map(a => a.toJSON());
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
     } else if (Array.isArray(presence.shardId)) {
@@ -53,25 +54,21 @@ class ClientPresence extends Presence {
         if (typeof activity.name !== 'string') throw new TypeError('INVALID_TYPE', `activities[${i}].name`, 'string');
 
         activity.type ??= ActivityTypes.PLAYING;
+        if (typeof activity.type === 'string') activity.type = ActivityTypes[activity.type];
 
         if (CustomStatusActivityTypes.includes(activity.type) && !activity.state) {
           activity.state = activity.name;
           activity.name = 'Custom Status';
         }
 
-        data.activities.push(
-          Object.assign(activity, {
-            type: typeof activity.type === 'number' ? activity.type : ActivityTypes[activity.type],
-          }),
-        );
+        data.activities.push(activity);
       }
     } else if (!activities && (status || afk || since) && this.activities.length) {
       data.activities.push(
-        ...this.activities.map(a =>
-          Object.assign(a, {
-            type: typeof a.type === 'number' ? a.type : ActivityTypes[a.type],
-          }),
-        ),
+        ...this.activities.map(a => {
+          if (typeof a.type === 'string') a.type = ActivityTypes[a.type];
+          return a;
+        }),
       );
     }
 

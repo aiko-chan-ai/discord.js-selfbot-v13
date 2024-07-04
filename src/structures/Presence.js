@@ -167,6 +167,11 @@ class Presence extends Base {
  * * **`desktop`**
  * * **`samsung`** - playing on Samsung Galaxy
  * * **`xbox`** - playing on Xbox Live
+ * * **`ios`**
+ * * **`android`**
+ * * **`embedded`**
+ * * **`ps4`**
+ * * **`ps5`**
  * @typedef {string} ActivityPlatform
  */
 
@@ -239,7 +244,7 @@ class Activity {
        */
       this.sessionId = data.session_id;
     } else {
-      this.sessionId = null;
+      this.sessionId = this.presence.client?.sessionId;
     }
 
     if ('platform' in data) {
@@ -407,10 +412,10 @@ class Activity {
   }
 
   toJSON(...props) {
-    return {
+    return Util.clearNullOrUndefinedObject({
       ...Util.flatten(this, ...props),
       type: typeof this.type === 'number' ? this.type : ActivityTypes[this.type],
-    };
+    });
   }
 }
 
@@ -884,6 +889,16 @@ class RichPresence extends Activity {
   }
 
   /**
+   * The platform the activity is being played on
+   * @param {ActivityPlatform | null} platform Any platform
+   * @returns {RichPresence}
+   */
+  setPlatform(platform) {
+    this.platform = platform;
+    return this;
+  }
+
+  /**
    * Secrets for rich presence joining and spectating (send-only)
    * @param {?string} join Secrets for rich presence joining
    * @returns {RichPresence}
@@ -1074,10 +1089,7 @@ class SpotifyRPC extends RichPresence {
   }
 
   toJSON() {
-    return {
-      ...super.toJSON({ id: false, emoji: false, platform: false, buttons: false }),
-      session_id: this.presence.client.sessionId,
-    };
+    return super.toJSON({ id: false, emoji: false, platform: false, buttons: false });
   }
 }
 

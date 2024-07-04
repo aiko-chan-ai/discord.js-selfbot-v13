@@ -860,6 +860,27 @@ class Util extends null {
       if (isHandlerDeferUpdate) client.on(Events.UNHANDLED_PACKET, handler);
     });
   }
+
+  static clearNullOrUndefinedObject(object) {
+    const data = {};
+    const keys = Object.keys(object);
+
+    for (const key of keys) {
+      const value = object[key];
+      if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
+        continue;
+      } else if (!Array.isArray(value) && typeof value === 'object') {
+        const cleanedValue = Util.clearNullOrUndefinedObject(value);
+        if (cleanedValue !== undefined) {
+          data[key] = cleanedValue;
+        }
+      } else {
+        data[key] = value;
+      }
+    }
+
+    return Object.keys(data).length > 0 ? data : undefined;
+  }
 }
 
 module.exports = Util;
