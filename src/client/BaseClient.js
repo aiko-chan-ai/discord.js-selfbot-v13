@@ -12,7 +12,7 @@ const Util = require('../util/Util');
  */
 class BaseClient extends EventEmitter {
   constructor(options = {}) {
-    super();
+    super({ captureRejections: true });
 
     if (options.intents) {
       process.emitWarning('Intents is not available.', 'DeprecationWarning');
