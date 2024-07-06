@@ -638,7 +638,7 @@ class Client extends BaseClient {
           .guilds(i.guild?.id)
           ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
           .catch(() => {});
-        if (getForm) {
+        if (getForm && getForm.form_fields[0]) {
           const form = Object.assign(getForm.form_fields[0], { response: true });
           await this.api
             .guilds(i.guild?.id)
