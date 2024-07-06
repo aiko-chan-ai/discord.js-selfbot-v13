@@ -570,14 +570,6 @@ class Client extends BaseClient {
     const i = await this.fetchInvite(code);
     if (i.guild?.id && this.guilds.cache.has(i.guild?.id)) return this.guilds.cache.get(i.guild?.id);
     if (this.channels.cache.has(i.channelId)) return this.channels.cache.get(i.channelId);
-    /*
-{
-  location: 'Desktop Invite Modal',
-  location_guild_id: i.guild?.id,
-  location_channel_id: i.channelId,
-  location_channel_type: typeof i.channel.type == 'number' ? i.channel.type : ChannelTypes[i.channel.type],
-}
-*/
     const data = await this.api.invites(code).post({
       DiscordContext: { location: 'Markdown Link' },
       data: {
