@@ -779,7 +779,6 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
   public toJSON(): unknown;
-  /** @deprecated */
   public acceptInvite(
     invite: InviteResolvable,
     options?: AcceptInviteOptions,

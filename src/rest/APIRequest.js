@@ -45,7 +45,7 @@ class APIRequest {
         for (const [k, v] of Object.entries({
           keepAlive: true,
           honorCipherOrder: true,
-          minVersion: 'TLSv1.2',
+          secureProtocol: 'TLSv1_2_method',
           ciphers: ciphers.join(':'),
         })) {
           this.client.options.http.agent.options[k] = v;
@@ -57,7 +57,7 @@ class APIRequest {
           ...this.client.options.http.agent,
           keepAlive: true,
           honorCipherOrder: true,
-          minVersion: 'TLSv1.2',
+          secureProtocol: 'TLSv1_2_method',
           ciphers: ciphers.join(':'),
         });
       }
