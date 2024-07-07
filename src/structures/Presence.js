@@ -674,7 +674,7 @@ class CustomStatus extends Activity {
     return {
       name: this.name,
       emoji: this.emoji,
-      type: this.type,
+      type: ActivityTypes.CUSTOM,
       state: this.state,
     };
   }
