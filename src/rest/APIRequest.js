@@ -48,8 +48,7 @@ class APIRequest {
           secureProtocol: 'TLSv1_2_method',
           ciphers: ciphers.join(':'),
         })) {
-          this.client.options.http.agent.options[k] = v;
-          this.client.options.http.agent.httpsAgent.options.options[k] = v;
+          this.client.options.http.agent.httpsAgent[k] = v;
         }
         agent = this.client.options.http.agent;
       } else {

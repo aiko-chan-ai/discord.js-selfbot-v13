@@ -3,7 +3,11 @@
 const Discord = require('../src/index');
 const { ProxyAgent } = require('proxy-agent');
 
-const proxy = new ProxyAgent('<proxy>');
+const proxy = new ProxyAgent({
+  getProxyForUrl: function () {
+    return '<any proxy>';
+  },
+});
 
 const client = new Discord.Client({
   ws: {
