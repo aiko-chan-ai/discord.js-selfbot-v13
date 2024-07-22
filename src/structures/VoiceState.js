@@ -180,6 +180,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setMute(mute = true, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { mute }, reason);
   }
 
@@ -190,6 +191,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setDeaf(deaf = true, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { deaf }, reason);
   }
 
@@ -210,6 +212,7 @@ class VoiceState extends Base {
    * @returns {Promise<GuildMember>}
    */
   setChannel(channel, reason) {
+    if (!this.guild?.id) return null;
     return this.guild.members.edit(this.id, { channel }, reason);
   }
 
@@ -332,6 +335,7 @@ class VoiceState extends Base {
       serverMute: true,
       selfDeaf: true,
       selfMute: true,
+      selfVideo: true,
       sessionId: true,
       channelId: 'channel',
     });
