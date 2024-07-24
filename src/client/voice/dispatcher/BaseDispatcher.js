@@ -17,6 +17,9 @@ const nonce = Buffer.alloc(24);
  * @see {@link https://nodejs.org/api/stream.html#stream_class_stream_writable}
  */
 
+/**
+ * @extends {Writable}
+ */
 class BaseDispatcher extends Writable {
   constructor(player, highWaterMark = 12, payloadType, extensionEnabled, streams = {}) {
     super({
@@ -59,7 +62,7 @@ class BaseDispatcher extends Writable {
     const streamError = (type, err) => {
       /**
        * Emitted when the dispatcher encounters an error.
-       * @event AudioDispatcher#error
+       * @event BaseDispatcher#error
        */
       if (type && err) {
         err.message = `${type} stream: ${err.message}`;
@@ -112,7 +115,7 @@ class BaseDispatcher extends Writable {
     if (!this.startTime) {
       /**
        * Emitted once the stream has started to play.
-       * @event AudioDispatcher#start
+       * @event BaseDispatcher#start
        */
       this.emit('start');
       this.startTime = performance.now();
@@ -333,7 +336,7 @@ class BaseDispatcher extends Writable {
   _sendPacket(packet) {
     /**
      * Emitted whenever the dispatcher has debug information.
-     * @event AudioDispatcher#debug
+     * @event BaseDispatcher#debug
      * @param {string} info The debug info
      */
     this._setSpeaking(1);
@@ -379,7 +382,7 @@ class BaseDispatcher extends Writable {
     }
     /**
      * Emitted when the dispatcher starts/stops video.
-     * @event AudioDispatcher#videoStatus
+     * @event VideoDispatcher#videoStatus
      * @param {boolean} value Whether or not the dispatcher is enable video
      */
     this.emit('videoStatus', value);
@@ -391,7 +394,7 @@ class BaseDispatcher extends Writable {
     }
     /**
      * Emitted when the dispatcher starts/stops video.
-     * @event AudioDispatcher#streamStatus
+     * @event VideoDispatcher#streamStatus
      * @param {boolean} isPaused Whether or not the dispatcher is pause video
      */
     this.emit('streamStatus', value);

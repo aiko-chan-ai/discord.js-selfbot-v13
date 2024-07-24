@@ -19,7 +19,7 @@ const VolumeInterface = require('../util/VolumeInterface');
  * });
  * ```
  * @implements {VolumeInterface}
- * @extends {WritableStream}
+ * @extends {BaseDispatcher}
  */
 class AudioDispatcher extends BaseDispatcher {
   constructor(player, { seek = 0, volume = 1, fec, plp, bitrate = 96, highWaterMark = 12 } = {}, streams) {

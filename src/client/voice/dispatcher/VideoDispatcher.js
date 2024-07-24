@@ -12,7 +12,7 @@ const BaseDispatcher = require('./BaseDispatcher');
  * });
  * ```
  * @implements {VolumeInterface}
- * @extends {WritableStream}
+ * @extends {BaseDispatcher}
  */
 class VideoDispatcher extends BaseDispatcher {
   constructor(player, highWaterMark = 12, streams, fps) {

@@ -696,6 +696,7 @@ class VoiceConnection extends EventEmitter {
  *    .then(connection => {
  *
  *   });
+ * ```
  * @extends {VoiceConnection}
  */
 class StreamConnection extends VoiceConnection {
