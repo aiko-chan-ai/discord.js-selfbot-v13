@@ -11,7 +11,6 @@ const BaseDispatcher = require('./BaseDispatcher');
  *   const dispatcher = connection.playVideo('/home/hydrabolt/video.mp4', { fps: 60, preset: 'ultrafast' });
  * });
  * ```
- * @implements {VolumeInterface}
  * @extends {BaseDispatcher}
  */
 class VideoDispatcher extends BaseDispatcher {

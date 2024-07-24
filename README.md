@@ -7,7 +7,7 @@
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v3.2`, based on `discord.js@13.17`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v3.3`, based on `discord.js@13.17`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
@@ -38,7 +38,7 @@
 - [X] Interactions: Slash Commands, Buttons, Menu, Modal
 - [X] Captcha Handler (2captcha, capmonster, custom)
 - [X] Documentation
-- [x] Voice & [Video stream](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/293)
+- [x] Voice & Video stream
 - [ ] Everything
 
 ## Installation
