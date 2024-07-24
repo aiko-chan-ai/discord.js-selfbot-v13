@@ -130,6 +130,18 @@ class Presence extends Base {
       this.lastModified = data.last_modified;
     }
 
+    if ('afk' in data) {
+      this.afk = data.afk;
+    } else {
+      this.afk ??= false;
+    }
+
+    if ('since' in data) {
+      this.since = data.since;
+    } else {
+      this.since ??= 0;
+    }
+
     return this;
   }
 

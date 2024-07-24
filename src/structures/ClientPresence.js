@@ -24,15 +24,7 @@ class ClientPresence extends Presence {
     const packet = this._parse(presence);
     this._patch(packet);
     packet.activities = this.activities.map(a => a.toJSON());
-    if (typeof presence.shardId === 'undefined') {
-      this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
-    } else if (Array.isArray(presence.shardId)) {
-      for (const shardId of presence.shardId) {
-        this.client.ws.shards.get(shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
-      }
-    } else {
-      this.client.ws.shards.get(presence.shardId).send({ op: Opcodes.STATUS_UPDATE, d: packet });
-    }
+    this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
     return this;
   }
 
@@ -45,8 +37,8 @@ class ClientPresence extends Presence {
   _parse({ status, since, afk, activities }) {
     const data = {
       activities: [],
-      afk: typeof afk === 'boolean' ? afk : false,
-      since: typeof since === 'number' && !Number.isNaN(since) ? since : 0,
+      afk: typeof afk === 'boolean' ? afk : this.afk,
+      since: typeof since === 'number' && !Number.isNaN(since) ? this.since : 0,
       status: status ?? this.status,
     };
     if (activities?.length) {

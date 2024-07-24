@@ -171,7 +171,7 @@ class Options extends null {
       restTimeOffset: 500,
       restSweepInterval: 60,
       failIfNotExists: true,
-      presence: { status: 'online', since: 0, activities: [], afk: false },
+      presence: { status: 'online', since: 0, activities: [], afk: true },
       sweepers: {},
       ws: {
         capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
