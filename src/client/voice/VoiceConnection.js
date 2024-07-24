@@ -700,6 +700,11 @@ class VoiceConnection extends EventEmitter {
  */
 class StreamConnection extends VoiceConnection {
   #requestDisconnect = false;
+  /**
+   * @param {ClientVoiceManager} voiceManager Voice manager
+   * @param {Channel} channel any channel (joinable)
+   * @param {VoiceConnection} voiceConnection parent
+   */
   constructor(voiceManager, channel, voiceConnection) {
     super(voiceManager, channel);
 
