@@ -687,6 +687,17 @@ class VoiceConnection extends EventEmitter {
   }
 }
 
+/**
+ * Represents a connection to a guild's voice server.
+ * ```js
+ * // Obtained using:
+ * client.voice.joinChannel(channel)
+ *   .then(connection => connection.createStreamConnection())
+ *    .then(connection => {
+ *
+ *   });
+ * @extends {VoiceConnection}
+ */
 class StreamConnection extends VoiceConnection {
   #requestDisconnect = false;
   constructor(voiceManager, channel, voiceConnection) {
