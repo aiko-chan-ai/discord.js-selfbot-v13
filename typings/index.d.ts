@@ -884,7 +884,7 @@ export class ClientVoiceManager {
   public adapters: Map<Snowflake, InternalDiscordGatewayAdapterLibraryMethods>;
   public connections: Collection<Snowflake, VoiceConnection>;
 
-  public joinChannel(channel: VoiceChannel, config?: JoinChannelConfig): Promise<VoiceConnection>;
+  public joinChannel(channel: VoiceChannel | StageChannel | DMChannel | GroupDMChannel, config?: JoinChannelConfig): Promise<VoiceConnection>;
 }
 
 export interface JoinChannelConfig {

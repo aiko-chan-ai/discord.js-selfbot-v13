@@ -95,7 +95,7 @@ class ClientVoiceManager {
 
   /**
    * Sets up a request to join a voice channel.
-   * @param {VoiceChannel} channel The voice channel to join
+   * @param {VoiceChannel | StageChannel | DMChannel | GroupDMChannel} channel The voice channel to join
    * @param {JoinChannelConfig} config Config to join voice channel
    * @returns {Promise<VoiceConnection>}
    */
