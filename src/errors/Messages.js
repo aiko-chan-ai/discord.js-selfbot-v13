@@ -178,6 +178,31 @@ const Messages = {
   SLASH_COMMAND_SUB_COMMAND_INVALID: n => `${n} is not a valid sub command`,
   INTERACTION_FAILED: 'No responsed from Application Command',
   USER_NOT_STREAMING: 'User is not streaming',
+
+  // Djs v12
+  VOICE_INVALID_HEARTBEAT: 'Tried to set voice heartbeat but no valid interval was specified.',
+  VOICE_USER_MISSING: "Couldn't resolve the user to create stream.",
+  VOICE_JOIN_CHANNEL: (full = false) =>
+    `You do not have permission to join this voice channel${full ? '; it is full.' : '.'}`,
+  VOICE_CONNECTION_TIMEOUT: 'Connection not established within 15 seconds.',
+  VOICE_TOKEN_ABSENT: 'Token not provided from voice server packet.',
+  VOICE_SESSION_ABSENT: 'Session ID not supplied.',
+  VOICE_INVALID_ENDPOINT: 'Invalid endpoint received.',
+  VOICE_NO_BROWSER: 'Voice connections are not available in browsers.',
+  VOICE_CONNECTION_ATTEMPTS_EXCEEDED: attempts => `Too many connection attempts (${attempts}).`,
+  VOICE_JOIN_SOCKET_CLOSED: 'Tried to send join packet, but the WebSocket is not open.',
+  VOICE_PLAY_INTERFACE_NO_BROADCAST: 'A broadcast cannot be played in this context.',
+  VOICE_PLAY_INTERFACE_BAD_TYPE: 'Unknown stream type',
+  VOICE_PRISM_DEMUXERS_NEED_STREAM: 'To play a webm/ogg stream, you need to pass a ReadableStream.',
+
+  VOICE_STATE_UNCACHED_MEMBER: 'The member of this voice state is uncached.',
+
+  UDP_SEND_FAIL: 'Tried to send a UDP packet, but there is no socket available.',
+  UDP_ADDRESS_MALFORMED: 'Malformed UDP address or port.',
+  UDP_CONNECTION_EXISTS: 'There is already an existing UDP connection.',
+  UDP_WRONG_HANDSHAKE: 'Wrong handshake packet for UDP',
+
+  INVALID_VIDEO_CODEC: codecs => `Only these codecs are supported: ${codecs.join(', ')}`,
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

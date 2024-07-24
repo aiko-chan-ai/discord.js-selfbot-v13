@@ -59,7 +59,7 @@ import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
 import { Response } from 'node-fetch';
-import { Stream } from 'node:stream';
+import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
 import * as WebSocket from 'ws';
 import {
@@ -882,6 +882,203 @@ export class ClientVoiceManager {
   private constructor(client: Client);
   public readonly client: Client;
   public adapters: Map<Snowflake, InternalDiscordGatewayAdapterLibraryMethods>;
+  public connections: Collection<Snowflake, VoiceConnection>;
+
+  public joinChannel(channel: VoiceChannel, config?: JoinChannelConfig): Promise<VoiceConnection>;
+}
+
+export interface JoinChannelConfig {
+  selfMute?: boolean;
+  selfDeaf?: boolean;
+  selfVideo?: boolean;
+  videoCodec?: VideoCodec;
+}
+
+export type VideoCodec = 'VP8' | 'H264';
+
+export class VolumeInterface extends EventEmitter {
+  constructor(options?: { volume?: number });
+  public readonly volume: number;
+  public readonly volumeDecibels: number;
+  public readonly volumeEditable: boolean;
+  public readonly volumeLogarithmic: number;
+  public setVolume(volume: number): void;
+  public setVolumeDecibels(db: number): void;
+  public setVolumeLogarithmic(value: number): void;
+
+  public on(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
+
+  public once(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
+}
+
+export function VolumeMixin<T>(base: Constructable<T>): Constructable<T & VolumeInterface>;
+
+export type StreamType = 'unknown' | 'converted' | 'opus' | 'ogg/opus' | 'webm/opus';
+
+export interface StreamOptions {
+  type?: StreamType;
+  seek?: number;
+  volume?: number | boolean;
+  plp?: number;
+  fec?: boolean;
+  bitrate?: number | 'auto';
+  highWaterMark?: number;
+}
+export interface VideoOptions {
+  seek?: number;
+  highWaterMark?: number;
+  fps?: number;
+  hwAccel?: boolean;
+  preset?: 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
+  copy?: boolean;
+  inputFFmpegArgs?: string[];
+  outputFFmpegArgs?: string[];
+}
+
+export class BaseDispatcher extends Writable {
+  constructor(
+    player: object,
+    highWaterMark?: number,
+    payloadType?: number,
+    extensionEnabled?: boolean,
+    streams?: object,
+  );
+  public readonly paused: boolean;
+  public pausedSince: number | null;
+  public readonly pausedTime: number;
+  public player: object;
+  public readonly streamTime: number;
+  public readonly totalStreamTime: number;
+  public count: number;
+  public sequence: number;
+  public timestamp: number;
+  public mtu: number;
+  public fps: number;
+
+  public pause(silence?: boolean): void;
+  public resume(): void;
+
+  public on(event: 'close' | 'drain' | 'finish' | 'start', listener: () => void): this;
+  public on(event: 'debug', listener: (info: string) => void): this;
+  public on(event: 'error', listener: (err: Error) => void): this;
+  public on(event: 'pipe' | 'unpipe', listener: (src: Readable) => void): this;
+  public on(event: 'speaking', listener: (speaking: boolean) => void): this;
+  public on(event: string, listener: (...args: any[]) => void): this;
+
+  public once(event: 'close' | 'drain' | 'finish' | 'start', listener: () => void): this;
+  public once(event: 'debug', listener: (info: string) => void): this;
+  public once(event: 'error', listener: (err: Error) => void): this;
+  public once(event: 'pipe' | 'unpipe', listener: (src: Readable) => void): this;
+  public once(event: 'speaking', listener: (speaking: boolean) => void): this;
+  public once(event: string, listener: (...args: any[]) => void): this;
+}
+
+export class AudioDispatcher extends VolumeMixin(BaseDispatcher) {
+  constructor(player: object, options?: StreamOptions, streams?: object);
+  public readonly bitrateEditable: boolean;
+
+  public setBitrate(value: number | 'auto'): boolean;
+  public setFEC(enabled: boolean): boolean;
+  public setPLP(value: number): boolean;
+
+  public on(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
+  public on(event: string, listener: (...args: any[]) => void): this;
+
+  public once(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
+  public once(event: string, listener: (...args: any[]) => void): this;
+}
+
+export class VideoDispatcher extends BaseDispatcher {
+  constructor(player: object, options?: StreamOptions, streams?: object, fps?: number);
+
+  public setFPSSource(value: number): void;
+}
+
+export class VoiceConnection extends EventEmitter {
+  constructor(voiceManager: ClientVoiceManager, channel: VoiceChannel);
+  private authentication: object;
+  private sockets: object;
+  private ssrcMap: Map<number, boolean>;
+  private _speaking: Map<Snowflake, Readonly<Speaking>>;
+  private _disconnect(): void;
+  private authenticate(): void;
+  private authenticateFailed(reason: string): void;
+  private checkAuthenticated(): void;
+  private cleanup(): void;
+  private connect(): void;
+  private onReady(data: object): void;
+  private onSessionDescription(mode: string, secret: string): void;
+  private onSpeaking(data: object): void;
+  private reconnect(token: string, endpoint: string): void;
+  public sendVoiceStateUpdate(options: {
+    self_video?: boolean;
+    self_deaf?: boolean;
+    self_mute?: boolean;
+    guild_id?: Snowflake | null;
+    channel_id?: Snowflake | null;
+  }): Promise<Shard>;
+  private setSessionId(sessionId: string): void;
+  private setTokenAndEndpoint(token: string, endpoint: string): void;
+  private updateChannel(channel: VoiceChannel): void;
+
+  public channel: VoiceChannel;
+  public readonly client: Client;
+  public readonly dispatcher: AudioDispatcher;
+  public readonly videoDispatcher?: VideoDispatcher;
+  public player: object;
+  public receiver: VoiceReceiver;
+  public speaking: Readonly<Speaking>;
+  public videoStatus: boolean;
+  public status: VoiceStatus;
+  public readonly voice: VoiceState | null;
+  public voiceManager: ClientVoiceManager;
+  public videoCodec: VideoCodec;
+  public streamConnection: StreamConnection | null;
+  public disconnect(): void;
+  public playAudio(input: Readable | string, options?: StreamOptions): AudioDispatcher;
+  public playVideo(input: Readable | string, options?: VideoOptions): VideoDispatcher;
+  public setSpeaking(value: BitFieldResolvable<SpeakingString, number>): void;
+  public setVideoStatus(value: boolean): void;
+  public setVideoCodec(value: VideoCodec): this;
+
+  public on(event: 'authenticated' | 'closing' | 'newSession' | 'ready' | 'reconnecting', listener: () => void): this;
+  public on(event: 'debug', listener: (message: string) => void): this;
+  public on(event: 'error' | 'failed' | 'disconnect', listener: (error: Error) => void): this;
+  public on(event: 'speaking', listener: (user: User, speaking: Readonly<Speaking>) => void): this;
+  public on(event: 'warn', listener: (warning: string | Error) => void): this;
+  public on(event: string, listener: (...args: any[]) => void): this;
+
+  public once(event: 'authenticated' | 'closing' | 'newSession' | 'ready' | 'reconnecting', listener: () => void): this;
+  public once(event: 'debug', listener: (message: string) => void): this;
+  public once(event: 'error' | 'failed' | 'disconnect', listener: (error: Error) => void): this;
+  public once(event: 'speaking', listener: (user: User, speaking: Readonly<Speaking>) => void): this;
+  public once(event: 'warn', listener: (warning: string | Error) => void): this;
+  public once(event: string, listener: (...args: any[]) => void): this;
+
+  public createStreamConnection(): Promise<StreamConnection>;
+}
+
+export class StreamConnection extends VoiceConnection {
+  public createStreamConnection(): Promise<this>;
+  public readonly voiceConnection: VoiceConnection;
+  public serverId: string;
+  public isPaused: boolean;
+  public streamConnection: this;
+  public sendSignalScreenshare(): void;
+  public sendScreenshareState(isPause: boolean): void;
+  private sendStopScreenshare(): void;
+  public readonly streamKey: string;
+}
+
+export class VoiceReceiver extends EventEmitter {
+  constructor(connection: VoiceConnection);
+  public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
+
+  public on(event: 'debug', listener: (error: Error | string) => void): this;
+  public on(event: string, listener: (...args: any[]) => void): this;
+
+  public once(event: 'debug', listener: (error: Error | string) => void): this;
+  public once(event: string, listener: (...args: any[]) => void): this;
 }
 
 export { Collection } from '@discordjs/collection';
@@ -2557,6 +2754,13 @@ export class RoleFlags extends BitField<RoleFlagsString> {
 
 export type RoleFlagsString = 'IN_PROMPT';
 
+export class Speaking extends BitField<SpeakingString> {
+  public static FLAGS: Record<SpeakingString, number>;
+  public static resolve(bit?: BitFieldResolvable<SpeakingString, number>): number;
+}
+
+export type SpeakingString = 'SPEAKING' | 'SOUNDSHARE' | 'PRIORITY_SPEAKING';
+
 export class BaseSelectMenuInteraction<
   Cached extends CacheType = CacheType,
 > extends MessageComponentInteraction<Cached> {
@@ -3596,6 +3800,7 @@ export const Constants: {
   MFALevels: EnumHolder<typeof MFALevels>;
   NSFWLevels: EnumHolder<typeof NSFWLevels>;
   Opcodes: ConstantsOpcodes;
+  VoiceOpcodes: ConstantsVoiceOpcodes;
   OverwriteTypes: EnumHolder<typeof OverwriteTypes>;
   Package: {
     [key: string]: unknown;
@@ -5577,6 +5782,25 @@ export interface ConstantsEvents {
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove';
 }
 
+export interface ConstantsVoiceOpcodes {
+  IDENTIFY: 0;
+  SELECT_PROTOCOL: 1;
+  READY: 2;
+  HEARTBEAT: 3;
+  SESSION_DESCRIPTION: 4;
+  SPEAKING: 5;
+  HEARTBEAT_ACK: 6;
+  RESUME: 7;
+  HELLO: 8;
+  RESUMED: 9;
+  SOURCES: 12;
+  CLIENT_DISCONNECT: 13;
+  SESSION_UPDATE: 14;
+  MEDIA_SINK_WANTS: 15;
+  VOICE_BACKEND_VERSION: 16;
+  CHANNEL_OPTIONS_UPDATE: 17;
+}
+
 export interface ConstantsOpcodes {
   DISPATCH: 0;
   HEARTBEAT: 1;
@@ -7040,6 +7264,8 @@ export interface StartThreadOptions {
 }
 
 export type Status = number;
+
+export type VoiceStatus = number;
 
 export type StickerFormatType = keyof typeof StickerFormatTypes;
 

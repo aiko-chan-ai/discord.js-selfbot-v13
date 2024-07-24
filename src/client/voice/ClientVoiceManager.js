@@ -1,9 +1,13 @@
 'use strict';
 
+const { Collection } = require('@discordjs/collection');
+const VoiceConnection = require('./VoiceConnection');
+const { Error } = require('../../errors');
 const { Events } = require('../../util/Constants');
 
 /**
  * Manages voice connections for the client
+ * Feat: Support both lib & djs/voice
  */
 class ClientVoiceManager {
   constructor(client) {
@@ -14,6 +18,12 @@ class ClientVoiceManager {
      * @name ClientVoiceManager#client
      */
     Object.defineProperty(this, 'client', { value: client });
+
+    /**
+     * A collection mapping connection IDs to the Connection objects
+     * @type {Collection<Snowflake, VoiceConnection>}
+     */
+    this.connections = new Collection();
 
     /**
      * Maps guild ids to voice adapters created for use with @discordjs/voice.
@@ -32,6 +42,16 @@ class ClientVoiceManager {
   }
 
   onVoiceServer(payload) {
+    const { guild_id, channel_id, token, endpoint } = payload;
+    this.client.emit(
+      'debug',
+      `[VOICE] voiceServer ${channel_id ? 'channel' : 'guild'}: ${
+        channel_id || guild_id
+      } token: ${token} endpoint: ${endpoint}`,
+    );
+    const connection = this.connections.get(guild_id || channel_id); // DMs Call
+    if (connection) connection.setTokenAndEndpoint(token, endpoint);
+    // Djs / voice
     if (payload.guild_id) {
       this.adapters.get(payload.guild_id)?.onVoiceServerUpdate(payload);
     } else {
@@ -40,11 +60,88 @@ class ClientVoiceManager {
   }
 
   onVoiceStateUpdate(payload) {
+    const { guild_id, session_id, channel_id } = payload;
+    const connection = this.connections.get(guild_id || channel_id); // DMs Call
+    this.client.emit('debug', `[VOICE] connection? ${!!connection}, ${guild_id} ${session_id} ${channel_id}`);
+    if (!connection) return;
+    if (!channel_id) {
+      connection._disconnect();
+      this.connections.delete(guild_id || channel_id);
+      return;
+    }
+    const channel = this.client.channels.cache.get(channel_id);
+    if (channel) {
+      connection.channel = channel;
+      connection.setSessionId(session_id);
+    } else {
+      this.client.emit('debug', `[VOICE] disconnecting from guild ${guild_id} as channel ${channel_id} is uncached`);
+      connection.disconnect();
+    }
+    // Djs Voice
     if (payload.guild_id && payload.session_id && payload.user_id === this.client.user?.id) {
       this.adapters.get(payload.guild_id)?.onVoiceStateUpdate(payload);
     } else if (payload.channel_id && payload.session_id && payload.user_id === this.client.user?.id) {
       this.adapters.get(payload.channel_id)?.onVoiceStateUpdate(payload);
     }
+  }
+
+  /**
+   * @property {boolean} [selfMute=false]
+   * @property {boolean} [selfDeaf=false]
+   * @property {boolean} [selfVideo=false]
+   * @property {VideoCodec} [videoCodec='H264']
+   * @typedef {Object} JoinChannelConfig
+   */
+
+  /**
+   * Sets up a request to join a voice channel.
+   * @param {VoiceChannel} channel The voice channel to join
+   * @param {JoinChannelConfig} config Config to join voice channel
+   * @returns {Promise<VoiceConnection>}
+   */
+  joinChannel(channel, config = {}) {
+    return new Promise((resolve, reject) => {
+      if (!['DM', 'GROUP_DM'].includes(channel.type) && !channel.joinable) {
+        throw new Error('VOICE_JOIN_CHANNEL', channel.full);
+      }
+
+      let connection = this.connections.get(channel.guild?.id || channel.id);
+
+      if (connection) {
+        if (connection.channel.id !== channel.id) {
+          this.connections.get(channel.guild?.id || channel.id).updateChannel(channel);
+        }
+        resolve(connection);
+        return;
+      } else {
+        connection = new VoiceConnection(this, channel);
+        if (config?.videoCodec) connection.setVideoCodec(config.videoCodec);
+        connection.on('debug', msg =>
+          this.client.emit('debug', `[VOICE (${channel.guild?.id || channel.id}:${connection.status})]: ${msg}`),
+        );
+        connection.authenticate({
+          self_mute: Boolean(config.selfMute),
+          self_deaf: Boolean(config.selfDeaf),
+          self_video: Boolean(config.selfVideo),
+        });
+        this.connections.set(channel.guild?.id || channel.id, connection);
+      }
+
+      connection.once('failed', reason => {
+        this.connections.delete(channel.guild?.id || channel.id);
+        reject(reason);
+      });
+
+      connection.on('error', reject);
+
+      connection.once('authenticated', () => {
+        connection.once('ready', () => {
+          resolve(connection);
+          connection.removeListener('error', reject);
+        });
+        connection.once('disconnect', () => this.connections.delete(channel.guild?.id || channel.id));
+      });
+    });
   }
 }
 

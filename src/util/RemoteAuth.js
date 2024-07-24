@@ -316,8 +316,11 @@ class DiscordAuthWebsocket extends EventEmitter {
    */
   generateQR() {
     if (!this.#fingerprint) return;
-    require('@aikochan2k6/qrcode-terminal').generate(this.AuthURL, {
-      small: true,
+    require('qrcode').toString(this.AuthURL, { type: 'utf8', errorCorrectionLevel: 'L' }, (err, url) => {
+      if (err) {
+        //
+      }
+      console.log(url);
     });
   }
 

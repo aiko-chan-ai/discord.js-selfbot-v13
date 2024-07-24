@@ -162,6 +162,23 @@ exports.Status = {
 };
 
 /**
+ * The current status of a voice connection. Here are the available statuses:
+ * * CONNECTED: 0
+ * * CONNECTING: 1
+ * * AUTHENTICATING: 2
+ * * RECONNECTING: 3
+ * * DISCONNECTED: 4
+ * @typedef {number} VoiceStatus
+ */
+exports.VoiceStatus = {
+  CONNECTED: 0,
+  CONNECTING: 1,
+  AUTHENTICATING: 2,
+  RECONNECTING: 3,
+  DISCONNECTED: 4,
+};
+
+/**
  * The Opcodes sent to the Gateway:
  * * DISPATCH: 0
  * * HEARTBEAT: 1
@@ -242,6 +259,28 @@ exports.Opcodes = {
   REQUEST_CHANNEL_STATUSES: 36, // Payload: { guild_id: string } | Response: CHANNEL_STATUSES | { guild_id, channels: { status, id }[] }
   GUILD_SUBSCRIPTIONS_BULK: 37, // Payload: { subscriptions: Object<guild_id, { Payload_op14 - guild_id }> } | Response: Opcode 14
   // Updated: 23/1/2024
+};
+
+/**
+ * @typedef {Opject<string, number>} VoiceOpcodes
+ */
+exports.VoiceOpcodes = {
+  IDENTIFY: 0,
+  SELECT_PROTOCOL: 1,
+  READY: 2,
+  HEARTBEAT: 3,
+  SESSION_DESCRIPTION: 4,
+  SPEAKING: 5,
+  HEARTBEAT_ACK: 6,
+  RESUME: 7,
+  HELLO: 8,
+  RESUMED: 9,
+  SOURCES: 12,
+  CLIENT_DISCONNECT: 13,
+  SESSION_UPDATE: 14,
+  MEDIA_SINK_WANTS: 15,
+  VOICE_BACKEND_VERSION: 16,
+  CHANNEL_OPTIONS_UPDATE: 17,
 };
 
 /**
@@ -433,6 +472,9 @@ exports.Events = {
   CALL_DELETE: 'callDelete',
   MESSAGE_POLL_VOTE_ADD: 'messagePollVoteAdd',
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
+  // Djs v12
+  VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
+  VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',
 };
 
 /**
