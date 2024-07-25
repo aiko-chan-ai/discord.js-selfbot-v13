@@ -255,6 +255,7 @@ class BaseDispatcher extends Writable {
    * Discord seems to send this extension on every video packet
    * @see https://webrtc.googlesource.com/src/+/refs/heads/main/docs/native-code/rtp-hdrext/playout-delay
    * @returns {Buffer} playout-delay extension
+   * Buffer <be de 00 01 51 00 00 00>
    * @private
    */
   createHeaderExtension() {

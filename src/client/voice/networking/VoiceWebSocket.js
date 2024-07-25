@@ -214,6 +214,14 @@ class VoiceWebSocket extends EventEmitter {
          */
         this.emit('startSpeaking', packet.d);
         break;
+      case VoiceOpcodes.SOURCES:
+        /**
+         * Emitted whenever a streaming packet is received.
+         * @param {Object} data
+         * @event VoiceWebSocket#startStreaming
+         */
+        this.emit('startStreaming', packet.d);
+        break;
       default:
         /**
          * Emitted when an unhandled packet is received.

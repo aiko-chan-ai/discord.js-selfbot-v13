@@ -106,7 +106,7 @@ class VoiceConnection extends EventEmitter {
 
     /**
      * Map SSRC values to user IDs
-     * @type {Map<number, Snowflake>}
+     * @type {Map<number, { userId: Snowflake, speaking: boolean, hasVideo: boolean }>}
      * @private
      */
     this.ssrcMap = new Map();
@@ -513,6 +513,7 @@ class VoiceConnection extends EventEmitter {
     ws.on('ready', this.onReady.bind(this));
     ws.on('sessionDescription', this.onSessionDescription.bind(this));
     ws.on('startSpeaking', this.onStartSpeaking.bind(this));
+    ws.on('startStreaming', this.onStartStreaming.bind(this));
 
     this.sockets.ws.connect();
   }
@@ -567,6 +568,32 @@ class VoiceConnection extends EventEmitter {
       userId: user_id,
       speaking: speaking,
     });
+  }
+
+  onStartStreaming({ video_ssrc, user_id, audio_ssrc }) {
+    this.ssrcMap.set(+audio_ssrc, {
+      ...(this.ssrcMap.get(+audio_ssrc) || {}),
+      userId: user_id,
+      hasVideo: Boolean(video_ssrc), // Maybe ?
+    });
+    /**
+{
+  video_ssrc: 0,
+  user_id: 'uid',
+  streams: [
+    {
+      ssrc: 27734,
+      rtx_ssrc: 27735,
+      rid: '100',
+      quality: 100,
+      max_resolution: [Object],
+      max_framerate: 60,
+      active: false
+    }
+  ],
+  audio_ssrc: 27733
+}
+     */
   }
 
   /**
