@@ -21,5 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm i
+      - run: npm i -g pnpm
+      - run: pnpm i
       - run: npm run test
