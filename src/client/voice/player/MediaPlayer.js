@@ -144,7 +144,8 @@ class MediaPlayer extends EventEmitter {
 
     // Get stream type
     if (this.voiceConnection.videoCodec == 'VP8') {
-      args.push('-f', 'ivf', '-deadline', 'realtime', '-c:v', options?.copy ? 'copy' : 'libvpx', '-speed', '5');
+      args.push('-f', 'ivf', '-deadline', 'realtime', '-c:v', options?.copy ? 'copy' : 'libvpx');
+      // Remove  '-speed', '5' bc bad quality
     }
 
     if (this.voiceConnection.videoCodec == 'H264') {

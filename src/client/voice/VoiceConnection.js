@@ -586,7 +586,7 @@ class VoiceConnection extends EventEmitter {
       rtx_ssrc: 27735,
       rid: '100',
       quality: 100,
-      max_resolution: [Object],
+      max_resolution: { width: 0, type: 'source', height: 0 },,
       max_framerate: 60,
       active: false
     }
