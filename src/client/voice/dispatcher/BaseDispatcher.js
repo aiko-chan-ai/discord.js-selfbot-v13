@@ -137,7 +137,7 @@ class BaseDispatcher extends Writable {
     if (this.player.dispatcher === this) this.player.dispatcher = null;
     const { streams } = this;
     if (streams.opus) streams.opus.destroy();
-    if (streams.ffmpeg) {
+    if (streams.ffmpeg?.process) {
       const ffmpegPid = streams.ffmpeg.process.pid; // But it is ppid ;-;
       const args = streams.ffmpeg.process.spawnargs.slice(1).join(' '); // Skip ffmpeg
       find('name', 'ffmpeg', true).then(list => {
