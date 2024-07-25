@@ -882,10 +882,10 @@ export class ClientVoiceManager {
   private constructor(client: Client);
   public readonly client: Client;
   public adapters: Map<Snowflake, InternalDiscordGatewayAdapterLibraryMethods>;
-  public connections: Collection<Snowflake, VoiceConnection>;
+  public connection: VoiceConnection | null;
 
   public joinChannel(
-    channel: VoiceChannel | StageChannel | DMChannel | GroupDMChannel,
+    channel: VoiceBasedChannel | DMChannel | GroupDMChannel | Snowflake,
     config?: JoinChannelConfig,
   ): Promise<VoiceConnection>;
 }

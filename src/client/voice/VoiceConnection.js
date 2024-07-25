@@ -440,8 +440,8 @@ class VoiceConnection extends EventEmitter {
     this.emit('closing');
     this.emit('debug', 'disconnect() triggered');
     clearTimeout(this.connectTimeout);
-    const conn = this.voiceManager.connections.get(this.channel.guild?.id || this.channel.id);
-    if (conn === this) this.voiceManager.connections.delete(this.channel.guild?.id || this.channel.id);
+    const conn = this.voiceManager.connection;
+    if (conn === this) this.voiceManager.connection = null;
     this.sendVoiceStateUpdate({
       channel_id: null,
     });

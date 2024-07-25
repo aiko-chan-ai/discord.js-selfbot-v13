@@ -18,7 +18,17 @@ const libs = {
   }),
 };
 
-exports.methods = {};
+function NoLib() {
+  throw new Error(
+    'Cannot play audio as no valid encryption package is installed.\n- Install sodium, libsodium-wrappers, or tweetnacl.',
+  );
+}
+
+exports.methods = {
+  open: NoLib,
+  close: NoLib,
+  random: NoLib,
+};
 
 (async () => {
   for (const libName of Object.keys(libs)) {

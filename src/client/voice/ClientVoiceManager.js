@@ -1,6 +1,5 @@
 'use strict';
 
-const { Collection } = require('@discordjs/collection');
 const VoiceConnection = require('./VoiceConnection');
 const { Error } = require('../../errors');
 const { Events } = require('../../util/Constants');
@@ -20,10 +19,10 @@ class ClientVoiceManager {
     Object.defineProperty(this, 'client', { value: client });
 
     /**
-     * A collection mapping connection IDs to the Connection objects
-     * @type {Collection<Snowflake, VoiceConnection>}
+     * A current connection objects
+     * @type {?VoiceConnection}
      */
-    this.connections = new Collection();
+    this.connection = null;
 
     /**
      * Maps guild ids to voice adapters created for use with @discordjs/voice.
@@ -49,7 +48,7 @@ class ClientVoiceManager {
         channel_id || guild_id
       } token: ${token} endpoint: ${endpoint}`,
     );
-    const connection = this.connections.get(guild_id || channel_id); // DMs Call
+    const connection = this.connection;
     if (connection) connection.setTokenAndEndpoint(token, endpoint);
     // Djs / voice
     if (payload.guild_id) {
@@ -61,12 +60,12 @@ class ClientVoiceManager {
 
   onVoiceStateUpdate(payload) {
     const { guild_id, session_id, channel_id } = payload;
-    const connection = this.connections.get(guild_id || channel_id); // DMs Call
+    const connection = this.connection;
     this.client.emit('debug', `[VOICE] connection? ${!!connection}, ${guild_id} ${session_id} ${channel_id}`);
     if (!connection) return;
     if (!channel_id) {
       connection._disconnect();
-      this.connections.delete(guild_id || channel_id);
+      this.connection = null;
       return;
     }
     const channel = this.client.channels.cache.get(channel_id);
@@ -95,21 +94,22 @@ class ClientVoiceManager {
 
   /**
    * Sets up a request to join a voice channel.
-   * @param {VoiceChannel | StageChannel | DMChannel | GroupDMChannel} channel The voice channel to join
+   * @param {VoiceChannel | StageChannel | DMChannel | GroupDMChannel | Snowflake} channel The voice channel to join
    * @param {JoinChannelConfig} config Config to join voice channel
    * @returns {Promise<VoiceConnection>}
    */
   joinChannel(channel, config = {}) {
     return new Promise((resolve, reject) => {
+      channel = this.client.channels.resolve(channel);
       if (!['DM', 'GROUP_DM'].includes(channel.type) && !channel.joinable) {
         throw new Error('VOICE_JOIN_CHANNEL', channel.full);
       }
 
-      let connection = this.connections.get(channel.guild?.id || channel.id);
+      let connection = this.connection;
 
       if (connection) {
         if (connection.channel.id !== channel.id) {
-          this.connections.get(channel.guild?.id || channel.id).updateChannel(channel);
+          this.connection.updateChannel(channel);
         }
         resolve(connection);
         return;
@@ -124,11 +124,11 @@ class ClientVoiceManager {
           self_deaf: Boolean(config.selfDeaf),
           self_video: Boolean(config.selfVideo),
         });
-        this.connections.set(channel.guild?.id || channel.id, connection);
+        this.connection = connection;
       }
 
       connection.once('failed', reason => {
-        this.connections.delete(channel.guild?.id || channel.id);
+        this.connection = null;
         reject(reason);
       });
 
@@ -139,7 +139,9 @@ class ClientVoiceManager {
           resolve(connection);
           connection.removeListener('error', reject);
         });
-        connection.once('disconnect', () => this.connections.delete(channel.guild?.id || channel.id));
+        connection.once('disconnect', () => {
+          this.connection = null;
+        });
       });
     });
   }
