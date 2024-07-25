@@ -1,5 +1,16 @@
 // https://v12.discordjs.guide/voice/receiving-audio.html#basic-usage
 
+/*
+Install:
+- An Opus library: @discordjs/opus or opusscript
+- An encryption packages:
+  + sodium (best performance)
+  + libsodium-wrappers
+  + tweetnacl (slowest)
+- ffmpeg (install and add to your system environment)
+*/
+
+
 const { Client } = require('../../src/index');
 const client = new Client();
 

@@ -15,6 +15,17 @@ Thanks to mrjvs for discovering how Discord transmits data and the VP8 codec.
 Please use the @dank074/discord-video-stream library for the best support.
 */
 
+/*
+Install:
+- An Opus library: @discordjs/opus or opusscript
+- An encryption packages:
+  + sodium (best performance)
+  + libsodium-wrappers
+  + tweetnacl (slowest)
+- ffmpeg (install and add to your system environment)
+*/
+
+
 const { Client } = require('../../src/index');
 const client = new Client();
 
