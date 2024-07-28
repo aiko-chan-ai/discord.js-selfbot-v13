@@ -127,7 +127,7 @@ class ChannelManager extends CachedManager {
     recipients = recipients
       .map(r => this.client.users.resolveId(r))
       .filter(r => r && this.client.relationships.cache.get(r) == RelationshipTypes.FRIEND);
-    if (recipients.length < 2 || recipients.length > 9) throw new Error('Invalid Users length (2 - 9)');
+    if (recipients.length <= 0 || recipients.length > 9) throw new Error('Invalid Users length (1 - 9)');
     const data = await this.client.api.users['@me'].channels.post({
       data: { recipients },
     });
