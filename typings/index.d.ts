@@ -3997,7 +3997,7 @@ export class BaseGuildEmojiManager extends CachedManager<Snowflake, GuildEmoji, 
 export class ChannelManager extends CachedManager<Snowflake, AnyChannel, ChannelResolvable> {
   private constructor(client: Client, iterable: Iterable<RawChannelData>);
   public fetch(id: Snowflake, options?: FetchChannelOptions): Promise<AnyChannel | null>;
-  public createGroupDM(recipients: UserResolvable[]): Promise<GroupDMChannel>;
+  public createGroupDM(recipients?: UserResolvable[]): Promise<GroupDMChannel>;
 }
 
 export class RelationshipManager extends BaseManager {
