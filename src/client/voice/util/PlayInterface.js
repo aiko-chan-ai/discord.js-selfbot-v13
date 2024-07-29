@@ -79,17 +79,19 @@ class PlayInterface {
    * @typedef {Object} VideoOptions
    * @property {number} [seek=0] The time to seek to, will be ignored when playing `ogg/opus` or `webm/opus` streams
    * @property {number} [fps=30] Video fps
-   * @property {boolean} [copy=false] Copy codec ?
+   * @property {'maximum' | '480' | '720' | '1080' | '1440'} [resolution='maximum'] Resoluion (Height)
    * @property {number} [highWaterMark=12] The maximum number of opus packets to make and store before they are
    * actually needed. See https://nodejs.org/en/docs/guides/backpressuring-in-streams/. Setting this value to
    * 1 means that changes in volume will be more instant.
-   * @property {'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow'} [preset='veryfast'] ffmpeg preset
+   * @property {'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow'} [presetH26x='veryfast'] ffmpeg preset h254 / h265
    * @property {boolean} [hwAccel=false]  Enables hardware accelerated video decoding. Enabling this option might result in an exception
    * being thrown by Ffmpeg process if your system does not support hardware acceleration
    * @property {string[]} [inputFFmpegArgs] input ffmpeg
    * Ex: ['-config1', 'value1', '-config2', 'value2']
    * @property {string[]} [outputFFmpegArgs] output ffmpeg
    * Ex: ['-config1', 'value1', '-config2', 'value2']
+   * @property {number|'auto'} [bitrate=2000] The bitrate (quality) of the video in kbps.
+   * If set to 'auto', ffmpeg will automatically select
    */
 
   /**

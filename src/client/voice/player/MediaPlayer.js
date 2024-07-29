@@ -132,6 +132,14 @@ class MediaPlayer extends EventEmitter {
       `${options?.fps}`,
     ];
 
+    if (options?.resolution && options?.resolution !== 'maximum') {
+      args.push('-vf', `scale=-1:${options.resolution}`);
+    }
+
+    if (options?.bitrate && typeof options?.bitrate === 'number') {
+      args.push('-b:v', `${options?.bitrate}K`);
+    }
+
     if (!isStream) {
       args[1] = input;
     }
@@ -144,28 +152,28 @@ class MediaPlayer extends EventEmitter {
 
     // Get stream type
     if (this.voiceConnection.videoCodec == 'VP8') {
-      args.push('-f', 'ivf', '-deadline', 'realtime', '-c:v', options?.copy ? 'copy' : 'libvpx');
+      args.push('-f', 'ivf', '-deadline', 'realtime', '-c:v', 'libvpx');
       // Remove  '-speed', '5' bc bad quality
     }
 
     if (this.voiceConnection.videoCodec == 'H264') {
       args.push(
         '-c:v',
-        options?.copy ? 'copy' : 'libx264',
+        'libx264',
         '-f',
         'h264',
         '-tune',
         'zerolatency',
-        '-pix_fmt',
-        'yuv420p',
+        // '-pix_fmt',
+        // 'yuv420p',
         '-preset',
-        options?.preset || 'faster',
+        options?.presetH26x || 'faster',
         '-profile:v',
         'baseline',
-        '-g',
-        `${options?.fps}`,
-        '-x264-params',
-        `keyint=${options?.fps}:min-keyint=${options?.fps}`,
+        // '-g',
+        // `${options?.fps}`,
+        // '-x264-params',
+        // `keyint=${options?.fps}:min-keyint=${options?.fps}`,
         '-bf',
         '0',
         '-bsf:v',

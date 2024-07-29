@@ -46,7 +46,9 @@ client.on('ready', async client => {
   const input = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
   // Play
   const dispatcher = stream.playVideo(input, {
-    fps: 30,
+    fps: 60,
+    bitrate: 4000,
+    resolution: '1080',
   });
   const dispatcher2 = stream.playAudio(input);
   dispatcher.on('start', () => {

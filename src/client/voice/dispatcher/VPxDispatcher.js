@@ -25,27 +25,24 @@ class VP8Dispatcher extends VideoDispatcher {
     super(player, highWaterMark, streams, fps);
   }
 
-  makeChunk(buffer, i) {
+  makeChunk(buffer, isFirstFrame) {
     // Make frame
     const headerExtensionBuf = this.createHeaderExtension();
     // Vp8 payload descriptor
     const payloadDescriptorBuf = Buffer.alloc(2);
-    payloadDescriptorBuf[0] = 0x80;
+    payloadDescriptorBuf[0] = isFirstFrame ? 0x90 : 0x80; // Mark S bit, indicates start of frame: payloadDescriptorBuf[0] |= 0b00010000;
     payloadDescriptorBuf[1] = 0x80;
-    if (i == 0) {
-      payloadDescriptorBuf[0] |= 0b00010000; // Mark S bit, indicates start of frame
-    }
     // Vp8 pictureid payload extension
     const pictureIdBuf = Buffer.alloc(2);
-    pictureIdBuf.writeUIntBE(this.count, 0, 2);
-    pictureIdBuf[0] |= 0b10000000;
+    pictureIdBuf.writeUintBE(this.count, 0, 2);
+    pictureIdBuf[0] |= 0x80;
     return Buffer.concat([headerExtensionBuf, payloadDescriptorBuf, pictureIdBuf, buffer]);
   }
 
   codecCallback(chunk) {
     const chunkSplit = this.partitionVideoData(chunk);
     for (let i = 0; i < chunkSplit.length; i++) {
-      this._playChunk(this.makeChunk(chunkSplit[i], i), i + 1 === chunkSplit.length);
+      this._playChunk(this.makeChunk(chunkSplit[i], i == 0), i + 1 === chunkSplit.length);
     }
   }
 }

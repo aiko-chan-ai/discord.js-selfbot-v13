@@ -29,7 +29,6 @@ class AnnexBDispatcher extends VideoDispatcher {
 
   codecCallback(frame) {
     let accessUnit = frame;
-    const nalus = [];
     let offset = 0;
 
     // Extract NALUs from the access unit
@@ -37,25 +36,19 @@ class AnnexBDispatcher extends VideoDispatcher {
       const naluSize = accessUnit.readUInt32BE(offset);
       offset += 4;
       const nalu = accessUnit.subarray(offset, offset + naluSize);
-      nalus.push(nalu);
-      offset += naluSize;
-    }
-
-    nalus.forEach((nalu, index) => {
-      const isLastNal = index === nalus.length - 1;
-
+      const isLastNal = offset + naluSize >= accessUnit.length;
       if (nalu.length <= this.mtu) {
         // If NALU size is within MTU, send it directly
-        this._playChunk(Buffer.concat([this.createHeaderExtension(), nalu]), index + 1 === nalus.length);
+        this._playChunk(Buffer.concat([this.createHeaderExtension(), nalu]), isLastNal);
       } else {
         // If NALU size exceeds MTU, fragment it
         const [naluHeader, naluData] = this._nalFunctions.splitHeader(nalu);
         const dataFragments = this.partitionVideoData(naluData);
 
-        dataFragments.forEach((data, fragmentIndex) => {
+        for (let fragmentIndex = 0; fragmentIndex < dataFragments.length; fragmentIndex++) {
+          const data = dataFragments[fragmentIndex];
           const isFirstPacket = fragmentIndex === 0;
           const isFinalPacket = fragmentIndex === dataFragments.length - 1;
-          const markerBit = isLastNal && isFinalPacket; // Is last packet ?
 
           this._playChunk(
             Buffer.concat([
@@ -63,11 +56,12 @@ class AnnexBDispatcher extends VideoDispatcher {
               this.makeFragmentationUnitHeader(isFirstPacket, isFinalPacket, naluHeader),
               data,
             ]),
-            markerBit,
+            isLastNal && isFinalPacket,
           );
-        });
+        }
       }
-    });
+      offset += naluSize;
+    }
   }
 }
 

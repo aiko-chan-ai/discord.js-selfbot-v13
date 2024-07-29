@@ -932,10 +932,11 @@ export interface VideoOptions {
   highWaterMark?: number;
   fps?: number;
   hwAccel?: boolean;
-  preset?: 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
-  copy?: boolean;
+  presetH26x?: 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
   inputFFmpegArgs?: string[];
   outputFFmpegArgs?: string[];
+  resolution?: 'maximum' | '480' | '720' | '1080' | '1440';
+  bitrate?: number | 'auto';
 }
 
 export class BaseDispatcher extends Writable {

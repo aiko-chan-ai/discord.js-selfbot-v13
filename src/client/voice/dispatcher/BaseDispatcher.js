@@ -316,12 +316,12 @@ class BaseDispatcher extends Writable {
   _createPacket(buffer, isLastPacket = false) {
     // Header
     const packetBuffer = Buffer.alloc(12);
-    packetBuffer[0] = (2 << 6) | ((this.extensionEnabled ? 1 : 0) << 4);
+    packetBuffer[0] = this.extensionEnabled ? 0x90 : 0x80; // 0b10000000 | ((this.extensionEnabled ? 1 : 0) << 4);
     packetBuffer[1] = this.payloadType;
 
     if (this.extensionEnabled) {
       if (isLastPacket) {
-        packetBuffer[1] |= 0b10000000;
+        packetBuffer[1] |= 0x80;
       }
     }
 
