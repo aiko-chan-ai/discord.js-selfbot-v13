@@ -74,6 +74,17 @@ class MediaPlayer extends EventEmitter {
     const args = isStream ? FFMPEG_ARGUMENTS.slice() : ['-i', input, ...FFMPEG_ARGUMENTS];
     if (options.seek) args.unshift('-ss', String(options.seek));
 
+    args.unshift(
+      '-reconnect',
+      '1',
+      '-reconnect_at_eof',
+      '1',
+      '-reconnect_streamed',
+      '1',
+      '-reconnect_delay_max',
+      '4294',
+    );
+
     const ffmpeg = new prism.FFmpeg({ args });
     streams.ffmpeg = ffmpeg;
     if (isStream) {
@@ -134,6 +145,18 @@ class MediaPlayer extends EventEmitter {
     }
 
     if (options.seek) args.unshift('-ss', String(options.seek));
+
+    // Fix connection
+    args.unshift(
+      '-reconnect',
+      '1',
+      '-reconnect_at_eof',
+      '1',
+      '-reconnect_streamed',
+      '1',
+      '-reconnect_delay_max',
+      '4294',
+    );
 
     // Get stream type
     if (this.voiceConnection.videoCodec == 'VP8') {
