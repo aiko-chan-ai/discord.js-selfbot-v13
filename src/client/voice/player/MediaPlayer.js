@@ -75,7 +75,7 @@ class MediaPlayer extends EventEmitter {
     if (options.seek) args.unshift('-ss', String(options.seek));
 
     // Check input
-    if (typeof input == 'string' && URL.canParse(input)) {
+    if (typeof input == 'string' && input.startsWith('http')) {
       args.unshift(
         '-reconnect',
         '1',
@@ -150,7 +150,7 @@ class MediaPlayer extends EventEmitter {
     if (options.seek) args.unshift('-ss', String(options.seek));
 
     // Check input
-    if (typeof input == 'string' && URL.canParse(input)) {
+    if (typeof input == 'string' && input.startsWith('http')) {
       args.unshift(
         '-reconnect',
         '1',
