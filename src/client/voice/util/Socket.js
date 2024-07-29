@@ -29,7 +29,6 @@ class UnixStream {
     if (process.platform === 'win32') {
       const pipePrefix = '\\\\.\\pipe\\';
       const pipeName = `node-webrtc.${++counter}.sock`;
-
       this.socketPath = path.join(pipePrefix, pipeName);
       this.url = this.socketPath;
     } else {
@@ -41,7 +40,7 @@ class UnixStream {
       fs.statSync(this.socketPath);
       fs.unlinkSync(this.socketPath);
     } catch (err) {
-      console.error('UnixStream', err);
+      // Null
     }
 
     const server = net.createServer(onSocket);
@@ -60,4 +59,4 @@ function StreamOutput(stream) {
   return new UnixStream(stream, socket => socket.pipe(stream));
 }
 
-module.exports = { StreamOutput, StreamInput };
+module.exports = { StreamOutput, StreamInput, UnixStream };

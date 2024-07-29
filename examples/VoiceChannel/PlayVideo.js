@@ -48,7 +48,6 @@ client.on('ready', async client => {
   const dispatcher = stream.playVideo(input, {
     fps: 60,
     bitrate: 4000,
-    resolution: '1080',
   });
   const dispatcher2 = stream.playAudio(input);
   dispatcher.on('start', () => {

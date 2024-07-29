@@ -935,7 +935,6 @@ export interface VideoOptions {
   presetH26x?: 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow';
   inputFFmpegArgs?: string[];
   outputFFmpegArgs?: string[];
-  resolution?: 'maximum' | '480' | '720' | '1080' | '1440';
   bitrate?: number | 'auto';
 }
 

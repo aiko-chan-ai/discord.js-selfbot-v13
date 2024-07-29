@@ -79,7 +79,6 @@ class PlayInterface {
    * @typedef {Object} VideoOptions
    * @property {number} [seek=0] The time to seek to, will be ignored when playing `ogg/opus` or `webm/opus` streams
    * @property {number} [fps=30] Video fps
-   * @property {'maximum' | '480' | '720' | '1080' | '1440'} [resolution='maximum'] Resoluion (Height)
    * @property {number} [highWaterMark=12] The maximum number of opus packets to make and store before they are
    * actually needed. See https://nodejs.org/en/docs/guides/backpressuring-in-streams/. Setting this value to
    * 1 means that changes in volume will be more instant.

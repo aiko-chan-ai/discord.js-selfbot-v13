@@ -119,22 +119,7 @@ class MediaPlayer extends EventEmitter {
 
     if (!options?.fps) options.fps = 30;
 
-    const args = [
-      '-i',
-      '-',
-      '-analyzeduration',
-      '0',
-      '-flags',
-      'low_delay',
-      '-quality',
-      'realtime',
-      '-r',
-      `${options?.fps}`,
-    ];
-
-    if (options?.resolution && options?.resolution !== 'maximum') {
-      args.push('-vf', `scale=-1:${options.resolution}`);
-    }
+    const args = ['-i', '-', '-analyzeduration', '0', '-flags', 'low_delay', '-r', `${options?.fps}`];
 
     if (options?.bitrate && typeof options?.bitrate === 'number') {
       args.push('-b:v', `${options?.bitrate}K`);
