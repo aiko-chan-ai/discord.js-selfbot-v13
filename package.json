@@ -78,7 +78,7 @@
     "@types/node": "^20.14.12",
     "@types/node-fetch": "^2.6.11",
     "@types/ws": "^8.5.10",
-    "conventional-changelog-cli": "^2.2.2",
+    "conventional-changelog-cli": "^5.0.0",
     "dtslint": "^4.2.1",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
