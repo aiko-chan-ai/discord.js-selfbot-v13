@@ -1170,13 +1170,7 @@ class Message extends Base {
     return this.client.api.channels[this.channelId].messages[this.id].ack.post({
       data: {
         manual: true,
-        mention_count:
-          this.mentions.everyone ||
-          this.mentions.repliedUser?.id === this.client.user.id ||
-          this.mentions.users.has(this.client.user.id) ||
-          (this.guildId && this.mentions.roles.some(r => this.guild.members.me._roles?.includes(r.id)))
-            ? 1
-            : 0,
+        mention_count: 1,
       },
     });
   }
