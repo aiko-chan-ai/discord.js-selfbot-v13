@@ -1,8 +1,9 @@
 'use strict';
 
 const { Buffer } = require('node:buffer');
+const crypto = require('node:crypto');
+const { Writable } = require('node:stream');
 const { setTimeout } = require('node:timers');
-const { Writable } = require('stream');
 const find = require('find-process');
 const kill = require('tree-kill');
 const secretbox = require('../util/Secretbox');
@@ -35,7 +36,10 @@ class BaseDispatcher extends Writable {
     this.extensionEnabled = extensionEnabled;
 
     this._nonce = 0;
-    this._nonceBuffer = Buffer.alloc(24);
+    this._nonceBuffer =
+      this.player.voiceConnection.authentication.mode === 'aead_aes256_gcm_rtpsize'
+        ? Buffer.alloc(12)
+        : Buffer.alloc(24);
 
     /**
      * The time that the stream was paused at (null if not paused)
@@ -298,40 +302,63 @@ class BaseDispatcher extends Writable {
     return Buffer.concat([profile, ...extensionsData]);
   }
 
-  _encrypt(buffer) {
+  _encrypt(buffer, additionalData) {
     const { secret_key, mode } = this.player.voiceConnection.authentication;
-    if (mode === 'xsalsa20_poly1305_lite') {
-      this._nonce++;
-      if (this._nonce > MAX_NONCE_SIZE) this._nonce = 0;
-      this._nonceBuffer.writeUInt32BE(this._nonce, 0);
-      return [secretbox.methods.close(buffer, this._nonceBuffer, secret_key), this._nonceBuffer.slice(0, 4)];
-    } else if (mode === 'xsalsa20_poly1305_suffix') {
-      const random = secretbox.methods.random(24);
-      return [secretbox.methods.close(buffer, random, secret_key), random];
-    } else {
-      return [secretbox.methods.close(buffer, nonce, secret_key)];
+    // Both supported encryption methods want the nonce to be an incremental integer
+    this._nonce++;
+    if (this._nonce > MAX_NONCE_SIZE) this._nonce = 0;
+    this._nonceBuffer.writeUInt32BE(this._nonce, 0);
+
+    // 4 extra bytes of padding on the end of the encrypted packet
+    const noncePadding = this._nonceBuffer.slice(0, 4);
+
+    let encrypted;
+
+    switch (mode) {
+      case 'aead_aes256_gcm_rtpsize': {
+        const cipher = crypto.createCipheriv('aes-256-gcm', secret_key, this._nonceBuffer);
+        cipher.setAAD(additionalData);
+
+        encrypted = Buffer.concat([cipher.update(buffer), cipher.final(), cipher.getAuthTag()]);
+
+        return [encrypted, noncePadding];
+      }
+      case 'aead_xchacha20_poly1305_rtpsize': {
+        encrypted = secretbox.methods.crypto_aead_xchacha20poly1305_ietf_encrypt(
+          buffer,
+          additionalData,
+          this._nonceBuffer,
+          secret_key,
+        );
+
+        return [encrypted, noncePadding];
+      }
+      default: {
+        // This should never happen. Our encryption mode is chosen from a list given to us by the gateway and checked with the ones we support.
+        throw new RangeError(`Unsupported encryption method: ${mode}`);
+      }
     }
   }
 
   _createPacket(buffer, isLastPacket = false) {
     // Header
-    const packetBuffer = Buffer.alloc(12);
-    packetBuffer[0] = this.extensionEnabled ? 0x90 : 0x80; // 0b10000000 | ((this.extensionEnabled ? 1 : 0) << 4);
-    packetBuffer[1] = this.payloadType;
+    const rtpHeader = Buffer.alloc(12);
+    rtpHeader[0] = this.extensionEnabled ? 0x90 : 0x80; // 0b10000000 | ((this.extensionEnabled ? 1 : 0) << 4);
+    rtpHeader[1] = this.payloadType;
 
     if (this.extensionEnabled) {
       if (isLastPacket) {
-        packetBuffer[1] |= 0x80;
+        rtpHeader[1] |= 0x80;
       }
     }
 
-    packetBuffer.writeUIntBE(this.getNewSequence(), 2, 2);
-    packetBuffer.writeUIntBE(this.timestamp, 4, 4);
-    packetBuffer.writeUIntBE(this.player.voiceConnection.authentication.ssrc + this.extensionEnabled, 8, 4);
+    rtpHeader.writeUIntBE(this.getNewSequence(), 2, 2);
+    rtpHeader.writeUIntBE(this.timestamp, 4, 4);
+    rtpHeader.writeUIntBE(this.player.voiceConnection.authentication.ssrc + this.extensionEnabled, 8, 4);
 
-    packetBuffer.copy(nonce, 0, 0, 12);
+    rtpHeader.copy(nonce, 0, 0, 12);
 
-    return Buffer.concat([packetBuffer, ...this._encrypt(buffer)]);
+    return Buffer.concat([rtpHeader, ...this._encrypt(buffer, rtpHeader)]);
   }
 
   _sendPacket(packet) {

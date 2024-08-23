@@ -22,7 +22,7 @@ class SingleSilence extends Silence {
   }
 }
 
-const SUPPORTED_MODES = ['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305'];
+const SUPPORTED_MODES = ['aead_aes256_gcm_rtpsize', 'aead_xchacha20_poly1305_rtpsize'];
 const SUPPORTED_CODECS = ['VP8', 'H264'];
 
 /**

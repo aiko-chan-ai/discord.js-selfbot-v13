@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events');
 const { Buffer } = require('node:buffer');
+const crypto = require('node:crypto');
 const { setTimeout } = require('node:timers');
 const { IvfJoinner } = require('./video/IvfJoinner');
 const Speaking = require('../../../util/Speaking');
@@ -12,6 +13,10 @@ const { SILENCE_FRAME } = require('../util/Silence');
 // https://github.com/discordjs/discord.js/issues/3524#issuecomment-540373200
 const DISCORD_SPEAKING_DELAY = 250;
 
+const HEADER_EXTENSION_BYTE = Buffer.from([0xbe, 0xde]);
+const UNPADDED_NONCE_LENGTH = 4;
+const AUTH_TAG_LENGTH = 16;
+
 class Readable extends require('stream').Readable {
   _read() {} // eslint-disable-line no-empty-function
 }
@@ -19,11 +24,16 @@ class Readable extends require('stream').Readable {
 class PacketHandler extends EventEmitter {
   constructor(receiver) {
     super();
-    this.nonce = Buffer.alloc(24);
     this.receiver = receiver;
+    this.nonce = null;
     this.streams = new Map();
     this.videoStreams = new Map();
     this.speakingTimeouts = new Map();
+  }
+
+  resetNonce() {
+    this.nonce =
+      this.receiver.connection.authentication.mode === 'aead_aes256_gcm_rtpsize' ? Buffer.alloc(12) : Buffer.alloc(24);
   }
 
   get connection() {
@@ -56,29 +66,58 @@ class PacketHandler extends EventEmitter {
 
   parseBuffer(buffer) {
     const { secret_key, mode } = this.receiver.connection.authentication;
-
-    // Choose correct nonce depending on encryption
-    let end;
-    if (mode === 'xsalsa20_poly1305_lite') {
-      buffer.copy(this.nonce, 0, buffer.length - 4);
-      end = buffer.length - 4;
-    } else if (mode === 'xsalsa20_poly1305_suffix') {
-      buffer.copy(this.nonce, 0, buffer.length - 24);
-      end = buffer.length - 24;
-    } else {
-      buffer.copy(this.nonce, 0, 0, 12);
+    if (!this.nonce) {
+      this.resetNonce();
     }
 
-    // Open packet
-    if (!secret_key) return new Error('secret_key cannot be null or undefined');
-    let packet = secretbox.methods.open(buffer.slice(12, end), this.nonce, secret_key);
-    if (!packet) return new Error('Failed to decrypt voice packet');
-    packet = Buffer.from(packet);
+    // Copy the last 4 bytes of unpadded nonce to the padding of (12 - 4) or (24 - 4) bytes
+    buffer.copy(this.nonce, 0, buffer.length - UNPADDED_NONCE_LENGTH);
 
-    // Strip RTP Header Extensions (one-byte only)
-    if (packet[0] === 0xbe && packet[1] === 0xde) {
-      const headerExtensionLength = packet.readUInt16BE(2);
-      packet = packet.subarray(4 + 4 * headerExtensionLength);
+    let headerSize = 12;
+    const first = buffer.readUint8();
+    if ((first >> 4) & 0x01) headerSize += 4;
+
+    // The unencrypted RTP header contains 12 bytes, HEADER_EXTENSION and the extension size
+    const header = buffer.slice(0, headerSize);
+
+    // Encrypted contains the extension, if any, the opus packet, and the auth tag
+    const encrypted = buffer.slice(headerSize, buffer.length - AUTH_TAG_LENGTH - UNPADDED_NONCE_LENGTH);
+    const authTag = buffer.slice(
+      buffer.length - AUTH_TAG_LENGTH - UNPADDED_NONCE_LENGTH,
+      buffer.length - UNPADDED_NONCE_LENGTH,
+    );
+
+    let packet;
+    switch (mode) {
+      case 'aead_aes256_gcm_rtpsize': {
+        const decipheriv = crypto.createDecipheriv('aes-256-gcm', secret_key, this.nonce);
+        decipheriv.setAAD(header);
+        decipheriv.setAuthTag(authTag);
+
+        packet = Buffer.concat([decipheriv.update(encrypted), decipheriv.final()]);
+        break;
+      }
+      case 'aead_xchacha20_poly1305_rtpsize': {
+        // Combined mode expects authtag in the encrypted message
+        packet = secretbox.methods.crypto_aead_xchacha20poly1305_ietf_decrypt(
+          Buffer.concat([encrypted, authTag]),
+          header,
+          this.nonce,
+          secret_key,
+        );
+
+        packet = Buffer.from(packet);
+        break;
+      }
+      default: {
+        throw new RangeError(`Unsupported decryption method: ${mode}`);
+      }
+    }
+
+    // Strip decrypted RTP Header Extension if present
+    if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
+      const headerExtensionLength = buffer.slice(14).readUInt16BE();
+      packet = packet.subarray(4 * headerExtensionLength);
     }
 
     // Ex VP8
