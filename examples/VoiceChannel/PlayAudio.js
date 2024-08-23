@@ -6,7 +6,6 @@ Install:
 - An encryption packages:
   + sodium (best performance)
   + libsodium-wrappers
-  + tweetnacl (slowest)
 - ffmpeg (install and add to your system environment)
 */
 
@@ -40,7 +39,7 @@ client.on('ready', async client => {
     }, 5_000);
 
     // Set volume
-    dispatcher2.setVolume(0.5);
+    dispatcher.setVolume(0.5);
     console.log('50% volume');
   });
 

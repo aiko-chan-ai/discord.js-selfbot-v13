@@ -21,7 +21,6 @@ Install:
 - An encryption packages:
   + sodium (best performance)
   + libsodium-wrappers
-  + tweetnacl (slowest)
 - ffmpeg (install and add to your system environment)
 */
 
