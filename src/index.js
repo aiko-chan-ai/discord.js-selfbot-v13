@@ -111,6 +111,7 @@ exports.InviteGuild = require('./structures/InviteGuild');
 exports.Message = require('./structures/Message').Message;
 exports.MessageActionRow = require('./structures/MessageActionRow');
 exports.MessageAttachment = require('./structures/MessageAttachment');
+exports.MessageButton = require('./structures/MessageButton');
 exports.MessageCollector = require('./structures/MessageCollector');
 exports.MessageEmbed = require('./structures/MessageEmbed');
 exports.MessageMentions = require('./structures/MessageMentions');
