@@ -151,6 +151,10 @@ class PacketHandler extends EventEmitter {
         }
       }
       stream.push(opusPacket);
+      if (opusPacket === null) {
+        // ! null marks EOF for stream
+        stream.destroy();
+      }
     }
 
     if (videoStreamInfo) {
