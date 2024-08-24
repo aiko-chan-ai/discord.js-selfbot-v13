@@ -9,9 +9,7 @@ const kill = require('tree-kill');
 const secretbox = require('../util/Secretbox');
 
 const CHANNELS = 2;
-
 const MAX_NONCE_SIZE = 2 ** 32 - 1;
-const nonce = Buffer.alloc(24);
 
 /**
  * @external WritableStream
@@ -36,10 +34,7 @@ class BaseDispatcher extends Writable {
     this.extensionEnabled = extensionEnabled;
 
     this._nonce = 0;
-    this._nonceBuffer =
-      this.player.voiceConnection.authentication.mode === 'aead_aes256_gcm_rtpsize'
-        ? Buffer.alloc(12)
-        : Buffer.alloc(24);
+    this._nonceBuffer = null;
 
     /**
      * The time that the stream was paused at (null if not paused)
@@ -89,6 +84,13 @@ class BaseDispatcher extends Writable {
     });
   }
 
+  resetNonceBuffer() {
+    this._nonceBuffer =
+      this.player.voiceConnection.authentication.mode === 'aead_aes256_gcm_rtpsize'
+        ? Buffer.alloc(12)
+        : Buffer.alloc(24);
+  }
+
   get TIMESTAMP_INC() {
     return this.extensionEnabled ? 90000 / this.fps : 480 * CHANNELS;
   }
@@ -111,7 +113,7 @@ class BaseDispatcher extends Writable {
   getNewSequence() {
     const currentSeq = this.sequence;
     this.sequence++;
-    if (this.sequence >= 2 ** 16) this.sequence = 0;
+    if (this.sequence > 2 ** 16 - 1) this.sequence = 0;
     return currentSeq;
   }
 
@@ -307,6 +309,9 @@ class BaseDispatcher extends Writable {
     // Both supported encryption methods want the nonce to be an incremental integer
     this._nonce++;
     if (this._nonce > MAX_NONCE_SIZE) this._nonce = 0;
+    if (!this._nonceBuffer) {
+      this.resetNonceBuffer();
+    }
     this._nonceBuffer.writeUInt32BE(this._nonce, 0);
 
     // 4 extra bytes of padding on the end of the encrypted packet
@@ -333,6 +338,16 @@ class BaseDispatcher extends Writable {
 
         return [encrypted, noncePadding];
       }
+      case 'xsalsa20_poly1305_lite': {
+        return [secretbox.methods.close(buffer, this._nonceBuffer, secret_key), noncePadding];
+      }
+      case 'xsalsa20_poly1305_suffix': {
+        const random = secretbox.methods.random(24);
+        return [secretbox.methods.close(buffer, random, secret_key), random];
+      }
+      case 'xsalsa20_poly1305': {
+        return [secretbox.methods.close(buffer, Buffer.concat([additionalData, Buffer.alloc(12)]), secret_key)];
+      }
       default: {
         // This should never happen. Our encryption mode is chosen from a list given to us by the gateway and checked with the ones we support.
         throw new RangeError(`Unsupported encryption method: ${mode}`);
@@ -342,9 +357,9 @@ class BaseDispatcher extends Writable {
 
   _createPacket(buffer, isLastPacket = false) {
     // Header
-    const rtpHeader = Buffer.alloc(12);
-    rtpHeader[0] = this.extensionEnabled ? 0x90 : 0x80; // 0b10000000 | ((this.extensionEnabled ? 1 : 0) << 4);
-    rtpHeader[1] = this.payloadType;
+    const rtpHeader = Buffer.alloc(12); // RTP_HEADER_SIZE
+    rtpHeader[0] = this.extensionEnabled ? 0x90 : 0x80; // Version + Flags (1 byte)
+    rtpHeader[1] = this.payloadType; // Payload Type (1 byte)
 
     if (this.extensionEnabled) {
       if (isLastPacket) {
@@ -355,8 +370,6 @@ class BaseDispatcher extends Writable {
     rtpHeader.writeUIntBE(this.getNewSequence(), 2, 2);
     rtpHeader.writeUIntBE(this.timestamp, 4, 4);
     rtpHeader.writeUIntBE(this.player.voiceConnection.authentication.ssrc + this.extensionEnabled, 8, 4);
-
-    rtpHeader.copy(nonce, 0, 0, 12);
 
     return Buffer.concat([rtpHeader, ...this._encrypt(buffer, rtpHeader)]);
   }

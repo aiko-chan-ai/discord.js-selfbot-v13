@@ -77,6 +77,13 @@ class VoiceReceiver extends EventEmitter {
     const stream = this.packets.makeVideoStream(user.id);
     return stream;
   }
+
+  createTestVideoStream(user) {
+    user = this.connection.client.users.resolve(user);
+    if (!user) throw new Error('VOICE_USER_MISSING');
+    const stream = this.packets.makeTestVideoStream(user.id);
+    return stream;
+  }
 }
 
 module.exports = VoiceReceiver;

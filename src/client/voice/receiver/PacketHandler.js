@@ -56,6 +56,14 @@ class PacketHandler extends EventEmitter {
     return stream;
   }
 
+  makeTestVideoStream(user) {
+    if (this.videoStreams.has(user)) return this.videoStreams.get(user);
+    const stream = new Readable();
+    stream.on('end', () => this.videoStreams.delete(user));
+    this.videoStreams.set(user, stream);
+    return stream;
+  }
+
   makeVideoStream(user) {
     if (this.videoStreams.has(user)) return this.videoStreams.get(user);
     const stream = new IvfJoinner('VP8'); // Test VP8 ok
@@ -66,10 +74,11 @@ class PacketHandler extends EventEmitter {
 
   parseBuffer(buffer) {
     const { secret_key, mode } = this.receiver.connection.authentication;
+    // Open packet
+    if (!secret_key) return new Error('secret_key cannot be null or undefined');
     if (!this.nonce) {
       this.resetNonce();
     }
-
     // Copy the last 4 bytes of unpadded nonce to the padding of (12 - 4) or (24 - 4) bytes
     buffer.copy(this.nonce, 0, buffer.length - UNPADDED_NONCE_LENGTH);
 
@@ -109,13 +118,31 @@ class PacketHandler extends EventEmitter {
         packet = Buffer.from(packet);
         break;
       }
+      case 'xsalsa20_poly1305_lite': {
+        packet = secretbox.methods.open(buffer.slice(12, buffer.length - 4), this.nonce, secret_key);
+        break;
+      }
+
+      case 'xsalsa20_poly1305_suffix': {
+        packet = secretbox.methods.open(buffer.slice(12, buffer.length - 24), this.nonce, secret_key);
+        break;
+      }
+
+      case 'xsalsa20_poly1305': {
+        packet = secretbox.methods.open(buffer.slice(12), this.nonce, secret_key);
+        break;
+      }
       default: {
         throw new RangeError(`Unsupported decryption method: ${mode}`);
       }
     }
 
-    // Strip decrypted RTP Header Extension if present
-    if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
+    // Strip RTP Header Extensions (one-byte only)
+    if (packet[0] === 0xbe && packet[1] === 0xde) {
+      const headerExtensionLength = packet.readUInt16BE(2);
+      packet = packet.subarray(4 + 4 * headerExtensionLength);
+    } else if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
+      // Strip decrypted RTP Header Extension if present
       const headerExtensionLength = buffer.slice(14).readUInt16BE();
       packet = packet.subarray(4 * headerExtensionLength);
     }
