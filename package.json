@@ -52,7 +52,7 @@
   "homepage": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13#readme",
   "dependencies": {
     "@discordjs/builders": "^1.6.3",
-    "@discordjs/collection": "^1.5.3",
+    "@discordjs/collection": "^2.1.1",
     "@sapphire/async-queue": "^1.5.3",
     "@sapphire/shapeshift": "^3.9.5",
     "discord-api-types": "^0.37.61",
