@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^16.0.1",
-    "@commitlint/config-angular": "^16.0.0",
+    "@commitlint/config-angular": "^19.5.0",
     "@discordjs/docgen": "^0.11.1",
     "@favware/npm-deprecate": "^1.0.7",
     "@types/node": "^20.14.12",
