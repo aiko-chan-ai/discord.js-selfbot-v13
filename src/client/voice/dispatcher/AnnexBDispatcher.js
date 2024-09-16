@@ -38,13 +38,12 @@ class AnnexBDispatcher extends VideoDispatcher {
       const nalu = accessUnit.subarray(offset, offset + naluSize);
       const isLastNal = offset + naluSize >= accessUnit.length;
       if (nalu.length <= this.mtu) {
-        // If NALU size is within MTU, send it directly
-        this._playChunk(Buffer.concat([this.createHeaderExtension(), nalu]), isLastNal);
+        // Send as Single NAL Unit Packet.
+        this._playChunk(Buffer.concat([this.createPayloadExtension(), nalu]), isLastNal);
       } else {
-        // If NALU size exceeds MTU, fragment it
         const [naluHeader, naluData] = this._nalFunctions.splitHeader(nalu);
         const dataFragments = this.partitionVideoData(naluData);
-
+        // Send as Fragmentation Unit A (FU-A):
         for (let fragmentIndex = 0; fragmentIndex < dataFragments.length; fragmentIndex++) {
           const data = dataFragments[fragmentIndex];
           const isFirstPacket = fragmentIndex === 0;
@@ -52,7 +51,7 @@ class AnnexBDispatcher extends VideoDispatcher {
 
           this._playChunk(
             Buffer.concat([
-              this.createHeaderExtension(),
+              this.createPayloadExtension(),
               this.makeFragmentationUnitHeader(isFirstPacket, isFinalPacket, naluHeader),
               data,
             ]),

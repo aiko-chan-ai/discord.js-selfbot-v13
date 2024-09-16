@@ -26,8 +26,6 @@ class VP8Dispatcher extends VideoDispatcher {
   }
 
   makeChunk(buffer, isFirstFrame) {
-    // Make frame
-    const headerExtensionBuf = this.createHeaderExtension();
     // Vp8 payload descriptor
     const payloadDescriptorBuf = Buffer.alloc(2);
     payloadDescriptorBuf[0] = isFirstFrame ? 0x90 : 0x80; // Mark S bit, indicates start of frame: payloadDescriptorBuf[0] |= 0b00010000;
@@ -36,13 +34,16 @@ class VP8Dispatcher extends VideoDispatcher {
     const pictureIdBuf = Buffer.alloc(2);
     pictureIdBuf.writeUintBE(this.count, 0, 2);
     pictureIdBuf[0] |= 0x80;
-    return Buffer.concat([headerExtensionBuf, payloadDescriptorBuf, pictureIdBuf, buffer]);
+    return Buffer.concat([payloadDescriptorBuf, pictureIdBuf, buffer]);
   }
 
   codecCallback(chunk) {
     const chunkSplit = this.partitionVideoData(chunk);
     for (let i = 0; i < chunkSplit.length; i++) {
-      this._playChunk(this.makeChunk(chunkSplit[i], i == 0), i + 1 === chunkSplit.length);
+      this._playChunk(
+        Buffer.concat([this.createPayloadExtension(), this.makeChunk(chunkSplit[i], i == 0)]),
+        i + 1 === chunkSplit.length,
+      );
     }
   }
 }

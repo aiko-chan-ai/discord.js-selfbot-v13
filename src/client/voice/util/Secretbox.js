@@ -2,39 +2,36 @@
 
 const libs = {
   sodium: sodium => ({
-    /** @deprecated */
-    open: sodium.api.crypto_secretbox_open_easy,
-    /** @deprecated */
-    close: sodium.api.crypto_secretbox_easy,
-    random: n => sodium.randombytes_buf(n),
     crypto_aead_xchacha20poly1305_ietf_encrypt: (plaintext, additionalData, nonce, key) =>
       sodium.api.crypto_aead_xchacha20poly1305_ietf_encrypt(plaintext, additionalData, null, nonce, key),
     crypto_aead_xchacha20poly1305_ietf_decrypt: (plaintext, additionalData, nonce, key) =>
       sodium.api.crypto_aead_xchacha20poly1305_ietf_decrypt(plaintext, additionalData, null, nonce, key),
   }),
   'libsodium-wrappers': sodium => ({
-    /** @deprecated */
-    open: sodium.crypto_secretbox_open_easy,
-    /** @deprecated */
-    close: sodium.crypto_secretbox_easy,
-    random: n => sodium.randombytes_buf(n),
     crypto_aead_xchacha20poly1305_ietf_encrypt: (plaintext, additionalData, nonce, key) =>
       sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(plaintext, additionalData, null, nonce, key),
     crypto_aead_xchacha20poly1305_ietf_decrypt: (plaintext, additionalData, nonce, key) =>
       sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, plaintext, additionalData, nonce, key),
   }),
+  '@stablelib/xchacha20poly1305': stablelib => ({
+    crypto_aead_xchacha20poly1305_ietf_encrypt(cipherText, additionalData, nonce, key) {
+      const crypto = new stablelib.XChaCha20Poly1305(key);
+      return crypto.seal(nonce, cipherText, additionalData);
+    },
+    crypto_aead_xchacha20poly1305_ietf_decrypt(plaintext, additionalData, nonce, key) {
+      const crypto = new stablelib.XChaCha20Poly1305(key);
+      return crypto.open(nonce, plaintext, additionalData);
+    },
+  }),
 };
 
 function NoLib() {
   throw new Error(
-    'Cannot play audio as no valid encryption package is installed.\n- Install sodium or libsodium-wrappers.',
+    'Cannot play audio as no valid encryption package is installed.\n- Install sodium, libsodium-wrappers, or @stablelib/xchacha20poly1305.',
   );
 }
 
 exports.methods = {
-  open: NoLib,
-  close: NoLib,
-  random: NoLib,
   crypto_aead_xchacha20poly1305_ietf_encrypt: NoLib,
   crypto_aead_xchacha20poly1305_ietf_decrypt: NoLib,
 };
@@ -42,7 +39,7 @@ exports.methods = {
 (async () => {
   for (const libName of Object.keys(libs)) {
     try {
-      const lib = require(libName);
+      const lib = await import(libName);
       if (libName === 'libsodium-wrappers' && lib.ready) await lib.ready; // eslint-disable-line no-await-in-loop
       exports.methods = libs[libName](lib);
       break;

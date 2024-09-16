@@ -11,6 +11,8 @@ const secretbox = require('../util/Secretbox');
 const CHANNELS = 2;
 const MAX_NONCE_SIZE = 2 ** 32 - 1;
 
+const extensions = [{ id: 5, len: 2, val: 0 }];
+
 /**
  * @external WritableStream
  * @see {@link https://nodejs.org/api/stream.html#stream_class_stream_writable}
@@ -257,15 +259,11 @@ class BaseDispatcher extends Writable {
   }
 
   /**
-   * Creates a single extension of type playout-delay
-   * Discord seems to send this extension on every video packet
-   * @see https://webrtc.googlesource.com/src/+/refs/heads/main/docs/native-code/rtp-hdrext/playout-delay
-   * @returns {Buffer} playout-delay extension
-   * Buffer <be de 00 01 51 00 00 00>
-   * @private
+   * Creates a one-byte extension header
+   * https://www.rfc-editor.org/rfc/rfc5285#section-4.2
+   * @returns {Buffer} extension header
    */
   createHeaderExtension() {
-    const extensions = [{ id: 5, len: 2, val: 0 }];
     /**
          *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -276,6 +274,17 @@ class BaseDispatcher extends Writable {
     profile[0] = 0xbe;
     profile[1] = 0xde;
     profile.writeInt16BE(extensions.length, 2); // Extension count
+
+    return profile;
+  }
+
+  /**
+   * Creates a single extension of type playout-delay
+   * Discord seems to send this extension on every video packet
+   * @see https://webrtc.googlesource.com/src/+/refs/heads/main/docs/native-code/rtp-hdrext/playout-delay
+   * @returns {Buffer} playout-delay extension
+   */
+  createPayloadExtension() {
     const extensionsData = [];
     for (let ext of extensions) {
       /**
@@ -301,7 +310,7 @@ class BaseDispatcher extends Writable {
       data.writeUIntBE(ext.val, 1, 2); // Not quite but its 0 anyway
       extensionsData.push(data);
     }
-    return Buffer.concat([profile, ...extensionsData]);
+    return Buffer.concat(extensionsData);
   }
 
   _encrypt(buffer, additionalData) {
@@ -338,16 +347,6 @@ class BaseDispatcher extends Writable {
 
         return [encrypted, noncePadding];
       }
-      case 'xsalsa20_poly1305_lite': {
-        return [secretbox.methods.close(buffer, this._nonceBuffer, secret_key), noncePadding];
-      }
-      case 'xsalsa20_poly1305_suffix': {
-        const random = secretbox.methods.random(24);
-        return [secretbox.methods.close(buffer, random, secret_key), random];
-      }
-      case 'xsalsa20_poly1305': {
-        return [secretbox.methods.close(buffer, Buffer.concat([additionalData, Buffer.alloc(12)]), secret_key)];
-      }
       default: {
         // This should never happen. Our encryption mode is chosen from a list given to us by the gateway and checked with the ones we support.
         throw new RangeError(`Unsupported encryption method: ${mode}`);
@@ -357,7 +356,9 @@ class BaseDispatcher extends Writable {
 
   _createPacket(buffer, isLastPacket = false) {
     // Header
-    const rtpHeader = Buffer.alloc(12); // RTP_HEADER_SIZE
+    const rtpHeader = this.extensionEnabled
+      ? Buffer.concat([Buffer.alloc(12), this.createHeaderExtension()])
+      : Buffer.alloc(12); // RTP_HEADER_SIZE
     rtpHeader[0] = this.extensionEnabled ? 0x90 : 0x80; // Version + Flags (1 byte)
     rtpHeader[1] = this.payloadType; // Payload Type (1 byte)
 
