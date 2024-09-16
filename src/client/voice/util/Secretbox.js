@@ -7,10 +7,10 @@ const libs = {
     /** @deprecated */
     close: sodium.api.crypto_secretbox_easy,
     random: n => sodium.randombytes_buf(n),
-    crypto_aead_xchacha20poly1305_ietf_encrypt: (message, additionalData, nonce, key) =>
-      sodium.api.crypto_aead_xchacha20poly1305_ietf_encrypt(message, additionalData, null, nonce, key),
-    crypto_aead_xchacha20poly1305_ietf_decrypt: (message, additionalData, nonce, key) =>
-      sodium.api.crypto_aead_xchacha20poly1305_ietf_decrypt(message, additionalData, null, nonce, key),
+    crypto_aead_xchacha20poly1305_ietf_encrypt: (plaintext, additionalData, nonce, key) =>
+      sodium.api.crypto_aead_xchacha20poly1305_ietf_encrypt(plaintext, additionalData, null, nonce, key),
+    crypto_aead_xchacha20poly1305_ietf_decrypt: (plaintext, additionalData, nonce, key) =>
+      sodium.api.crypto_aead_xchacha20poly1305_ietf_decrypt(plaintext, additionalData, null, nonce, key),
   }),
   'libsodium-wrappers': sodium => ({
     /** @deprecated */
@@ -18,10 +18,10 @@ const libs = {
     /** @deprecated */
     close: sodium.crypto_secretbox_easy,
     random: n => sodium.randombytes_buf(n),
-    crypto_aead_xchacha20poly1305_ietf_encrypt: (message, additionalData, nonce, key) =>
-      sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(message, additionalData, null, nonce, key),
-    crypto_aead_xchacha20poly1305_ietf_decrypt: (message, additionalData, nonce, key) =>
-      sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, message, additionalData, nonce, key),
+    crypto_aead_xchacha20poly1305_ietf_encrypt: (plaintext, additionalData, nonce, key) =>
+      sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(plaintext, additionalData, null, nonce, key),
+    crypto_aead_xchacha20poly1305_ietf_decrypt: (plaintext, additionalData, nonce, key) =>
+      sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, plaintext, additionalData, nonce, key),
   }),
 };
 
