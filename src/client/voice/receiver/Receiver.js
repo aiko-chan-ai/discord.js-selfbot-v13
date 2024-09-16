@@ -53,37 +53,6 @@ class VoiceReceiver extends EventEmitter {
     }
     return stream;
   }
-
-  /**
-   * Creates a new video receiving stream. If a stream already exists for a user, then that stream will be returned
-   * rather than generating a new one.
-   * @param {UserResolvable} user The user to start listening to.
-   * @returns {IvfJoinner}
-   * @deprecated Only support VP8
-   * @example
-   * const video = connection.receiver.createVideoStream('1071734918972985395');
-   * video.stream.pipe(fs.createWriteStream('test.ivf'));
-   * setTimeout(() => {
-   *   video.stop();
-   *   video.createFinalFile(
-   * 		fs.createReadStream('test.ivf'),
-   * 	  fs.createWriteStream('final.ivf'),
-   *   );
-   * }, 10_000);
-   */
-  createVideoStream(user) {
-    user = this.connection.client.users.resolve(user);
-    if (!user) throw new Error('VOICE_USER_MISSING');
-    const stream = this.packets.makeVideoStream(user.id);
-    return stream;
-  }
-
-  createTestVideoStream(user) {
-    user = this.connection.client.users.resolve(user);
-    if (!user) throw new Error('VOICE_USER_MISSING');
-    const stream = this.packets.makeTestVideoStream(user.id);
-    return stream;
-  }
 }
 
 module.exports = VoiceReceiver;

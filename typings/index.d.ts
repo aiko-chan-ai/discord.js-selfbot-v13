@@ -1076,8 +1076,6 @@ export class StreamConnection extends VoiceConnection {
 export class VoiceReceiver extends EventEmitter {
   constructor(connection: VoiceConnection);
   public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
-  /** @deprecated Only recorded VP8 stream */
-  public createVideoStream(user: UserResolvable): IvfJoinner;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;
   public on(event: string, listener: (...args: any[]) => void): this;
@@ -1086,12 +1084,14 @@ export class VoiceReceiver extends EventEmitter {
   public once(event: string, listener: (...args: any[]) => void): this;
 }
 
+/*
 export class IvfJoinner {
   constructor(codec: 'VP8');
   public stream: Readable;
   public stop(): void;
   public createFinalFile(read: Readable, write: Writable): void;
 }
+*/
 
 export { Collection } from '@discordjs/collection';
 

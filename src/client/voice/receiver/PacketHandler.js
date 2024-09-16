@@ -4,7 +4,6 @@ const EventEmitter = require('events');
 const { Buffer } = require('node:buffer');
 const crypto = require('node:crypto');
 const { setTimeout } = require('node:timers');
-const { IvfJoinner } = require('./video/IvfJoinner');
 const Speaking = require('../../../util/Speaking');
 const secretbox = require('../util/Secretbox');
 const { SILENCE_FRAME } = require('../util/Silence');
@@ -27,7 +26,7 @@ class PacketHandler extends EventEmitter {
     this.receiver = receiver;
     this.nonce = null;
     this.streams = new Map();
-    this.videoStreams = new Map();
+    this.videoStreams = new Map(); // Placeholder
     this.speakingTimeouts = new Map();
   }
 
@@ -60,14 +59,6 @@ class PacketHandler extends EventEmitter {
     if (this.videoStreams.has(user)) return this.videoStreams.get(user);
     const stream = new Readable();
     stream.on('end', () => this.videoStreams.delete(user));
-    this.videoStreams.set(user, stream);
-    return stream;
-  }
-
-  makeVideoStream(user) {
-    if (this.videoStreams.has(user)) return this.videoStreams.get(user);
-    const stream = new IvfJoinner('VP8'); // Test VP8 ok
-    stream.stream.on('end', () => this.videoStreams.delete(user));
     this.videoStreams.set(user, stream);
     return stream;
   }
@@ -118,20 +109,6 @@ class PacketHandler extends EventEmitter {
         packet = Buffer.from(packet);
         break;
       }
-      case 'xsalsa20_poly1305_lite': {
-        packet = secretbox.methods.open(buffer.slice(12, buffer.length - 4), this.nonce, secret_key);
-        break;
-      }
-
-      case 'xsalsa20_poly1305_suffix': {
-        packet = secretbox.methods.open(buffer.slice(12, buffer.length - 24), this.nonce, secret_key);
-        break;
-      }
-
-      case 'xsalsa20_poly1305': {
-        packet = secretbox.methods.open(buffer.slice(12), this.nonce, secret_key);
-        break;
-      }
       default: {
         throw new RangeError(`Unsupported decryption method: ${mode}`);
       }
@@ -158,7 +135,7 @@ class PacketHandler extends EventEmitter {
 
   push(buffer) {
     const ssrc = buffer.readUInt32BE(8);
-    const userStat = this.connection.ssrcMap.get(ssrc) || this.connection.ssrcMap.get(ssrc - 1); // Maybe vidoe_ssrc ?
+    const userStat = this.connection.ssrcMap.get(ssrc) || this.connection.ssrcMap.get(ssrc - 1); // Maybe video_ssrc ?
 
     if (!userStat) return;
 
