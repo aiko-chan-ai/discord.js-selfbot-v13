@@ -21,9 +21,9 @@ Install:
 - An encryption packages:
   + sodium (best performance)
   + libsodium-wrappers
+  + @stablelib/xchacha20poly1305
 - ffmpeg (install and add to your system environment)
 */
-
 
 const { Client } = require('../../src/index');
 const client = new Client();
