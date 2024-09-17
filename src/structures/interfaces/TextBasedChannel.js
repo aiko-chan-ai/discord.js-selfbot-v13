@@ -192,13 +192,21 @@ class TextBasedChannel {
     // API https://canary.discord.com/api/v9/guilds/:id/application-command-index // Guild
     //     https://canary.discord.com/api/v9/channels/:id/application-command-index // DM Channel
     // Updated: 07/01/2023
-    return this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id][
-      'application-command-index'
-    ].get();
+    return this.client.api[this.guild ? 'guilds' : 'channels'][this.guild?.id || this.id]['application-command-index']
+      .get()
+      .catch(() => ({
+        application_commands: [],
+        applications: [],
+        version: '',
+      }));
   }
 
   searchInteractionUserApps() {
-    return this.client.api.users['@me']['application-command-index'].get();
+    return this.client.api.users['@me']['application-command-index'].get().catch(() => ({
+      application_commands: [],
+      applications: [],
+      version: '',
+    }));
   }
 
   searchInteraction() {
