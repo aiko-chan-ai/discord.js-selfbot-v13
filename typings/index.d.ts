@@ -5497,7 +5497,7 @@ export interface ClientEvents extends BaseClientEvents {
   ];
   guildScheduledEventDelete: [guildScheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent];
   guildScheduledEventUserAdd: [guildScheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent, user: User];
-  guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, | PartialGuildScheduledEvent  user: User];
+  guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, | PartialGuildScheduledEvent, user: User];
   guildAuditLogEntryCreate: [auditLogEntry: GuildAuditLogsEntry, guild: Guild];
   unhandledPacket: [packet: { t?: string; d: any }, shard: number];
   relationshipAdd: [userId: Snowflake, shouldNotify: boolean];
