@@ -2065,6 +2065,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public readonly url: string;
   public webhookId: Snowflake | null;
   public poll: MessagePoll | null;
+  public call: MessageCall | null;
   public flags: Readonly<MessageFlags>;
   public reference: MessageReference | null;
   public position: number | null;
@@ -2534,6 +2535,12 @@ export class MessagePoll {
   public addAnswer(answer: MessagePollMedia): this;
   public setAllowMultiSelect(state: boolean): this;
   public setDuration(duration: number): this;
+}
+
+export interface MessageCall {
+  readonly endedAt: Date | null;
+  endedTimestamp: number | null;
+  participants: readonly Snowflake[];
 }
 
 export class ModalSubmitFieldsResolver {
