@@ -457,7 +457,12 @@ class GuildAuditLogsEntry {
      * Specific property changes
      * @type {AuditLogChange[]}
      */
-    this.changes = data.changes?.map(c => ({ key: c.key, old: c.old_value, new: c.new_value })) ?? [];
+    this.changes =
+      data.changes?.map(change => ({
+        key: change.key,
+        ...('old_value' in change ? { old: change.old_value } : {}),
+        ...('new_value' in change ? { new: change.new_value } : {}),
+      })) ?? [];
 
     /**
      * The entry's id

@@ -5197,11 +5197,13 @@ export interface AutoModerationActionMetadataOptions extends Partial<Omit<AutoMo
   channel: GuildTextChannelResolvable | ThreadChannel;
 }
 
-export interface AuditLogChange {
-  key: APIAuditLogChange['key'];
-  old?: APIAuditLogChange['old_value'];
-  new?: APIAuditLogChange['new_value'];
-}
+export type AuditLogChange = {
+  [SourceElement in APIAuditLogChange as SourceElement['key']]: {
+    key: SourceElement['key'];
+    old?: SourceElement['old_value'];
+    new?: SourceElement['new_value'];
+  };
+}[APIAuditLogChange['key']];
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
