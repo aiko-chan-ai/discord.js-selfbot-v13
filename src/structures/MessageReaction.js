@@ -50,20 +50,20 @@ class MessageReaction {
   }
 
   _patch(data) {
-    if ('count' in data) {
-      /**
-       * The number of people that have given the same reaction
-       * @type {?number}
-       */
-      this.count ??= data.count;
-    }
-
     if ('burst_colors' in data) {
       /**
        * Hexadecimal colors used for this super reaction
        * @type {?string[]}
        */
       this.burstColors = data.burst_colors;
+    }
+
+    if ('count' in data) {
+      /**
+       * The number of people that have given the same reaction
+       * @type {?number}
+       */
+      this.count ??= data.count;
     }
 
     if ('count_details' in data) {
@@ -82,6 +82,8 @@ class MessageReaction {
         burst: data.count_details.burst,
         normal: data.count_details.normal,
       };
+    } else {
+      this.countDetails ??= { burst: 0, normal: 0 };
     }
   }
 
