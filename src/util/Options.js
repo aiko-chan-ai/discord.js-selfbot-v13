@@ -188,7 +188,7 @@ class Options extends null {
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 306208,
+          client_build_number: 327446,
           client_event_source: null,
         },
         compress: false,
