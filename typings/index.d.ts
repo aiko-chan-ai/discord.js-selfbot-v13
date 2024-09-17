@@ -3370,14 +3370,20 @@ export interface UserClan {
   badge?: string;
 }
 
+export interface AvatarDecorationData {
+  asset: string;
+  skuId: Snowflake;
+}
+
 export class User extends PartialTextBasedChannel(Base) {
   protected constructor(client: Client, data: RawUserData);
   private _equals(user: APIUser): boolean;
 
   public accentColor: number | null | undefined;
   public avatar: string | null;
+  /** @deprecated Use {@link User.avatarDecorationData} instead */
   public avatarDecoration: string | null;
-  public avatarDecorationSKUId: Snowflake | null;
+  public avatarDecorationData: AvatarDecorationData | null;
   public banner: string | null | undefined;
   public bannerColor: string | null | undefined;
   public bot: boolean;
