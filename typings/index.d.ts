@@ -2160,6 +2160,7 @@ export class MessageAttachment {
   public proxyURL: string;
   public size: number;
   public readonly spoiler: boolean;
+  public title: string | null;
   public url: string;
   public waveform: string | null;
   public width: number | null;
