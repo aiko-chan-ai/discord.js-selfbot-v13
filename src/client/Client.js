@@ -317,7 +317,7 @@ class Client extends BaseClient {
    * @returns {boolean}
    */
   isReady() {
-    return this.ws.status === Status.READY;
+    return !this.ws.destroyed && this.ws.status === Status.READY;
   }
 
   /**
