@@ -6,7 +6,7 @@ const { Events } = require('../../util/Constants');
 class MessageReactionRemoveAll extends Action {
   handle(data) {
     // Verify channel
-    const channel = this.getChannel(data);
+    const channel = this.getChannel({ id: data.channel_id, guild_id: data.guild_id });
     if (!channel || !channel.isText()) return false;
 
     // Verify message
