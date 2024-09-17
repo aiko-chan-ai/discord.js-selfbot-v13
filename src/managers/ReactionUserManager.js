@@ -4,6 +4,7 @@ const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
 const User = require('../structures/User');
+const { ReactionTypes } = require('../util/Constants');
 
 /**
  * Manages API methods for users who reacted to a reaction and stores their cache.
@@ -29,6 +30,7 @@ class ReactionUserManager extends CachedManager {
   /**
    * Options used to fetch users who gave a reaction.
    * @typedef {Object} FetchReactionUsersOptions
+   * @property {ReactionType} [type='NORMAL'] The reaction type to fetch
    * @property {number} [limit=100] The maximum amount of users to fetch, defaults to `100`
    * @property {Snowflake} [after] Limit fetching users to those with an id greater than the supplied id
    */
@@ -38,11 +40,11 @@ class ReactionUserManager extends CachedManager {
    * @param {FetchReactionUsersOptions} [options] Options for fetching the users
    * @returns {Promise<Collection<Snowflake, User>>}
    */
-  async fetch({ limit = 100, after } = {}) {
+  async fetch({ limit = 100, after, type = 'NORMAL' } = {}) {
     const message = this.reaction.message;
     const data = await this.client.api.channels[message.channelId].messages[message.id].reactions[
       this.reaction.emoji.identifier
-    ].get({ query: { limit, after } });
+    ].get({ query: { limit, after, type: typeof type == 'number' ? type : ReactionTypes[type] } });
     const users = new Collection();
     for (const rawUser of data) {
       const user = this.client.users._add(rawUser);

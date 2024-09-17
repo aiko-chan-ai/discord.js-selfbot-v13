@@ -103,6 +103,7 @@ import {
   SelectMenuComponentTypes,
   InviteType,
   MessagePollLayoutType,
+  ReactionTypes,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -2438,14 +2439,13 @@ export class MessageReaction {
   private constructor(client: Client, data: RawMessageReactionData, message: Message);
   private _emoji: GuildEmoji | ReactionEmoji;
 
-  public burstColors: string[];
+  public burstColors: string[] | null;
   public readonly client: Client<true>;
   public count: number;
-  public burstCount: number;
   public countDetails: ReactionCountDetailsData;
-  public isBurst: boolean;
   public readonly emoji: GuildEmoji | ReactionEmoji;
   public me: boolean;
+  public meBurst: boolean;
   public message: Message | PartialMessage;
   public readonly partial: false;
   public users: ReactionUserManager;
@@ -2457,6 +2457,9 @@ export class MessageReaction {
 export interface ReactionCountDetailsData {
   burst: number;
   normal: number;
+}
+export interface MessageReactionEventDetails {
+  burst: boolean;
 }
 
 export class MessageSelectMenu extends BaseMessageComponent {
@@ -5501,8 +5504,16 @@ export interface ClientEvents extends BaseClientEvents {
   ];
   messageReactionRemoveEmoji: [reaction: MessageReaction | PartialMessageReaction];
   messageDeleteBulk: [messages: Collection<Snowflake, Message | PartialMessage>];
-  messageReactionAdd: [reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser];
-  messageReactionRemove: [reaction: MessageReaction | PartialMessageReaction, user: User | PartialUser];
+  messageReactionAdd: [
+    reaction: MessageReaction | PartialMessageReaction,
+    user: User | PartialUser,
+    details: MessageReactionEventDetails,
+  ];
+  messageReactionRemove: [
+    reaction: MessageReaction | PartialMessageReaction,
+    user: User | PartialUser,
+    details: MessageReactionEventDetails,
+  ];
   messageUpdate: [oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage];
   presenceUpdate: [oldPresence: Presence | null, newPresence: Presence];
   ready: [client: Client<true>];
@@ -6122,6 +6133,7 @@ export interface FetchMembersOptions {
 }
 
 export interface FetchReactionUsersOptions {
+  type?: ReactionTypes;
   limit?: number;
   after?: Snowflake;
 }

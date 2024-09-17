@@ -271,6 +271,11 @@ export const enum VideoQualityModes {
   FULL = 2,
 }
 
+export const enum ReactionTypes {
+  NORMAL = 0,
+  BURST = 1,
+}
+
 export const enum WebhookTypes {
   Incoming = 1,
   'Channel Follower' = 2,

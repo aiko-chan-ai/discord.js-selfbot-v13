@@ -1678,6 +1678,15 @@ exports.GuildScheduledEventEntityTypes = createEnum([null, 'STAGE_INSTANCE', 'VO
 exports.VideoQualityModes = createEnum([null, 'AUTO', 'FULL']);
 
 /**
+ * The type of reaction
+ * * NORMAL
+ * * BURST
+ * @typedef {string} ReactionType
+ * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-video-quality-modes}
+ */
+exports.ReactionTypes = createEnum(['NORMAL', 'BURST']);
+
+/**
  * Sort {@link ThreadOnlyChannel} posts by creation time or activity
  * * LATEST_ACTIVITY
  * * CREATION_DATE

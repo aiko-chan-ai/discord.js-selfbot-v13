@@ -28,13 +28,13 @@ class MessageReaction {
      * Whether the client has given this reaction
      * @type {boolean}
      */
-    this.me = data.me || data.me_burst;
+    this.me = data.me;
 
     /**
-     * Is super reaction
+     * Whether the client has super-reacted using this emoji
      * @type {boolean}
      */
-    this.isBurst = Boolean(data.me_burst || data.burst);
+    this.meBurst = data.me_burst;
 
     /**
      * A manager of the users that have given this reaction
@@ -43,6 +43,8 @@ class MessageReaction {
     this.users = new ReactionUserManager(this, this.me ? [client.user] : []);
 
     this._emoji = new ReactionEmoji(this, data.emoji);
+
+    this.burstColors = null;
 
     this._patch(data);
   }
@@ -56,18 +58,10 @@ class MessageReaction {
       this.count ??= data.count;
     }
 
-    if ('burst_count' in data) {
-      /**
-       * The number of people that have given the same super reaction
-       * @type {?number}
-       */
-      this.burstCount ??= data.burst_count;
-    }
-
     if ('burst_colors' in data) {
       /**
-       * HEX colors used for super reaction
-       * @type {string[]}
+       * Hexadecimal colors used for this super reaction
+       * @type {?string[]}
        */
       this.burstColors = data.burst_colors;
     }
@@ -76,13 +70,13 @@ class MessageReaction {
       /**
        * The reaction count details object contains information about super and normal reaction counts.
        * @typedef {Object} ReactionCountDetailsData
-       * @property {number} burst Count of super reaction
-       * @property {number} normal Count of normal reaction
+       * @property {number} burst Count of super reactions
+       * @property {number} normal Count of normal reactions
        */
 
       /**
        * The reaction count details object contains information about super and normal reaction counts.
-       * @type {?ReactionCountDetailsData}
+       * @type {ReactionCountDetailsData}
        */
       this.countDetails = {
         burst: data.count_details.burst,
@@ -150,18 +144,32 @@ class MessageReaction {
     return Util.flatten(this, { emoji: 'emojiId', message: 'messageId' });
   }
 
-  _add(user) {
+  _add(user, burst) {
     if (this.partial) return;
     this.users.cache.set(user.id, user);
-    if (!this.me || user.id !== this.message.client.user.id || this.count === 0) this.count++;
-    this.me ||= user.id === this.message.client.user.id;
+    if (!this.me || user.id !== this.message.client.user.id || this.count === 0) {
+      this.count++;
+      if (burst) this.countDetails.burst++;
+      else this.countDetails.normal++;
+    }
+    if (user.id === this.message.client.user.id) {
+      if (burst) this.meBurst = true;
+      else this.me = true;
+    }
   }
 
-  _remove(user) {
+  _remove(user, burst) {
     if (this.partial) return;
     this.users.cache.delete(user.id);
-    if (!this.me || user.id !== this.message.client.user.id) this.count--;
-    if (user.id === this.message.client.user.id) this.me = false;
+    if (!this.me || user.id !== this.message.client.user.id) {
+      this.count--;
+      if (burst) this.countDetails.burst--;
+      else this.countDetails.normal--;
+    }
+    if (user.id === this.message.client.user.id) {
+      if (burst) this.meBurst = false;
+      else this.me = false;
+    }
     if (this.count <= 0 && this.users.cache.size === 0) {
       this.message.reactions.cache.delete(this.emoji.id ?? this.emoji.name);
     }
