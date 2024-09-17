@@ -2868,6 +2868,7 @@ export interface ShardEventTypes {
   message: [message: any];
 }
 
+/** @deprecated This will be removed in the next major version */
 export class Shard extends EventEmitter {
   private constructor(manager: ShardingManager, id: number);
   private _evals: Map<string, Promise<unknown>>;
@@ -2906,6 +2907,7 @@ export class Shard extends EventEmitter {
   ): this;
 }
 
+/** @deprecated This will be removed in the next major version */
 export class ShardClientUtil {
   private constructor(client: Client, mode: ShardingManagerMode);
   private _handleMessage(message: unknown): void;
@@ -2937,6 +2939,7 @@ export class ShardClientUtil {
   public static shardIdForGuildId(guildId: Snowflake, shardCount: number): number;
 }
 
+/** @deprecated This will be removed in the next major version */
 export class ShardingManager extends EventEmitter {
   public constructor(file: string, options?: ShardingManagerOptions);
   private _performOnShards(method: string, args: unknown[]): Promise<unknown[]>;

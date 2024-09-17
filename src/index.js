@@ -3,8 +3,11 @@
 // "Root" classes (starting points)
 exports.BaseClient = require('./client/BaseClient');
 exports.Client = require('./client/Client');
+/** @deprecated This will be removed in the next major version */
 exports.Shard = require('./sharding/Shard');
+/** @deprecated This will be removed in the next major version */
 exports.ShardClientUtil = require('./sharding/ShardClientUtil');
+/** @deprecated This will be removed in the next major version */
 exports.ShardingManager = require('./sharding/ShardingManager');
 exports.WebhookClient = require('./client/WebhookClient');
 

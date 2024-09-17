@@ -15,6 +15,7 @@ let Worker = null;
  * an instance of the bot and its {@link Client}. When its child process/worker exits for any reason, the shard will
  * spawn a new one to replace it as necessary.
  * @extends {EventEmitter}
+ * @deprecated
  */
 class Shard extends EventEmitter {
   constructor(manager, id) {

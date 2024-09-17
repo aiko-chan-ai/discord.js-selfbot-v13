@@ -8,6 +8,7 @@ const Util = require('../util/Util');
 /**
  * Helper class for sharded clients spawned as a child process/worker, such as from a {@link ShardingManager}.
  * Utilises IPC to send and receive data to/from the master process and other shards.
+ * @deprecated
  */
 class ShardClientUtil {
   constructor(client, mode) {

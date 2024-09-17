@@ -18,6 +18,7 @@ const Util = require('../util/Util');
  * with sharding. It can spawn a specific number of shards or the amount that Discord suggests for the bot, and takes a
  * path to your main bot script to launch for each one.
  * @extends {EventEmitter}
+ * @deprecated
  */
 class ShardingManager extends EventEmitter {
   /**
