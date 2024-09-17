@@ -13,7 +13,7 @@ class GuildForumThreadManager extends ThreadManager {
   /**
    * The channel this Manager belongs to
    * @name GuildForumThreadManager#channel
-   * @type {ForumChannel}
+   * @type {ForumChannel|MediaChannel}
    */
 
   /**

@@ -824,6 +824,7 @@ exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHI
  * * `GUILD_STAGE_VOICE` - a guild stage voice channel
  * * `GUILD_DIRECTORY` - the channel in a hub containing guilds
  * * `GUILD_FORUM` - a channel that can only contain threads
+ * * `GUILD_MEDIA` - a channel that can only contain threads, similar to `GUILD_FORUM` channels
  * * `UNKNOWN` - a generic channel of unknown type, could be Channel or GuildChannel
  * @typedef {string} ChannelType
  * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-channel-types}
@@ -844,6 +845,7 @@ exports.ChannelTypes = createEnum([
   'GUILD_STAGE_VOICE',
   'GUILD_DIRECTORY',
   'GUILD_FORUM',
+  'GUILD_MEDIA',
 ]);
 
 /**
@@ -1676,7 +1678,7 @@ exports.GuildScheduledEventEntityTypes = createEnum([null, 'STAGE_INSTANCE', 'VO
 exports.VideoQualityModes = createEnum([null, 'AUTO', 'FULL']);
 
 /**
- * Sort {@link ForumChannel} posts by creation time or activity
+ * Sort {@link ThreadOnlyChannel} posts by creation time or activity
  * * LATEST_ACTIVITY
  * * CREATION_DATE
  * @typedef {string} SortOrderType

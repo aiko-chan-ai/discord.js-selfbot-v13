@@ -42,7 +42,7 @@ class WelcomeChannel extends Base {
 
   /**
    * The channel of this welcome channel
-   * @type {?(TextChannel|NewsChannel|StoreChannel|ForumChannel)}
+   * @type {?(TextChannel|NewsChannel|StoreChannel|ForumChannel|MediaChannel)}
    */
   get channel() {
     return this.client.channels.resolve(this.channelId);

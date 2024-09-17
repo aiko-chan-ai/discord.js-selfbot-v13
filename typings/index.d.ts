@@ -678,6 +678,7 @@ export type MappedChannelCategoryTypes = EnumValueMapped<
     GUILD_STORE: StoreChannel;
     GUILD_STAGE_VOICE: StageChannel;
     GUILD_FORUM: ForumChannel;
+    GUILD_MEDIA: MediaChannel;
   }
 >;
 
@@ -1408,7 +1409,7 @@ export class Guild extends AnonymousGuild {
   public vanityURLUses: number | null;
   public readonly voiceAdapterCreator: InternalDiscordGatewayAdapterCreator;
   public readonly voiceStates: VoiceStateManager;
-  public readonly widgetChannel: TextChannel | NewsChannel | VoiceBasedChannel | ForumChannel | null;
+  public readonly widgetChannel: TextChannel | NewsChannel | VoiceBasedChannel | ForumChannel | MediaChannel | null;
   public widgetChannelId: Snowflake | null;
   public widgetEnabled: boolean | null;
   public readonly maximumBitrate: number;
@@ -3194,7 +3195,7 @@ export interface DefaultReactionEmoji {
   name: string | null;
 }
 
-export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
+export abstract class ThreadOnlyChannel extends TextBasedChannelMixin(GuildChannel, [
   'send',
   'lastMessage',
   'lastPinAt',
@@ -3202,7 +3203,7 @@ export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
   'createMessageCollector',
   'awaitMessages',
 ]) {
-  public type: 'GUILD_FORUM';
+  public type: 'GUILD_FORUM' | 'GUILD_MEDIA';
   public threads: GuildForumThreadManager;
   public availableTags: GuildForumTag[];
   public defaultReactionEmoji: DefaultReactionEmoji | null;
@@ -3212,7 +3213,6 @@ export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
   public nsfw: boolean;
   public topic: string | null;
   public defaultSortOrder: SortOrderType | null;
-  public defaultForumLayout: ForumLayoutType;
   public setAvailableTags(tags: GuildForumTagData[], reason?: string): Promise<this>;
   public setDefaultReactionEmoji(emojiId: DefaultReactionEmoji | null, reason?: string): Promise<this>;
   public setDefaultThreadRateLimitPerUser(rateLimit: number, reason?: string): Promise<this>;
@@ -3224,7 +3224,16 @@ export class ForumChannel extends TextBasedChannelMixin(GuildChannel, [
   ): Promise<this>;
   public setTopic(topic: string | null, reason?: string): Promise<this>;
   public setDefaultSortOrder(defaultSortOrder: SortOrderType | null, reason?: string): Promise<this>;
+}
+
+export class ForumChannel extends ThreadOnlyChannel {
+  public type: 'GUILD_FORUM';
+  public defaultForumLayout: ForumLayoutType;
   public setDefaultForumLayout(defaultForumLayout: ForumLayoutType, reason?: string): Promise<this>;
+}
+
+export class MediaChannel extends ThreadOnlyChannel {
+  public type: 'GUILD_MEDIA';
 }
 
 export class TextInputComponent extends BaseMessageComponent {
@@ -3267,7 +3276,7 @@ export class ThreadChannel extends TextBasedChannelMixin(Channel, ['fetchWebhook
   public members: ThreadMemberManager;
   public name: string;
   public ownerId: Snowflake | null;
-  public readonly parent: TextChannel | NewsChannel | ForumChannel | null;
+  public readonly parent: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
   public parentId: Snowflake | null;
   public rateLimitPerUser: number | null;
   public type: ThreadChannelTypes;
@@ -3547,7 +3556,7 @@ export class Webhook extends WebhookMixin() {
   private constructor(client: Client, data?: RawWebhookData);
   public avatar: string;
   public avatarURL(options?: StaticImageURLOptions): string | null;
-  public readonly channel: TextChannel | VoiceChannel | NewsChannel | ForumChannel | null;
+  public readonly channel: TextChannel | VoiceChannel | NewsChannel | ForumChannel | MediaChannel | null;
   public channelId: Snowflake;
   public client: Client;
   public guildId: Snowflake;
@@ -3711,7 +3720,7 @@ export class WelcomeChannel extends Base {
   public channelId: Snowflake;
   public guild: Guild | InviteGuild;
   public description: string;
-  public readonly channel: TextChannel | NewsChannel | StoreChannel | ForumChannel | null;
+  public readonly channel: TextChannel | NewsChannel | StoreChannel | ForumChannel | MediaChannel | null;
   public readonly emoji: GuildEmoji | Emoji;
 }
 
@@ -4200,7 +4209,7 @@ export class GuildChannelManager extends CachedManager<Snowflake, GuildBasedChan
   public createWebhook(
     channel: GuildChannelResolvable,
     name: string,
-    options?: TextChannel | NewsChannel | VoiceChannel | StageChannel | ForumChannel | Snowflake,
+    options?: TextChannel | NewsChannel | VoiceChannel | StageChannel | ForumChannel | MediaChannel | Snowflake,
   ): Promise<Webhook>;
   public addFollower(
     channel: NewsChannel | Snowflake,
@@ -5481,7 +5490,7 @@ export interface ClientEvents extends BaseClientEvents {
   typingStart: [typing: Typing];
   userUpdate: [oldUser: User | PartialUser, newUser: User];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
-  webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | StageChannel];
+  webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | MediaChannel | StageChannel];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
   shardError: [error: Error, shardId: number];
   shardReady: [shardId: number, unavailableGuilds: Set<Snowflake> | undefined];
@@ -5500,7 +5509,7 @@ export interface ClientEvents extends BaseClientEvents {
   ];
   guildScheduledEventDelete: [guildScheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent];
   guildScheduledEventUserAdd: [guildScheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent, user: User];
-  guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, | PartialGuildScheduledEvent, user: User];
+  guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, PartialGuildScheduledEvent, user: User];
   guildAuditLogEntryCreate: [auditLogEntry: GuildAuditLogsEntry, guild: Guild];
   unhandledPacket: [packet: { t?: string; d: any }, shard: number];
   relationshipAdd: [userId: Snowflake, shouldNotify: boolean];
@@ -7394,9 +7403,10 @@ export type AnyChannel =
   | TextChannel
   | ThreadChannel
   | VoiceChannel
-  | ForumChannel;
+  | ForumChannel
+  | MediaChannel;
 
-export type TextBasedChannel = Exclude<Extract<AnyChannel, { messages: MessageManager }>, ForumChannel>;
+export type TextBasedChannel = Exclude<Extract<AnyChannel, { messages: MessageManager }>, ForumChannel | MediaChannel>;
 
 export type TextBasedChannelTypes = TextBasedChannel['type'];
 
@@ -7526,7 +7536,7 @@ export type WebhookClientOptions = Pick<
 export interface WebhookEditData {
   name?: string;
   avatar?: BufferResolvable | null;
-  channel?: GuildTextChannelResolvable | VoiceChannel | StageChannel | ForumChannel;
+  channel?: GuildTextChannelResolvable | VoiceChannel | StageChannel | ForumChannel | MediaChannel;
 }
 
 export type WebhookEditMessageOptions = Pick<
@@ -7581,7 +7591,7 @@ export interface WidgetChannel {
 
 export interface WelcomeChannelData {
   description: string;
-  channel: TextChannel | NewsChannel | StoreChannel | ForumChannel | Snowflake;
+  channel: TextChannel | NewsChannel | StoreChannel | ForumChannel | MediaChannel | Snowflake;
   emoji?: EmojiIdentifierResolvable;
 }
 

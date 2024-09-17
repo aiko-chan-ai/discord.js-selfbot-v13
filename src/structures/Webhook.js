@@ -239,7 +239,7 @@ class Webhook {
    * @typedef {Object} WebhookEditData
    * @property {string} [name=this.name] The new name for the webhook
    * @property {?(BufferResolvable)} [avatar] The new avatar for the webhook
-   * @property {GuildTextChannelResolvable|VoiceChannel|StageChannel|ForumChannel} [channel]
+   * @property {GuildTextChannelResolvable|VoiceChannel|StageChannel|ForumChannel|MediaChannel} [channel]
    * The new channel for the webhook
    */
 
@@ -385,7 +385,7 @@ class Webhook {
 
   /**
    * The channel the webhook belongs to
-   * @type {?(TextChannel|VoiceChannel|NewsChannel|ForumChannel)}
+   * @type {?(TextChannel|VoiceChannel|NewsChannel|ForumChannel|MediaChannel)}
    * @readonly
    */
   get channel() {
