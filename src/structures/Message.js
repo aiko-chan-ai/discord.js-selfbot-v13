@@ -874,10 +874,11 @@ class Message extends Base {
 
   /**
    * Immediately ends the poll. You cannot end polls from other users.
-   * @returns {Promise<RawMessage>}
+   * @returns {Promise<this>}
+   * @deprecated Using MessageManager#endPoll(messageId) instead
    */
   endPoll() {
-    return this.client.api.channels(this.channel.id).polls(this.id).expire.post();
+    return this.channel.messages.endPoll(this.id);
   }
 
   /**
@@ -885,19 +886,16 @@ class Message extends Base {
    * @param {number} answerId Answer Id
    * @param {Snowflake} [afterUserId] Get users after this user ID
    * @param {number} [limit=25] Max number of users to return (1-100, default 25)
-   * @returns {Promise<{ users: Partial<RawUser> }>}
+   * @returns {Promise<Collection<Snowflake, User>>}
+   * @deprecated Using MessageManager#fetchPollAnswerVoters({ messageId, answerId, after, limit }) instead
    */
   getAnswerVoter(answerId, afterUserId, limit = 25) {
-    return this.client.api
-      .channels(this.channel.id)
-      .polls(this.id)
-      .answers(answerId)
-      .get({
-        query: {
-          after: afterUserId,
-          limit,
-        },
-      });
+    return this.channel.messages.fetchPollAnswerVoters({
+      messageId: this.id,
+      answerId,
+      after: afterUserId,
+      limit,
+    });
   }
 
   /**

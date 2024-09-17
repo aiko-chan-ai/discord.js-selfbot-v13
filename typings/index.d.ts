@@ -2098,12 +2098,14 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public markRead(): Promise<void>;
   public report(breadcrumbs: number[], elements?: object): Promise<{ report_id: Snowflake }>;
   public vote(...ids: number[]): Promise<void>;
-  public endPoll(): Promise<RawMessageData>;
+  /** @deprecated Using MessageManager#endPoll(messageId) instead */
+  public endPoll(): Promise<this>;
+  /** @deprecated Using MessageManager#fetchPollAnswerVoters({ messageId, answerId, after, limit }) instead */
   public getAnswerVoter(
     answerId: number,
     afterUserId?: Snowflake,
     limit?: number,
-  ): Promise<{ users: Partial<RawUserData> }>;
+  ): Promise<Collection<Snowflake, User>>;
 }
 
 export class CallState extends Base {
@@ -4381,6 +4383,15 @@ export class GuildMemberRoleManager extends DataManager<Snowflake, Role, RoleRes
   ): Promise<GuildMember>;
 }
 
+export interface BaseFetchPollAnswerVotersOptions {
+  after?: Snowflake;
+  limit?: number;
+}
+
+export interface FetchPollAnswerVotersOptions extends BaseFetchPollAnswerVotersOptions {
+  messageId: Snowflake;
+  answerId: number;
+}
 export class MessageManager extends CachedManager<Snowflake, Message, MessageResolvable> {
   private constructor(channel: TextBasedChannel, iterable?: Iterable<RawMessageData>);
   public channel: TextBasedChannel;
@@ -4398,6 +4409,8 @@ export class MessageManager extends CachedManager<Snowflake, Message, MessageRes
   public pin(message: MessageResolvable, reason?: string): Promise<void>;
   public unpin(message: MessageResolvable, reason?: string): Promise<void>;
   public search(options: MessageSearchOptions): Promise<MessageSearchResult>;
+  public endPoll(messageId: Snowflake): Promise<Message>;
+  public fetchPollAnswerVoters(options: FetchPollAnswerVotersOptions): Promise<Collection<Snowflake, User>>;
 }
 
 export interface MessageSearchOptions {

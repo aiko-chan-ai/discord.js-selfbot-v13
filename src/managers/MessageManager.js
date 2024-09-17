@@ -386,6 +386,36 @@ class MessageManager extends CachedManager {
     for (const message of data) messages.set(message.id, this._add(message, cache));
     return messages;
   }
+
+  /**
+   * Ends a poll.
+   * @param {Snowflake} messageId The id of the message
+   * @returns {Promise<Message>}
+   */
+  async endPoll(messageId) {
+    const message = await this.client.api.channels(this.channel.id).polls(messageId).expire.post();
+    return this._add(message, false);
+  }
+
+  /**
+   * Options used for fetching voters of an answer in a poll.
+   * @typedef {BaseFetchPollAnswerVotersOptions} FetchPollAnswerVotersOptions
+   * @param {Snowflake} messageId The id of the message
+   * @param {number} answerId The id of the answer
+   */
+
+  /**
+   * Fetches the users that voted for a poll answer.
+   * @param {FetchPollAnswerVotersOptions} options The options for fetching the poll answer voters
+   * @returns {Promise<Collection<Snowflake, User>>}
+   */
+  async fetchPollAnswerVoters({ messageId, answerId, after, limit }) {
+    const voters = await this.client.channels(this.channel.id).polls(messageId).answers(answerId).get({
+      query: { limit, after },
+    });
+
+    return voters.users.reduce((acc, user) => acc.set(user.id, this.client.users._add(user, false)), new Collection());
+  }
 }
 
 module.exports = MessageManager;
