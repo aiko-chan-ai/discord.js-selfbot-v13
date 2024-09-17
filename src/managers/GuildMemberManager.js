@@ -592,6 +592,25 @@ class GuildMemberManager extends CachedManager {
       this.client.on(Events.GUILD_MEMBERS_CHUNK, handler);
     });
   }
+
+  /**
+   * Bulk ban users from a guild, and optionally delete previous messages sent by them.
+   * @param {Collection<Snowflake, UserResolvable>|UserResolvable[]} users The users to ban
+   * @param {BulkBanOptions} [options] The options for bulk banning users
+   * @returns {Promise<BulkBanResult>} Returns an object with `bannedUsers` key containing the IDs of the banned users
+   * and the key `failedUsers` with the IDs that could not be banned or were already banned.
+   * Internally calls the GuildBanManager#bulkCreate method.
+   * @example
+   * // Bulk ban users by ids (or with user/guild member objects) and delete all their messages from the past 7 days
+   * guild.members.bulkBan(['84484653687267328'], { deleteMessageSeconds: 7 * 24 * 60 * 60 })
+   *   .then(result => {
+   *     console.log(`Banned ${result.bannedUsers.length} users, failed to ban ${result.failedUsers.length} users.`)
+   *   })
+   *   .catch(console.error);
+   */
+  bulkBan(users, options = {}) {
+    return this.guild.bans.bulkCreate(users, options);
+  }
 }
 
 module.exports = GuildMemberManager;

@@ -178,6 +178,7 @@ const Messages = {
   SLASH_COMMAND_SUB_COMMAND_INVALID: n => `${n} is not a valid sub command`,
   INTERACTION_FAILED: 'No responsed from Application Command',
   USER_NOT_STREAMING: 'User is not streaming',
+  BULK_BAN_USERS_OPTION_EMPTY: 'Option "users" array or collection is empty',
 
   // Djs v12
   VOICE_INVALID_HEARTBEAT: 'Tried to set voice heartbeat but no valid interval was specified.',

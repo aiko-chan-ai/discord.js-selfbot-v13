@@ -4302,6 +4302,10 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
   public search(options: GuildSearchMembersOptions): Promise<Collection<Snowflake, GuildMember>>;
   public unban(user: UserResolvable, reason?: string): Promise<User | null>;
   public fetchByMemberSafety(timeout?: number): Promise<Collection<Snowflake, GuildMember>>;
+  public bulkBan(
+    users: Collection<Snowflake, UserResolvable> | readonly UserResolvable[],
+    options?: BulkBanOptions,
+  ): Promise<BulkBanResult>;
 }
 
 export class GuildBanManager extends CachedManager<Snowflake, GuildBan, GuildBanResolvable> {
@@ -4311,6 +4315,10 @@ export class GuildBanManager extends CachedManager<Snowflake, GuildBan, GuildBan
   public fetch(options: UserResolvable | FetchBanOptions): Promise<GuildBan>;
   public fetch(options?: FetchBansOptions): Promise<Collection<Snowflake, GuildBan>>;
   public remove(user: UserResolvable, reason?: string): Promise<User | null>;
+  public bulkCreate(
+    users: Collection<Snowflake, UserResolvable> | readonly UserResolvable[],
+    options?: BulkBanOptions,
+  ): Promise<BulkBanResult>;
 }
 
 export class GuildInviteManager extends DataManager<string, Invite, InviteResolvable> {
@@ -5270,6 +5278,13 @@ export interface BanOptions {
   days?: number;
   deleteMessageSeconds?: number;
   reason?: string;
+}
+
+export interface BulkBanOptions extends Omit<BanOptions, 'deleteMessageDays'> {}
+
+export interface BulkBanResult {
+  bannedUsers: readonly Snowflake[];
+  failedUsers: readonly Snowflake[];
 }
 
 export type Base64Resolvable = Buffer | Base64String;
