@@ -730,6 +730,7 @@ export abstract class Channel extends Base {
   public isVoice(): this is BaseGuildVoiceChannel;
   public isThread(): this is ThreadChannel;
   public isDirectory(): this is DirectoryChannel;
+  public isThreadOnly(): this is ThreadOnlyChannel;
   public toString(): ChannelMention;
 }
 

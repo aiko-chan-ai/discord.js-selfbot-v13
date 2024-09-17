@@ -12,6 +12,7 @@ let ThreadChannel;
 let VoiceChannel;
 let DirectoryChannel;
 let ForumChannel;
+let MediaChannel;
 const ChannelFlags = require('../util/ChannelFlags');
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -178,6 +179,14 @@ class Channel extends Base {
   }
 
   /**
+   * Indicates whether this channel is {@link ThreadOnlyChannel}.
+   * @returns {boolean}
+   */
+  isThreadOnly() {
+    return 'availableTags' in this;
+  }
+
+  /**
    * Indicates whether this channel is a {@link DirectoryChannel}
    * @returns {boolean}
    */
@@ -196,6 +205,7 @@ class Channel extends Base {
     VoiceChannel ??= require('./VoiceChannel');
     DirectoryChannel ??= require('./DirectoryChannel');
     ForumChannel ??= require('./ForumChannel');
+    MediaChannel ??= require('./MediaChannel');
 
     let channel;
     if (!data.guild_id && !guild) {
@@ -248,6 +258,10 @@ class Channel extends Base {
 
           case ChannelTypes.GUILD_FORUM:
             channel = new ForumChannel(guild, data, client);
+            break;
+
+          case ChannelTypes.GUILD_MEDIA:
+            channel = new MediaChannel(guild, data, client);
             break;
         }
         if (channel && !allowUnknownGuild) guild.channels?.cache.set(channel.id, channel);
