@@ -39,7 +39,6 @@ class MessageReactionAdd extends Action {
       me: user.id === this.client.user.id,
       ...data,
     });
-    console.log(reaction);
     if (!reaction) return false;
     reaction._add(user, data.burst);
     if (fromStructure) return { message, reaction, user };
