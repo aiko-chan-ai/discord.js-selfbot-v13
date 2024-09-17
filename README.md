@@ -5,9 +5,12 @@
   </p>
 </div>
 
+> [!TIP]
+> **Check out this poll: https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions/1292**
+
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v3.3`, based on `discord.js@13.17`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v3.4`, based on `discord.js@13.17` and backport `discord.js@14.16.2`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
