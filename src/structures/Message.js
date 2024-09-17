@@ -649,6 +649,7 @@ class Message extends Base {
       channel?.type === 'GUILD_NEWS' &&
         !this.flags.has(MessageFlags.FLAGS.CROSSPOSTED) &&
         this.type === 'DEFAULT' &&
+        !this.poll &&
         channel.viewable &&
         channel.permissionsFor(this.client.user)?.has(bitfield, false) &&
         !deletedMessages.has(this),
