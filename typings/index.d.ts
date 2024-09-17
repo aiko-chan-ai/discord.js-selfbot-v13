@@ -54,7 +54,7 @@ import {
   LocaleString,
   APIGuildMember,
   APIChannel,
-  TeamMemberRole
+  TeamMemberRole,
 } from 'discord-api-types/v9';
 import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';

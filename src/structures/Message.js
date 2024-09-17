@@ -252,7 +252,7 @@ class Message extends Base {
     }
 
     /**
-     * A poll!
+     * The poll that was sent with the message
      * @type {?MessagePoll}
      */
     if ('poll' in data) {
