@@ -321,7 +321,8 @@ class Activity {
 
     if ('sync_id' in data || 'syncId' in data) {
       /**
-       * The Spotify song's id
+       * The sync id of the activity
+       * <info>This property is not documented by Discord and represents the track id in spotify activities.</info>
        * @type {?string}
        */
       this.syncId = data.sync_id || data.syncId;
