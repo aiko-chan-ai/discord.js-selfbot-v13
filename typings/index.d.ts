@@ -776,6 +776,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
+  /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
   public passLogin(email: string, password: string, code?: string | number): Promise<string | null>;
   public QRLogin(): Promise<void>;
   public logout(): Promise<void>;
@@ -4320,6 +4321,7 @@ export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, Gu
   public search(options: GuildSearchMembersOptions): Promise<Collection<Snowflake, GuildMember>>;
   public unban(user: UserResolvable, reason?: string): Promise<User | null>;
   public fetchByMemberSafety(timeout?: number): Promise<Collection<Snowflake, GuildMember>>;
+  /** @deprecated This method will not be usable until an effective MFA implementation is in place. */
   public bulkBan(
     users: Collection<Snowflake, UserResolvable> | readonly UserResolvable[],
     options?: BulkBanOptions,
@@ -4333,6 +4335,7 @@ export class GuildBanManager extends CachedManager<Snowflake, GuildBan, GuildBan
   public fetch(options: UserResolvable | FetchBanOptions): Promise<GuildBan>;
   public fetch(options?: FetchBansOptions): Promise<Collection<Snowflake, GuildBan>>;
   public remove(user: UserResolvable, reason?: string): Promise<User | null>;
+  /** @deprecated This method will not be usable until an effective MFA implementation is in place. */
   public bulkCreate(
     users: Collection<Snowflake, UserResolvable> | readonly UserResolvable[],
     options?: BulkBanOptions,

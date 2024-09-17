@@ -228,6 +228,7 @@ class GuildBanManager extends CachedManager {
    *     console.log(`Banned ${result.bannedUsers.length} users, failed to ban ${result.failedUsers.length} users.`)
    *   })
    *   .catch(console.error);
+   * @deprecated This method will not be usable until an effective MFA implementation is in place.
    */
   async bulkCreate(users, options = {}) {
     if (!users || !(Array.isArray(users) || users instanceof Collection)) {

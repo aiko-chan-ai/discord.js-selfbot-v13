@@ -287,6 +287,7 @@ class Client extends BaseClient {
    *
    * @example
    * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
+   * @deprecated This method will not be updated until I find the most convenient way to implement MFA.
    */
   async passLogin(email, password, code = null) {
     const initial = await this.api.auth.login.post({
