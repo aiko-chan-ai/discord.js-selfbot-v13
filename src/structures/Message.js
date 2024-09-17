@@ -628,6 +628,7 @@ class Message extends Base {
   async fetchReference() {
     if (!this.reference) throw new Error('MESSAGE_REFERENCE_MISSING');
     const { channelId, messageId } = this.reference;
+    if (!messageId) throw new Error('MESSAGE_REFERENCE_MISSING');
     const channel = this.client.channels.resolve(channelId);
     if (!channel) throw new Error('GUILD_CHANNEL_RESOLVE');
     const message = await channel.messages.fetch(messageId);
