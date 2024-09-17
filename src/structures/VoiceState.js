@@ -328,6 +328,15 @@ class VoiceState extends Base {
     });
   }
 
+  /**
+   * Fetches this voice state.
+   * @param {boolean} [force=true] Whether to skip the cache check and request the API
+   * @returns {Promise<VoiceState>}
+   */
+  fetch(force = true) {
+    return this.guild?.voiceStates?.fetch(this.id, { force });
+  }
+
   toJSON() {
     return super.toJSON({
       id: true,

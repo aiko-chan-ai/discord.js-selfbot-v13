@@ -32,6 +32,28 @@ class VoiceStateManager extends CachedManager {
     if (cache) this.cache.set(data.user_id, entry);
     return entry;
   }
+
+  /**
+   * Obtains a user's voice state from discord or from the cache if it's already available.
+   * @param {GuildMemberResolvable|'@me'} member The member whose voice state is to be fetched
+   * @param {BaseFetchOptions} [options] Additional options for this fetch
+   * @returns {Promise<VoiceState>}
+   * @example
+   * // Fetch a member's voice state
+   * guild.voiceStates.fetch("66564597481480192")
+   *    .then(console.log)
+   *    .catch(console.error);
+   */
+  async fetch(member, { cache = true, force = false } = {}) {
+    if (!this.guild?.id) throw new Error('Guild is not defined');
+    const id = member === '@me' ? member : this.guild.members.resolveId(member);
+    if (!force) {
+      const existing = this.cache.get(id === '@me' ? this.client.user.id : id);
+      if (existing) return existing;
+    }
+    const data = await this.client.api.guilds(this.guild.id)['voice-states'][id].get();
+    return this._add(data, cache);
+  }
 }
 
 module.exports = VoiceStateManager;
