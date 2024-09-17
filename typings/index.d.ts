@@ -54,6 +54,7 @@ import {
   LocaleString,
   APIGuildMember,
   APIChannel,
+  TeamMemberRole
 } from 'discord-api-types/v9';
 import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -3164,8 +3165,10 @@ export class TeamMember extends Base {
   private constructor(team: Team, data: RawTeamMemberData);
   public team: Team;
   public readonly id: Snowflake;
+  /** @deprecated Use {@link role} instead. */
   public permissions: string[];
   public membershipState: MembershipState;
+  public role: TeamMemberRole;
   public user: User;
 
   public toString(): UserMention;

@@ -4,6 +4,11 @@ const Base = require('./Base');
 const { MembershipStates } = require('../util/Constants');
 
 /**
+ * @external TeamMemberRole
+ * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/TeamMemberRole}
+ */
+
+/**
  * Represents a Client OAuth2 Application Team Member.
  * @extends {Base}
  */
@@ -25,8 +30,17 @@ class TeamMember extends Base {
       /**
        * The permissions this Team Member has with regard to the team
        * @type {string[]}
+       * @deprecated Use {@link TeamMember#role} instead.
        */
       this.permissions = data.permissions;
+    }
+
+    if ('role' in data) {
+      /**
+       * The role of this Team Member
+       * @type {TeamMemberRole}
+       */
+      this.role = data.role;
     }
 
     if ('membership_state' in data) {
