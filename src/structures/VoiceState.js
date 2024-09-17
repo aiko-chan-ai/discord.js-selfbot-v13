@@ -86,7 +86,7 @@ class VoiceState extends Base {
 
     // The self_stream is property is omitted if false, check for another property
     // here to avoid incorrectly clearing this when partial data is specified
-    if ('self_stream' in data) {
+    if ('self_video' in data) {
       /**
        * Whether this member is streaming using "Screen Share"
        * @type {boolean}
