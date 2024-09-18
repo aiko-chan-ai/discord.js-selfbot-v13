@@ -9,7 +9,9 @@ const kill = require('tree-kill');
 const secretbox = require('../util/Secretbox');
 
 const CHANNELS = 2;
-const MAX_NONCE_SIZE = 2 ** 32 - 1;
+
+const MAX_UINT_16 = 2 ** 16 - 1;
+const MAX_UINT_32 = 2 ** 32 - 1;
 
 const extensions = [{ id: 5, len: 2, val: 0 }];
 
@@ -115,7 +117,7 @@ class BaseDispatcher extends Writable {
   getNewSequence() {
     const currentSeq = this.sequence;
     this.sequence++;
-    if (this.sequence > 2 ** 16 - 1) this.sequence = 0;
+    if (this.sequence > MAX_UINT_16) this.sequence = 0;
     return currentSeq;
   }
 
@@ -239,8 +241,9 @@ class BaseDispatcher extends Writable {
       if ((!this.pausedSince || this._silence) && this._writeCallback) this._writeCallback();
     }, next).unref();
     this.timestamp += this.TIMESTAMP_INC;
-    if (this.timestamp >= 2 ** 32) this.timestamp = 0;
+    if (this.timestamp > MAX_UINT_32) this.timestamp = 0;
     this.count++;
+    if (this.count > MAX_UINT_16) this.count = 0;
   }
 
   _final(callback) {
@@ -261,7 +264,7 @@ class BaseDispatcher extends Writable {
   /**
    * Creates a one-byte extension header
    * https://www.rfc-editor.org/rfc/rfc5285#section-4.2
-   * @returns {Buffer} extension header
+   * @returns {Buffer} <Buffer be de 00 01>
    */
   createHeaderExtension() {
     /**
@@ -317,7 +320,7 @@ class BaseDispatcher extends Writable {
     const { secret_key, mode } = this.player.voiceConnection.authentication;
     // Both supported encryption methods want the nonce to be an incremental integer
     this._nonce++;
-    if (this._nonce > MAX_NONCE_SIZE) this._nonce = 0;
+    if (this._nonce > MAX_UINT_32) this._nonce = 0;
     if (!this._nonceBuffer) {
       this.resetNonceBuffer();
     }

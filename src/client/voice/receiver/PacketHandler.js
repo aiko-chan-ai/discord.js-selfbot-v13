@@ -24,15 +24,15 @@ class PacketHandler extends EventEmitter {
   constructor(receiver) {
     super();
     this.receiver = receiver;
-    this.nonce = null;
     this.streams = new Map();
     this.videoStreams = new Map(); // Placeholder
     this.speakingTimeouts = new Map();
   }
 
-  resetNonce() {
-    this.nonce =
-      this.receiver.connection.authentication.mode === 'aead_aes256_gcm_rtpsize' ? Buffer.alloc(12) : Buffer.alloc(24);
+  getNonceBuffer() {
+    return this.receiver.connection.authentication.mode === 'aead_aes256_gcm_rtpsize'
+      ? Buffer.alloc(12)
+      : Buffer.alloc(24);
   }
 
   get connection() {
@@ -55,23 +55,13 @@ class PacketHandler extends EventEmitter {
     return stream;
   }
 
-  makeTestVideoStream(user) {
-    if (this.videoStreams.has(user)) return this.videoStreams.get(user);
-    const stream = new Readable();
-    stream.on('end', () => this.videoStreams.delete(user));
-    this.videoStreams.set(user, stream);
-    return stream;
-  }
-
   parseBuffer(buffer) {
     const { secret_key, mode } = this.receiver.connection.authentication;
     // Open packet
     if (!secret_key) return new Error('secret_key cannot be null or undefined');
-    if (!this.nonce) {
-      this.resetNonce();
-    }
+    const nonce = this.getNonceBuffer();
     // Copy the last 4 bytes of unpadded nonce to the padding of (12 - 4) or (24 - 4) bytes
-    buffer.copy(this.nonce, 0, buffer.length - UNPADDED_NONCE_LENGTH);
+    buffer.copy(nonce, 0, buffer.length - UNPADDED_NONCE_LENGTH);
 
     let headerSize = 12;
     const first = buffer.readUint8();
@@ -90,7 +80,7 @@ class PacketHandler extends EventEmitter {
     let packet;
     switch (mode) {
       case 'aead_aes256_gcm_rtpsize': {
-        const decipheriv = crypto.createDecipheriv('aes-256-gcm', secret_key, this.nonce);
+        const decipheriv = crypto.createDecipheriv('aes-256-gcm', secret_key, nonce);
         decipheriv.setAAD(header);
         decipheriv.setAuthTag(authTag);
 
@@ -102,7 +92,7 @@ class PacketHandler extends EventEmitter {
         packet = secretbox.methods.crypto_aead_xchacha20poly1305_ietf_decrypt(
           Buffer.concat([encrypted, authTag]),
           header,
-          this.nonce,
+          nonce,
           secret_key,
         );
 
@@ -114,41 +104,29 @@ class PacketHandler extends EventEmitter {
       }
     }
 
-    // Strip RTP Header Extensions (one-byte only)
-    if (packet[0] === 0xbe && packet[1] === 0xde) {
-      const headerExtensionLength = packet.readUInt16BE(2);
-      packet = packet.subarray(4 + 4 * headerExtensionLength);
-    } else if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
-      // Strip decrypted RTP Header Extension if present
+    // Strip decrypted RTP Header Extension if present
+    if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
       const headerExtensionLength = buffer.slice(14).readUInt16BE();
       packet = packet.subarray(4 * headerExtensionLength);
     }
 
-    // Ex VP8
-    // <Buffer 90 80 80 00 30 b7 01 9d 01 2a 80 07 38 04 0b c7 08 85 85 88 99 84 88 3f 82 00 06 16 04 f7 06 81 64 9f 6b db 9b 27 38 7b 27 38 7b 27 38 7b 27 38 7b 27 ... 1154 more bytes>
-    // 90 80: payloadDescriptorBuf (90 80 if first frame | 80 80 else)
-    // 80 00: pictureIdBuf
-    // n bytes: chunk raw (Ivf splitter)
-
     return packet;
   }
 
-  push(buffer) {
+  audioReceiver(buffer) {
     const ssrc = buffer.readUInt32BE(8);
-    const userStat = this.connection.ssrcMap.get(ssrc) || this.connection.ssrcMap.get(ssrc - 1); // Maybe video_ssrc ?
+    const userStat = this.connection.ssrcMap.get(ssrc);
 
     if (!userStat) return;
 
     let opusPacket;
     const streamInfo = this.streams.get(userStat.userId);
-    const videoStreamInfo = this.videoStreams.get(userStat.userId);
-
     // If the user is in video, we need to check if the packet is just silence
     if (userStat.hasVideo) {
       opusPacket = this.parseBuffer(buffer);
       if (opusPacket instanceof Error) {
         // Only emit an error if we were actively receiving packets from this user
-        if (streamInfo || videoStreamInfo) {
+        if (streamInfo) {
           this.emit('error', opusPacket);
         }
         return;
@@ -160,28 +138,25 @@ class PacketHandler extends EventEmitter {
     }
 
     let speakingTimeout = this.speakingTimeouts.get(ssrc);
-    // Only for voice... idk
-    if (this.connection.ssrcMap.has(ssrc)) {
-      if (typeof speakingTimeout === 'undefined') {
-        // Ensure at least the speaking bit is set.
-        // As the object is by reference, it's only needed once per client re-connect.
-        if (userStat.speaking === 0) {
-          userStat.speaking = Speaking.FLAGS.SPEAKING;
-        }
-        this.connection.onSpeaking({ user_id: userStat.userId, ssrc: ssrc, speaking: userStat.speaking });
-        speakingTimeout = setTimeout(() => {
-          try {
-            this.connection.onSpeaking({ user_id: userStat.userId, ssrc: ssrc, speaking: 0 });
-            clearTimeout(speakingTimeout);
-            this.speakingTimeouts.delete(ssrc);
-          } catch {
-            // Connection already closed, ignore
-          }
-        }, DISCORD_SPEAKING_DELAY).unref();
-        this.speakingTimeouts.set(ssrc, speakingTimeout);
-      } else {
-        speakingTimeout.refresh();
+    if (typeof speakingTimeout === 'undefined') {
+      // Ensure at least the speaking bit is set.
+      // As the object is by reference, it's only needed once per client re-connect.
+      if (userStat.speaking === 0) {
+        userStat.speaking = Speaking.FLAGS.SPEAKING;
       }
+      this.connection.onSpeaking({ user_id: userStat.userId, ssrc: ssrc, speaking: userStat.speaking });
+      speakingTimeout = setTimeout(() => {
+        try {
+          this.connection.onSpeaking({ user_id: userStat.userId, ssrc: ssrc, speaking: 0 });
+          clearTimeout(speakingTimeout);
+          this.speakingTimeouts.delete(ssrc);
+        } catch {
+          // Connection already closed, ignore
+        }
+      }, DISCORD_SPEAKING_DELAY).unref();
+      this.speakingTimeouts.set(ssrc, speakingTimeout);
+    } else {
+      speakingTimeout.refresh();
     }
 
     if (streamInfo) {
@@ -194,9 +169,33 @@ class PacketHandler extends EventEmitter {
         }
       }
       stream.push(opusPacket);
-      if (opusPacket === null) {
-        // ! null marks EOF for stream
-        stream.destroy();
+    }
+  }
+
+  videoReceiver(buffer) {
+    const ssrc = buffer.readUInt32BE(8);
+    const userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
+
+    if (!userStat) return;
+    this.parseBuffer(buffer);
+
+    let opusPacket;
+
+    const videoStreamInfo = this.videoStreams.get(userStat.userId);
+
+    // If the user is in video, we need to check if the packet is just silence
+    if (userStat.hasVideo) {
+      opusPacket = this.parseBuffer(buffer);
+      if (opusPacket instanceof Error) {
+        // Only emit an error if we were actively receiving packets from this user
+        if (videoStreamInfo) {
+          this.emit('error', opusPacket);
+        }
+        return;
+      }
+      if (SILENCE_FRAME.equals(opusPacket)) {
+        // If this is a silence frame, pretend we never received it
+        return;
       }
     }
 
@@ -209,8 +208,13 @@ class PacketHandler extends EventEmitter {
           return;
         }
       }
-      stream.push(opusPacket); // VP8 ? idk
+      stream.push(opusPacket);
     }
+  }
+
+  push(buffer) {
+    this.audioReceiver(buffer);
+    this.videoReceiver(buffer);
   }
 }
 
