@@ -194,6 +194,8 @@ class MediaPlayer extends EventEmitter {
       );
     }
 
+    args.push('-force_key_frames', '00:02');
+
     if (options?.inputFFmpegArgs) {
       args.unshift(...options.inputFFmpegArgs);
     }
