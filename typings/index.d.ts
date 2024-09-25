@@ -1083,20 +1083,35 @@ export class VoiceReceiver extends EventEmitter {
   public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;
+  public on(
+    event: 'videoData',
+    listener: (
+      ssrc: number,
+      ssrcData: {
+        userId: Snowflake;
+        hasVideo: boolean;
+      },
+      headerRaw: Buffer,
+      packetDecrypt: Buffer,
+    ) => void,
+  ): this;
   public on(event: string, listener: (...args: any[]) => void): this;
 
   public once(event: 'debug', listener: (error: Error | string) => void): this;
+  public once(
+    event: 'videoData',
+    listener: (
+      ssrc: number,
+      ssrcData: {
+        userId: Snowflake;
+        hasVideo: boolean;
+      },
+      headerRaw: Buffer,
+      packetDecrypt: Buffer,
+    ) => void,
+  ): this;
   public once(event: string, listener: (...args: any[]) => void): this;
 }
-
-/*
-export class IvfJoinner {
-  constructor(codec: 'VP8');
-  public stream: Readable;
-  public stop(): void;
-  public createFinalFile(read: Readable, write: Writable): void;
-}
-*/
 
 export { Collection } from '@discordjs/collection';
 

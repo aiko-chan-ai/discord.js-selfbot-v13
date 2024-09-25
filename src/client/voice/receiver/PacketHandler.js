@@ -25,7 +25,6 @@ class PacketHandler extends EventEmitter {
     super();
     this.receiver = receiver;
     this.streams = new Map();
-    this.videoStreams = new Map(); // Placeholder
     this.speakingTimeouts = new Map();
   }
 
@@ -55,7 +54,7 @@ class PacketHandler extends EventEmitter {
     return stream;
   }
 
-  parseBuffer(buffer) {
+  parseBuffer(buffer, shouldReturnTuple = false) {
     const { secret_key, mode } = this.receiver.connection.authentication;
     // Open packet
     if (!secret_key) return new Error('secret_key cannot be null or undefined');
@@ -100,8 +99,12 @@ class PacketHandler extends EventEmitter {
         break;
       }
       default: {
-        throw new RangeError(`Unsupported decryption method: ${mode}`);
+        return new RangeError(`Unsupported decryption method: ${mode}`);
       }
+    }
+
+    if (shouldReturnTuple) {
+      return [header, packet];
     }
 
     // Strip decrypted RTP Header Extension if present
@@ -177,38 +180,19 @@ class PacketHandler extends EventEmitter {
     const userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
 
     if (!userStat) return;
-    this.parseBuffer(buffer);
-
-    let opusPacket;
-
-    const videoStreamInfo = this.videoStreams.get(userStat.userId);
 
     // If the user is in video, we need to check if the packet is just silence
     if (userStat.hasVideo) {
-      opusPacket = this.parseBuffer(buffer);
-      if (opusPacket instanceof Error) {
-        // Only emit an error if we were actively receiving packets from this user
-        if (videoStreamInfo) {
-          this.emit('error', opusPacket);
-        }
+      const packet = this.parseBuffer(buffer, true);
+      if (packet instanceof Error) {
         return;
       }
-      if (SILENCE_FRAME.equals(opusPacket)) {
+      let [header, videoPacket] = packet;
+      if (SILENCE_FRAME.equals(videoPacket)) {
         // If this is a silence frame, pretend we never received it
         return;
       }
-    }
-
-    if (videoStreamInfo) {
-      const stream = videoStreamInfo;
-      if (!opusPacket) {
-        opusPacket = this.parseBuffer(buffer);
-        if (opusPacket instanceof Error) {
-          this.emit('error', opusPacket);
-          return;
-        }
-      }
-      stream.push(opusPacket);
+      this.receiver.emit('videoData', ssrc, userStat, header, videoPacket);
     }
   }
 

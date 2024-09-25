@@ -53,6 +53,58 @@ class VoiceReceiver extends EventEmitter {
     }
     return stream;
   }
+
+  /**
+   * Emitted whenever there is a video data (Raw)
+   * @event VoiceReceiver#videoData
+   * @param {number} ssrc SSRC
+   * @param {{ userId: Snowflake, hasVideo: boolean }} ssrcData SSRC Data
+   * @param {Buffer} header The unencrypted RTP header contains 12 bytes, Buffer<0xbe, 0xde> and the extension size
+   * @param {Buffer} packetDecrypt Decrypted contains the extension, if any, the video packet
+   * @example
+   * // Send packet to VLC
+   * const dgram = require('dgram');
+   * // Replace these with your actual values
+   * const PORT = 5004; // The port VLC is listening on
+   * const HOST = '127.0.0.1'; // Your localhost or the IP address of the machine running VLC
+   * // Create a UDP socket
+   * const socket = dgram.createSocket('udp4');
+   * function sendRTPPacket(payload) {
+   *   const message = Buffer.from(payload);
+   *   socket.send(message, 0, message.length, PORT, HOST, err => {
+   *     if (err) {
+   *       console.error('Error sending packet:', err);
+   *     } else {
+   *       console.log(message);
+   *     }
+   *   });
+   * }
+   * const connection = await client.voice.joinChannel(channel, {
+   *     selfMute: true,
+   *     selfDeaf: true,
+   *     selfVideo: false,
+   *   });
+   * connection.receiver.on('videoData', (ssrc, ssrcData, header, packetDecrypt) => {
+   *  if (ssrcData.hasVideo) {
+   *      header[0] &= 0xef; // Remove the marker bit
+   *     // Strip decrypted RTP Header Extension if present
+   *     if (header.slice(12, 14).compare(Buffer.from([0xbe, 0xde])) === 0) {
+   *       const headerExtensionLength = header.slice(14).readUInt16BE();
+   *       packetDecrypt = packetDecrypt.subarray(4 * headerExtensionLength);
+   *     }
+   *      sendRTPPacket(Buffer.concat([header.slice(0, 12), packetDecrypt]));
+   *  }
+   * });
+   * // VLC SDP file (You can have it with FFmpeg)
+   * // ! Very buggy
+   * // o=- 0 0 IN IP4 <HOST>
+   * // s=No Name
+   * // c=IN IP4 <HOST>
+   * // t=0 0
+   * // a=tool:libavformat 61.1.100
+   * // m=video <PORT> RTP/AVP <RTP Dynamic Payload Type>
+   * // a=rtpmap:<RTP Dynamic Payload Type> <VP8|VP9|H264|H265>/90000
+   */
 }
 
 module.exports = VoiceReceiver;
