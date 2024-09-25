@@ -132,7 +132,7 @@ class VoiceConnection extends EventEmitter {
     this.receiver = new VoiceReceiver(this);
 
     /**
-     * Video codec (encoded)
+     * Video codec
      * * `VP8`
      * * `VP9` (Not supported)
      * * `H264`
@@ -141,7 +141,7 @@ class VoiceConnection extends EventEmitter {
      */
 
     /**
-     * The voice receiver of this connection
+     * Video codec (encoded) of this connection
      * @type {VideoCodec}
      */
     this.videoCodec = 'H264';
