@@ -777,7 +777,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
-  public passLogin(email: string, password: string, code?: string | number): Promise<string | null>;
+  public passLogin(email: string, password: string, mfaCode?: string | number): Promise<string | null>;
   public QRLogin(): Promise<void>;
   public logout(): Promise<void>;
   public isReady(): this is Client<true>;
@@ -1493,7 +1493,7 @@ export class Guild extends AnonymousGuild {
     reason?: string,
   ): Promise<this>;
   public topEmojis(): Promise<Collection<number, GuildEmoji>>;
-  public setVanityCode(code?: string): Promise<this>;
+  public setVanityCode(code?: string, mfaCode?: string | number): Promise<this>;
 }
 
 export class GuildAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'> {

@@ -1528,19 +1528,23 @@ class Guild extends AnonymousGuild {
    * Set the vanity URL to this guild.
    * Resolves with an object containing the vanity URL invite code and the use count.
    * @param {string} [code=''] Vanity URL code
+   * @param {string|number} [mfaCode = null] Two-factor authentication code
+   * After you enter the mfaCode, you will receive a `__Secure-recent_mfa` cookie, which is valid for about
+   * 5 minutes, during which you won't need to enter MFA again.
    * @returns {Promise<Vanity>}
    * @example
    * // Set invite code
-   * guild.setVanityCode('elysia')
+   * guild.setVanityCode('elysia', '123456')
    *   .then(res => {
    *     console.log(`Vanity URL: https://discord.gg/${res.code} with ${res.uses} uses`);
    *   })
    *   .catch(console.error);
    */
-  async setVanityCode(code = '') {
+  async setVanityCode(code = '', mfaCode = null) {
     if (typeof code !== 'string') throw new TypeError('INVALID_VANITY_URL_CODE');
     const data = await this.client.api.guilds(this.id, 'vanity-url').patch({
       data: { code },
+      mfaCode,
     });
     this.vanityURLCode = data.code;
     this.vanityURLUses = data.uses;

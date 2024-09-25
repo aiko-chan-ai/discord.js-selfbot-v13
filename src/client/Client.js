@@ -282,14 +282,14 @@ class Client extends BaseClient {
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} email The email associated with the account
    * @param {string} password The password assicated with the account
-   * @param {string | number} [code = null] The mfa code if you have it enabled
+   * @param {string|number} [mfaCode = null] The mfa code if you have it enabled
    * @returns {string | null} Token of the account used
    *
    * @example
    * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
    * @deprecated This method will not be updated until I find the most convenient way to implement MFA.
    */
-  async passLogin(email, password, code = null) {
+  async passLogin(email, password, mfaCode = null) {
     const initial = await this.api.auth.login.post({
       auth: false,
       versioned: true,
@@ -302,7 +302,7 @@ class Client extends BaseClient {
       const totp = await this.api.auth.mfa.totp.post({
         auth: false,
         versioned: true,
-        data: { gift_code_sku_id: null, login_source: null, code, ticket: initial.ticket },
+        data: { gift_code_sku_id: null, login_source: null, code: mfaCode, ticket: initial.ticket },
       });
       if ('token' in totp) {
         return this.login(totp.token);
