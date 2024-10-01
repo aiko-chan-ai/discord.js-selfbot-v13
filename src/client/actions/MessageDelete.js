@@ -7,7 +7,7 @@ const { Events } = require('../../util/Constants');
 class MessageDeleteAction extends Action {
   handle(data) {
     const client = this.client;
-    const channel = this.getChannel({ id: data.channel_id, guild_id: data.guild_id });
+    const channel = this.getChannel({ id: data.channel_id, ...('guild_id' in data && { guild_id: data.guild_id }) });
     let message;
     if (channel) {
       if (!channel.isText()) return {};
