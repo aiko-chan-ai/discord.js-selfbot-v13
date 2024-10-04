@@ -96,12 +96,16 @@ exports.Endpoints = {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/avatars/${userId}/${hash}`, { format, size });
       },
-      AvatarDecoration: (userId, hash, format = 'png', size) =>
-        makeImageUrl(`${root}/avatar-decorations/${userId}/${hash}`, { format, size }),
+      AvatarDecoration: (hash, size) =>
+        makeImageUrl(`${root}/avatar-decoration-presets/${hash}`, { format: 'png', size }),
       ClanBadge: (guildId, hash) => `${root}/clan-badges/${guildId}/${hash}.png`,
       GuildMemberAvatar: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/avatars/${hash}`, { format, size });
+      },
+      GuildMemberBanner: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/banners/${hash}`, { format, size });
       },
       Banner: (id, hash, format, size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
@@ -127,7 +131,7 @@ exports.Endpoints = {
         }`,
       RoleIcon: (roleId, hash, format = 'webp', size) =>
         makeImageUrl(`${root}/role-icons/${roleId}/${hash}`, { size, format }),
-      guildScheduledEventCover: (scheduledEventId, coverHash, format, size) =>
+      GuildScheduledEventCover: (scheduledEventId, coverHash, format, size) =>
         makeImageUrl(`${root}/guild-events/${scheduledEventId}/${coverHash}`, { size, format }),
     };
   },

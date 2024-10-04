@@ -3398,7 +3398,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public accentColor: number | null | undefined;
   public avatar: string | null;
   /** @deprecated Use {@link User.avatarDecorationData} instead */
-  public avatarDecoration: string | null;
+  public readonly avatarDecoration: string | null;
   public avatarDecorationData: AvatarDecorationData | null;
   public banner: string | null | undefined;
   public bannerColor: string | null | undefined;
@@ -3423,7 +3423,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly friendNickname: string | null | undefined;
   public clan: UserClan | null;
   public avatarURL(options?: ImageURLOptions): string | null;
-  public avatarDecorationURL(options?: StaticImageURLOptions): string | null;
+  public avatarDecorationURL(options?: Omit<StaticImageURLOptions, 'format'>): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public clanBadgeURL(): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -3815,7 +3815,7 @@ export const Constants: {
         size: AllowedImageSize,
         dynamic: boolean,
       ): string;
-      AvatarDecoration(userId: Snowflake, hash: string, format: AllowedImageFormat, size: AllowedImageSize): string;
+      AvatarDecoration(hash: string, size: AllowedImageSize): string;
       ClanBadge(guildId: Snowflake, hash: string): string;
       Banner(id: Snowflake, hash: string, format: DynamicImageFormat, size: AllowedImageSize, dynamic: boolean): string;
       DefaultAvatar(index: number): string;
@@ -3823,6 +3823,14 @@ export const Constants: {
       Emoji(emojiId: Snowflake, format: DynamicImageFormat): string;
       GDMIcon(channelId: Snowflake, hash: string, format: AllowedImageFormat, size: AllowedImageSize): string;
       GuildMemberAvatar(
+        guildId: Snowflake,
+        memberId: Snowflake,
+        hash: string,
+        format?: DynamicImageFormat,
+        size?: AllowedImageSize,
+        dynamic?: boolean,
+      ): string;
+      GuildMemberBanner(
         guildId: Snowflake,
         memberId: Snowflake,
         hash: string,
@@ -3845,6 +3853,12 @@ export const Constants: {
         teamId: Snowflake,
         hash: string,
         { format, size }: { format: AllowedImageFormat; size: AllowedImageSize },
+      ): string;
+      GuildScheduledEventCover(
+        scheduledEventId: Snowflake,
+        coverHash: string,
+        format: AllowedImageFormat,
+        size: AllowedImageSize,
       ): string;
     };
     botGateway: string;
