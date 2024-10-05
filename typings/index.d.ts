@@ -6964,8 +6964,12 @@ export type MessageFlagsString =
   | 'EPHEMERAL'
   | 'LOADING'
   | 'FAILED_TO_MENTION_SOME_ROLES_IN_THREAD'
+  | 'GUILD_FEED_HIDDEN'
+  | 'SHOULD_SHOW_LINK_NOT_DISCORD_WARNING'
   | 'SUPPRESS_NOTIFICATIONS'
-  | 'IS_VOICE_MESSAGE';
+  | 'IS_VOICE_MESSAGE'
+  | 'HAS_SNAPSHOT'
+  | 'IS_UIKIT_COMPONENTS';
 
 export interface MessageInteraction {
   id: Snowflake;
