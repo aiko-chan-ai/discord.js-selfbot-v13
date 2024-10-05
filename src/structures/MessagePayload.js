@@ -189,6 +189,9 @@ class MessagePayload {
         };
       }
     }
+    if (typeof this.options.forward === 'object') {
+      message_reference = this.options.forward;
+    }
 
     const attachments = this.options.files?.map((file, index) => ({
       id: index.toString(),

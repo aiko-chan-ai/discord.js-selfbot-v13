@@ -14,7 +14,13 @@ const { Sticker } = require('./Sticker');
 const Application = require('./interfaces/Application');
 const { Error } = require('../errors');
 const ReactionManager = require('../managers/ReactionManager');
-const { InteractionTypes, MessageTypes, SystemMessageTypes, MessageComponentTypes } = require('../util/Constants');
+const {
+  InteractionTypes,
+  MessageTypes,
+  SystemMessageTypes,
+  MessageComponentTypes,
+  MessageReferenceTypes,
+} = require('../util/Constants');
 const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
@@ -73,7 +79,7 @@ class Message extends Base {
      * The timestamp the message was sent at
      * @type {number}
      */
-    this.createdTimestamp = SnowflakeUtil.timestampFrom(this.id);
+    this.createdTimestamp = this.id ? SnowflakeUtil.timestampFrom(this.id) : new Date(data.timestamp).getTime();
 
     if ('type' in data) {
       /**
@@ -327,6 +333,7 @@ class Message extends Base {
      * @property {Snowflake} channelId The channel's id the message was referenced
      * @property {?Snowflake} guildId The guild's id the message was referenced
      * @property {?Snowflake} messageId The message's id that was referenced
+     * @property {?MessageReferenceType} type The type of the message reference
      */
 
     if ('message_reference' in data) {
@@ -338,6 +345,7 @@ class Message extends Base {
         channelId: data.message_reference.channel_id,
         guildId: data.message_reference.guild_id,
         messageId: data.message_reference.message_id,
+        type: MessageReferenceTypes[data.message_reference.type ?? 0],
       };
     } else {
       this.reference ??= null;
@@ -394,6 +402,19 @@ class Message extends Base {
       };
     } else {
       this.call ??= null;
+    }
+
+    if ('message_snapshots' in data) {
+      /**
+       * A collection of message snapshots
+       * @type {?Array<Partial<Message>>}
+       */
+      this.snapshots = [];
+      for (const snapshot of data.message_snapshots) {
+        this.snapshots.push(new Message(this.client, snapshot.message));
+      }
+    } else {
+      this.snapshots = null;
     }
   }
 
@@ -837,6 +858,29 @@ class Message extends Base {
       });
     }
     return this.channel.send(data);
+  }
+
+  /**
+   * Forwards this message to a channel.
+   * @param {TextBasedChannelResolvable} channel The channel to forward the message to
+   * @returns {Promise<Message>}
+   */
+  forward(channel) {
+    channel = this.client.channels.resolve(channel);
+    if (!channel || !this.channelId) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+    const data = MessagePayload.create(
+      this,
+      {},
+      {
+        forward: {
+          channel_id: this.channelId,
+          guild_id: this.guildId,
+          message_id: this.id,
+          type: 1,
+        },
+      },
+    );
+    return channel.send(data);
   }
 
   /**

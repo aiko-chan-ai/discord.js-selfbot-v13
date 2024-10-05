@@ -77,18 +77,18 @@ export const enum ChannelTypes {
   GUILD_MEDIA = 16,
 }
 
-export const enum SortOrderType {
+export const enum SortOrderTypes {
   LATEST_ACTIVITY = 1,
   CREATION_DATE = 2,
 }
 
-export const enum ForumLayoutType {
+export const enum ForumLayoutTypes {
   NOT_SET = 0,
   LIST_VIEW = 1,
   GALLERY_VIEW = 2,
 }
 
-export const enum MessagePollLayoutType {
+export const enum MessagePollLayoutTypes {
   DEFAULT = 1,
   IMAGE_ONLY_ANSWERS,
 }
@@ -140,6 +140,11 @@ export const enum MessageTypes {
   NITRO_NOTIFICATION,
 }
 
+export const enum MessageReferenceTypes {
+  DEFAULT = 0,
+  FORWARD,
+}
+
 export const enum DefaultMessageNotificationLevels {
   ALL_MESSAGES = 0,
   ONLY_MENTIONS = 1,
@@ -186,14 +191,14 @@ export const enum InteractionTypes {
   MODAL_SUBMIT = 5,
 }
 
-export const enum InviteTargetType {
+export const enum InviteTargetTypes {
   STREAM = 1,
   EMBEDDED_APPLICATION,
   ROLE_SUBSCRIPTIONS,
   CREATOR_PAGE,
 }
 
-export const enum InviteType {
+export const enum InviteTypes {
   GUILD,
   GROUP_DM,
   FRIEND,
@@ -312,7 +317,7 @@ export enum ApplicationRoleConnectionMetadataTypes {
   BOOLEAN_NOT_EQUAL,
 }
 
-export const enum RelationshipType {
+export const enum RelationshipTypes {
   NONE = 0,
   FRIEND = 1,
   BLOCKED = 2,

@@ -790,6 +790,18 @@ exports.MessageTypes = [
 ];
 
 /**
+ * The type of a message reference, e.g. `DEFAULT`. Here are the available types:
+ * * DEFAULT
+ * * FORWARD
+ * @typedef {string} MessageReferenceType
+ * @see {@link https://discord.com/developers/docs/resources/message#message-reference-types}
+ */
+exports.MessageReferenceTypes = [
+  'DEFAULT', // 0
+  'FORWARD',
+];
+
+/**
  * The name of an item to be swept in Sweepers
  * * `applicationCommands` - both global and guild commands
  * * `autoModerationRules`

@@ -77,7 +77,7 @@ import {
   ExplicitContentFilterLevels,
   InteractionResponseTypes,
   InteractionTypes,
-  InviteTargetType,
+  InviteTargetTypes,
   MembershipStates,
   MessageButtonStyles,
   MessageComponentTypes,
@@ -96,14 +96,15 @@ import {
   GuildScheduledEventStatuses,
   GuildScheduledEventPrivacyLevels,
   VideoQualityModes,
-  SortOrderType,
-  ForumLayoutType,
+  SortOrderTypes,
+  ForumLayoutTypes,
   ApplicationRoleConnectionMetadataTypes,
-  RelationshipType,
+  RelationshipTypes,
   SelectMenuComponentTypes,
-  InviteType,
-  MessagePollLayoutType,
+  InviteTypes,
+  MessagePollLayoutTypes,
   ReactionTypes,
+  MessageReferenceTypes,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -1941,10 +1942,10 @@ export class Invite extends Base {
   public maxUses: number | null;
   public memberCount: number;
   public presenceCount: number;
-  public type: InviteType | null;
+  public type: InviteTypes | null;
   public targetApplication: IntegrationApplication | null;
   public targetUser: User | null;
-  public targetType: InviteTargetType | null;
+  public targetType: InviteTargetTypes | null;
   public temporary: boolean | null;
   public readonly url: string;
   public uses: number | null;
@@ -2084,6 +2085,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public call: MessageCall | null;
   public flags: Readonly<MessageFlags>;
   public reference: MessageReference | null;
+  public snapshots: Array<Partial<Message<false>>> | null;
   public position: number | null;
   public awaitReactions(options?: AwaitReactionsOptions): Promise<Collection<Snowflake | string, MessageReaction>>;
   public createReactionCollector(options?: ReactionCollectorOptions): ReactionCollector;
@@ -2098,6 +2100,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public react(emoji: EmojiIdentifierResolvable, burst?: boolean): Promise<MessageReaction>;
   public removeAttachments(): Promise<Message>;
   public reply(options: string | MessagePayload | ReplyMessageOptions): Promise<Message>;
+  public forward(channel: TextBasedChannelResolvable): Promise<Message>;
   public resolveComponent(customId: string): MessageActionRowComponent | null;
   public startThread(options: StartThreadOptions): Promise<ThreadChannel>;
   public suppressEmbeds(suppress?: boolean): Promise<Message>;
@@ -2540,7 +2543,7 @@ export class MessagePoll {
   public constructor(data: MessagePoll | object);
   public question: MessagePollMedia | null;
   public answers: Collection<number, MessagePollMedia>;
-  public layoutType: MessagePollLayoutType | null;
+  public layoutType: MessagePollLayoutTypes | null;
   public allowMultiSelect: boolean;
   public expiry: Date | null;
   public results: MessagePollResult | null;
@@ -3245,7 +3248,7 @@ export abstract class ThreadOnlyChannel extends TextBasedChannelMixin(GuildChann
   public defaultAutoArchiveDuration: ThreadAutoArchiveDuration | null;
   public nsfw: boolean;
   public topic: string | null;
-  public defaultSortOrder: SortOrderType | null;
+  public defaultSortOrder: SortOrderTypes | null;
   public setAvailableTags(tags: GuildForumTagData[], reason?: string): Promise<this>;
   public setDefaultReactionEmoji(emojiId: DefaultReactionEmoji | null, reason?: string): Promise<this>;
   public setDefaultThreadRateLimitPerUser(rateLimit: number, reason?: string): Promise<this>;
@@ -3256,13 +3259,13 @@ export abstract class ThreadOnlyChannel extends TextBasedChannelMixin(GuildChann
     reason?: string,
   ): Promise<this>;
   public setTopic(topic: string | null, reason?: string): Promise<this>;
-  public setDefaultSortOrder(defaultSortOrder: SortOrderType | null, reason?: string): Promise<this>;
+  public setDefaultSortOrder(defaultSortOrder: SortOrderTypes | null, reason?: string): Promise<this>;
 }
 
 export class ForumChannel extends ThreadOnlyChannel {
   public type: 'GUILD_FORUM';
-  public defaultForumLayout: ForumLayoutType;
-  public setDefaultForumLayout(defaultForumLayout: ForumLayoutType, reason?: string): Promise<this>;
+  public defaultForumLayout: ForumLayoutTypes;
+  public setDefaultForumLayout(defaultForumLayout: ForumLayoutTypes, reason?: string): Promise<this>;
 }
 
 export class MediaChannel extends ThreadOnlyChannel {
@@ -3419,7 +3422,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public username: string;
   public readonly note: string | undefined;
   public readonly voice?: VoiceState;
-  public readonly relationship: RelationshipType;
+  public readonly relationship: RelationshipTypes;
   public readonly friendNickname: string | null | undefined;
   public clan: UserClan | null;
   public avatarURL(options?: ImageURLOptions): string | null;
@@ -3872,7 +3875,7 @@ export const Constants: {
   GuildScheduledEventStatuses: EnumHolder<typeof GuildScheduledEventStatuses>;
   IntegrationExpireBehaviors: IntegrationExpireBehaviors[];
   SelectMenuComponentTypes: EnumHolder<typeof SelectMenuComponentTypes>;
-  RelationshipTypes: EnumHolder<typeof RelationshipType>;
+  RelationshipTypes: EnumHolder<typeof RelationshipTypes>;
   MembershipStates: EnumHolder<typeof MembershipStates>;
   MessageButtonStyles: EnumHolder<typeof MessageButtonStyles>;
   MessageComponentTypes: EnumHolder<typeof MessageComponentTypes>;
@@ -4073,22 +4076,22 @@ export class RelationshipManager extends BaseManager {
     client: Client,
     data: {
       user: RawUserData;
-      type: RelationshipType;
+      type: RelationshipTypes;
       since?: string;
       nickname: string | null | undefined;
       id: Snowflake;
     }[],
   );
-  public cache: Collection<Snowflake, RelationshipType>;
+  public cache: Collection<Snowflake, RelationshipTypes>;
   public friendNicknames: Collection<Snowflake, string | null>;
   public sinceCache: Collection<Snowflake, Date>;
   public readonly friendCache: Collection<Snowflake, User>;
   public readonly blockedCache: Collection<Snowflake, User>;
   public readonly incomingCache: Collection<Snowflake, User>;
   public readonly outgoingCache: Collection<Snowflake, User>;
-  public toJSON(): { type: RelationshipType; since: string; nickname: string | null | undefined; id: Snowflake }[];
+  public toJSON(): { type: RelationshipTypes; since: string; nickname: string | null | undefined; id: Snowflake }[];
   public resolveId(user: UserResolvable): Snowflake | undefined;
-  public fetch(user?: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipType | RelationshipManager>;
+  public fetch(user?: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes | RelationshipManager>;
   public deleteRelationship(user: UserResolvable): Promise<boolean>;
   public sendFriendRequest(options: FriendRequestOptions): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
@@ -5424,8 +5427,8 @@ export interface CategoryCreateChannelOptions {
   videoQualityMode?: VideoQualityMode;
   availableTags?: GuildForumTagData[];
   defaultReactionEmoji?: DefaultReactionEmoji;
-  defaultSortOrder?: SortOrderType;
-  defaultForumLayout?: ForumLayoutType;
+  defaultSortOrder?: SortOrderTypes;
+  defaultForumLayout?: ForumLayoutTypes;
   defaultThreadRateLimitPerUser?: number;
   reason?: string;
 }
@@ -5454,8 +5457,8 @@ export interface ChannelData {
   availableTags?: GuildForumTagData[];
   defaultReactionEmoji?: DefaultReactionEmoji;
   defaultThreadRateLimitPerUser?: number;
-  defaultSortOrder?: SortOrderType | null;
-  defaultForumLayout?: ForumLayoutType;
+  defaultSortOrder?: SortOrderTypes | null;
+  defaultForumLayout?: ForumLayoutTypes;
   flags?: ChannelFlagsResolvable;
 }
 
@@ -5604,18 +5607,18 @@ export interface ClientEvents extends BaseClientEvents {
   guildAuditLogEntryCreate: [auditLogEntry: GuildAuditLogsEntry, guild: Guild];
   unhandledPacket: [packet: { t?: string; d: any }, shard: number];
   relationshipAdd: [userId: Snowflake, shouldNotify: boolean];
-  relationshipRemove: [userId: Snowflake, type: RelationshipType, nickname: string | null];
+  relationshipRemove: [userId: Snowflake, type: RelationshipTypes, nickname: string | null];
   relationshipUpdate: [
     userId: Snowflake,
     oldData: {
       nickname: string | null;
       since: Date;
-      type: RelationshipType;
+      type: RelationshipTypes;
     },
     newData: {
       nickname: string | null;
       since: Date;
-      type: RelationshipType;
+      type: RelationshipTypes;
     },
   ];
   channelRecipientAdd: [channel: GroupDMChannel, user: User];
@@ -6763,7 +6766,7 @@ export interface CreateInviteOptions {
   reason?: string;
   targetApplication?: ApplicationResolvable;
   targetUser?: UserResolvable;
-  targetType?: InviteTargetType;
+  targetType?: InviteTargetTypes;
 }
 
 export type IntegrationExpireBehaviors = 'REMOVE_ROLE' | 'KICK';
@@ -7016,6 +7019,7 @@ export interface MessageReference {
   channelId: Snowflake;
   guildId: Snowflake | undefined;
   messageId: Snowflake | undefined;
+  type: MessageReferenceTypes
 }
 
 export type MessageResolvable = Message | Snowflake;
