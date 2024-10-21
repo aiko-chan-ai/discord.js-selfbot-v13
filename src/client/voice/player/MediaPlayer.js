@@ -34,7 +34,7 @@ const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16l
  * @extends {EventEmitter}
  */
 class MediaPlayer extends EventEmitter {
-  constructor(voiceConnection) {
+  constructor(voiceConnection, isScreenSharing) {
     super();
 
     this.dispatcher = null;
@@ -45,6 +45,8 @@ class MediaPlayer extends EventEmitter {
      * @type {VoiceConnection}
      */
     this.voiceConnection = voiceConnection;
+
+    this.isScreenSharing = isScreenSharing;
   }
 
   destroy() {

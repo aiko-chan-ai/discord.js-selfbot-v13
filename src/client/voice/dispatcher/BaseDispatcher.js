@@ -384,7 +384,7 @@ class BaseDispatcher extends Writable {
      * @event BaseDispatcher#debug
      * @param {string} info The debug info
      */
-    this._setSpeaking(1);
+    this._setSpeaking(this.player.isScreenSharing ? 1 << 1 : 1 << 0); // 1 << 0 = SPEAKING, 1 << 1 = SOUND SHARE
     if (!this.player.voiceConnection.sockets.udp) {
       this.emit('debug', 'Failed to send a packet - no UDP socket');
       return;

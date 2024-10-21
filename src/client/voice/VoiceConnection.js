@@ -82,7 +82,7 @@ class VoiceConnection extends EventEmitter {
      * The audio player for this voice connection
      * @type {MediaPlayer}
      */
-    this.player = new MediaPlayer(this);
+    this.player = new MediaPlayer(this, this.constructor.name === 'StreamConnection');
 
     this.player.on('debug', m => {
       /**
