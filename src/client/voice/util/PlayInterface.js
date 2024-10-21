@@ -77,12 +77,12 @@ class PlayInterface {
   /**
    * Options that can be passed to stream-playing methods:
    * @typedef {Object} VideoOptions
-   * @property {number} [seek=0] The time to seek to, will be ignored when playing `ogg/opus` or `webm/opus` streams
+   * @property {number} [seek=0] The time to seek to
    * @property {number} [fps=30] Video fps
    * @property {number} [highWaterMark=12] The maximum number of opus packets to make and store before they are
    * actually needed. See https://nodejs.org/en/docs/guides/backpressuring-in-streams/. Setting this value to
    * 1 means that changes in volume will be more instant.
-   * @property {'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow'} [presetH26x='veryfast'] ffmpeg preset h254 / h265
+   * @property {'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium' | 'slow' | 'slower' | 'veryslow'} [presetH26x='veryfast'] ffmpeg preset h264
    * @property {boolean} [hwAccel=false]  Enables hardware accelerated video decoding. Enabling this option might result in an exception
    * being thrown by Ffmpeg process if your system does not support hardware acceleration
    * @property {string[]} [inputFFmpegArgs] input ffmpeg
@@ -94,7 +94,7 @@ class PlayInterface {
    */
 
   /**
-   * Play an video resource.
+   * Play a video resource.
    * @param {ReadableStream|string} resource The resource to play.
    * @param {VideoOptions} [options] The options to play.
    * @example
