@@ -2085,7 +2085,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public call: MessageCall | null;
   public flags: Readonly<MessageFlags>;
   public reference: MessageReference | null;
-  public snapshots: Array<Partial<Message<false>>> | null;
+  public snapshots: Partial<Message<false>>[] | null;
   public position: number | null;
   public awaitReactions(options?: AwaitReactionsOptions): Promise<Collection<Snowflake | string, MessageReaction>>;
   public createReactionCollector(options?: ReactionCollectorOptions): ReactionCollector;
