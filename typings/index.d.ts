@@ -7019,7 +7019,7 @@ export interface MessageReference {
   channelId: Snowflake;
   guildId: Snowflake | undefined;
   messageId: Snowflake | undefined;
-  type: MessageReferenceTypes
+  type: MessageReferenceTypes;
 }
 
 export type MessageResolvable = Message | Snowflake;
