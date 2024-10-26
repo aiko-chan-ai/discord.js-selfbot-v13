@@ -101,7 +101,7 @@ class ClientVoiceManager {
   joinChannel(channel, config = {}) {
     return new Promise((resolve, reject) => {
       channel = this.client.channels.resolve(channel);
-      if (!['DM', 'GROUP_DM'].includes(channel.type) && !channel.joinable) {
+      if (!['DM', 'GROUP_DM'].includes(channel?.type) && !channel.joinable) {
         throw new Error('VOICE_JOIN_CHANNEL', channel.full);
       }
 
