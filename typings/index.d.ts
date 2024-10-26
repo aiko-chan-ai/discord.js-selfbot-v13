@@ -56,7 +56,7 @@ import {
   APIChannel,
   TeamMemberRole,
 } from 'discord-api-types/v9';
-import { ChildProcess } from 'node:child_process';
+import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
 import { Response } from 'node-fetch';
@@ -168,6 +168,7 @@ import {
   RawWidgetData,
   RawWidgetMemberData,
 } from './rawDataTypes';
+import { Socket } from 'node:dgram';
 
 //#region Classes
 
@@ -1043,6 +1044,7 @@ export class VoiceConnection extends EventEmitter {
   public voiceManager: ClientVoiceManager;
   public videoCodec: VideoCodec;
   public streamConnection: StreamConnection | null;
+  public streamWatchConnection: Collection<Snowflake, StreamConnectionReadonly>;
   public disconnect(): void;
   public playAudio(input: Readable | string, options?: StreamOptions): AudioDispatcher;
   public playVideo(input: Readable | string, options?: VideoOptions): VideoDispatcher;
@@ -1065,12 +1067,13 @@ export class VoiceConnection extends EventEmitter {
   public once(event: string, listener: (...args: any[]) => void): this;
 
   public createStreamConnection(): Promise<StreamConnection>;
+  public joinStreamConnection(user: UserResolvable): Promise<StreamConnectionReadonly>;
 }
 
 export class StreamConnection extends VoiceConnection {
   public createStreamConnection(): Promise<this>;
   public readonly voiceConnection: VoiceConnection;
-  public serverId: string;
+  public serverId: Snowflake;
   public isPaused: boolean;
   public streamConnection: this;
   public sendSignalScreenshare(): void;
@@ -1079,9 +1082,40 @@ export class StreamConnection extends VoiceConnection {
   public readonly streamKey: string;
 }
 
+export class StreamConnectionReadonly extends VoiceConnection {
+  public joinStreamConnection(): Promise<this>;
+  public readonly voiceConnection: VoiceConnection;
+  public serverId: Snowflake;
+  public userId: Snowflake;
+  public streamConnection: null;
+  public sendSignalScreenshare(): void;
+  private sendStopScreenshare(): void;
+  public readonly streamKey: string;
+  /** @deprecated removed */
+  public override playAudio(): AudioDispatcher;
+  /** @deprecated removed */
+  public override playVideo(): VideoDispatcher;
+}
+
+export class FFmpegHandler extends EventEmitter {
+  public codec: VideoCodec | 'H265' | 'VP9' | 'AV1';
+  public portUdp: number;
+  public ready: boolean;
+  public stream: ChildProcessWithoutNullStreams;
+  public socket: Socket;
+  public output: Writable | string;
+  public sendPayloadToFFmpeg(payload: Buffer): void;
+  public on(event: 'ready', listener: () => void): this;
+  public once(event: 'ready', listener: () => void): this;
+}
+
 export class VoiceReceiver extends EventEmitter {
   constructor(connection: VoiceConnection);
   public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
+  public createVideoStream(
+    user: UserResolvable,
+    options?: { portUdp: number; codec: VideoCodec | 'H265' | 'VP9' | 'AV1'; output: Writable | string },
+  ): FFmpegHandler;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;
   public on(

@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const { Buffer } = require('node:buffer');
 const crypto = require('node:crypto');
 const { setTimeout } = require('node:timers');
+const FFmpegHandler = require('./FFmpegHandler');
 const Speaking = require('../../../util/Speaking');
 const secretbox = require('../util/Secretbox');
 const { SILENCE_FRAME } = require('../util/Silence');
@@ -25,6 +26,7 @@ class PacketHandler extends EventEmitter {
     super();
     this.receiver = receiver;
     this.streams = new Map();
+    this.videoStreams = new Map();
     this.speakingTimeouts = new Map();
   }
 
@@ -51,6 +53,15 @@ class PacketHandler extends EventEmitter {
     const stream = new Readable();
     stream.on('end', () => this.streams.delete(user));
     this.streams.set(user, { stream, end });
+    return stream;
+  }
+
+  makeVideoStream(user, portUdp, codec = 'H264', output) {
+    if (this.videoStreams.has(user)) return this.videoStreams.get(user);
+    const stream = new FFmpegHandler(codec, portUdp, output);
+    stream.on('ready', () => {
+      this.videoStreams.set(user, stream);
+    });
     return stream;
   }
 
@@ -180,7 +191,7 @@ class PacketHandler extends EventEmitter {
     const userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
 
     if (!userStat) return;
-
+    const streamInfo = this.videoStreams.get(userStat.userId);
     // If the user is in video, we need to check if the packet is just silence
     if (userStat.hasVideo) {
       const packet = this.parseBuffer(buffer, true);
@@ -193,6 +204,10 @@ class PacketHandler extends EventEmitter {
         return;
       }
       this.receiver.emit('videoData', ssrc, userStat, header, videoPacket);
+
+      if (streamInfo) {
+        streamInfo.sendPayloadToFFmpeg(Buffer.concat(packet));
+      }
     }
   }
 
