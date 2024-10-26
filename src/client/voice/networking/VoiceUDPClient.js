@@ -6,6 +6,7 @@ const { isIPv4 } = require('net');
 const { Buffer } = require('node:buffer');
 const { Error } = require('../../../errors');
 const { VoiceOpcodes } = require('../../../util/Constants');
+const Util = require('../../../util/Util');
 
 /**
  * Represents a UDP client for a Voice Connection.
@@ -132,15 +133,7 @@ class VoiceConnectionUDPClient extends EventEmitter {
               priority: 1000,
               payload_type: 120,
             },
-            {
-              name: this.voiceConnection.videoCodec,
-              type: 'video',
-              priority: 1000,
-              payload_type: 101,
-              rtx_payload_type: 102,
-              encode: true,
-              decode: true,
-            },
+            ...Util.getAllPayloadType(),
           ],
           data: {
             address: packet.address,

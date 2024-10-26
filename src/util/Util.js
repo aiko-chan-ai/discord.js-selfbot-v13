@@ -19,6 +19,60 @@ const TextSortableGroupTypes = ['GUILD_TEXT', 'GUILD_ANNOUCMENT', 'GUILD_FORUM']
 const VoiceSortableGroupTypes = ['GUILD_VOICE', 'GUILD_STAGE_VOICE'];
 const CategorySortableGroupTypes = ['GUILD_CATEGORY'];
 
+const payloadTypes = [
+  {
+    name: 'opus',
+    type: 'audio',
+    priority: 1000,
+    payload_type: 120,
+  },
+  {
+    name: 'AV1',
+    type: 'video',
+    priority: 1000,
+    payload_type: 101,
+    rtx_payload_type: 102,
+    encode: false,
+    decode: false,
+  },
+  {
+    name: 'H265',
+    type: 'video',
+    priority: 2000,
+    payload_type: 103,
+    rtx_payload_type: 104,
+    encode: false,
+    decode: false,
+  },
+  {
+    name: 'H264',
+    type: 'video',
+    priority: 3000,
+    payload_type: 105,
+    rtx_payload_type: 106,
+    encode: true,
+    decode: true,
+  },
+  {
+    name: 'VP8',
+    type: 'video',
+    priority: 4000,
+    payload_type: 107,
+    rtx_payload_type: 108,
+    encode: true,
+    decode: false,
+  },
+  {
+    name: 'VP9',
+    type: 'video',
+    priority: 5000,
+    payload_type: 109,
+    rtx_payload_type: 110,
+    encode: true,
+    decode: false,
+  },
+];
+
 /**
  * Contains various general-purpose utility methods.
  */
@@ -880,6 +934,54 @@ class Util extends null {
     }
 
     return Object.keys(data).length > 0 ? data : undefined;
+  }
+
+  static getAllPayloadType() {
+    return payloadTypes;
+  }
+
+  static getPayloadType(codecName) {
+    return payloadTypes.find(p => p.name === codecName).payload_type;
+  }
+
+  static getSDPCodecName(packet, portUdp) {
+    let payload, payloadType;
+    if (typeof packet === 'string') {
+      payload = payloadTypes.find(p => p.name === packet);
+      payloadType = payload.payload_type;
+    } else {
+      const payloadType = packet[1] > 120 ? packet[1] & 0x80 : packet[1];
+      console.log('payloadType', payloadType, packet, portUdp);
+      payload = payloadTypes.find(p => p.payload_type === payloadType);
+    }
+    let sdpData = `o=- 0 0 IN IP4 127.0.0.1
+s=No Name
+c=IN IP4 127.0.0.1
+t=0 0
+a=tool:libavformat 61.1.100
+m=video ${portUdp} RTP/AVP ${payloadType}
+a=rtpmap:${payloadType} ${payload.name}/90000
+#Placeholder
+a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level
+a=extmap:2 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
+a=extmap:3 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
+a=extmap:4 urn:ietf:params:rtp-hdrext:sdes:mid
+a=extmap:5 http://www.webrtc.org/experiments/rtp-hdrext/playout-delay
+a=extmap:6 http://www.webrtc.org/experiments/rtp-hdrext/video-content-type
+a=extmap:7 http://www.webrtc.org/experiments/rtp-hdrext/video-timing
+a=extmap:8 http://www.webrtc.org/experiments/rtp-hdrext/color-space
+a=extmap:10 urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id
+a=extmap:11 urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id
+a=extmap:13 urn:3gpp:video-orientation
+a=extmap:14 urn:ietf:params:rtp-hdrext:toffset
+`;
+    if (payload.name === 'H264') {
+      sdpData = sdpData.replace(
+        '#Placeholder',
+        `a=fmtp:${payloadType} profile-level-id=42e01f;sprop-parameter-sets=Z0IAH6tAoAt2AtwEBAaQeJEV,aM4JyA==;packetization-mode=1`,
+      );
+    }
+    return sdpData;
   }
 }
 

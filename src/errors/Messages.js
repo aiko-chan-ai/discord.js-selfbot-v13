@@ -204,6 +204,10 @@ const Messages = {
   UDP_WRONG_HANDSHAKE: 'Wrong handshake packet for UDP',
 
   INVALID_VIDEO_CODEC: codecs => `Only these codecs are supported: ${codecs.join(', ')}`,
+
+  STREAM_CONNECTION_READONLY: 'Cannot send data to a read-only stream',
+  STREAM_CANNOT_JOIN: 'Cannot join a stream to itself',
+  VOICE_USER_NOT_STREAMING: 'User is not streaming',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

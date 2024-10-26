@@ -14,8 +14,8 @@ const BaseDispatcher = require('./BaseDispatcher');
  * @extends {BaseDispatcher}
  */
 class VideoDispatcher extends BaseDispatcher {
-  constructor(player, highWaterMark = 12, streams, fps) {
-    super(player, highWaterMark, 101, true, streams);
+  constructor(player, highWaterMark = 12, streams, fps, payloadType) {
+    super(player, highWaterMark, payloadType, true, streams);
     this.fps = fps;
   }
 

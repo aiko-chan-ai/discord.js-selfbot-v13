@@ -19,11 +19,12 @@ Please use the @dank074/discord-video-stream library for the best support.
 
 const { Buffer } = require('buffer');
 const VideoDispatcher = require('./VideoDispatcher');
+const Util = require('../../../util/Util');
 const { H264Helpers, H265Helpers } = require('../player/processing/AnnexBNalSplitter');
 
 class AnnexBDispatcher extends VideoDispatcher {
-  constructor(player, highWaterMark = 12, streams, fps, nalFunctions) {
-    super(player, highWaterMark, streams, fps);
+  constructor(player, highWaterMark = 12, streams, fps, nalFunctions, payloadType) {
+    super(player, highWaterMark, streams, fps, payloadType);
     this._nalFunctions = nalFunctions;
   }
 
@@ -66,7 +67,7 @@ class AnnexBDispatcher extends VideoDispatcher {
 
 class H264Dispatcher extends AnnexBDispatcher {
   constructor(player, highWaterMark = 12, streams, fps) {
-    super(player, highWaterMark, streams, fps, H264Helpers);
+    super(player, highWaterMark, streams, fps, H264Helpers, Util.getPayloadType('H264'));
   }
 
   makeFragmentationUnitHeader(isFirstPacket, isLastPacket, naluHeader) {
@@ -91,7 +92,7 @@ class H264Dispatcher extends AnnexBDispatcher {
 
 class H265Dispatcher extends AnnexBDispatcher {
   constructor(player, highWaterMark = 12, streams, fps) {
-    super(player, highWaterMark, streams, fps, H265Helpers);
+    super(player, highWaterMark, streams, fps, H265Helpers, Util.getPayloadType('H265'));
   }
 
   makeFragmentationUnitHeader(isFirstPacket, isLastPacket, naluHeader) {

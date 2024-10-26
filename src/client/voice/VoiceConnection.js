@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events');
 const { setTimeout } = require('node:timers');
+const { Collection } = require('@discordjs/collection');
 const VoiceUDP = require('./networking/VoiceUDPClient');
 const VoiceWebSocket = require('./networking/VoiceWebSocket');
 const MediaPlayer = require('./player/MediaPlayer');
@@ -134,9 +135,10 @@ class VoiceConnection extends EventEmitter {
     /**
      * Video codec
      * * `VP8`
-     * * `VP9` (Not supported)
+     * * `VP9` (Not supported for encoding)
      * * `H264`
-     * * `H265` (Not supported)
+     * * `H265` (Not supported for encoding, worked for decoding)
+     * * `AV1` (Not supported for encoding)
      * @typedef {string} VideoCodec
      */
 
@@ -151,6 +153,12 @@ class VoiceConnection extends EventEmitter {
      * @type {?StreamConnection}
      */
     this.streamConnection = null;
+
+    /**
+     * All stream watch connection
+     * @type {Collection<Snowflake, StreamConnectionReadonly>}
+     */
+    this.streamWatchConnection = new Collection();
   }
 
   /**
@@ -653,18 +661,17 @@ class VoiceConnection extends EventEmitter {
         if (!this.eventHook) {
           this.eventHook = true; // Dont listen this event two times :/
           this.channel.client.on('raw', packet => {
-            if (
-              typeof packet !== 'object' ||
-              !packet.t ||
-              !packet.d ||
-              !this.streamConnection ||
-              !packet.d?.stream_key
-            ) {
+            if (typeof packet !== 'object' || !packet.t || !packet.d || !packet.d?.stream_key) {
               return;
             }
             const { t: event, d: data } = packet;
             const StreamKey = parseStreamKey(data.stream_key);
-            if (StreamKey.userId === this.channel.client.user.id && this.channel.id == StreamKey.channelId) {
+            if (
+              StreamKey.userId === this.channel.client.user.id &&
+              this.channel.id == StreamKey.channelId &&
+              this.streamConnection
+            ) {
+              // Current user stream
               switch (event) {
                 case 'STREAM_CREATE': {
                   this.streamConnection.setSessionId(this.authentication.sessionId);
@@ -677,6 +684,25 @@ class VoiceConnection extends EventEmitter {
                 }
                 case 'STREAM_DELETE': {
                   this.streamConnection.disconnect();
+                  break;
+                }
+              }
+            }
+            if (this.streamWatchConnection.has(StreamKey.userId) && this.channel.id == StreamKey.channelId) {
+              const streamConnection = this.streamWatchConnection.get(StreamKey.userId);
+              // Watch user stream
+              switch (event) {
+                case 'STREAM_CREATE': {
+                  streamConnection.setSessionId(this.authentication.sessionId);
+                  streamConnection.serverId = data.rtc_server_id;
+                  break;
+                }
+                case 'STREAM_SERVER_UPDATE': {
+                  streamConnection.setTokenAndEndpoint(data.token, data.endpoint);
+                  break;
+                }
+                case 'STREAM_DELETE': {
+                  streamConnection.disconnect();
                   break;
                 }
               }
@@ -707,6 +733,112 @@ class VoiceConnection extends EventEmitter {
           });
           connection.once('disconnect', () => {
             this.streamConnection = null;
+          });
+        });
+      }
+    });
+  }
+
+  /**
+   * Watch user stream
+   * @param {UserResolvable} user Discord user
+   * @returns {Promise<StreamConnectionReadonly>}
+   */
+  joinStreamConnection(user) {
+    const userId = this.client.users.resolveId(user);
+    // Check if user is streaming
+    if (!userId) {
+      return Promise.reject(new Error('VOICE_USER_MISSING'));
+    }
+    const voiceState = this.channel.guild?.voiceStates.cache.get(userId) || this.client.voiceStates.cache.get(userId);
+    if (!voiceState || !voiceState.streaming) {
+      return Promise.reject(new Error('VOICE_USER_NOT_STREAMING'));
+    }
+    // eslint-disable-next-line consistent-return
+    return new Promise((resolve, reject) => {
+      if (this.streamWatchConnection.has(userId)) {
+        return resolve(this.streamWatchConnection.get(userId));
+      } else {
+        const connection = new StreamConnectionReadonly(this.voiceManager, this.channel, this, userId);
+        this.streamWatchConnection.set(userId, connection);
+        connection.setVideoCodec(this.videoCodec);
+        // Setup event...
+        if (!this.eventHook) {
+          this.eventHook = true; // Dont listen this event two times :/
+          this.channel.client.on('raw', packet => {
+            if (typeof packet !== 'object' || !packet.t || !packet.d || !packet.d?.stream_key) {
+              return;
+            }
+            const { t: event, d: data } = packet;
+            const StreamKey = parseStreamKey(data.stream_key);
+            if (
+              StreamKey.userId === this.channel.client.user.id &&
+              this.channel.id == StreamKey.channelId &&
+              this.streamConnection
+            ) {
+              // Current user stream
+              switch (event) {
+                case 'STREAM_CREATE': {
+                  this.streamConnection.setSessionId(this.authentication.sessionId);
+                  this.streamConnection.serverId = data.rtc_server_id;
+                  break;
+                }
+                case 'STREAM_SERVER_UPDATE': {
+                  this.streamConnection.setTokenAndEndpoint(data.token, data.endpoint);
+                  break;
+                }
+                case 'STREAM_DELETE': {
+                  this.streamConnection.disconnect();
+                  break;
+                }
+              }
+            }
+            if (this.streamWatchConnection.has(StreamKey.userId) && this.channel.id == StreamKey.channelId) {
+              const streamConnection = this.streamWatchConnection.get(StreamKey.userId);
+              // Watch user stream
+              switch (event) {
+                case 'STREAM_CREATE': {
+                  streamConnection.setSessionId(this.authentication.sessionId);
+                  streamConnection.serverId = data.rtc_server_id;
+                  break;
+                }
+                case 'STREAM_SERVER_UPDATE': {
+                  streamConnection.setTokenAndEndpoint(data.token, data.endpoint);
+                  break;
+                }
+                case 'STREAM_DELETE': {
+                  streamConnection.disconnect();
+                  break;
+                }
+              }
+            }
+          });
+        }
+
+        connection.sendSignalScreenshare();
+
+        connection.on('debug', msg =>
+          this.channel.client.emit(
+            'debug',
+            `[VOICE STREAM WATCH (${userId}>${this.channel.guild?.id || this.channel.id}:${
+              connection.status
+            })]: ${msg}`,
+          ),
+        );
+        connection.once('failed', reason => {
+          this.streamWatchConnection.delete(userId);
+          reject(reason);
+        });
+
+        connection.on('error', reject);
+
+        connection.once('authenticated', () => {
+          connection.once('ready', () => {
+            resolve(connection);
+            connection.removeListener('error', reject);
+          });
+          connection.once('disconnect', () => {
+            this.streamWatchConnection.delete(userId);
           });
         });
       }
@@ -764,11 +896,23 @@ class StreamConnection extends VoiceConnection {
     return Promise.resolve(this);
   }
 
+  joinStreamConnection() {
+    throw new Error('STREAM_CANNOT_JOIN');
+  }
+
   get streamConnection() {
     return this;
   }
 
   set streamConnection(value) {
+    // Why ?
+  }
+
+  get streamWatchConnection() {
+    return new Collection();
+  }
+
+  set streamWatchConnection(value) {
     // Why ?
   }
 
@@ -840,6 +984,127 @@ class StreamConnection extends VoiceConnection {
     return `${['DM', 'GROUP_DM'].includes(this.channel.type) ? 'call' : `guild:${this.channel.guild.id}`}:${
       this.channel.id
     }:${this.channel.client.user.id}`;
+  }
+}
+
+/**
+ * Represents a connection to a guild's voice server.
+ * ```js
+ * // Obtained using:
+ * client.voice.joinChannel(channel)
+ *   .then(connection => connection.createStreamConnection())
+ *    .then(connection => {
+ *
+ *   });
+ * ```
+ * @extends {VoiceConnection}
+ */
+class StreamConnectionReadonly extends VoiceConnection {
+  #requestDisconnect = false;
+  /**
+   * @param {ClientVoiceManager} voiceManager Voice manager
+   * @param {Channel} channel any channel (joinable)
+   * @param {VoiceConnection} voiceConnection parent
+   * @param {Snowflake} userId User ID
+   */
+  constructor(voiceManager, channel, voiceConnection, userId) {
+    super(voiceManager, channel);
+
+    /**
+     * Current voice connection
+     * @type {VoiceConnection}
+     */
+    this.voiceConnection = voiceConnection;
+
+    /**
+     * User ID (who started the stream)
+     * @type {Snowflake}
+     */
+    this.userId = userId;
+
+    Object.defineProperty(this, 'voiceConnection', {
+      value: voiceConnection,
+      writable: false,
+    });
+
+    /**
+     * Server Id
+     * @type {string | null}
+     */
+    this.serverId = null;
+  }
+
+  createStreamConnection() {
+    throw new Error('STREAM_CONNECTION_READONLY');
+  }
+
+  joinStreamConnection() {
+    return Promise.resolve(this);
+  }
+
+  get streamConnection() {
+    return null;
+  }
+
+  set streamConnection(value) {
+    // Why ?
+  }
+
+  get streamWatchConnection() {
+    return new Collection();
+  }
+
+  set streamWatchConnection(value) {
+    // Why ?
+  }
+
+  disconnect() {
+    if (this.#requestDisconnect) return;
+    this.emit('closing');
+    this.emit('debug', 'Stream: disconnect() triggered');
+    clearTimeout(this.connectTimeout);
+    this.voiceConnection.streamWatchConnection.delete(this.userId);
+    this.sendStopScreenshare();
+    this._disconnect();
+  }
+
+  /**
+   * Create new stream connection (WS packet)
+   * @returns {void}
+   */
+  sendSignalScreenshare() {
+    this.emit('debug', `Signal Stream Watch: ${this.streamKey}`);
+    return this.channel.client.ws.broadcast({
+      op: Opcodes.STREAM_WATCH,
+      d: {
+        stream_key: this.streamKey,
+      },
+    });
+  }
+
+  /**
+   * Stop screenshare, delete this connection (WS)
+   * @returns {void}
+   * @private Using StreamConnection#disconnect()
+   */
+  sendStopScreenshare() {
+    this.#requestDisconnect = true;
+    this.channel.client.ws.broadcast({
+      op: Opcodes.STREAM_DELETE,
+      d: {
+        stream_key: this.streamKey,
+      },
+    });
+  }
+
+  /**
+   * Current stream key
+   * @type {string}
+   */
+  get streamKey() {
+    return `${['DM', 'GROUP_DM'].includes(this.channel.type) ? 'call' : `guild:${this.channel.guild.id}`}:${
+      this.channel.id
+    }:${this.userId}`;
   }
 }
 

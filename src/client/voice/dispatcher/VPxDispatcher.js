@@ -19,10 +19,11 @@ Please use the @dank074/discord-video-stream library for the best support.
 
 const { Buffer } = require('node:buffer');
 const VideoDispatcher = require('./VideoDispatcher');
+const Util = require('../../../util/Util');
 
 class VP8Dispatcher extends VideoDispatcher {
   constructor(player, highWaterMark = 12, streams, fps) {
-    super(player, highWaterMark, streams, fps);
+    super(player, highWaterMark, streams, fps, Util.getPayloadType('VP8'));
   }
 
   makeChunk(buffer, isFirstFrame) {
