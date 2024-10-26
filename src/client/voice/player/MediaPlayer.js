@@ -26,7 +26,21 @@ const { H264Dispatcher } = require('../dispatcher/AnnexBDispatcher');
 const AudioDispatcher = require('../dispatcher/AudioDispatcher');
 const { VP8Dispatcher } = require('../dispatcher/VPxDispatcher');
 
-const FFMPEG_ARGUMENTS = ['-analyzeduration', '0', '-loglevel', '0', '-f', 's16le', '-ar', '48000', '-ac', '2'];
+const FFMPEG_ARGUMENTS = [
+  '-use_wallclock_as_timestamps',
+  '1',
+  '-copyts',
+  '-analyzeduration',
+  '0',
+  '-loglevel',
+  '0',
+  '-f',
+  's16le',
+  '-ar',
+  '48000',
+  '-ac',
+  '2',
+];
 
 /**
  * Player for a Voice Connection.
@@ -135,7 +149,19 @@ class MediaPlayer extends EventEmitter {
 
     if (!options?.fps) options.fps = 30;
 
-    const args = ['-i', '-', '-analyzeduration', '0', '-flags', 'low_delay', '-r', `${options?.fps}`];
+    const args = [
+      '-i',
+      '-',
+      '-use_wallclock_as_timestamps',
+      '1',
+      '-copyts',
+      '-analyzeduration',
+      '0',
+      '-flags',
+      'low_delay',
+      '-r',
+      `${options?.fps}`,
+    ];
 
     if (options?.bitrate && typeof options?.bitrate === 'number') {
       args.push('-b:v', `${options?.bitrate}K`);
