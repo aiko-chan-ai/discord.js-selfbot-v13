@@ -68,7 +68,7 @@ const payloadTypes = [
     priority: 5000,
     payload_type: 109,
     rtx_payload_type: 110,
-    encode: true,
+    encode: false,
     decode: false,
   },
 ];
@@ -951,7 +951,6 @@ class Util extends null {
       payloadType = payload.payload_type;
     } else {
       const payloadType = packet[1] > 120 ? packet[1] & 0x80 : packet[1];
-      console.log('payloadType', payloadType, packet, portUdp);
       payload = payloadTypes.find(p => p.payload_type === payloadType);
     }
     let sdpData = `o=- 0 0 IN IP4 127.0.0.1

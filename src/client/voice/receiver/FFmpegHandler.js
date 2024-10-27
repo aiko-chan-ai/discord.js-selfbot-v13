@@ -5,6 +5,8 @@ const { createSocket } = require('dgram');
 const { EventEmitter } = require('events');
 const { Buffer } = require('node:buffer');
 const { Writable } = require('stream');
+const find = require('find-process');
+const kill = require('tree-kill');
 const Util = require('../../../util/Util');
 const { StreamOutput } = require('../util/Socket');
 
@@ -46,11 +48,7 @@ class FFmpegHandler extends EventEmitter {
      */
     this.ready = false;
 
-    /**
-     * The FFmpeg process
-     * @type {ChildProcessWithoutNullStreams}
-     */
-    this.stream = spawn('ffmpeg', [
+    const stream = spawn('ffmpeg', [
       '-reorder_queue_size',
       '50',
       '-err_detect',
@@ -73,9 +71,15 @@ class FFmpegHandler extends EventEmitter {
       '500000',
       '-y',
       '-f', // Specify the format
-      'matroska', // MKV format
+      'mpegts', // MKV format
       isStream ? this.outputStream.url : output,
     ]);
+
+    /**
+     * The FFmpeg process
+     * @type {ChildProcessWithoutNullStreams}
+     */
+    this.stream = stream;
     this.stream.stdin.write(sdpData);
     this.stream.stdin.end();
     this.stream.stderr.once('data', data => {
@@ -100,6 +104,17 @@ class FFmpegHandler extends EventEmitter {
   ) {
     const message = Buffer.from(payload);
     this.socket.send(message, 0, message.length, this.portUdp, '127.0.0.1', callback);
+  }
+
+  destroy() {
+    const ffmpegPid = this.stream.pid; // But it is ppid ;-;
+    const args = this.stream.spawnargs.slice(1).join(' '); // Skip ffmpeg
+    find('name', 'ffmpeg', true).then(list => {
+      let process = list.find(o => o.pid === ffmpegPid || o.ppid === ffmpegPid || o.cmd.includes(args));
+      if (process) {
+        kill(process.pid);
+      }
+    });
   }
 }
 
