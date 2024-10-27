@@ -5,7 +5,7 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
 const { RangeError } = require('../errors');
 const ActivityFlags = require('../util/ActivityFlags');
-const { PollLayoutTypes } = require('../util/Constants');
+const { PollLayoutTypes, MessageReferenceTypes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const MessageFlags = require('../util/MessageFlags');
 const Util = require('../util/Util');
@@ -185,12 +185,14 @@ class MessagePayload {
       if (message_id) {
         message_reference = {
           message_id,
+          type: MessageReferenceTypes.DEFAULT,
           fail_if_not_exists: this.options.reply.failIfNotExists ?? this.target.client.options.failIfNotExists,
         };
       }
     }
     if (typeof this.options.forward === 'object') {
       message_reference = this.options.forward;
+      message_reference.type = MessageReferenceTypes.FORWARD;
     }
 
     const attachments = this.options.files?.map((file, index) => ({
