@@ -100,16 +100,6 @@ class UserManager extends CachedManager {
   }
 
   /**
-   * Fetches a user's flags.
-   * @param {UserResolvable} user The UserResolvable to identify
-   * @param {BaseFetchOptions} [options] Additional options for this fetch
-   * @returns {Promise<UserFlags>}
-   */
-  async fetchFlags(user, options) {
-    return (await this.fetch(user, options)).flags;
-  }
-
-  /**
    * Sends a message to a user.
    * @param {UserResolvable} user The UserResolvable to identify
    * @param {string|MessagePayload|MessageOptions} options The options to provide

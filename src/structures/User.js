@@ -389,15 +389,6 @@ class User extends Base {
   }
 
   /**
-   * Fetches this user's flags.
-   * @param {boolean} [force=false] Whether to skip the cache check and request the API
-   * @returns {Promise<UserFlags>}
-   */
-  fetchFlags(force = false) {
-    return this.client.users.fetchFlags(this.id, { force });
-  }
-
-  /**
    * Fetches this user.
    * @param {boolean} [force=true] Whether to skip the cache check and request the API
    * @returns {Promise<User>}
