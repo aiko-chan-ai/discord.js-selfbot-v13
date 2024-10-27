@@ -1768,10 +1768,10 @@ exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
  * Different layouts for {@link MessagePoll} will come in the future. For now though, this value will always be `DEFAULT`.
  * * DEFAULT
  * * IMAGE_ONLY_ANSWERS
- * @typedef {string} MessagePollLayoutType
+ * @typedef {string} PollLayoutType
  * @see {@link https://docs.discord.sex/resources/message#poll-layout-type}
  */
-exports.MessagePollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
+exports.PollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
 
 /**
  * Relationship Enums:

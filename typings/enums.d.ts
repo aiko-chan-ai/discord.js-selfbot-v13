@@ -88,7 +88,7 @@ export const enum ForumLayoutTypes {
   GALLERY_VIEW = 2,
 }
 
-export const enum MessagePollLayoutTypes {
+export const enum PollLayoutTypes {
   DEFAULT = 1,
   IMAGE_ONLY_ANSWERS,
 }

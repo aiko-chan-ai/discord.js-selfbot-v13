@@ -8,7 +8,7 @@ const MessageAttachment = require('./MessageAttachment');
 const Embed = require('./MessageEmbed');
 const Mentions = require('./MessageMentions');
 const MessagePayload = require('./MessagePayload');
-const MessagePoll = require('./MessagePoll');
+const { Poll } = require('./Poll');
 const ReactionCollector = require('./ReactionCollector');
 const { Sticker } = require('./Sticker');
 const Application = require('./interfaces/Application');
@@ -257,14 +257,14 @@ class Message extends Base {
       this.webhookId ??= null;
     }
 
-    /**
-     * The poll that was sent with the message
-     * @type {?MessagePoll}
-     */
-    if ('poll' in data) {
-      this.poll = new MessagePoll(data.poll, this.client);
+    if (data.poll) {
+      /**
+       * The poll that was sent with the message
+       * @type {?Poll}
+       */
+      this.poll = new Poll(this.client, data.poll, this);
     } else {
-      this.poll = null;
+      this.poll ??= null;
     }
 
     if ('application' in data) {
@@ -939,32 +939,6 @@ class Message extends Base {
           answer_ids: ids.flat(1).map(value => value.toString()),
         },
       });
-  }
-
-  /**
-   * Immediately ends the poll. You cannot end polls from other users.
-   * @returns {Promise<this>}
-   * @deprecated Using MessageManager#endPoll(messageId) instead
-   */
-  endPoll() {
-    return this.channel.messages.endPoll(this.id);
-  }
-
-  /**
-   * Get a list of users that voted for this specific answer.
-   * @param {number} answerId Answer Id
-   * @param {Snowflake} [afterUserId] Get users after this user ID
-   * @param {number} [limit=25] Max number of users to return (1-100, default 25)
-   * @returns {Promise<Collection<Snowflake, User>>}
-   * @deprecated Using MessageManager#fetchPollAnswerVoters({ messageId, answerId, after, limit }) instead
-   */
-  getAnswerVoter(answerId, afterUserId, limit = 25) {
-    return this.channel.messages.fetchPollAnswerVoters({
-      messageId: this.id,
-      answerId,
-      after: afterUserId,
-      limit,
-    });
   }
 
   /**

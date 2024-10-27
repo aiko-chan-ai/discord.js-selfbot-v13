@@ -55,6 +55,8 @@ import {
   APIGuildMember,
   APIChannel,
   TeamMemberRole,
+  APIPoll,
+  APIPollAnswer,
 } from 'discord-api-types/v9';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -102,7 +104,7 @@ import {
   RelationshipTypes,
   SelectMenuComponentTypes,
   InviteTypes,
-  MessagePollLayoutTypes,
+  PollLayoutTypes,
   ReactionTypes,
   MessageReferenceTypes,
 } from './enums';
@@ -2115,7 +2117,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public type: MessageType;
   public readonly url: string;
   public webhookId: Snowflake | null;
-  public poll: MessagePoll | null;
+  public poll: Poll | null;
   public call: MessageCall | null;
   public flags: Readonly<MessageFlags>;
   public reference: MessageReference | null;
@@ -2153,14 +2155,6 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public markRead(): Promise<void>;
   public report(breadcrumbs: number[], elements?: object): Promise<{ report_id: Snowflake }>;
   public vote(...ids: number[]): Promise<void>;
-  /** @deprecated Using MessageManager#endPoll(messageId) instead */
-  public endPoll(): Promise<this>;
-  /** @deprecated Using MessageManager#fetchPollAnswerVoters({ messageId, answerId, after, limit }) instead */
-  public getAnswerVoter(
-    answerId: number,
-    afterUserId?: Snowflake,
-    limit?: number,
-  ): Promise<Collection<Snowflake, User>>;
 }
 
 export class CallState extends Base {
@@ -2171,15 +2165,6 @@ export class CallState extends Base {
   public readonly ringing: Collection<Snowflake, User>;
   public setRTCRegion(): Promise<void>;
 }
-
-export interface MessagePollUserVote {
-  user_id: Snowflake;
-  message_id: Snowflake;
-  channel_id: Snowflake;
-  answer_id: number;
-  guild_id?: Snowflake;
-}
-
 export class MessageActionRow<
   T extends MessageActionRowComponent | ModalActionRowComponent = MessageActionRowComponent,
   U = T extends ModalActionRowComponent ? ModalActionRowComponentResolvable : MessageActionRowComponentResolvable,
@@ -2557,37 +2542,55 @@ export class Modal {
   public toJSON(): RawModalSubmitInteractionData;
 }
 
-export interface MessagePollMedia {
-  text?: string;
-  emoji?: RawEmojiData;
+export interface PollQuestionMedia {
+  text: string;
 }
 
-export interface MessagePollResultAnswerCount {
-  answer: MessagePollMedia;
-  count: number;
-  selfVoted: boolean;
+export class Poll extends Base {
+  private constructor(client: Client<true>, data: APIPoll, message: Message);
+  public readonly message: Message;
+  public question: PollQuestionMedia;
+  public answers: Collection<number, PollAnswer>;
+  public expiresTimestamp: number;
+  public get expiresAt(): Date;
+  public allowMultiselect: boolean;
+  public layoutType: PollLayoutTypes;
+  public resultsFinalized: boolean;
+  public end(): Promise<Message>;
 }
 
-export interface MessagePollResult {
-  isFinalized: boolean;
-  answerCounts: Collection<number, MessagePollResultAnswerCount>;
+export class PollAnswer extends Base {
+  private constructor(client: Client<true>, data: APIPollAnswer & { count?: number }, poll: Poll);
+  private _emoji: APIPartialEmoji | null;
+  public readonly poll: Poll;
+  public id: number;
+  public text: string | null;
+  public voteCount: number;
+  public get emoji(): GuildEmoji | Emoji | null;
+  public fetchVoters(options?: BaseFetchPollAnswerVotersOptions): Promise<Collection<Snowflake, User>>;
 }
 
-export class MessagePoll {
-  public constructor(data: MessagePoll | object);
-  public question: MessagePollMedia | null;
-  public answers: Collection<number, MessagePollMedia>;
-  public layoutType: MessagePollLayoutTypes | null;
-  public allowMultiSelect: boolean;
-  public expiry: Date | null;
-  public results: MessagePollResult | null;
-  public duration: number | null;
-  public toJSON(): object;
-  public setQuestion(text: string): this;
-  public setAnswers(answers: MessagePollMedia[]): this;
-  public addAnswer(answer: MessagePollMedia): this;
-  public setAllowMultiSelect(state: boolean): this;
-  public setDuration(duration: number): this;
+export interface PollData {
+  question: PollQuestionMedia;
+  answers: readonly PollAnswerData[];
+  duration: number;
+  allowMultiselect: boolean;
+  layoutType?: PollLayoutTypes;
+}
+
+export interface PollAnswerData {
+  text: string;
+  emoji?: EmojiIdentifierResolvable;
+}
+
+export interface BaseFetchPollAnswerVotersOptions {
+  after?: Snowflake;
+  limit?: number;
+}
+
+export interface FetchPollAnswerVotersOptions extends BaseFetchPollAnswerVotersOptions {
+  messageId: Snowflake;
+  answerId: number;
 }
 
 export interface MessageCall {
@@ -4478,15 +4481,6 @@ export class GuildMemberRoleManager extends DataManager<Snowflake, Role, RoleRes
   ): Promise<GuildMember>;
 }
 
-export interface BaseFetchPollAnswerVotersOptions {
-  after?: Snowflake;
-  limit?: number;
-}
-
-export interface FetchPollAnswerVotersOptions extends BaseFetchPollAnswerVotersOptions {
-  messageId: Snowflake;
-  answerId: number;
-}
 export class MessageManager extends CachedManager<Snowflake, Message, MessageResolvable> {
   private constructor(channel: TextBasedChannel, iterable?: Iterable<RawMessageData>);
   public channel: TextBasedChannel;
@@ -5661,8 +5655,8 @@ export interface ClientEvents extends BaseClientEvents {
   callCreate: [call: CallState];
   callUpdate: [call: CallState];
   callDelete: [call: CallState];
-  messagePollVoteAdd: [data: MessagePollUserVote];
-  messagePollVoteRemove: [data: MessagePollUserVote];
+  messagePollVoteAdd: [pollAnswer: PollAnswer, userId: Snowflake];
+  messagePollVoteRemove: [pollAnswer: PollAnswer, userId: Snowflake];
 }
 
 export interface ClientFetchInviteOptions {
@@ -7044,7 +7038,7 @@ export interface MessageOptions {
   stickers?: StickerResolvable[];
   attachments?: MessageAttachment[];
   flags?: BitFieldResolvable<'SUPPRESS_EMBEDS' | 'SUPPRESS_NOTIFICATIONS' | 'IS_VOICE_MESSAGE', number>;
-  poll?: MessagePoll;
+  poll?: Poll;
 }
 
 export type MessageReactionResolvable = MessageReaction | Snowflake | string;

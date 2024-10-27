@@ -163,4 +163,5 @@ exports.SpotifyRPC = require('./structures/Presence').SpotifyRPC;
 exports.WebEmbed = require('./structures/WebEmbed');
 exports.DiscordAuthWebsocket = require('./util/RemoteAuth');
 exports.PurchasedFlags = require('./util/PurchasedFlags');
-exports.MessagePoll = require('./structures/MessagePoll');
+exports.Poll = require('./structures/Poll').Poll;
+exports.PollAnswer = require('./structures/PollAnswer').PollAnswer;

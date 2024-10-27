@@ -50,6 +50,8 @@ class ActionsManager {
     this.register(require('./MessageCreate'));
     this.register(require('./MessageDelete'));
     this.register(require('./MessageDeleteBulk'));
+    this.register(require('./MessagePollVoteAdd'));
+    this.register(require('./MessagePollVoteRemove'));
     this.register(require('./MessageReactionAdd'));
     this.register(require('./MessageReactionRemove'));
     this.register(require('./MessageReactionRemoveAll'));

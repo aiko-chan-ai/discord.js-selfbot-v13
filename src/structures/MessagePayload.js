@@ -3,9 +3,9 @@
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
-const MessagePoll = require('./MessagePoll');
 const { RangeError } = require('../errors');
 const ActivityFlags = require('../util/ActivityFlags');
+const { PollLayoutTypes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const MessageFlags = require('../util/MessageFlags');
 const Util = require('../util/Util');
@@ -220,6 +220,24 @@ class MessagePayload {
       };
     }
 
+    let poll;
+    if (this.options.poll) {
+      poll = {
+        question: {
+          text: this.options.poll.question.text,
+        },
+        answers: this.options.poll.answers.map(answer => ({
+          poll_media: { text: answer.text, emoji: Util.resolvePartialEmoji(answer.emoji) },
+        })),
+        duration: this.options.poll.duration,
+        allow_multiselect: this.options.poll.allowMultiselect,
+        layout_type:
+          typeof this.options.poll.layoutType == 'number'
+            ? this.options.poll.layoutType
+            : PollLayoutTypes[this.options.poll.layoutType],
+      };
+    }
+
     this.data = {
       activity,
       content,
@@ -237,7 +255,7 @@ class MessagePayload {
       sticker_ids: this.options.stickers?.map(sticker => sticker.id ?? sticker),
       thread_name: threadName,
       applied_tags: appliedTags,
-      poll: this.options.poll instanceof MessagePoll ? this.options.poll.toJSON() : this.options.poll,
+      poll,
     };
     return this;
   }

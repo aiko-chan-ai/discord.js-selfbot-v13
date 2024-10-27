@@ -61,6 +61,28 @@ class TextBasedChannel {
   }
 
   /**
+   * Represents the data for a poll answer.
+   * @typedef {Object} PollAnswerData
+   * @property {string} text The text for the poll answer
+   * @property {EmojiIdentifierResolvable} [emoji] The emoji for the poll answer
+   */
+
+  /**
+   * Represents the data for a poll.
+   * @typedef {Object} PollData
+   * @property {PollQuestionMedia} question The question for the poll
+   * @property {PollAnswerData[]} answers The answers for the poll
+   * @property {number} duration The duration in hours for the poll
+   * @property {boolean} allowMultiselect Whether the poll allows multiple answers
+   * @property {PollLayoutType} [layoutType] The layout type for the poll
+   */
+
+  /**
+   * @external PollLayoutType
+   * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/PollLayoutType}
+   */
+
+  /**
    * Base options provided when sending.
    * @typedef {Object} BaseMessageOptions
    * @property {MessageActivity} [activity] Group activity
@@ -75,7 +97,12 @@ class TextBasedChannel {
    * @property {Array<(MessageActionRow|MessageActionRowOptions)>} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {MessageAttachment[]} [attachments] Attachments to send in the message
-   * @property {MessagePoll} [poll] A poll!
+   */
+
+  /**
+   * The base message options for messages including a poll.
+   * @typedef {BaseMessageOptions} BaseMessageOptionsWithPoll
+   * @property {PollData} [poll] The poll to send with the message
    */
 
   /**

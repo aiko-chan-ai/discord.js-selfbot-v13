@@ -27,7 +27,7 @@ class InteractionResponses {
 
   /**
    * Options for a reply to an {@link Interaction}.
-   * @typedef {BaseMessageOptions} InteractionReplyOptions
+   * @typedef {BaseMessageOptionsWithPoll} InteractionReplyOptions
    * @property {boolean} [ephemeral] Whether the reply should be ephemeral
    * @property {boolean} [fetchReply] Whether to fetch the reply
    * @property {MessageFlags} [flags] Which flags to set for the message.

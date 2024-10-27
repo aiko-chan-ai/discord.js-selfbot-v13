@@ -208,6 +208,7 @@ const Messages = {
   STREAM_CONNECTION_READONLY: 'Cannot send data to a read-only stream',
   STREAM_CANNOT_JOIN: 'Cannot join a stream to itself',
   VOICE_USER_NOT_STREAMING: 'User is not streaming',
+  POLL_ALREADY_EXPIRED: 'This poll has already expired.',
 };
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);
