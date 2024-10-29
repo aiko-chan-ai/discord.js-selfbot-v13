@@ -1123,10 +1123,8 @@ export class FFmpegHandler extends EventEmitter {
   public isEnableAudio: boolean;
   public userId: Snowflake;
   public sendPayloadToFFmpeg(payload: Buffer, isAudio?: boolean): void;
-  public on(event: 'ready', listener: () => void): this;
-  public once(event: 'ready', listener: () => void): this;
-  public on(event: 'closed', listener: () => void): this;
-  public once(event: 'closed', listener: () => void): this;
+  public on(event: 'ready' | 'closed', listener: () => void): this;
+  public once(event: 'ready' | 'closed', listener: () => void): this;
   public destroy(): void;
 }
 
