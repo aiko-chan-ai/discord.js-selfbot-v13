@@ -1105,8 +1105,10 @@ export class FFmpegHandler extends EventEmitter {
   public ready: boolean;
   public stream: ChildProcessWithoutNullStreams;
   public socket: Socket;
+  public socketAudio: Socket;
   public output: Writable | string;
-  public sendPayloadToFFmpeg(payload: Buffer): void;
+  public isEnableAudio: boolean;
+  public sendPayloadToFFmpeg(payload: Buffer, isAudio?: boolean): void;
   public on(event: 'ready', listener: () => void): this;
   public once(event: 'ready', listener: () => void): this;
   public destroy(): void;
@@ -1117,7 +1119,11 @@ export class VoiceReceiver extends EventEmitter {
   public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
   public createVideoStream(
     user: UserResolvable,
-    options?: { portUdp: number; codec: 'H264'; output: Writable | string },
+    options?: {
+      portUdp: number;
+      output: Writable | string;
+      isEnableAudio: boolean;
+    },
   ): FFmpegHandler;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;

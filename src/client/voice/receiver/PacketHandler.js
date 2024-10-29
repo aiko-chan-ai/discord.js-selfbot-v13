@@ -56,9 +56,9 @@ class PacketHandler extends EventEmitter {
     return stream;
   }
 
-  makeVideoStream(user, portUdp, codec = 'H264', output) {
+  makeVideoStream(user, portUdp, codec, output, isEnableAudio = false) {
     if (this.videoStreams.has(user)) return this.videoStreams.get(user);
-    const stream = new FFmpegHandler(codec, portUdp, output);
+    const stream = new FFmpegHandler(codec, portUdp, output, isEnableAudio);
     stream.on('ready', () => {
       this.videoStreams.set(user, stream);
     });
@@ -186,6 +186,21 @@ class PacketHandler extends EventEmitter {
     }
   }
 
+  audioReceiverForStream(buffer) {
+    const ssrc = buffer.readUInt32BE(8);
+    const userStat = this.connection.ssrcMap.get(ssrc); // Audio_ssrc
+    if (!userStat) return;
+    const streamInfo = this.videoStreams.get(userStat.userId);
+    if (!streamInfo) return;
+    const packet = this.parseBuffer(buffer, true);
+    if (packet instanceof Error) {
+      return;
+    }
+    if (streamInfo.isEnableAudio) {
+      streamInfo.sendPayloadToFFmpeg(Buffer.concat(packet), true);
+    }
+  }
+
   videoReceiver(buffer) {
     const ssrc = buffer.readUInt32BE(8);
     const userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
@@ -203,7 +218,7 @@ class PacketHandler extends EventEmitter {
         // If this is a silence frame, pretend we never received it
         return;
       }
-      this.receiver.emit('videoData', ssrc, userStat, header, videoPacket);
+      this.receiver.emit('videoData', ssrc - 1, userStat, header, videoPacket);
 
       if (streamInfo) {
         streamInfo.sendPayloadToFFmpeg(Buffer.concat(packet));
@@ -214,6 +229,7 @@ class PacketHandler extends EventEmitter {
   push(buffer) {
     this.audioReceiver(buffer);
     this.videoReceiver(buffer);
+    this.audioReceiverForStream(buffer);
   }
 }
 

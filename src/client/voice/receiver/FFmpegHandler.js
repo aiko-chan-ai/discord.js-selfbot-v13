@@ -15,8 +15,14 @@ const { StreamOutput } = require('../util/Socket');
  * @extends {EventEmitter}
  */
 class FFmpegHandler extends EventEmitter {
-  constructor(codec, portUdp, output) {
+  constructor(codec, portUdp, output, isEnableAudio) {
     super();
+
+    /**
+     * If the audio is enabled
+     * @type {boolean}
+     */
+    this.isEnableAudio = isEnableAudio;
 
     /**
      * The codec of the stream
@@ -41,7 +47,8 @@ class FFmpegHandler extends EventEmitter {
      */
     this.output = output;
 
-    const sdpData = Util.getSDPCodecName(codec, portUdp);
+    const sdpData = Util.getSDPCodecName(portUdp, this.isEnableAudio);
+
     /**
      * The FFmpeg process is ready or not
      * @type {boolean}
@@ -70,8 +77,8 @@ class FFmpegHandler extends EventEmitter {
       '-max_delay',
       '500000',
       '-y',
-      '-f', // Specify the format
-      'mpegts', // MKV format
+      '-f',
+      'matroska',
       isStream ? this.outputStream.url : output,
     ]);
 
@@ -88,14 +95,17 @@ class FFmpegHandler extends EventEmitter {
       this.emit('ready');
     });
     this.socket = createSocket('udp4');
+    this.socketAudio = createSocket('udp4');
   }
   /**
    * Send a payload to FFmpeg via UDP
    * @param {Buffer} payload The payload
+   * @param {boolean} isAudio If the payload is audio
    * @param {*} callback Callback
    */
   sendPayloadToFFmpeg(
     payload,
+    isAudio = false,
     callback = e => {
       if (e) {
         console.error('Error sending packet:', e);
@@ -103,7 +113,14 @@ class FFmpegHandler extends EventEmitter {
     },
   ) {
     const message = Buffer.from(payload);
-    this.socket.send(message, 0, message.length, this.portUdp, '127.0.0.1', callback);
+    if (isAudio && !this.isEnableAudio) {
+      return;
+    }
+    if (isAudio) {
+      this.socketAudio.send(message, 0, message.length, this.portUdp + 2, '127.0.0.1', callback);
+    } else {
+      this.socket.send(message, 0, message.length, this.portUdp, '127.0.0.1', callback);
+    }
   }
 
   destroy() {

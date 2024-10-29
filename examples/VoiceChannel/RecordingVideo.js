@@ -29,7 +29,9 @@ client.on('ready', async client => {
 
   const video = connectionStream.receiver.createVideoStream('user_id', {
     portUdp: 5004,
-    output: fs.createWriteStream('video.ts'), // Output file using MPEG-TS container
+    output: fs.createWriteStream('video.mkv'), // Output file using matroska container
+    // If you want video with audio, set isEnableAudio to true
+    isEnableAudio: false,
   });
 
   video.stream.stderr.on('data', data => {

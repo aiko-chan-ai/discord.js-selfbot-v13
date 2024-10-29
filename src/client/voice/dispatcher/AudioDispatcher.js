@@ -1,6 +1,7 @@
 'use strict';
 
 const BaseDispatcher = require('./BaseDispatcher');
+const Util = require('../../../util/Util');
 const Silence = require('../util/Silence');
 const VolumeInterface = require('../util/VolumeInterface');
 
@@ -24,7 +25,7 @@ const VolumeInterface = require('../util/VolumeInterface');
 class AudioDispatcher extends BaseDispatcher {
   constructor(player, { seek = 0, volume = 1, fec, plp, bitrate = 96, highWaterMark = 12 } = {}, streams) {
     const streamOptions = { seek, volume, fec, plp, bitrate, highWaterMark };
-    super(player, highWaterMark, 120, false, streams);
+    super(player, highWaterMark, Util.getPayloadType('opus'), false, streams);
 
     this.streamOptions = streamOptions;
 

@@ -126,15 +126,7 @@ class VoiceConnectionUDPClient extends EventEmitter {
         op: VoiceOpcodes.SELECT_PROTOCOL,
         d: {
           protocol: 'udp',
-          codecs: [
-            {
-              name: 'opus',
-              type: 'audio',
-              priority: 1000,
-              payload_type: 120,
-            },
-            ...Util.getAllPayloadType(),
-          ],
+          codecs: Util.getAllPayloadType(),
           data: {
             address: packet.address,
             port: packet.port,

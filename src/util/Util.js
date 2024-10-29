@@ -944,23 +944,23 @@ class Util extends null {
     return payloadTypes.find(p => p.name === codecName).payload_type;
   }
 
-  static getSDPCodecName(packet, portUdp) {
-    let payload, payloadType;
-    if (typeof packet === 'string') {
-      payload = payloadTypes.find(p => p.name === packet);
-      payloadType = payload.payload_type;
-    } else {
-      const payloadType = packet[1] > 120 ? packet[1] & 0x80 : packet[1];
-      payload = payloadTypes.find(p => p.payload_type === payloadType);
-    }
-    let sdpData = `o=- 0 0 IN IP4 127.0.0.1
-s=No Name
-c=IN IP4 127.0.0.1
+  static getSDPCodecName(portUdp, isEnableAudio) {
+    let sdpData = `v=0
+o=- 0 0 IN IP4 0.0.0.0
+s=-
+c=IN IP4 0.0.0.0
 t=0 0
 a=tool:libavformat 61.1.100
-m=video ${portUdp} RTP/AVP ${payloadType}
-a=rtpmap:${payloadType} ${payload.name}/90000
-#Placeholder
+m=video ${portUdp} RTP/AVP 105
+a=rtpmap:105 H264/90000
+a=fmtp:105 profile-level-id=42e01f;sprop-parameter-sets=Z0IAH6tAoAt2AtwEBAaQeJEV,aM4JyA==;packetization-mode=1
+${
+  isEnableAudio
+    ? `m=audio ${portUdp + 2} RTP/AVP 120
+a=rtpmap:120 opus/48000/2
+a=fmtp:120 minptime=10;useinbandfec=1`
+    : ''
+}
 a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level
 a=extmap:2 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
 a=extmap:3 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01
@@ -974,12 +974,6 @@ a=extmap:11 urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id
 a=extmap:13 urn:3gpp:video-orientation
 a=extmap:14 urn:ietf:params:rtp-hdrext:toffset
 `;
-    if (payload.name === 'H264') {
-      sdpData = sdpData.replace(
-        '#Placeholder',
-        `a=fmtp:${payloadType} profile-level-id=42e01f;sprop-parameter-sets=Z0IAH6tAoAt2AtwEBAaQeJEV,aM4JyA==;packetization-mode=1`,
-      );
-    }
     return sdpData;
   }
 }

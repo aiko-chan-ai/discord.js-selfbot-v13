@@ -57,10 +57,10 @@ class VoiceReceiver extends EventEmitter {
   /**
    * Options passed to `VoiceReceiver#createVideoStream`.
    * @typedef {Object} ReceiveVideoStreamOptions
-   * @property {number} [portUdp] The UDP port to use for the video stream (local stream).
-   * @property {string} [codec='H264'] The codec to use for encoding the video. Default is 'H264'.
-   * <info>H265 supported, but not implemented</info>
-   * @property {any} [output] Additional output options, as required.
+   * @property {number} portUdp The UDP port to use for the video stream (local stream).
+   * @property {WritableStream|string} output Output stream or file path to write the video stream to.
+   * @property {boolean} [isEnableAudio=false] Enable audio for the video stream.
+   * <info>If you intend to record the stream with audio, make sure that `portUdp` and `portUdp + 2` are not in use.</info>
    */
 
   /**
@@ -71,11 +71,10 @@ class VoiceReceiver extends EventEmitter {
    * @param {ReceiveVideoStreamOptions} options Options.
    * @returns {FFmpegHandler} The video stream for the specified user.
    */
-  createVideoStream(user, { portUdp, codec, output } = {}) {
+  createVideoStream(user, { portUdp, output, isEnableAudio = false } = {}) {
     user = this.connection.client.users.resolve(user);
     if (!user) throw new Error('VOICE_USER_MISSING');
-    codec = 'H264';
-    const stream = this.packets.makeVideoStream(user.id, portUdp, codec, output);
+    const stream = this.packets.makeVideoStream(user.id, portUdp, 'H264', output, isEnableAudio);
     return stream;
   }
 
