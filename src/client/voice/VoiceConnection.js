@@ -686,6 +686,10 @@ class VoiceConnection extends EventEmitter {
                   this.streamConnection.disconnect();
                   break;
                 }
+                case 'STREAM_UPDATE': {
+                  this.streamConnection.update(data);
+                  break;
+                }
               }
             }
             if (this.streamWatchConnection.has(StreamKey.userId) && this.channel.id == StreamKey.channelId) {
@@ -703,6 +707,11 @@ class VoiceConnection extends EventEmitter {
                 }
                 case 'STREAM_DELETE': {
                   streamConnection.disconnect();
+                  streamConnection.receiver.packets.destroyAllStream();
+                  break;
+                }
+                case 'STREAM_UPDATE': {
+                  streamConnection.update(data);
                   break;
                 }
               }
@@ -791,6 +800,10 @@ class VoiceConnection extends EventEmitter {
                   this.streamConnection.disconnect();
                   break;
                 }
+                case 'STREAM_UPDATE': {
+                  this.streamConnection.update(data);
+                  break;
+                }
               }
             }
             if (this.streamWatchConnection.has(StreamKey.userId) && this.channel.id == StreamKey.channelId) {
@@ -808,6 +821,11 @@ class VoiceConnection extends EventEmitter {
                 }
                 case 'STREAM_DELETE': {
                   streamConnection.disconnect();
+                  streamConnection.receiver.packets.destroyAllStream();
+                  break;
+                }
+                case 'STREAM_UPDATE': {
+                  streamConnection.update(data);
                   break;
                 }
               }
@@ -844,6 +862,20 @@ class VoiceConnection extends EventEmitter {
       }
     });
   }
+
+  /**
+   * @event VoiceConnection#streamUpdate
+   * @description Emitted when the StreamConnection or StreamConnectionReadonly
+   * state changes, providing the previous and current stream state.
+   *
+   * @param {StreamState} oldData - The previous state of the stream.
+   * @param {StreamState} newData - The current state of the stream.
+   *
+   * @typedef {Object} StreamState
+   * @property {boolean} isPaused - Indicates whether the stream is currently paused.
+   * @property {string|null} region - The region where the stream is hosted, or null if not specified.
+   * @property {Snowflake[]} viewerIds - An array of Snowflake IDs representing the viewers connected to the stream.
+   */
 }
 
 /**
@@ -890,6 +922,18 @@ class StreamConnection extends VoiceConnection {
      * @type {boolean}
      */
     this.isPaused = false;
+
+    /**
+     * Viewer IDs
+     * @type {Snowflake[]}
+     */
+    this.viewerIds = [];
+
+    /**
+     * Voice region name
+     * @type {string | null}
+     */
+    this.region = null;
   }
 
   createStreamConnection() {
@@ -951,6 +995,19 @@ class StreamConnection extends VoiceConnection {
    */
   sendScreenshareState(isPaused = false) {
     if (isPaused == this.isPaused) return;
+    this.emit(
+      'streamUpdate',
+      {
+        isPaused: this.isPaused,
+        region: this.region,
+        viewerIds: this.viewerIds,
+      },
+      {
+        isPaused,
+        region: this.region,
+        viewerIds: this.viewerIds,
+      },
+    );
     this.isPaused = isPaused;
     this.channel.client.ws.broadcast({
       op: Opcodes.STREAM_SET_PAUSED,
@@ -974,6 +1031,24 @@ class StreamConnection extends VoiceConnection {
         stream_key: this.streamKey,
       },
     });
+  }
+
+  update(data) {
+    this.emit(
+      'streamUpdate',
+      {
+        isPaused: this.isPaused,
+        region: this.region,
+        viewerIds: this.viewerIds.slice(),
+      },
+      {
+        isPaused: data.paused,
+        region: data.region,
+        viewerIds: data.viewer_ids,
+      },
+    );
+    this.viewerIds = data.viewer_ids;
+    this.region = data.region;
   }
 
   /**
@@ -1032,6 +1107,24 @@ class StreamConnectionReadonly extends VoiceConnection {
      * @type {string | null}
      */
     this.serverId = null;
+
+    /**
+     * Stream state
+     * @type {boolean}
+     */
+    this.isPaused = false;
+
+    /**
+     * Viewer IDs
+     * @type {Snowflake[]}
+     */
+    this.viewerIds = [];
+
+    /**
+     * Voice region name
+     * @type {string | null}
+     */
+    this.region = null;
   }
 
   createStreamConnection() {
@@ -1095,6 +1188,25 @@ class StreamConnectionReadonly extends VoiceConnection {
         stream_key: this.streamKey,
       },
     });
+  }
+
+  update(data) {
+    this.emit(
+      'streamUpdate',
+      {
+        isPaused: this.isPaused,
+        region: this.region,
+        viewerIds: this.viewerIds.slice(),
+      },
+      {
+        isPaused: data.paused,
+        region: data.region,
+        viewerIds: data.viewer_ids,
+      },
+    );
+    this.isPaused = data.paused;
+    this.viewerIds = data.viewer_ids;
+    this.region = data.region;
   }
 
   /**

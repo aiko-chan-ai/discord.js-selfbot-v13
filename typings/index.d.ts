@@ -1059,6 +1059,7 @@ export class VoiceConnection extends EventEmitter {
   public on(event: 'error' | 'failed' | 'disconnect', listener: (error: Error) => void): this;
   public on(event: 'speaking', listener: (user: User, speaking: Readonly<Speaking>) => void): this;
   public on(event: 'warn', listener: (warning: string | Error) => void): this;
+  public on(event: 'streamUpdate', listener: (oldState: StreamState, newState: StreamState) => void): this;
   public on(event: string, listener: (...args: any[]) => void): this;
 
   public once(event: 'authenticated' | 'closing' | 'newSession' | 'ready' | 'reconnecting', listener: () => void): this;
@@ -1066,10 +1067,17 @@ export class VoiceConnection extends EventEmitter {
   public once(event: 'error' | 'failed' | 'disconnect', listener: (error: Error) => void): this;
   public once(event: 'speaking', listener: (user: User, speaking: Readonly<Speaking>) => void): this;
   public once(event: 'warn', listener: (warning: string | Error) => void): this;
+  public once(event: 'streamUpdate', listener: (oldState: StreamState, newState: StreamState) => void): this;
   public once(event: string, listener: (...args: any[]) => void): this;
 
   public createStreamConnection(): Promise<StreamConnection>;
   public joinStreamConnection(user: UserResolvable): Promise<StreamConnectionReadonly>;
+}
+
+export interface StreamState {
+  isPaused: boolean;
+  region: string | null;
+  viewerIds: Snowflake[];
 }
 
 export class StreamConnection extends VoiceConnection {
@@ -1077,7 +1085,9 @@ export class StreamConnection extends VoiceConnection {
   public readonly voiceConnection: VoiceConnection;
   public serverId: Snowflake;
   public isPaused: boolean;
+  public region: string | null;
   public streamConnection: this;
+  public viewerIds: Snowflake[];
   public sendSignalScreenshare(): void;
   public sendScreenshareState(isPause: boolean): void;
   private sendStopScreenshare(): void;
@@ -1088,8 +1098,11 @@ export class StreamConnectionReadonly extends VoiceConnection {
   public joinStreamConnection(): Promise<this>;
   public readonly voiceConnection: VoiceConnection;
   public serverId: Snowflake;
+  public isPaused: boolean;
+  public region: string | null;
   public userId: Snowflake;
   public streamConnection: null;
+  public viewerIds: Snowflake[];
   public sendSignalScreenshare(): void;
   private sendStopScreenshare(): void;
   public readonly streamKey: string;
@@ -1100,7 +1113,7 @@ export class StreamConnectionReadonly extends VoiceConnection {
 }
 
 export class FFmpegHandler extends EventEmitter {
-  public codec: VideoCodec | 'H265' | 'VP9' | 'AV1';
+  public codec: 'H264';
   public portUdp: number;
   public ready: boolean;
   public stream: ChildProcessWithoutNullStreams;
@@ -1108,9 +1121,12 @@ export class FFmpegHandler extends EventEmitter {
   public socketAudio: Socket;
   public output: Writable | string;
   public isEnableAudio: boolean;
+  public userId: Snowflake;
   public sendPayloadToFFmpeg(payload: Buffer, isAudio?: boolean): void;
   public on(event: 'ready', listener: () => void): this;
   public once(event: 'ready', listener: () => void): this;
+  public on(event: 'closed', listener: () => void): this;
+  public once(event: 'closed', listener: () => void): this;
   public destroy(): void;
 }
 

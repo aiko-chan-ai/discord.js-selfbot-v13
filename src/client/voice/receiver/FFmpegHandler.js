@@ -15,8 +15,16 @@ const { StreamOutput } = require('../util/Socket');
  * @extends {EventEmitter}
  */
 class FFmpegHandler extends EventEmitter {
-  constructor(codec, portUdp, output, isEnableAudio) {
+  constructor(receiver, userId, codec, portUdp, output, isEnableAudio) {
     super();
+
+    Object.defineProperty(this, 'receiver', { value: receiver });
+
+    /**
+     * The user ID
+     * @type {Snowflake}
+     */
+    this.userId = userId;
 
     /**
      * If the audio is enabled
@@ -130,9 +138,21 @@ class FFmpegHandler extends EventEmitter {
       let process = list.find(o => o.pid === ffmpegPid || o.ppid === ffmpegPid || o.cmd.includes(args));
       if (process) {
         kill(process.pid);
+        this.receiver.videoStreams.delete(this.userId);
+        this.emit('closed');
       }
     });
   }
+
+  /**
+   * Emitted when the FFmpegHandler becomes ready to start working.
+   * @event FFmpegHandler#ready
+   */
+
+  /**
+   * Emitted when the FFmpegHandler is closed.
+   * @event FFmpegHandler#closed
+   */
 }
 
 module.exports = FFmpegHandler;

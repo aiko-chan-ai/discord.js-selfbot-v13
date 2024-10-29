@@ -42,7 +42,7 @@ const payloadTypes = [
     payload_type: 103,
     rtx_payload_type: 104,
     encode: false,
-    decode: false,
+    decode: false, // Working but very glitchy
   },
   {
     name: 'H264',

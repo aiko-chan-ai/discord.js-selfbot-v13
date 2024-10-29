@@ -58,7 +58,7 @@ class PacketHandler extends EventEmitter {
 
   makeVideoStream(user, portUdp, codec, output, isEnableAudio = false) {
     if (this.videoStreams.has(user)) return this.videoStreams.get(user);
-    const stream = new FFmpegHandler(codec, portUdp, output, isEnableAudio);
+    const stream = new FFmpegHandler(this, user, codec, portUdp, output, isEnableAudio);
     stream.on('ready', () => {
       this.videoStreams.set(user, stream);
     });
@@ -230,6 +230,18 @@ class PacketHandler extends EventEmitter {
     this.audioReceiver(buffer);
     this.videoReceiver(buffer);
     this.audioReceiverForStream(buffer);
+  }
+
+  // When udp connection is closed (STREAM_DELETE), destroy all streams (Memory leak)
+  destroyAllStream() {
+    for (const stream of this.streams.values()) {
+      stream.stream.destroy();
+    }
+    this.streams.clear();
+    for (const stream of this.videoStreams.values()) {
+      stream.destroy();
+    }
+    this.videoStreams.clear();
   }
 }
 
