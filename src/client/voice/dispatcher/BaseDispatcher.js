@@ -145,6 +145,7 @@ class BaseDispatcher extends Writable {
 
   _cleanup() {
     if (this.player.dispatcher === this) this.player.dispatcher = null;
+    if (this.player.videoDispatcher === this) this.player.videoDispatcher = null;
     const { streams } = this;
     if (streams.opus) streams.opus.destroy();
     if (streams.ffmpeg?.process) {
