@@ -778,7 +778,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public refreshAttachmentURL(urls: string[]): Promise<{ original: string, refreshed: string }[]>
+  public refreshAttachmentURL(urls: string[]): Promise<{ original: string, refreshed: string }[]>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
