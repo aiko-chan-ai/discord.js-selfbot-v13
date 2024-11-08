@@ -518,6 +518,28 @@ class Client extends BaseClient {
   }
 
   /**
+   * Refresh the Discord CDN links with hashes so they can be usable.
+   * @param {string[]} urls Discord CDN URLs
+   * @returns {Promise<Array<{ original: string, refreshed: string }>>}
+   */
+  async refreshAttachmentURL(urls) {
+    const data = await this.api.attachments('refresh-urls').post({
+      data: { attachment_urls: urls },
+    });
+    /**
+{
+    "refreshed_urls": [
+        {
+            "original": "url",
+            "refreshed": "url with hash"
+        }
+    ]
+}
+     */
+    return data.refreshed_urls;
+  }
+
+  /**
    * Options for {@link Client#generateInvite}.
    * @typedef {Object} InviteGenerationOptions
    * @property {InviteScope[]} scopes Scopes that should be requested
