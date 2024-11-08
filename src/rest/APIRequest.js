@@ -80,7 +80,7 @@ class APIRequest {
       'sec-fetch-site': 'same-origin',
       'x-debug-options': 'bugReporterEnabled',
       'x-discord-locale': 'en-US',
-      'x-discord-timezone': 'Asia/Saigon',
+      'x-discord-timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
       'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
         'base64',
       )}`,
