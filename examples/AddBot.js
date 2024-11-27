@@ -19,11 +19,14 @@ const client = new Discord.Client({
 
 client.on('ready', async () => {
   console.log('Ready!', client.user.tag);
+  // Note
+  // You need to include `guild_id` and `permissions` to invite the bot.
+  // These two fields can appear either in the URL or in the options.
   await client.authorizeURL(
     `https://discord.com/api/oauth2/authorize?client_id=289066747443675143&permissions=414501424448&scope=bot%20applications.commands`,
     {
       guild_id: 'guild id',
-      permissions: '8', // Admin
+      permissions: '414501424448',
       authorize: true,
     },
   );

@@ -588,6 +588,7 @@ class Client extends BaseClient {
    * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })
    */
   async acceptInvite(invite, options = { bypassOnboarding: true, bypassVerify: true }) {
+    throw new Error('METHOD_WARNING');
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
     const i = await this.fetchInvite(code);
@@ -709,7 +710,8 @@ class Client extends BaseClient {
       authorize: true
     })
    */
-  authorizeURL(url, options = { authorize: true, permissions: '0' }) {
+  authorizeURL(url, options = { authorize: true }) {
+    throw new Error('METHOD_WARNING');
     const pathnameAPI = /\/api\/(v\d{1,2}\/)?oauth2\/authorize/;
     const pathnameURL = /\/oauth2\/authorize/;
     const url_ = new URL(url);
@@ -720,8 +722,19 @@ class Client extends BaseClient {
       throw new Error('INVALID_URL', url);
     }
     const searchParams = Object.fromEntries(url_.searchParams);
-    options.permissions = `${Permissions.resolve(searchParams.permissions || options.permissions) || 0}`;
+    options.permissions ??= `${Permissions.resolve(searchParams.permissions || 0)}`;
+    options.integration_type ??= searchParams.integration_type || 0;
+    options.location_context = {
+      guild_id: '10000',
+      channel_id: '10000',
+      channel_type: 10000,
+    };
+    options.guild_id ??= searchParams.guild_id;
+    options.authorize ??= true;
     delete searchParams.permissions;
+    delete searchParams.integration_type;
+    delete searchParams.guild_id;
+    if (!options.permissions || !options.guild_id) throw new Error('INVALID_OAUTH_OPTIONS');
     return this.api.oauth2.authorize.post({
       query: searchParams,
       data: options,
@@ -790,6 +803,9 @@ class Client extends BaseClient {
    * @private
    */
   _validateOptions(options = this.options) {
+    options.captchaSolver = () => {
+      throw new Error('METHOD_WARNING');
+    };
     if (typeof options.makeCache !== 'function') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'makeCache', 'a function');
     }
