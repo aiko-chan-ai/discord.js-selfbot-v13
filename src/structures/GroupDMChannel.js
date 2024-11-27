@@ -295,7 +295,7 @@ class GroupDMChannel extends Channel {
   /**
    * Ring the user's phone / PC (call)
    * @param {UserResolvable[]} [recipients] Array of recipients
-   * @returns {Promise<any>}
+   * @returns {Promise<void>}
    */
   ring(recipients) {
     if (!recipients || !Array.isArray(recipients) || recipients.length == 0) {

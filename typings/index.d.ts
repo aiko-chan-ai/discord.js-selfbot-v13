@@ -3497,7 +3497,6 @@ export class User extends PartialTextBasedChannel(Base) {
   public setNote(note: string | null | undefined): Promise<this>;
   public toString(): UserMention;
   public getProfile(guildId?: Snowflake): Promise<any>;
-  public ring(): Promise<void>;
   public sendFriendRequest(): Promise<boolean>;
   public deleteRelationship(): Promise<boolean>;
 }

@@ -480,19 +480,6 @@ class User extends Base {
   }
 
   /**
-   * Ring the user's phone / PC (call)
-   * @returns {Promise<void>}
-   * @deprecated
-   */
-  ring() {
-    return this.client.api.channels(this.dmChannel.id).call.ring.post({
-      data: {
-        recipients: [this.id],
-      },
-    });
-  }
-
-  /**
    * Send Friend Request to the user
    * @type {boolean}
    * @returns {Promise<boolean>}
