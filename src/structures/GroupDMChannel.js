@@ -298,8 +298,11 @@ class GroupDMChannel extends Channel {
    * @returns {Promise<any>}
    */
   ring(recipients) {
-    if (!recipients || !Array.isArray(recipients) || recipients.length == 0) recipients = null;
-    recipients = recipients.map(r => this.client.users.resolveId(r)).filter(r => r && this.recipients.get(r));
+    if (!recipients || !Array.isArray(recipients) || recipients.length == 0) {
+      recipients = null;
+    } else {
+      recipients = recipients.map(r => this.client.users.resolveId(r)).filter(r => r && this.recipients.get(r));
+    }
     return this.client.api.channels(this.id).call.ring.post({
       data: {
         recipients,
