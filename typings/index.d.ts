@@ -61,7 +61,7 @@ import {
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
-import { Response } from 'node-fetch';
+import { Response } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
 import * as WebSocket from 'ws';
@@ -778,7 +778,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public refreshAttachmentURL(urls: string[]): Promise<{ original: string, refreshed: string }[]>;
+  public refreshAttachmentURL(urls: string[]): Promise<{ original: string; refreshed: string }[]>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
@@ -1382,6 +1382,7 @@ export class DiscordAPIError extends Error {
   public requestData: HTTPErrorData;
   public retries: number;
   public captcha: Captcha | null;
+  public readonly isBlockedByCloudflare: boolean;
 }
 
 export interface Captcha {

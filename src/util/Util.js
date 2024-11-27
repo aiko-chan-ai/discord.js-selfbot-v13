@@ -5,7 +5,7 @@ const { parse } = require('node:path');
 const process = require('node:process');
 const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
-const fetch = require('node-fetch');
+const { fetch } = require('undici');
 const { Colors, Events } = require('./Constants');
 const { Error: DiscordError, RangeError, TypeError } = require('../errors');
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);

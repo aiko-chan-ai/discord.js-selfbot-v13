@@ -4,9 +4,8 @@ const Buffer = require('node:buffer').Buffer;
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const makeFetchCookie = require('fetch-cookie');
-const FormData = require('form-data');
-const fetchOriginal = require('node-fetch');
 const { CookieJar } = require('tough-cookie');
+const { fetch: fetchOriginal, FormData } = require('undici');
 const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
@@ -69,7 +68,6 @@ class APIRequest {
     const url = API + this.path;
 
     let headers = {
-      authority: 'discord.com',
       accept: '*/*',
       'accept-language': 'en-US',
       'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108"',
@@ -84,9 +82,8 @@ class APIRequest {
       'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
         'base64',
       )}`,
-      Referer: 'https://discord.com/channels/@me',
+      referer: 'https://discord.com/channels/@me',
       origin: 'https://discord.com',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
       ...this.client.options.http.headers,
       'User-Agent': this.fullUserAgent,
     };
@@ -152,6 +149,7 @@ class APIRequest {
       agent,
       body,
       signal: controller.signal,
+      redirect: 'follow',
     }).finally(() => clearTimeout(timeout));
   }
 }

@@ -68,6 +68,21 @@ class DiscordAPIError extends Error {
   }
 
   /**
+   * A special `40333` JSON error code is returned if your request is blocked by Cloudflare.
+   * This may be due to a malformed request or improper user agent.
+   * The response resembles a normal error structure:
+   * @type {boolean}
+   * @example
+   * {
+   *  "message": "internal network error",
+   *  "code": 40333
+   * }
+   */
+  get isBlockedByCloudflare() {
+    return this.code === 40333;
+  }
+
+  /**
    * Flattens an errors object returned from the API into an array.
    * @param {APIError} obj Discord errors object
    * @param {string} [key] Used internally to determine key names of nested fields
