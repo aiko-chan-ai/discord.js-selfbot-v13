@@ -1,6 +1,7 @@
 'use strict';
 
 const EventEmitter = require('events');
+const { getCiphers } = require('node:crypto');
 const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const VoiceUDP = require('./networking/VoiceUDPClient');
@@ -23,7 +24,13 @@ class SingleSilence extends Silence {
   }
 }
 
-const SUPPORTED_MODES = ['aead_aes256_gcm_rtpsize', 'aead_xchacha20_poly1305_rtpsize'];
+const SUPPORTED_MODES = ['aead_xchacha20_poly1305_rtpsize'];
+
+// Just in case there's some system that doesn't come with aes-256-gcm, conditionally add it as supported
+if (getCiphers().includes('aes-256-gcm')) {
+  SUPPORTED_MODES.unshift('aead_aes256_gcm_rtpsize');
+}
+
 const SUPPORTED_CODECS = ['VP8', 'H264'];
 
 /**
