@@ -19,6 +19,8 @@ Please use the @dank074/discord-video-stream library for the best support.
 
 const EventEmitter = require('events');
 const { Readable: ReadableStream } = require('stream');
+const deasync = require('deasync');
+const fluent = require('fluent-ffmpeg');
 const prism = require('prism-media');
 const { H264NalSplitter } = require('./processing/AnnexBNalSplitter');
 const { IvfTransformer } = require('./processing/IvfSplitter');
@@ -26,20 +28,40 @@ const { H264Dispatcher } = require('../dispatcher/AnnexBDispatcher');
 const AudioDispatcher = require('../dispatcher/AudioDispatcher');
 const { VP8Dispatcher } = require('../dispatcher/VPxDispatcher');
 
-const FFMPEG_ARGUMENTS = [
-  '-use_wallclock_as_timestamps',
+const FFMPEG_OUTPUT_PREFIX = ['-use_wallclock_as_timestamps', '1', '-copyts', '-analyzeduration', '0'];
+const FFMPEG_INPUT_PREFIX = [
+  '-reconnect',
   '1',
-  '-copyts',
-  '-analyzeduration',
-  '0',
-  '-loglevel',
-  '0',
+  '-reconnect_at_eof',
+  '1',
+  '-reconnect_streamed',
+  '1',
+  '-reconnect_delay_max',
+  '4294',
+];
+const FFMPEG_PCM_ARGUMENTS = ['-f', 's16le', '-ar', '48000', '-ac', '2'];
+const FFMPEG_VP8_ARGUMENTS = ['-f', 'ivf', '-deadline', 'realtime', '-c:v', 'libvpx'];
+const FFMPEG_H264_ARGUMENTS = options => [
+  '-c:v',
+  'libx264',
   '-f',
-  's16le',
-  '-ar',
-  '48000',
-  '-ac',
-  '2',
+  'h264',
+  '-tune',
+  'zerolatency',
+  // '-pix_fmt',
+  // 'yuv420p',
+  '-preset',
+  options?.presetH26x || 'faster',
+  '-profile:v',
+  'baseline',
+  // '-g',
+  // `${options?.fps}`,
+  // '-x264-params',
+  // `keyint=${options?.fps}:min-keyint=${options?.fps}`,
+  '-bf',
+  '0',
+  '-bsf:v',
+  'h264_metadata=aud=insert',
 ];
 
 /**
@@ -84,27 +106,22 @@ class MediaPlayer extends EventEmitter {
 
   playUnknown(input, options, streams = {}) {
     this.destroyDispatcher();
-
     const isStream = input instanceof ReadableStream;
-
-    const args = isStream ? FFMPEG_ARGUMENTS.slice() : ['-i', input, ...FFMPEG_ARGUMENTS];
+    const args = [...FFMPEG_OUTPUT_PREFIX, ...FFMPEG_PCM_ARGUMENTS];
+    if (!isStream) args.unshift('-i', input);
     if (options.seek) args.unshift('-ss', String(options.seek));
-
     // Check input
     if (typeof input == 'string' && input.startsWith('http')) {
-      args.unshift(
-        '-reconnect',
-        '1',
-        '-reconnect_at_eof',
-        '1',
-        '-reconnect_streamed',
-        '1',
-        '-reconnect_delay_max',
-        '4294',
-      );
+      args.unshift(...FFMPEG_INPUT_PREFIX);
     }
 
     const ffmpeg = new prism.FFmpeg({ args });
+    this.emit('debug', `[ffmpeg-audio_process] Spawn process with args:\n${args.join(' ')}`);
+
+    ffmpeg.process.stderr.on('data', data => {
+      this.emit('debug', `[ffmpeg-audio_process]: ${data.toString()}`);
+    });
+
     streams.ffmpeg = ffmpeg;
     if (isStream) {
       streams.input = input;
@@ -144,19 +161,51 @@ class MediaPlayer extends EventEmitter {
 
   playUnknownVideo(input, options = {}) {
     this.destroyVideoDispatcher();
-
     const isStream = input instanceof ReadableStream;
+    // Get video info
+    let isDone = false;
+    let data = null;
+    if (!options?.fps) {
+      fluent.ffprobe(input, (err, metadata) => {
+        if (err) {
+          this.emit('error', err);
+          isDone = true;
+          return;
+        }
+        let hasAudio = false;
+        let hasVideo = false;
+        let fps = 0;
+        metadata.streams.forEach(stream => {
+          if (stream.codec_type === 'audio') {
+            hasAudio = true;
+          }
+          if (stream.codec_type === 'video') {
+            hasVideo = true;
+            if (stream.avg_frame_rate) {
+              const frameRate = stream.avg_frame_rate.split('/');
+              fps = parseFloat(frameRate[0]) / parseFloat(frameRate[1]);
+            } else if (stream.r_frame_rate) {
+              const frameRate = stream.r_frame_rate.split('/');
+              fps = parseFloat(frameRate[0]) / parseFloat(frameRate[1]);
+            }
+          }
+        });
+        data = {
+          audio: hasAudio,
+          video: hasVideo,
+          fps: hasVideo ? fps : null,
+        };
+        isDone = true;
+      });
+      deasync.loopWhile(() => !isDone);
+    }
 
-    if (!options?.fps) options.fps = 30;
+    if (!options?.fps) options.fps = data?.fps || 30;
 
     const args = [
       '-i',
-      '-',
-      '-use_wallclock_as_timestamps',
-      '1',
-      '-copyts',
-      '-analyzeduration',
-      '0',
+      isStream ? '-' : input,
+      ...FFMPEG_OUTPUT_PREFIX,
       '-flags',
       'low_delay',
       '-r',
@@ -167,10 +216,6 @@ class MediaPlayer extends EventEmitter {
       args.push('-b:v', `${options?.bitrate}K`);
     }
 
-    if (!isStream) {
-      args[1] = input;
-    }
-
     if (options?.hwAccel === true) {
       args.unshift('-hwaccel', 'auto');
     }
@@ -179,47 +224,17 @@ class MediaPlayer extends EventEmitter {
 
     // Check input
     if (typeof input == 'string' && input.startsWith('http')) {
-      args.unshift(
-        '-reconnect',
-        '1',
-        '-reconnect_at_eof',
-        '1',
-        '-reconnect_streamed',
-        '1',
-        '-reconnect_delay_max',
-        '4294',
-      );
+      args.unshift(...FFMPEG_INPUT_PREFIX);
     }
 
     // Get stream type
     if (this.voiceConnection.videoCodec == 'VP8') {
-      args.push('-f', 'ivf', '-deadline', 'realtime', '-c:v', 'libvpx');
+      args.push(...FFMPEG_VP8_ARGUMENTS);
       // Remove  '-speed', '5' bc bad quality
     }
 
     if (this.voiceConnection.videoCodec == 'H264') {
-      args.push(
-        '-c:v',
-        'libx264',
-        '-f',
-        'h264',
-        '-tune',
-        'zerolatency',
-        // '-pix_fmt',
-        // 'yuv420p',
-        '-preset',
-        options?.presetH26x || 'faster',
-        '-profile:v',
-        'baseline',
-        // '-g',
-        // `${options?.fps}`,
-        // '-x264-params',
-        // `keyint=${options?.fps}:min-keyint=${options?.fps}`,
-        '-bf',
-        '0',
-        '-bsf:v',
-        'h264_metadata=aud=insert',
-      );
+      args.push(...FFMPEG_H264_ARGUMENTS(options));
     }
 
     args.push('-force_key_frames', '00:02');
@@ -240,11 +255,15 @@ class MediaPlayer extends EventEmitter {
       input.pipe(ffmpeg);
     }
 
-    this.emit('debug', `[ffmpeg] Spawn process with args:\n${args.join(' ')}`);
+    this.emit('debug', `[ffmpeg-video_process] Spawn process with args:\n${args.join(' ')}`);
 
     ffmpeg.process.stderr.on('data', data => {
-      this.emit('debug', `[ffmpeg]: ${data.toString()}`);
+      this.emit('debug', `[ffmpeg-video_process]: ${data.toString()}`);
     });
+
+    if (data?.audio && options?.includeAudio) {
+      this.playUnknown(input, options?.audioOptions || {});
+    }
 
     switch (this.voiceConnection.videoCodec) {
       case 'VP8': {
@@ -254,7 +273,7 @@ class MediaPlayer extends EventEmitter {
         return this.playAnnexBVideo(ffmpeg, options, streams, 'H264');
       }
       default: {
-        throw new Error('Invalid codec');
+        throw new Error('Invalid codec (Supported: VP8, H264)');
       }
     }
   }

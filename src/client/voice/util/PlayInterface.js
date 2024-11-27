@@ -78,7 +78,7 @@ class PlayInterface {
    * Options that can be passed to stream-playing methods:
    * @typedef {Object} VideoOptions
    * @property {number} [seek=0] The time to seek to
-   * @property {number} [fps=30] Video fps
+   * @property {number} [fps] Video fps
    * @property {number} [highWaterMark=12] The maximum number of opus packets to make and store before they are
    * actually needed. See https://nodejs.org/en/docs/guides/backpressuring-in-streams/. Setting this value to
    * 1 means that changes in volume will be more instant.

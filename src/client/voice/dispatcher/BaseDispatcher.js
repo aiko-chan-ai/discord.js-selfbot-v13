@@ -4,8 +4,6 @@ const { Buffer } = require('node:buffer');
 const crypto = require('node:crypto');
 const { Writable } = require('node:stream');
 const { setTimeout } = require('node:timers');
-const find = require('find-process');
-const kill = require('tree-kill');
 const secretbox = require('../util/Secretbox');
 
 const CHANNELS = 2;
@@ -144,21 +142,17 @@ class BaseDispatcher extends Writable {
   }
 
   _cleanup() {
-    if (this.player.dispatcher === this) this.player.dispatcher = null;
-    if (this.player.videoDispatcher === this) this.player.videoDispatcher = null;
+    if (this.player.dispatcher === this) {
+      this.player.dispatcher.destroy();
+      this.player.dispatcher = null;
+    }
+    if (this.player.videoDispatcher === this) {
+      this.player.videoDispatcher.destroy();
+      this.player.videoDispatcher = null;
+    }
     const { streams } = this;
     if (streams.opus) streams.opus.destroy();
-    if (streams.ffmpeg?.process) {
-      const ffmpegPid = streams.ffmpeg.process.pid; // But it is ppid ;-;
-      const args = streams.ffmpeg.process.spawnargs.slice(1).join(' '); // Skip ffmpeg
-      find('name', 'ffmpeg', true).then(list => {
-        let process = list.find(o => o.pid === ffmpegPid || o.ppid === ffmpegPid || o.cmd.includes(args));
-        if (process) {
-          kill(process.pid);
-        }
-      });
-      streams.ffmpeg.destroy();
-    }
+    streams.ffmpeg?.destroy();
   }
 
   /**
