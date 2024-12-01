@@ -1230,8 +1230,8 @@ packages:
   cross-fetch@4.0.0:
     resolution: {integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==}
 
-  cross-spawn@6.0.5:
-    resolution: {integrity: sha512-eTVLrBSt7fjbDygz805pMnstIs2VTBNkRm0qxZd+M7A5XDdxVRWO5MxGBXZhjY4cqLYLdtrGqRf8mBPmzwSpWQ==}
+  cross-spawn@6.0.6:
+    resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
     engines: {node: '>=4.8'}
 
   cross-spawn@7.0.3:
@@ -1377,6 +1377,7 @@ packages:
   dtslint@4.2.1:
     resolution: {integrity: sha512-57mWY9osUEfS6k62ATS9RSgug1dZcuN4O31hO76u+iEexa6VUEbKoPGaA2mNtc0FQDcdTl0zEUtti79UQKSQyQ==}
     engines: {node: '>=10.0.0'}
+    deprecated: See https://aka.ms/type-testing-tools
     hasBin: true
     peerDependencies:
       typescript: '>= 3.0.0-dev || >= 3.1.0-dev || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.7.0-dev || >= 3.8.0-dev || >= 3.9.0-dev || >= 4.0.0-dev'
@@ -1539,11 +1540,13 @@ packages:
   eslint@6.8.0:
     resolution: {integrity: sha512-K+Iayyo2LtyYhDSYwz5D5QdWw0hCacNzyq1Y821Xna2xSJj7cijoLLYmLxTQgcgZ9mC61nryMy9S7GRbYpI5Ig==}
     engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   eslint@8.57.0:
     resolution: {integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@6.2.1:
@@ -3341,6 +3344,7 @@ packages:
   stream-connect@1.0.2:
     resolution: {integrity: sha512-68Kl+79cE0RGKemKkhxTSg8+6AGrqBt+cbZAXevg2iJ6Y3zX4JhA/sZeGzLpxW9cXhmqAcE7KnJCisUmIUfnFQ==}
     engines: {node: '>=0.10.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   stream-via@1.0.4:
     resolution: {integrity: sha512-DBp0lSvX5G9KGRDTkR/R+a29H+Wk2xItOF+MpZLLNDWbEV9tGPnqLPxHEYjmiz8xGtJHRIqmI+hCjmNzqoA4nQ==}
@@ -5364,7 +5368,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  cross-spawn@6.0.5:
+  cross-spawn@6.0.6:
     dependencies:
       nice-try: 1.0.5
       path-key: 2.0.1
@@ -5725,7 +5729,7 @@ snapshots:
       '@babel/code-frame': 7.24.7
       ajv: 6.12.6
       chalk: 2.4.2
-      cross-spawn: 6.0.5
+      cross-spawn: 6.0.6
       debug: 4.3.5(supports-color@9.4.0)
       doctrine: 3.0.0
       eslint-scope: 5.1.1
