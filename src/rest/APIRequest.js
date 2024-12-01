@@ -144,7 +144,7 @@ class APIRequest {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
     return fetch(url, {
-      method: this.method,
+      method: this.method.toUpperCase(), // Undici doesn't normalize "patch" into "PATCH" (which surprisingly follows the spec).
       headers,
       agent,
       body,
