@@ -71,7 +71,7 @@ importers:
         version: 20.14.12
       '@types/ws':
         specifier: ^8.5.10
-        version: 8.5.11
+        version: 8.5.13
       conventional-changelog-cli:
         specifier: ^2.2.2
         version: 2.2.2
@@ -671,8 +671,8 @@ packages:
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
 
-  '@types/ws@8.5.11':
-    resolution: {integrity: sha512-4+q7P5h3SpJxaBft0Dzpbr6lmMaqh0Jr2tbhJZ/luAwvD7ohSCniYkwz/pLxuT2h0EOa6QADgJj1Ko+TzRfZ+w==}
+  '@types/ws@8.5.13':
+    resolution: {integrity: sha512-osM/gWBTPKgHV8XkTunnegTRIsvF6owmf5w+JtAfOw472dptdm0dlGv4xCt6GwQRcC2XVOvvRE/0bAoQcL2QkA==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -1377,6 +1377,7 @@ packages:
   dtslint@4.2.1:
     resolution: {integrity: sha512-57mWY9osUEfS6k62ATS9RSgug1dZcuN4O31hO76u+iEexa6VUEbKoPGaA2mNtc0FQDcdTl0zEUtti79UQKSQyQ==}
     engines: {node: '>=10.0.0'}
+    deprecated: See https://aka.ms/type-testing-tools
     hasBin: true
     peerDependencies:
       typescript: '>= 3.0.0-dev || >= 3.1.0-dev || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.7.0-dev || >= 3.8.0-dev || >= 3.9.0-dev || >= 4.0.0-dev'
@@ -1539,11 +1540,13 @@ packages:
   eslint@6.8.0:
     resolution: {integrity: sha512-K+Iayyo2LtyYhDSYwz5D5QdWw0hCacNzyq1Y821Xna2xSJj7cijoLLYmLxTQgcgZ9mC61nryMy9S7GRbYpI5Ig==}
     engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   eslint@8.57.0:
     resolution: {integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@6.2.1:
@@ -3341,6 +3344,7 @@ packages:
   stream-connect@1.0.2:
     resolution: {integrity: sha512-68Kl+79cE0RGKemKkhxTSg8+6AGrqBt+cbZAXevg2iJ6Y3zX4JhA/sZeGzLpxW9cXhmqAcE7KnJCisUmIUfnFQ==}
     engines: {node: '>=0.10.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   stream-via@1.0.4:
     resolution: {integrity: sha512-DBp0lSvX5G9KGRDTkR/R+a29H+Wk2xItOF+MpZLLNDWbEV9tGPnqLPxHEYjmiz8xGtJHRIqmI+hCjmNzqoA4nQ==}
@@ -4712,9 +4716,9 @@ snapshots:
 
   '@types/stack-utils@2.0.3': {}
 
-  '@types/ws@8.5.11':
+  '@types/ws@8.5.13':
     dependencies:
-      '@types/node': 18.19.41
+      '@types/node': 20.14.12
 
   '@types/yargs-parser@21.0.3': {}
 
