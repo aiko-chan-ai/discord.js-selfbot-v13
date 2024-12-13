@@ -9,10 +9,10 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.215 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Electron/33.0.0 Safari/537.36';
 
 /**
- * Google Chrome v108 TLS ciphers
+ * Google Chrome v131 TLS ciphers
  * @see {@link https://tls.browserleaks.com/tls}
  * @see {@link https://github.com/yifeikong/curl-impersonate}
  * @typedef {Array<string>} Ciphers

@@ -588,7 +588,7 @@ class Client extends BaseClient {
    * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })
    */
   async acceptInvite(invite, options = { bypassOnboarding: true, bypassVerify: true }) {
-    throw new Error('METHOD_WARNING');
+    // ! throw new Error('METHOD_WARNING');
     const code = DataResolver.resolveInviteCode(invite);
     if (!code) throw new Error('INVITE_RESOLVE_CODE');
     const i = await this.fetchInvite(code);
@@ -711,7 +711,7 @@ class Client extends BaseClient {
     })
    */
   authorizeURL(url, options = { authorize: true }) {
-    throw new Error('METHOD_WARNING');
+    // ! throw new Error('METHOD_WARNING');
     const pathnameAPI = /\/api\/(v\d{1,2}\/)?oauth2\/authorize/;
     const pathnameURL = /\/oauth2\/authorize/;
     const url_ = new URL(url);
@@ -803,9 +803,6 @@ class Client extends BaseClient {
    * @private
    */
   _validateOptions(options = this.options) {
-    options.captchaSolver = () => {
-      throw new Error('METHOD_WARNING');
-    };
     if (typeof options.makeCache !== 'function') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'makeCache', 'a function');
     }

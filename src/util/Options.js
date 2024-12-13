@@ -129,10 +129,16 @@ const Intents = require('./Intents');
  */
 
 /**
+ * ProxyAgent options.
+ * @typedef {Object} ProxyAgentOptions
+ * @see {@link https://github.com/nodejs/undici/blob/main/docs/docs/api/ProxyAgent.md}
+ */
+
+/**
  * HTTP options
  * @typedef {Object} HTTPOptions
  * @property {number} [version=9] API version to use
- * @property {AgentOptions} [agent={}] HTTPS Agent options
+ * @property {ProxyAgentOptions} [agent={}] ProxyAgent options
  * @property {string} [api='https://discord.com/api'] Base URL of the API
  * @property {string} [cdn='https://cdn.discordapp.com'] Base URL of the CDN
  * @property {string} [invite='https://discord.gg'] Base URL of invites
@@ -181,14 +187,14 @@ class Options extends null {
           device: '',
           system_locale: 'vi-VN',
           browser_user_agent: UserAgent,
-          browser_version: '108.0.5359.215',
+          browser_version: '131.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 338907,
+          client_build_number: 353304,
           client_event_source: null,
         },
         compress: false,

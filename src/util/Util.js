@@ -874,6 +874,21 @@ class Util extends null {
     return typeof object == 'object' && object.httpAgent instanceof Agent && object.httpsAgent instanceof Agent;
   }
 
+  static checkUndiciProxyAgent(data) {
+    if (typeof data === 'string') {
+      return {
+        uri: data,
+      };
+    }
+    if (data instanceof URL) {
+      return {
+        uri: data.toString(),
+      };
+    }
+    if (typeof data === 'object' && typeof data.uri === 'string') return data;
+    return false;
+  }
+
   static createPromiseInteraction(client, nonce, timeoutMs = 5_000, isHandlerDeferUpdate = false, parent) {
     return new Promise((resolve, reject) => {
       // Waiting for MsgCreate / ModalCreate

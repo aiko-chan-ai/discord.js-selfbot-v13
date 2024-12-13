@@ -1,11 +1,10 @@
 'use strict';
 
 const Buffer = require('node:buffer').Buffer;
-const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const makeFetchCookie = require('fetch-cookie');
 const { CookieJar } = require('tough-cookie');
-const { fetch: fetchOriginal, FormData } = require('undici');
+const { fetch: fetchOriginal, FormData, buildConnector, Client, ProxyAgent } = require('undici');
 const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
@@ -39,23 +38,14 @@ class APIRequest {
 
   make(captchaKey, captchaRqToken) {
     if (!agent) {
-      if (Util.verifyProxyAgent(this.client.options.http.agent)) {
-        // Bad code
-        for (const [k, v] of Object.entries({
-          keepAlive: true,
-          honorCipherOrder: true,
-          secureProtocol: 'TLSv1_2_method',
-          ciphers: ciphers.join(':'),
-        })) {
-          this.client.options.http.agent.httpsAgent[k] = v;
-        }
-        agent = this.client.options.http.agent;
+      const r_ = Util.checkUndiciProxyAgent(this.client.options.http.agent);
+      if (!r_) {
+        agent = new Client('https://discord.com', {
+          connect: buildConnector({ ciphers: ciphers.join(':') }),
+        });
       } else {
-        agent = new https.Agent({
-          ...this.client.options.http.agent,
-          keepAlive: true,
-          honorCipherOrder: true,
-          secureProtocol: 'TLSv1_2_method',
+        agent = new ProxyAgent({
+          ...r_,
           ciphers: ciphers.join(':'),
         });
       }
@@ -70,7 +60,7 @@ class APIRequest {
     let headers = {
       accept: '*/*',
       'accept-language': 'en-US',
-      'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108"',
+      'sec-ch-ua': '"Chromium";v="131", "Not_A Brand";v="24"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
@@ -86,6 +76,7 @@ class APIRequest {
       origin: 'https://discord.com',
       ...this.client.options.http.headers,
       'User-Agent': this.fullUserAgent,
+      priority: 'u=1, i',
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
@@ -146,10 +137,11 @@ class APIRequest {
     return fetch(url, {
       method: this.method.toUpperCase(), // Undici doesn't normalize "patch" into "PATCH" (which surprisingly follows the spec).
       headers,
-      agent,
       body,
       signal: controller.signal,
       redirect: 'follow',
+      dispatcher: agent,
+      credentials: 'include',
     }).finally(() => clearTimeout(timeout));
   }
 }

@@ -61,7 +61,7 @@ import {
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
-import { Response } from 'undici';
+import { Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
 import * as WebSocket from 'ws';
@@ -6726,7 +6726,7 @@ export interface HTTPErrorData {
 }
 
 export interface HTTPOptions {
-  agent?: Omit<AgentOptions, 'keepAlive'>;
+  agent?: Omit<ProxyAgent.Options, 'keepAlive'>;
   api?: string;
   version?: number;
   host?: string;
