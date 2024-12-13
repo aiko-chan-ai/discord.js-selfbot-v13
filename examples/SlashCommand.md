@@ -55,13 +55,10 @@ await message.channel.sendSlash('718642000898818048', 'sauce', a)
 
 ### Demo Command
 
-![image](https://cdn.discordapp.com/attachments/820557032016969751/1196038273282355301/image.png)
-
-![image](https://cdn.discordapp.com/attachments/820557032016969751/1196038366328799242/image.png)
-
-![image](https://cdn.discordapp.com/attachments/820557032016969751/1196040186186973238/image.png)
-
-![image](https://cdn.discordapp.com/attachments/820557032016969751/1196041814147338360/image.png)
+![image](https://github.com/user-attachments/assets/e7b8fc6c-4816-49df-a400-6a4eed7a9a88)
+![image](https://github.com/user-attachments/assets/3452f388-639b-4626-a826-56ec3683ee32)
+![image](https://github.com/user-attachments/assets/4a1e92d7-402d-4087-afa7-5794ce8ba6eb)
+![image](https://github.com/user-attachments/assets/85b029f4-27f7-4e20-b3a7-a4d0597b4a98)
 
 ### Code
 ```js
