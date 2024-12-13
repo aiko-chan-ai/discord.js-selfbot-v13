@@ -19,8 +19,6 @@ Please use the @dank074/discord-video-stream library for the best support.
 
 const EventEmitter = require('events');
 const { Readable: ReadableStream } = require('stream');
-const deasync = require('deasync');
-const fluent = require('fluent-ffmpeg');
 const prism = require('prism-media');
 const { H264NalSplitter } = require('./processing/AnnexBNalSplitter');
 const { IvfTransformer } = require('./processing/IvfSplitter');
@@ -162,45 +160,7 @@ class MediaPlayer extends EventEmitter {
   playUnknownVideo(input, options = {}) {
     this.destroyVideoDispatcher();
     const isStream = input instanceof ReadableStream;
-    // Get video info
-    let isDone = false;
-    let data = null;
-    if (!options?.fps) {
-      fluent.ffprobe(input, (err, metadata) => {
-        if (err) {
-          this.emit('error', err);
-          isDone = true;
-          return;
-        }
-        let hasAudio = false;
-        let hasVideo = false;
-        let fps = 0;
-        metadata.streams.forEach(stream => {
-          if (stream.codec_type === 'audio') {
-            hasAudio = true;
-          }
-          if (stream.codec_type === 'video') {
-            hasVideo = true;
-            if (stream.avg_frame_rate) {
-              const frameRate = stream.avg_frame_rate.split('/');
-              fps = parseFloat(frameRate[0]) / parseFloat(frameRate[1]);
-            } else if (stream.r_frame_rate) {
-              const frameRate = stream.r_frame_rate.split('/');
-              fps = parseFloat(frameRate[0]) / parseFloat(frameRate[1]);
-            }
-          }
-        });
-        data = {
-          audio: hasAudio,
-          video: hasVideo,
-          fps: hasVideo ? fps : null,
-        };
-        isDone = true;
-      });
-      deasync.loopWhile(() => !isDone);
-    }
-
-    if (!options?.fps) options.fps = data?.fps || 30;
+    if (!options?.fps) options.fps = 30;
 
     const args = [
       '-i',
@@ -260,10 +220,6 @@ class MediaPlayer extends EventEmitter {
     ffmpeg.process.stderr.on('data', data => {
       this.emit('debug', `[ffmpeg-video_process]: ${data.toString()}`);
     });
-
-    if (data?.audio && options?.includeAudio) {
-      this.playUnknown(input, options?.audioOptions || {});
-    }
 
     switch (this.voiceConnection.videoCodec) {
       case 'VP8': {
