@@ -91,7 +91,7 @@ await message.channel.sendSlash('718642000898818048', 'sauce', a)
 
 > [aiko-chan-ai/discord.js-selfbot-v13#1055 (comment)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/1055#issuecomment-1949653100)
 
-![image](https://cdn.discordapp.com/attachments/820557032016969751/1208363574477590538/image.png?ex=65e30346&is=65d08e46&hm=72771d6aa0d23f817f5daf8d2f33906ff74200aace7787c3cd02d2e30e58f8d5&)
+![image](https://github.com/user-attachments/assets/0a1d253a-7751-4f63-a750-58b50d055928)
 
 ```js
 const channel = client.channels.cache.get('id');
