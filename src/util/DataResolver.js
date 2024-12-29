@@ -111,7 +111,8 @@ class DataResolver extends null {
     if (typeof resource === 'string') {
       if (/^https?:\/\//.test(resource)) {
         const res = await fetch(resource);
-        return res.body;
+        if (res.ok) return res.body;
+        else throw new DiscordError('FILE_NOT_FOUND', resource);
       }
 
       return new Promise((resolve, reject) => {

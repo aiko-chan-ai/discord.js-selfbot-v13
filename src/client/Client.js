@@ -522,7 +522,14 @@ class Client extends BaseClient {
    * @param {string[]} urls Discord CDN URLs
    * @returns {Promise<Array<{ original: string, refreshed: string }>>}
    */
-  async refreshAttachmentURL(urls) {
+  async refreshAttachmentURL(urls = []) {
+    // Clean up the URLs
+    urls = urls.map(url => {
+      const urlObject = new URL(url);
+      // Clean query
+      urlObject.search = '';
+      return urlObject.toString();
+    });
     const data = await this.api.attachments('refresh-urls').post({
       data: { attachment_urls: urls },
     });
