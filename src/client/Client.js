@@ -519,10 +519,10 @@ class Client extends BaseClient {
 
   /**
    * Refresh the Discord CDN links with hashes so they can be usable.
-   * @param {string[]} urls Discord CDN URLs
+   * @param {...string} urls Discord CDN URLs
    * @returns {Promise<Array<{ original: string, refreshed: string }>>}
    */
-  async refreshAttachmentURL(urls = []) {
+  async refreshAttachmentURL(...urls) {
     // Clean up the URLs
     urls = urls.map(url => {
       const urlObject = new URL(url);
