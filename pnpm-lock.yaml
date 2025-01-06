@@ -52,8 +52,8 @@ importers:
         specifier: ^16.0.1
         version: 16.3.0
       '@commitlint/config-angular':
-        specifier: ^16.0.0
-        version: 16.3.0
+        specifier: ^19.7.0
+        version: 19.7.0
       '@discordjs/docgen':
         specifier: ^0.11.1
         version: 0.11.1
@@ -281,13 +281,13 @@ packages:
     engines: {node: '>=v12'}
     hasBin: true
 
-  '@commitlint/config-angular-type-enum@16.3.0':
-    resolution: {integrity: sha512-WkSqmNOOWX2uukAl+jYuOcJYCPpfARPQgfTN6Ir3ZPR20sKJSRdBAxlKI0wK3Al84/wMfsG0kt+dSZohLFLJrw==}
-    engines: {node: '>=v12'}
+  '@commitlint/config-angular-type-enum@19.5.0':
+    resolution: {integrity: sha512-4/6xrkElCSBb7+6oZXlBJ/zytkxXgmTg5gk1Voj3GAWShTivtWrPtDYvHmF858WhA695YKgxMHEPNN74UFkK8w==}
+    engines: {node: '>=v18'}
 
-  '@commitlint/config-angular@16.3.0':
-    resolution: {integrity: sha512-3By+tzCPv2ot2KhzEJlfTDoMDkJRLnR/yUyMZLIQpkxz8ZCYvgO2KucTsjfOB4R4J9Nf+g5jHZTEQkUj4lCLKA==}
-    engines: {node: '>=v12'}
+  '@commitlint/config-angular@19.7.0':
+    resolution: {integrity: sha512-xXBplZDC3yjnE1knGvO9ETqpxRhW0xZ/ud7KHPXGtvbcpmLX/tUIsbCmZcNvM9cZYMnYqAvhrQMEqCsjlkOA7A==}
+    engines: {node: '>=v18'}
 
   '@commitlint/config-validator@16.2.1':
     resolution: {integrity: sha512-hogSe0WGg7CKmp4IfNbdNES3Rq3UEI4XRPB8JL4EPgo/ORq5nrGTVzxJh78omibNuB8Ho4501Czb1Er1MoDWpw==}
@@ -1361,6 +1361,7 @@ packages:
   dtslint@4.2.1:
     resolution: {integrity: sha512-57mWY9osUEfS6k62ATS9RSgug1dZcuN4O31hO76u+iEexa6VUEbKoPGaA2mNtc0FQDcdTl0zEUtti79UQKSQyQ==}
     engines: {node: '>=10.0.0'}
+    deprecated: See https://aka.ms/type-testing-tools
     hasBin: true
     peerDependencies:
       typescript: '>= 3.0.0-dev || >= 3.1.0-dev || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.7.0-dev || >= 3.8.0-dev || >= 3.9.0-dev || >= 4.0.0-dev'
@@ -1523,11 +1524,13 @@ packages:
   eslint@6.8.0:
     resolution: {integrity: sha512-K+Iayyo2LtyYhDSYwz5D5QdWw0hCacNzyq1Y821Xna2xSJj7cijoLLYmLxTQgcgZ9mC61nryMy9S7GRbYpI5Ig==}
     engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   eslint@8.57.0:
     resolution: {integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@6.2.1:
@@ -3315,6 +3318,7 @@ packages:
   stream-connect@1.0.2:
     resolution: {integrity: sha512-68Kl+79cE0RGKemKkhxTSg8+6AGrqBt+cbZAXevg2iJ6Y3zX4JhA/sZeGzLpxW9cXhmqAcE7KnJCisUmIUfnFQ==}
     engines: {node: '>=0.10.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   stream-via@1.0.4:
     resolution: {integrity: sha512-DBp0lSvX5G9KGRDTkR/R+a29H+Wk2xItOF+MpZLLNDWbEV9tGPnqLPxHEYjmiz8xGtJHRIqmI+hCjmNzqoA4nQ==}
@@ -4136,11 +4140,11 @@ snapshots:
       - '@swc/core'
       - '@swc/wasm'
 
-  '@commitlint/config-angular-type-enum@16.3.0': {}
+  '@commitlint/config-angular-type-enum@19.5.0': {}
 
-  '@commitlint/config-angular@16.3.0':
+  '@commitlint/config-angular@19.7.0':
     dependencies:
-      '@commitlint/config-angular-type-enum': 16.3.0
+      '@commitlint/config-angular-type-enum': 19.5.0
 
   '@commitlint/config-validator@16.2.1':
     dependencies:
