@@ -741,7 +741,8 @@ class Client extends BaseClient {
     delete searchParams.permissions;
     delete searchParams.integration_type;
     delete searchParams.guild_id;
-    if (!options.permissions || !options.guild_id) throw new Error('INVALID_OAUTH_OPTIONS');
+   // if (!options.permissions || !options.guild_id) throw new Error('INVALID_OAUTH_OPTIONS');
+  
     return this.api.oauth2.authorize.post({
       query: searchParams,
       data: options,
