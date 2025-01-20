@@ -782,7 +782,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
-  public passLogin(email: string, password: string, mfaCode?: string | number): Promise<string | null>;
+  public passLogin(email: string, password: string): Promise<string | null>;
   public QRLogin(): Promise<void>;
   public logout(): Promise<void>;
   public isReady(): this is Client<true>;
@@ -3437,7 +3437,7 @@ export class TOTP {
   private static buf2hex(buf: ArrayBuffer): string;
   private static readonly base32: { [key: number]: number };
   private static readonly crypto: SubtleCrypto;
-  static generate(key: string, options?: generateOptions): Promise<{ otp: string; expires: number}>;
+  public static generate(key: string, options?: generateOptions): Promise<{ otp: string; expires: number}>;
 }
 
 export type TOTPAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";

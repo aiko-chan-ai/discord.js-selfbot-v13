@@ -16,10 +16,10 @@ class TOTP {
   // eslint-disable-next-line valid-jsdoc
   /**
    * Generates a Time-based One-Time Password (TOTP)
-   * @async
+   * @public
    * @param {string} key - The secret key for TOTP
    * @param {generateOptions} options - Optional parameters for TOTP
-   * @returns {Promise<{ otp: string; expires: number }>}
+   * @returns {Promise<{ otp: string, expires: number }>}
    */
   static async generate(key, options = {}) {
     const _options = {
