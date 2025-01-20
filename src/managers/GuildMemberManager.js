@@ -56,7 +56,7 @@ class GuildMemberManager extends CachedManager {
     const memberResolvable = super.resolve(member);
     if (memberResolvable) return memberResolvable;
     const userResolvable = this.client.users.resolveId(member);
-    if (userResolvable) return super.resolve(userResolvable);
+    if (userResolvable) return super.cache.get(userResolvable) ?? null;
     return null;
   }
 
@@ -129,7 +129,7 @@ class GuildMemberManager extends CachedManager {
    */
   get me() {
     return (
-      this.resolve(this.client.user.id) ??
+      this.cache.get(this.client.user.id) ??
       (this.client.options.partials.includes(PartialTypes.GUILD_MEMBER)
         ? this._add({ user: { id: this.client.user.id } }, true)
         : null)

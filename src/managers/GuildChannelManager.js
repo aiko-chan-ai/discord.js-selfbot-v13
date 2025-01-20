@@ -89,7 +89,7 @@ class GuildChannelManager extends CachedManager {
    * @returns {?(GuildChannel|ThreadChannel)}
    */
   resolve(channel) {
-    if (channel instanceof ThreadChannel) return super.resolve(channel.id);
+    if (channel instanceof ThreadChannel) return super.cache.get(channel.id) ?? null;
     return super.resolve(channel);
   }
 
@@ -290,15 +290,15 @@ class GuildChannelManager extends CachedManager {
     channel = this.resolve(channel);
     if (!channel) throw new TypeError('INVALID_TYPE', 'channel', 'GuildChannelResolvable');
 
-    const parent = data.parent && this.client.channels.resolveId(data.parent);
+    const parentId = data.parent && this.client.channels.resolveId(data.parent);
 
     if (typeof data.position !== 'undefined') await this.setPosition(channel, data.position, { reason });
 
     let permission_overwrites = data.permissionOverwrites?.map(o => PermissionOverwrites.resolve(o, this.guild));
 
     if (data.lockPermissions) {
-      if (parent) {
-        const newParent = this.guild.channels.resolve(parent);
+      if (parentId) {
+        const newParent = this.guild.channels.cache.get(parentId);
         if (newParent?.type === 'GUILD_CATEGORY') {
           permission_overwrites = newParent.permissionOverwrites.cache.map(o =>
             PermissionOverwrites.resolve(o, this.guild),
@@ -325,7 +325,7 @@ class GuildChannelManager extends CachedManager {
         rtc_region: 'rtcRegion' in data ? data.rtcRegion : channel.rtcRegion,
         video_quality_mode:
           typeof data.videoQualityMode === 'string' ? VideoQualityModes[data.videoQualityMode] : data.videoQualityMode,
-        parent_id: parent,
+        parent_id: parentId,
         lock_permissions: data.lockPermissions,
         rate_limit_per_user: data.rateLimitPerUser,
         default_auto_archive_duration: defaultAutoArchiveDuration,

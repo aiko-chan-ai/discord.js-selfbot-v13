@@ -273,7 +273,7 @@ class Message extends Base {
        * @type {Collection<Snowflake, Message>}
        */
       this.messageSnapshots = data.message_snapshots.reduce((coll, snapshot) => {
-        const channel = this.client.channels.resolve(this.reference.channelId);
+        const channel = this.client.channels.cache.get(this.reference.channelId);
         const snapshotData = {
           ...snapshot.message,
           id: this.reference.messageId,
@@ -464,7 +464,7 @@ class Message extends Base {
    * @readonly
    */
   get channel() {
-    return this.client.channels.resolve(this.channelId);
+    return this.client.channels.cache.get(this.channelId) ?? null;
   }
 
   /**
@@ -510,7 +510,7 @@ class Message extends Base {
    * @readonly
    */
   get guild() {
-    return this.client.guilds.resolve(this.guildId) ?? this.channel?.guild ?? null;
+    return this.client.guilds.cache.get(this.guildId) ?? this.channel?.guild ?? null;
   }
 
   /**
@@ -530,7 +530,7 @@ class Message extends Base {
    * @readonly
    */
   get thread() {
-    return this.channel?.threads?.resolve(this.id) ?? null;
+    return this.channel?.threads?.cache.get(this.id) ?? null;
   }
 
   /**
