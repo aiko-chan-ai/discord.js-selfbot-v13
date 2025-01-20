@@ -9,6 +9,7 @@ const RateLimitError = require('./RateLimitError');
 const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
+const TOTP = require('../util/Totp');
 
 const captchaMessage = [
   'incorrect-captcha',
@@ -385,22 +386,31 @@ class RequestHandler {
           request.retries++;
           return this.execute(request, captcha, data.captcha_rqtoken);
         }
-        // Two factor
-        if (data?.code && data.code == 60003 && request.options.mfaCode && request.retries < 1) {
+        // Two factor handling
+        if (
+          data?.code &&
+          data.code == 60003 && // Two factor is required for this operation
+          data.mfa.methods.find(o => o.type === 'totp') && // TOTP is available
+          typeof this.manager.client.options.TOTPKey === 'string' &&
+          request.options.auth !== false &&
+          request.retries < 1
+        ) {
+          // Get mfa code
+          const { otp } = await TOTP.generate(this.options.TOTPKey);
           this.manager.client.emit(
             DEBUG,
             `${data.message}
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    mfaCode : ${request.options.mfaCode}`,
+    mfaCode : ${otp}`,
           );
           // Get ticket
           const mfaData = data.mfa;
           const mfaPost = await this.manager.client.api.mfa.finish.post({
             data: {
               ticket: mfaData.ticket,
-              data: request.options.mfaCode,
+              data: otp,
               mfa_type: 'totp',
             },
           });

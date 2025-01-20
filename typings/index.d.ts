@@ -794,7 +794,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
     options?: AcceptInviteOptions,
   ): Promise<Guild | DMChannel | GroupDMChannel>;
   public redeemNitro(nitro: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): Promise<any>;
-  public authorizeURL(urlOAuth2: string, options?: OAuth2AuthorizeOptions, mfaCode?: string | number): Promise<any>;
+  public authorizeURL(urlOAuth2: string, options?: OAuth2AuthorizeOptions): Promise<any>;
   public installUserApps(applicationId: Snowflake): Promise<void>;
   public deauthorize(applicationId: Snowflake): Promise<void>;
 
@@ -1553,7 +1553,7 @@ export class Guild extends AnonymousGuild {
     reason?: string,
   ): Promise<this>;
   public topEmojis(): Promise<Collection<number, GuildEmoji>>;
-  public setVanityCode(code?: string, mfaCode?: string | number): Promise<this>;
+  public setVanityCode(code?: string): Promise<this>;
 }
 
 export class GuildAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'> {
@@ -3437,11 +3437,11 @@ export class TOTP {
   private static buf2hex(buf: ArrayBuffer): string;
   private static readonly base32: { [key: number]: number };
   private static readonly crypto: SubtleCrypto;
-  public static generate(key: string, options?: generateOptions): Promise<{ otp: string; expires: number}>;
+  public static generate(key: string, options?: generateOptions): Promise<{ otp: string; expires: number }>;
 }
 
-export type TOTPAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
-export type TOTPEncoding = "hex" | "ascii";
+export type TOTPAlgorithm = 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
+export type TOTPEncoding = 'hex' | 'ascii';
 
 export interface generateOptions {
   digits: number;

@@ -15,12 +15,8 @@ const client = new Discord.Client({
       })
       .then(res => res.data);
   },
+  TOTPKey: '<string>',
 });
-
-async function getMFACode() {
-  // This is just an example, you should implement your own MFA code retrieval
-  return '123456';
-}
 
 client.on('ready', async () => {
   console.log('Ready!', client.user.tag);
@@ -32,7 +28,6 @@ client.on('ready', async () => {
     {
       guild_id: 'guild id',
     },
-    await getMFACode(), // Optional
   );
 });
 

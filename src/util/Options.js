@@ -52,6 +52,7 @@ const Intents = require('./Intents');
  * @property {number} [DMChannelVoiceStatusSync=0] The amount of time in milliseconds that the Client to register the event with each DM channel (0=Disable)
  * @property {number} [captchaRetryLimit=3] Captcha retry limit
  * @property {CaptchaSolver} [captchaSolver] Captcha Solver
+ * @property {string} [TOTPKey] TOTP key for two-factor authentication
  * @property {number} [closeTimeout=5000] The amount of time in milliseconds to wait for the close frame to be received
  * from the WebSocket.
  * <info>Don't have this too high/low. It's best to have it between 2000-6000 ms.</info>
@@ -160,6 +161,7 @@ class Options extends null {
       DMChannelVoiceStatusSync: 0,
       captchaRetryLimit: 3,
       captchaSolver: () => Promise.reject(new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED')),
+      TOTPKey: null,
       closeTimeout: 5_000,
       waitGuildTimeout: 15_000,
       shardCount: 1,
