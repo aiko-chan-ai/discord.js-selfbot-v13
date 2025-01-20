@@ -87,7 +87,7 @@ import {
   GuildVerificationLevel,
   GuildFeature,
   LocalizationMap,
-} from 'discord-api-types/v9';
+} from 'discord-api-types/v10';
 import { GuildChannel, Guild, PermissionOverwrites } from '.';
 import type {
   AutoModerationActionTypes,

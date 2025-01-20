@@ -57,7 +57,11 @@ import {
   TeamMemberRole,
   APIPoll,
   APIPollAnswer,
-} from 'discord-api-types/v9';
+  GuildScheduledEventRecurrenceRuleWeekday,
+  GuildScheduledEventRecurrenceRuleMonth,
+  GuildScheduledEventRecurrenceRuleFrequency,
+  APIChatInputApplicationCommandInteractionData, APIContextMenuInteractionData
+} from 'discord-api-types/v10';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { AgentOptions } from 'node:https';
@@ -553,10 +557,16 @@ export abstract class BaseCommandInteraction<Cached extends CacheType = CacheTyp
   public showModal(modal: Modal | ModalOptions): Promise<void>;
   private transformOption(
     option: APIApplicationCommandOption,
-    resolved: APIApplicationCommandInteractionData['resolved'],
+    resolved: Extract<
+      APIApplicationCommandInteractionData,
+      APIChatInputApplicationCommandInteractionData | APIContextMenuInteractionData
+    >['resolved'],
   ): CommandInteractionOption<Cached>;
   private transformResolved(
-    resolved: APIApplicationCommandInteractionData['resolved'],
+    resolved: Extract<
+      APIApplicationCommandInteractionData,
+      APIChatInputApplicationCommandInteractionData | APIContextMenuInteractionData
+    >['resolved'],
   ): CommandInteractionResolvedData<Cached>;
 }
 
@@ -1769,6 +1779,7 @@ export class GuildScheduledEvent<S extends GuildScheduledEventStatus = GuildSche
   public entityMetadata: GuildScheduledEventEntityMetadata;
   public userCount: number | null;
   public creator: User | null;
+  public recurrenceRule: GuildScheduledEventRecurrenceRule | null;
   public readonly createdTimestamp: number;
   public readonly createdAt: Date;
   public readonly scheduledStartAt: Date;
@@ -1802,6 +1813,26 @@ export class GuildScheduledEvent<S extends GuildScheduledEventStatus = GuildSche
   public isCanceled(): this is GuildScheduledEvent<'CANCELED'>;
   public isCompleted(): this is GuildScheduledEvent<'COMPLETED'>;
   public isScheduled(): this is GuildScheduledEvent<'SCHEDULED'>;
+}
+
+export interface GuildScheduledEventRecurrenceRule {
+  startTimestamp: number;
+  get startAt(): Date;
+  endTimestamp: number | null;
+  get endAt(): Date | null;
+  frequency: GuildScheduledEventRecurrenceRuleFrequency;
+  interval: number;
+  byWeekday: readonly GuildScheduledEventRecurrenceRuleWeekday[] | null;
+  byNWeekday: readonly GuildScheduledEventRecurrenceRuleNWeekday[] | null;
+  byMonth: readonly GuildScheduledEventRecurrenceRuleMonth[] | null;
+  byMonthDay: readonly number[] | null;
+  byYearDay: readonly number[] | null;
+  count: number | null;
+}
+
+export interface GuildScheduledEventRecurrenceRuleNWeekday {
+  n: number;
+  day: GuildScheduledEventRecurrenceRuleWeekday;
 }
 
 export class GuildTemplate extends Base {
