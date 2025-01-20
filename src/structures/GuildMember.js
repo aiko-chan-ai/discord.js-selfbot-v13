@@ -90,6 +90,16 @@ class GuildMember extends Base {
     } else if (typeof this.avatar !== 'string') {
       this.avatar = null;
     }
+    if ('banner' in data) {
+      /**
+       * The guild member's banner hash.
+       * @type {?string}
+       */
+      this.banner = data.banner;
+    } else {
+      this.banner ??= null;
+    }
+
     if ('joined_at' in data) this.joinedTimestamp = new Date(data.joined_at).getTime();
     if ('premium_since' in data) {
       this.premiumSinceTimestamp = data.premium_since ? new Date(data.premium_since).getTime() : null;
@@ -186,6 +196,17 @@ class GuildMember extends Base {
   }
 
   /**
+   * A link to the member's banner.
+   * @param {ImageURLOptions} [options={}] Options for the banner URL
+   * @returns {?string}
+   */
+  bannerURL({ format, size, dynamic } = {}) {
+    return (
+      this.banner && this.client.rest.cdn.GuildMemberBanner(this.guild.id, this.id, this.banner, format, size, dynamic)
+    );
+  }
+
+  /**
    * A link to the member's guild avatar if they have one.
    * Otherwise, a link to their {@link User#displayAvatarURL} will be returned.
    * @param {ImageURLOptions} [options={}] Options for the Image URL
@@ -193,6 +214,16 @@ class GuildMember extends Base {
    */
   displayAvatarURL(options) {
     return this.avatarURL(options) ?? this.user.displayAvatarURL(options);
+  }
+
+  /**
+   * A link to the member's guild banner if they have one.
+   * Otherwise, a link to their {@link User#bannerURL} will be returned.
+   * @param {ImageURLOptions} [options={}] Options for the image URL
+   * @returns {?string}
+   */
+  displayBannerURL(options) {
+    return this.bannerURL(options) ?? this.user.bannerURL(options);
   }
 
   /**
@@ -484,6 +515,7 @@ class GuildMember extends Base {
       this.joinedTimestamp === member.joinedTimestamp &&
       this.nickname === member.nickname &&
       this.avatar === member.avatar &&
+      this.banner === member.banner &&
       this.pending === member.pending &&
       this.communicationDisabledUntilTimestamp === member.communicationDisabledUntilTimestamp &&
       this.flags.equals(member.flags) &&
@@ -511,7 +543,9 @@ class GuildMember extends Base {
       roles: true,
     });
     json.avatarURL = this.avatarURL();
+    json.bannerURL = this.bannerURL();
     json.displayAvatarURL = this.displayAvatarURL();
+    json.displayBannerURL = this.displayBannerURL();
     return json;
   }
 
