@@ -34,7 +34,7 @@ class MessageReaction {
      * Whether the client has super-reacted using this emoji
      * @type {boolean}
      */
-    this.meBurst = data.me_burst;
+    this.meBurst = Boolean(data.me_burst);
 
     /**
      * A manager of the users that have given this reaction
@@ -50,7 +50,7 @@ class MessageReaction {
   }
 
   _patch(data) {
-    if ('burst_colors' in data) {
+    if (data.burst_colors) {
       /**
        * Hexadecimal colors used for this super reaction
        * @type {?string[]}
