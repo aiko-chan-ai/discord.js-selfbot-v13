@@ -35,6 +35,7 @@ const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
+const TOTP = require('../util/Totp');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -281,14 +282,13 @@ class Client extends BaseClient {
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} email The email associated with the account
    * @param {string} password The password assicated with the account
-   * @param {string|number} [mfaCode = null] The mfa code if you have it enabled
    * @returns {string | null} Token of the account used
    *
    * @example
    * client.passLogin("test@gmail.com", "SuperSecretPa$$word", 1234)
    * @deprecated This method will not be updated until I find the most convenient way to implement MFA.
    */
-  async passLogin(email, password, mfaCode = null) {
+  async passLogin(email, password) {
     const initial = await this.api.auth.login.post({
       auth: false,
       versioned: true,
@@ -298,10 +298,12 @@ class Client extends BaseClient {
     if ('token' in initial) {
       return this.login(initial.token);
     } else if ('ticket' in initial) {
+      if (!this.options.TOTPKey) throw new Error('TOTPKEY_MISSING');
+      const { otp } = await TOTP.generate(this.options.TOTPKey);
       const totp = await this.api.auth.mfa.totp.post({
         auth: false,
         versioned: true,
-        data: { gift_code_sku_id: null, login_source: null, code: mfaCode, ticket: initial.ticket },
+        data: { gift_code_sku_id: null, login_source: null, code: otp, ticket: initial.ticket },
       });
       if ('token' in totp) {
         return this.login(totp.token);
