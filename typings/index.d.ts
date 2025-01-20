@@ -794,7 +794,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
     options?: AcceptInviteOptions,
   ): Promise<Guild | DMChannel | GroupDMChannel>;
   public redeemNitro(nitro: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): Promise<any>;
-  public authorizeURL(url: string, options?: OAuth2AuthorizeOptions): Promise<any>;
+  public authorizeURL(urlOAuth2: string, options?: OAuth2AuthorizeOptions): Promise<any>;
   public installUserApps(applicationId: Snowflake): Promise<void>;
   public deauthorize(applicationId: Snowflake): Promise<void>;
 
@@ -828,13 +828,13 @@ export interface AcceptInviteOptions {
   bypassVerify: boolean;
 }
 
-export interface OAuth2AuthorizeOptions {
+export type OAuth2AuthorizeOptions = {
   guild_id?: Snowflake;
-  permissions?: PermissionResolvable;
+  permissions?: string;
   authorize?: boolean;
   code?: string;
   webhook_channel_id?: Snowflake;
-}
+} & Record<string, unknown>;
 
 export class ClientPresence extends Presence {
   private constructor(client: Client, data: RawPresenceData);

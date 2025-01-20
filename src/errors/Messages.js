@@ -209,7 +209,6 @@ const Messages = {
   STREAM_CANNOT_JOIN: 'Cannot join a stream to itself',
   VOICE_USER_NOT_STREAMING: 'User is not streaming',
   POLL_ALREADY_EXPIRED: 'This poll has already expired.',
-  INVALID_OAUTH_OPTIONS: 'Invalid options for authenticating with OAuth2.',
   METHOD_WARNING:
     'This method is flagged as it may lead to a temporary or permanent account ban. Do not use until further notice.',
 };

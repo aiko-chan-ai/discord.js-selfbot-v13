@@ -33,7 +33,6 @@ const Widget = require('../structures/Widget');
 const { Events, Status } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
-const Permissions = require('../util/Permissions');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
 
@@ -699,7 +698,7 @@ class Client extends BaseClient {
   /**
    * @typedef {Object} OAuth2AuthorizeOptions
    * @property {string} [guild_id] Guild ID
-   * @property {PermissionResolvable} [permissions] Permissions
+   * @property {string} [permissions] Permissions
    * @property {boolean} [authorize] Whether to authorize or not
    * @property {string} [code] 2FA Code
    * @property {string} [webhook_channel_id] Webhook Channel ID
@@ -707,9 +706,9 @@ class Client extends BaseClient {
 
   /**
    * Authorize an application.
-   * @param {string} url Discord Auth URL
-   * @param {OAuth2AuthorizeOptions} options Oauth2 options
-   * @returns {Promise<any>}
+   * @param {string} urlOAuth2 Discord Auth URL
+   * @param {OAuth2AuthorizeOptions} [options] Oauth2 options
+   * @returns {Promise<{ location: string }>}
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
       guild_id: "guildID",
@@ -717,31 +716,29 @@ class Client extends BaseClient {
       authorize: true
     })
    */
-  authorizeURL(url, options = { authorize: true }) {
+  authorizeURL(urlOAuth2, options = {}) {
     // ! throw new Error('METHOD_WARNING');
-    const pathnameAPI = /\/api\/(v\d{1,2}\/)?oauth2\/authorize/;
-    const pathnameURL = /\/oauth2\/authorize/;
-    const url_ = new URL(url);
-    if (
-      !['discord.com', 'canary.discord.com', 'ptb.discord.com'].includes(url_.hostname) ||
-      (!pathnameAPI.test(url_.pathname) && !pathnameURL.test(url_.pathname))
-    ) {
-      throw new Error('INVALID_URL', url);
+    const url = new URL(urlOAuth2);
+    if (!/https:\/\/(canary\.|ptb\.)?discord.com\/api(\/v\d{1,2})?\/oauth2\/authorize\?/.test(urlOAuth2)) {
+      throw new Error('INVALID_URL', urlOAuth2);
     }
-    const searchParams = Object.fromEntries(url_.searchParams);
-    options.permissions ??= `${Permissions.resolve(searchParams.permissions || 0)}`;
-    options.integration_type ??= searchParams.integration_type || 0;
-    options.location_context = {
-      guild_id: '10000',
-      channel_id: '10000',
-      channel_type: 10000,
+    const searchParams = Object.fromEntries(url.searchParams);
+    // Assign options
+    options = {
+      authorize: true,
+      permissions: '0',
+      integration_type: 0,
+      location_context: {
+        guild_id: '10000',
+        channel_id: '10000',
+        channel_type: 10000,
+      },
+      ...searchParams,
+      ...options,
     };
-    options.guild_id ??= searchParams.guild_id;
-    options.authorize ??= true;
     delete searchParams.permissions;
     delete searchParams.integration_type;
     delete searchParams.guild_id;
-    if (!options.permissions || !options.guild_id) throw new Error('INVALID_OAUTH_OPTIONS');
     return this.api.oauth2.authorize.post({
       query: searchParams,
       data: options,
