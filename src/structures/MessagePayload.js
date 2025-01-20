@@ -155,12 +155,12 @@ class MessagePayload {
 
     let flags;
     if (
-      typeof this.options.flags !== 'undefined' ||
+      // eslint-disable-next-line eqeqeq
+      this.options.flags != null ||
       (this.isMessage && typeof this.options.reply === 'undefined') ||
       this.isMessageManager
     ) {
-      // eslint-disable-next-line eqeqeq
-      flags = this.options.flags != null ? new MessageFlags(this.options.flags).bitfield : this.target.flags?.bitfield;
+      flags = new MessageFlags(this.options.flags).bitfield;
     }
 
     if (isInteraction && this.options.ephemeral) {
