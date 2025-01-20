@@ -267,6 +267,29 @@ class Message extends Base {
       this.poll ??= null;
     }
 
+    if (data.message_snapshots) {
+      /**
+       * The message associated with the message reference
+       * @type {Collection<Snowflake, Message>}
+       */
+      this.messageSnapshots = data.message_snapshots.reduce((coll, snapshot) => {
+        const channel = this.client.channels.resolve(this.reference.channelId);
+        const snapshotData = {
+          ...snapshot.message,
+          id: this.reference.messageId,
+          channel_id: this.reference.channelId,
+          guild_id: this.reference.guildId,
+        };
+
+        return coll.set(
+          this.reference.messageId,
+          channel ? channel.messages._add(snapshotData) : new this.constructor(this.client, snapshotData),
+        );
+      }, new Collection());
+    } else {
+      this.messageSnapshots ??= new Collection();
+    }
+
     if ('application' in data) {
       /**
        * Supplemental application information for group activities
@@ -333,7 +356,7 @@ class Message extends Base {
      * @property {Snowflake} channelId The channel's id the message was referenced
      * @property {?Snowflake} guildId The guild's id the message was referenced
      * @property {?Snowflake} messageId The message's id that was referenced
-     * @property {?MessageReferenceType} type The type of the message reference
+     * @property {MessageReferenceType} type The type of the message reference
      */
 
     if ('message_reference' in data) {
@@ -402,19 +425,6 @@ class Message extends Base {
       };
     } else {
       this.call ??= null;
-    }
-
-    if ('message_snapshots' in data) {
-      /**
-       * A collection of message snapshots
-       * @type {?Array<Partial<Message>>}
-       */
-      this.snapshots = [];
-      for (const snapshot of data.message_snapshots) {
-        this.snapshots.push(new Message(this.client, snapshot.message));
-      }
-    } else {
-      this.snapshots = null;
     }
   }
 
