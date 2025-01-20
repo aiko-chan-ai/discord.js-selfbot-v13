@@ -708,6 +708,7 @@ class Client extends BaseClient {
    * Authorize an application.
    * @param {string} urlOAuth2 Discord Auth URL
    * @param {OAuth2AuthorizeOptions} [options] Oauth2 options
+   * @param {string|number} [mfaCode = null] The mfa code if you have it enabled
    * @returns {Promise<{ location: string }>}
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
@@ -716,7 +717,7 @@ class Client extends BaseClient {
       authorize: true
     })
    */
-  authorizeURL(urlOAuth2, options = {}) {
+  authorizeURL(urlOAuth2, options = {}, mfaCode = null) {
     // ! throw new Error('METHOD_WARNING');
     const url = new URL(urlOAuth2);
     if (!/https:\/\/(canary\.|ptb\.)?discord.com\/api(\/v\d{1,2})?\/oauth2\/authorize\?/.test(urlOAuth2)) {
@@ -742,6 +743,7 @@ class Client extends BaseClient {
     return this.api.oauth2.authorize.post({
       query: searchParams,
       data: options,
+      mfaCode,
     });
   }
 

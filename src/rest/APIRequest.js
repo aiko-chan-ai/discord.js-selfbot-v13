@@ -99,9 +99,14 @@ class APIRequest {
         'base64',
       );
     }
+
     if (this.options.mfaToken) {
       headers['X-Discord-Mfa-Authorization'] = this.options.mfaToken;
     }
+
+    // Captcha
+    if (captchaKey && typeof captchaKey == 'string') headers['X-Captcha-Key'] = captchaKey;
+    if (captchaRqToken && typeof captchaRqToken == 'string') headers['X-Captcha-Rqtoken'] = captchaRqToken;
 
     let body;
     if (this.options.files?.length) {
@@ -127,10 +132,6 @@ class APIRequest {
         headers['Content-Type'] = 'application/json';
       }
     }
-
-    // Captcha
-    if (captchaKey && typeof captchaKey == 'string') headers['X-Captcha-Key'] = captchaKey;
-    if (captchaRqToken && typeof captchaRqToken == 'string') headers['X-Captcha-Rqtoken'] = captchaRqToken;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
