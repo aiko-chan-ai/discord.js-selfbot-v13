@@ -470,7 +470,7 @@ class GuildMemberManager extends CachedManager {
    * @returns {Promise<GuildMember|User|Snowflake>}
    */
   async addRole(user, role, reason) {
-    const userId = this.guild.members.resolveId(user);
+    const userId = this.resolveId(user);
     const roleId = this.guild.roles.resolveId(role);
 
     await this.client.api.guilds(this.guild.id).members(userId).roles(roleId).put({ reason });
@@ -486,7 +486,7 @@ class GuildMemberManager extends CachedManager {
    * @returns {Promise<GuildMember|User|Snowflake>}
    */
   async removeRole(user, role, reason) {
-    const userId = this.guild.members.resolveId(user);
+    const userId = this.resolveId(user);
     const roleId = this.guild.roles.resolveId(role);
 
     await this.client.api.guilds(this.guild.id).members(userId).roles(roleId).delete({ reason });

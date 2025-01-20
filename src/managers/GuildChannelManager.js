@@ -298,7 +298,7 @@ class GuildChannelManager extends CachedManager {
 
     if (data.lockPermissions) {
       if (parentId) {
-        const newParent = this.guild.channels.cache.get(parentId);
+        const newParent = this.cache.get(parentId);
         if (newParent?.type === 'GUILD_CATEGORY') {
           permission_overwrites = newParent.permissionOverwrites.cache.map(o =>
             PermissionOverwrites.resolve(o, this.guild),
