@@ -1,4 +1,24 @@
 /**
+ * @external APIGuildScheduledEventRecurrenceRule
+ * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/interface/APIGuildScheduledEventRecurrenceRule}
+ */
+
+/**
+ * @external GuildScheduledEventRecurrenceRuleFrequency
+ * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/GuildScheduledEventRecurrenceRuleFrequency}
+ */
+
+/**
+ * @external GuildScheduledEventRecurrenceRuleMonth
+ * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/GuildScheduledEventRecurrenceRuleMonth}
+ */
+
+/**
+ * @external GuildScheduledEventRecurrenceRuleWeekday
+ * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/GuildScheduledEventRecurrenceRuleWeekday}
+ */
+
+/**
  * @external MessageActivityType
  * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/MessageActivityType}
  */

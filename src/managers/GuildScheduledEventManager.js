@@ -6,6 +6,7 @@ const { TypeError, Error } = require('../errors');
 const { GuildScheduledEvent } = require('../structures/GuildScheduledEvent');
 const { PrivacyLevels, GuildScheduledEventEntityTypes, GuildScheduledEventStatuses } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const Util = require('../util/Util');
 
 /**
  * Manages API methods for GuildScheduledEvents and stores their cache.
@@ -36,6 +37,21 @@ class GuildScheduledEventManager extends CachedManager {
    */
 
   /**
+   * Options for setting a recurrence rule for a guild scheduled event.
+   * @typedef {Object} GuildScheduledEventRecurrenceRuleOptions
+   * @property {DateResolvable} startAt The time the recurrence rule interval starts at
+   * @property {?DateResolvable} endAt The time the recurrence rule interval ends at
+   * @property {GuildScheduledEventRecurrenceRuleFrequency} frequency How often the event occurs
+   * @property {number} interval The spacing between the events
+   * @property {?GuildScheduledEventRecurrenceRuleWeekday[]} byWeekday The days within a week to recur on
+   * @property {?GuildScheduledEventRecurrenceRuleNWeekday[]} byNWeekday The days within a week to recur on
+   * @property {?GuildScheduledEventRecurrenceRuleMonth[]} byMonth The months to recur on
+   * @property {?number[]} byMonthDay The days within a month to recur on
+   * @property {?number[]} byYearDay The days within a year to recur on
+   * @property {?number} count The total amount of times the event is allowed to recur before stopping
+   */
+
+  /**
    * Options used to create a guild scheduled event.
    * @typedef {Object} GuildScheduledEventCreateOptions
    * @property {string} name The name of the guild scheduled event
@@ -52,6 +68,8 @@ class GuildScheduledEventManager extends CachedManager {
    * <warn>This is required if `entityType` is 'EXTERNAL'</warn>
    * @property {?(BufferResolvable|Base64Resolvable)} [image] The cover image of the guild scheduled event
    * @property {string} [reason] The reason for creating the guild scheduled event
+   * @property {GuildScheduledEventRecurrenceRuleOptions} [recurrenceRule]
+   * The recurrence rule of the guild scheduled event
    */
 
   /**
@@ -79,6 +97,7 @@ class GuildScheduledEventManager extends CachedManager {
       entityMetadata,
       reason,
       image,
+      recurrenceRule,
     } = options;
 
     if (typeof privacyLevel === 'string') privacyLevel = PrivacyLevels[privacyLevel];
@@ -105,6 +124,7 @@ class GuildScheduledEventManager extends CachedManager {
         image: image && (await DataResolver.resolveImage(image)),
         entity_type: entityType,
         entity_metadata,
+        recurrence_rule: recurrenceRule && Util.transformGuildScheduledEventRecurrenceRule(recurrenceRule),
       },
       reason,
     });
@@ -178,6 +198,8 @@ class GuildScheduledEventManager extends CachedManager {
    * <warn>This can be modified only if `entityType` of the `GuildScheduledEvent` to be edited is 'EXTERNAL'</warn>
    * @property {?(BufferResolvable|Base64Resolvable)} [image] The cover image of the guild scheduled event
    * @property {string} [reason] The reason for editing the guild scheduled event
+   * @property {?GuildScheduledEventRecurrenceRuleOptions} [recurrenceRule]
+   * The recurrence rule of the guild scheduled event
    */
 
   /**
@@ -203,6 +225,7 @@ class GuildScheduledEventManager extends CachedManager {
       entityMetadata,
       reason,
       image,
+      recurrenceRule,
     } = options;
 
     if (typeof privacyLevel === 'string') privacyLevel = PrivacyLevels[privacyLevel];
@@ -228,6 +251,7 @@ class GuildScheduledEventManager extends CachedManager {
         status,
         image: image && (await DataResolver.resolveImage(image)),
         entity_metadata,
+        recurrence_rule: recurrenceRule && Util.transformGuildScheduledEventRecurrenceRule(recurrenceRule),
       },
       reason,
     });

@@ -6736,14 +6736,29 @@ export interface GuildScheduledEventCreateOptions {
   entityMetadata?: GuildScheduledEventEntityMetadataOptions;
   image?: BufferResolvable | Base64Resolvable | null;
   reason?: string;
+  recurrenceRule?: GuildScheduledEventRecurrenceRuleOptions;
+}
+
+export interface GuildScheduledEventRecurrenceRuleOptions {
+  startAt: DateResolvable;
+  endAt: DateResolvable;
+  frequency: GuildScheduledEventRecurrenceRuleFrequency;
+  interval: number;
+  byWeekday: readonly GuildScheduledEventRecurrenceRuleWeekday[];
+  byNWeekday: readonly GuildScheduledEventRecurrenceRuleNWeekday[];
+  byMonth: readonly GuildScheduledEventRecurrenceRuleMonth[];
+  byMonthDay: readonly number[];
+  byYearDay: readonly number[];
+  count: number;
 }
 
 export interface GuildScheduledEventEditOptions<
   S extends GuildScheduledEventStatus,
   T extends GuildScheduledEventSetStatusArg<S>,
-> extends Omit<Partial<GuildScheduledEventCreateOptions>, 'channel'> {
+> extends Omit<Partial<GuildScheduledEventCreateOptions>, 'channel' | 'recurrenceRule'> {
   channel?: GuildVoiceChannelResolvable | null;
   status?: T | number;
+  recurrenceRule?: GuildScheduledEventRecurrenceRuleOptions | null;
 }
 
 export interface GuildScheduledEventEntityMetadata {

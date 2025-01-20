@@ -785,6 +785,28 @@ class Util extends null {
   }
 
   /**
+   * Transforms a guild scheduled event recurrence rule object to a snake-cased variant.
+   * @param {GuildScheduledEventRecurrenceRuleOptions} recurrenceRule The recurrence rule to transform
+   * @returns {APIGuildScheduledEventRecurrenceRule}
+   * @ignore
+   */
+  static transformGuildScheduledEventRecurrenceRule(recurrenceRule) {
+    return {
+      start: new Date(recurrenceRule.startAt).toISOString(),
+      // eslint-disable-next-line eqeqeq
+      end: recurrenceRule.endAt != null ? new Date(recurrenceRule.endAt).toISOString() : recurrenceRule.endAt,
+      frequency: recurrenceRule.frequency,
+      interval: recurrenceRule.interval,
+      by_weekday: recurrenceRule.byWeekday,
+      by_n_weekday: recurrenceRule.byNWeekday,
+      by_month: recurrenceRule.byMonth,
+      by_month_day: recurrenceRule.byMonthDay,
+      by_year_day: recurrenceRule.byYearDay,
+      count: recurrenceRule.count,
+    };
+  }
+
+  /**
    * Gets an array of the channel types that can be moved in the channel group. For example, a GuildText channel would
    * return an array containing the types that can be ordered within the text channels (always at the top), and a voice
    * channel would return an array containing the types that can be ordered within the voice channels (always at the
