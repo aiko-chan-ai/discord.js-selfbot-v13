@@ -380,6 +380,7 @@ exports.VoiceOpcodes = {
  * * CALL_CREATE: callCreate
  * * CALL_UPDATE: callUpdate
  * * CALL_DELETE: callDelete
+ * * VOICE_CHANNEL_EFFECT_SEND: voiceChannelEffectSend
  * @typedef {Object<string, string>} Events
  */
 exports.Events = {
@@ -476,6 +477,7 @@ exports.Events = {
   CALL_DELETE: 'callDelete',
   MESSAGE_POLL_VOTE_ADD: 'messagePollVoteAdd',
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
+  VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
   // Djs v12
   VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
   VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',

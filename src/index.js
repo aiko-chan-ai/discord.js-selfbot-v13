@@ -147,6 +147,7 @@ exports.ThreadMember = require('./structures/ThreadMember');
 exports.Typing = require('./structures/Typing');
 exports.User = require('./structures/User');
 exports.VoiceChannel = require('./structures/VoiceChannel');
+exports.VoiceChannelEffect = require('./structures/VoiceChannelEffect');
 exports.VoiceRegion = require('./structures/VoiceRegion');
 exports.VoiceState = require('./structures/VoiceState');
 exports.Webhook = require('./structures/Webhook');

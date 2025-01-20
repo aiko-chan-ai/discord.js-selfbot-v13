@@ -60,8 +60,11 @@ import {
   GuildScheduledEventRecurrenceRuleWeekday,
   GuildScheduledEventRecurrenceRuleMonth,
   GuildScheduledEventRecurrenceRuleFrequency,
-  APIChatInputApplicationCommandInteractionData, APIContextMenuInteractionData,
-  ReactionType
+  APIChatInputApplicationCommandInteractionData,
+  APIContextMenuInteractionData,
+  ReactionType,
+  VoiceChannelEffectSendAnimationType,
+  GatewayVoiceChannelEffectSendDispatchData,
 } from 'discord-api-types/v10';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -3665,6 +3668,19 @@ export class VoiceChannel extends BaseGuildVoiceChannel {
   public type: 'GUILD_VOICE';
 }
 
+export class VoiceChannelEffect {
+  private constructor(data: GatewayVoiceChannelEffectSendDispatchData, guild: Guild);
+  public guild: Guild;
+  public channelId: Snowflake;
+  public userId: Snowflake;
+  public emoji: Emoji | null;
+  public animationType: VoiceChannelEffectSendAnimationType | null;
+  public animationId: number | null;
+  public soundId: Snowflake | number | null;
+  public soundVolume: number | null;
+  public get channel(): VoiceChannel | null;
+}
+
 export class VoiceRegion {
   private constructor(data: RawVoiceRegionData);
   public custom: boolean;
@@ -5687,6 +5703,7 @@ export interface ClientEvents extends BaseClientEvents {
   threadUpdate: [oldThread: ThreadChannel, newThread: ThreadChannel];
   typingStart: [typing: Typing];
   userUpdate: [oldUser: User | PartialUser, newUser: User];
+  voiceChannelEffectSend: [voiceChannelEffect: VoiceChannelEffect];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
   webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | MediaChannel | StageChannel];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
@@ -5978,6 +5995,7 @@ export interface ConstantsEvents {
   THREAD_MEMBERS_UPDATE: 'threadMembersUpdate';
   USER_UPDATE: 'userUpdate';
   PRESENCE_UPDATE: 'presenceUpdate';
+  VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend';
   VOICE_SERVER_UPDATE: 'voiceServerUpdate';
   VOICE_STATE_UPDATE: 'voiceStateUpdate';
   TYPING_START: 'typingStart';
