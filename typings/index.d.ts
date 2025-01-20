@@ -782,7 +782,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
   /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
-  public passLogin(email: string, password: string, mfaCode?: string | number): Promise<string | null>;
+  public passLogin(email: string, password: string): Promise<string | null>;
   public QRLogin(): Promise<void>;
   public logout(): Promise<void>;
   public isReady(): this is Client<true>;
@@ -3428,6 +3428,29 @@ export class ThreadMemberFlags extends BitField<ThreadMemberFlagsString> {
   public static resolve(bit?: BitFieldResolvable<ThreadMemberFlagsString, number>): number;
 }
 
+export class TOTP {
+  private static hex2dec(hex: string): number;
+  private static dec2hex(dec: number): string;
+  private static base32ToBuffer(str: string): ArrayBuffer;
+  private static asciiToBuffer(str: string): ArrayBuffer;
+  private static hex2buf(hex: string): ArrayBuffer;
+  private static buf2hex(buf: ArrayBuffer): string;
+  private static readonly base32: { [key: number]: number };
+  private static readonly crypto: SubtleCrypto;
+  public static generate(key: string, options?: generateOptions): Promise<{ otp: string; expires: number}>;
+}
+
+export type TOTPAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
+export type TOTPEncoding = "hex" | "ascii";
+
+export interface generateOptions {
+  digits: number;
+  algorithm: TOTPAlgorithm;
+  encoding: TOTPEncoding;
+  period: number;
+  timestamp: number;
+}
+
 export class Typing extends Base {
   private constructor(channel: TextBasedChannel, user: PartialUser, data?: RawTypingData);
   public channel: TextBasedChannel;
@@ -5711,6 +5734,7 @@ export interface ClientOptions {
   ws?: WebSocketOptions;
   http?: HTTPOptions;
   rejectOnRateLimit?: string[] | ((data: RateLimitData) => boolean | Promise<boolean>);
+  TOTPKey?: string;
 }
 
 export type ClientPresenceStatus = 'online' | 'idle' | 'dnd';
