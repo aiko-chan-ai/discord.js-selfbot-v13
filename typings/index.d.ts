@@ -60,7 +60,8 @@ import {
   GuildScheduledEventRecurrenceRuleWeekday,
   GuildScheduledEventRecurrenceRuleMonth,
   GuildScheduledEventRecurrenceRuleFrequency,
-  APIChatInputApplicationCommandInteractionData, APIContextMenuInteractionData
+  APIChatInputApplicationCommandInteractionData, APIContextMenuInteractionData,
+  ReactionType
 } from 'discord-api-types/v10';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -2553,6 +2554,7 @@ export interface ReactionCountDetailsData {
   normal: number;
 }
 export interface MessageReactionEventDetails {
+  type: ReactionType;
   burst: boolean;
 }
 

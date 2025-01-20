@@ -41,7 +41,7 @@ class MessageReactionRemove extends Action {
      * @param {User} user The user whose emoji or reaction emoji was removed
      * @param {MessageReactionEventDetails} details Details of removing the reaction
      */
-    this.client.emit(Events.MESSAGE_REACTION_REMOVE, reaction, user, { burst: data.burst });
+    this.client.emit(Events.MESSAGE_REACTION_REMOVE, reaction, user, { type: data.type, burst: data.burst });
 
     return { message, reaction, user };
   }

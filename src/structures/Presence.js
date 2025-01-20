@@ -14,11 +14,6 @@ const Util = require('../util/Util');
  */
 
 /**
- * @external MessageActivityType
- * @see {@link https://discord-api-types.dev/api/discord-api-types-v9/enum/MessageActivityType}
- */
-
-/**
  * The status of this presence:
  * * **`online`** - user is online
  * * **`idle`** - user is AFK
