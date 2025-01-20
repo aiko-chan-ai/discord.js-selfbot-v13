@@ -25,6 +25,12 @@ class ThreadChannel extends Channel {
     this.guild = guild;
 
     /**
+     * The id of the member who created this thread
+     * @type {Snowflake}
+     */
+    this.ownerId = data.owner_id;
+
+    /**
      * The id of the guild the channel is in
      * @type {Snowflake}
      */
@@ -116,16 +122,6 @@ class ThreadChannel extends Channel {
     }
 
     this._createdTimestamp ??= this.type === 'GUILD_PRIVATE_THREAD' ? super.createdTimestamp : null;
-
-    if ('owner_id' in data) {
-      /**
-       * The id of the member who created this thread
-       * @type {?Snowflake}
-       */
-      this.ownerId = data.owner_id;
-    } else {
-      this.ownerId ??= null;
-    }
 
     if ('last_message_id' in data) {
       /**

@@ -3371,7 +3371,7 @@ export class ThreadChannel extends TextBasedChannelMixin(Channel, ['fetchWebhook
   public messageCount: number | null;
   public members: ThreadMemberManager;
   public name: string;
-  public ownerId: Snowflake | null;
+  public ownerId: Snowflake;
   public readonly parent: TextChannel | NewsChannel | ForumChannel | MediaChannel | null;
   public parentId: Snowflake | null;
   public rateLimitPerUser: number | null;
