@@ -721,7 +721,7 @@ class Client extends BaseClient {
   authorizeURL(urlOAuth2, options = {}) {
     // ! throw new Error('METHOD_WARNING');
     const url = new URL(urlOAuth2);
-    if (!/https:\/\/(canary\.|ptb\.)?discord.com\/api(\/v\d{1,2})?\/oauth2\/authorize\?/.test(urlOAuth2)) {
+    if (!/https:\/\/(canary\.|ptb\.)?discord.com(\/api)?\/oauth2\/authorize\?/.test(urlOAuth2)) {
       throw new Error('INVALID_URL', urlOAuth2);
     }
     const searchParams = Object.fromEntries(url.searchParams);
