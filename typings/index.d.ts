@@ -4650,6 +4650,7 @@ export class PermissionOverwriteManager extends CachedManager<
 
 export class PresenceManager extends CachedManager<Snowflake, Presence, PresenceResolvable> {
   private constructor(client: Client, iterable?: Iterable<RawPresenceData>);
+  public fetch(): Promise<Collection<Snowflake, Presence>>;
 }
 
 export class ReactionManager extends CachedManager<Snowflake | string, MessageReaction, MessageReactionResolvable> {

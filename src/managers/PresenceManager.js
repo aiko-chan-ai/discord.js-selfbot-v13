@@ -53,6 +53,19 @@ class PresenceManager extends CachedManager {
     const userId = this.client.users.resolveId(presence);
     return this.cache.has(userId) ? userId : null;
   }
+
+  /**
+   * Fetches the overall user presence for all of the user's non-offline friends and implicit relationships.
+   * @returns {Promise<Collection<Snowflake, Presence>>}
+   */
+  async fetch() {
+    const data = await this.client.api.presences.get();
+    // https://docs.discord.sex/resources/presence#endpoints
+    data.presences.forEach(presence => {
+      this._add(presence, true);
+    });
+    return this.cache;
+  }
 }
 
 module.exports = PresenceManager;
