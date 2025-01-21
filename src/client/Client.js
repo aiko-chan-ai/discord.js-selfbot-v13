@@ -714,14 +714,12 @@ class Client extends BaseClient {
    * @example
    * client.authorizeURL(`https://discord.com/api/oauth2/authorize?client_id=botID&permissions=8&scope=applications.commands%20bot`, {
       guild_id: "guildID",
-      permissions: "62221393", // your permissions
-      authorize: true
     })
    */
   authorizeURL(urlOAuth2, options = {}) {
     // ! throw new Error('METHOD_WARNING');
     const url = new URL(urlOAuth2);
-    if (!/https:\/\/(canary\.|ptb\.)?discord.com\/api(\/v\d{1,2})?\/oauth2\/authorize\?/.test(urlOAuth2)) {
+    if (!/^https:\/\/(?:canary\.|ptb\.)?discord\.com(?:\/api(?:\/v\d{1,2})?)?\/oauth2\/authorize\?/.test(urlOAuth2)) {
       throw new Error('INVALID_URL', urlOAuth2);
     }
     const searchParams = Object.fromEntries(url.searchParams);
