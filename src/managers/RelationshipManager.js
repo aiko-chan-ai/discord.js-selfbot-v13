@@ -127,6 +127,19 @@ class RelationshipManager extends BaseManager {
   }
 
   /**
+   * Resolves a {@link UserResolvable} to a {@link User} username.
+   * @param {UserResolvable} user The UserResolvable to identify
+   * @returns {?string}
+   */
+  resolveUsername(user) {
+    if (user instanceof ThreadMember) return user.member.user.username;
+    if (user instanceof GuildMember) return user.user.username;
+    if (user instanceof Message) return user.author.username;
+    if (user instanceof User) return user.username;
+    return user;
+  }
+
+  /**
    * Obtains a user from Discord, or the user cache if it's already available.
    * @param {UserResolvable} [user] The user to fetch
    * @param {BaseFetchOptions} [options] Additional options for this fetch
@@ -164,7 +177,7 @@ class RelationshipManager extends BaseManager {
       return Promise.resolve(false);
     }
     await this.client.api.users['@me'].relationships[id].delete({
-      DiscordContext: { location: 'Friends' },
+      DiscordContext: { location: 'ContextMenu' },
     });
     return true;
   }
@@ -183,17 +196,22 @@ class RelationshipManager extends BaseManager {
    */
   async sendFriendRequest(options) {
     if (options?.user) {
-      const id = this.resolveId(options.user);
-      await this.client.api.users['@me'].relationships[id].put({
-        data: {},
-        DiscordContext: { location: 'ContextMenu' },
+      const username = this.resolveUsername(options.user);
+      await this.client.api.users['@me'].relationships.post({
+        versioned: true,
+        data: {
+          username,
+          discriminator: null,
+        },
+        DiscordContext: { location: 'Add Friend' },
       });
       return true;
     } else {
       await this.client.api.users['@me'].relationships.post({
+        versioned: true,
         data: {
           username: options.username,
-          discriminator: options.discriminator,
+          discriminator: null,
         },
         DiscordContext: { location: 'Add Friend' },
       });
@@ -213,9 +231,7 @@ class RelationshipManager extends BaseManager {
     // Check if outgoing request
     if (this.cache.get(id) === RelationshipTypes.PENDING_OUTGOING) return Promise.resolve(false);
     await this.client.api.users['@me'].relationships[id].put({
-      data: {
-        type: RelationshipTypes.FRIEND,
-      },
+      data: {},
       DiscordContext: { location: 'Friends' },
     });
     return true;
