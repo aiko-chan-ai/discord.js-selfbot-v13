@@ -3,6 +3,7 @@
 const EventEmitter = require('events');
 const { Buffer } = require('node:buffer');
 const crypto = require('node:crypto');
+const { nextTick } = require('node:process');
 const { setTimeout } = require('node:timers');
 const FFmpegHandler = require('./FFmpegHandler');
 const Speaking = require('../../../util/Speaking');
@@ -181,6 +182,10 @@ class PacketHandler extends EventEmitter {
           this.emit('error', opusPacket);
           return;
         }
+      }
+      if (opusPacket === null) {
+        // ! null marks EOF for stream
+        nextTick(() => this.destroy());
       }
       stream.push(opusPacket);
     }
