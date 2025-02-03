@@ -798,10 +798,10 @@ exports.MessageTypes = [
  * @typedef {string} MessageReferenceType
  * @see {@link https://discord.com/developers/docs/resources/message#message-reference-types}
  */
-exports.MessageReferenceTypes = [
+exports.MessageReferenceTypes = createEnum([
   'DEFAULT', // 0
   'FORWARD',
-];
+]);
 
 /**
  * The name of an item to be swept in Sweepers
