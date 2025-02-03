@@ -112,7 +112,15 @@ class APIRequest {
     if (this.options.files?.length) {
       body = new FormData();
       for (const [index, file] of this.options.files.entries()) {
-        if (file?.file) body.append(file.key ?? `files[${index}]`, file.file, file.name);
+        // Why undici#FormData doesn't support file stream?
+        // Hacky way to support file stream
+        if (file?.file) {
+          body.set(file.key ?? `files[${index}]`, {
+            [Symbol.toStringTag]: 'File',
+            name: file.name,
+            stream: () => file.file,
+          });
+        }
       }
       if (typeof this.options.data !== 'undefined') {
         if (this.options.dontUsePayloadJSON) {
@@ -121,7 +129,6 @@ class APIRequest {
           body.append('payload_json', JSON.stringify(this.options.data));
         }
       }
-      headers = Object.assign(headers, body.getHeaders());
       // eslint-disable-next-line eqeqeq
     } else if (this.options.data != null) {
       if (this.options.usePayloadJSON) {
