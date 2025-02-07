@@ -5729,7 +5729,7 @@ export interface ClientEvents extends BaseClientEvents {
   guildScheduledEventUserAdd: [guildScheduledEvent: GuildScheduledEvent | PartialGuildScheduledEvent, user: User];
   guildScheduledEventUserRemove: [guildScheduledEvent: GuildScheduledEvent, PartialGuildScheduledEvent, user: User];
   guildAuditLogEntryCreate: [auditLogEntry: GuildAuditLogsEntry, guild: Guild];
-  raw: [packet: { t?: string; d: any }, shard: number];
+  raw: [packet: any, shard: number];
   unhandledPacket: [packet: { t?: string; d: any }, shard: number];
   relationshipAdd: [userId: Snowflake, shouldNotify: boolean];
   relationshipRemove: [userId: Snowflake, type: RelationshipTypes, nickname: string | null];
