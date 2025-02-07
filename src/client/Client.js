@@ -17,6 +17,7 @@ const ClientUserSettingManager = require('../managers/ClientUserSettingManager')
 const GuildManager = require('../managers/GuildManager');
 const PresenceManager = require('../managers/PresenceManager');
 const RelationshipManager = require('../managers/RelationshipManager');
+const SessionManager = require('../managers/SessionManager');
 const UserManager = require('../managers/UserManager');
 const UserNoteManager = require('../managers/UserNoteManager');
 const VoiceStateManager = require('../managers/VoiceStateManager');
@@ -155,6 +156,12 @@ class Client extends BaseClient {
      * @type {BillingManager}
      */
     this.billing = new BillingManager(this);
+
+    /**
+     * All of the sessions of the client
+     * @type {SessionManager}
+     */
+    this.sessions = new SessionManager(this);
 
     /**
      * All of the settings {@link Object}

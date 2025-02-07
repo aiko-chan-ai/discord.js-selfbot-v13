@@ -779,6 +779,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public notes: UserNoteManager;
   public relationships: RelationshipManager;
   public voiceStates: VoiceStateManager;
+  public sessions: SessionManager;
   public presences: PresenceManager;
   public billing: BillingManager;
   public settings: ClientUserSettingManager;
@@ -2449,6 +2450,12 @@ export class WebEmbed {
   public static hiddenEmbed: string;
 }
 
+export class SessionManager extends CachedManager<string, Session, any> {
+  private constructor(client: Client, iterable: Iterable<any>);
+  public fetch(): Promise<this>;
+  public logoutAllDevices(): Promise<void>;
+}
+
 export class BillingManager extends BaseManager {
   constructor(client: Client);
   public paymentSources: Collection<Snowflake, object>;
@@ -2457,6 +2464,22 @@ export class BillingManager extends BaseManager {
   public fetchGuildBoosts(): Promise<Collection<Snowflake, GuildBoost>>;
   public currentSubscription: Collection<Snowflake, object>;
   public fetchCurrentSubscription(): Promise<Collection<Snowflake, object>>;
+}
+
+export class Session extends Base {
+  constructor(client: Client);
+  public id?: string;
+  public clientInfo?: SessionClientInfo;
+  public approxLastUsedTime: string;
+  public readonly createdTimestamp: number;
+  public readonly createdAt: Date;
+  public logout(): Promise<void>;
+}
+
+export interface SessionClientInfo {
+  location?: string;
+  platform?: string;
+  os?: string;
 }
 
 export class GuildBoost extends Base {
