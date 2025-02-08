@@ -267,6 +267,9 @@ class TextBasedChannel {
     const application = data.applications.find(
       obj => obj.id == botOrApplicationId || obj.bot?.id == botOrApplicationId,
     );
+    if (!application) {
+      throw new Error('INVALID_APPLICATION_COMMAND', "Bot/Application doesn't exist");
+    }
     // Find Command with application
     const command = filterCommand.find(command => command.application_id == application.id);
     if (!command) {
