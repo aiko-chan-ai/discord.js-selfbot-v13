@@ -36,8 +36,8 @@ importers:
         specifier: ^1.5.4
         version: 1.5.4
       tough-cookie:
-        specifier: ^4.1.4
-        version: 4.1.4
+        specifier: ^5.1.1
+        version: 5.1.1
       tree-kill:
         specifier: ^1.2.2
         version: 1.2.2
@@ -647,8 +647,8 @@ packages:
   '@types/minimist@1.2.5':
     resolution: {integrity: sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==}
 
-  '@types/node@18.19.71':
-    resolution: {integrity: sha512-evXpcgtZm8FY4jqBSN8+DmOTcVkkvTmAayeo4Wf3m1xAruyVGzGuDh/Fb/WWX2yLItUiho42ozyJjB0dw//Tkw==}
+  '@types/node@18.19.75':
+    resolution: {integrity: sha512-UIksWtThob6ZVSyxcOqCLOUNg/dyO1Qvx4McgeuhrEtHTLFTf7BBhEazaE4K806FGTPtzd/2sE90qn4fVr7cyw==}
 
   '@types/node@22.10.7':
     resolution: {integrity: sha512-V09KvXxFiutGp6B7XkpaDXlNadZxrzajcY50EuoLIpQ6WWYCSvf19lVIazzfIzQvhUN2HjX12spLojTnhuKlGg==}
@@ -2470,12 +2470,14 @@ packages:
 
   lodash.omit@4.5.0:
     resolution: {integrity: sha512-XeqSp49hNGmlkj2EJlfrQFIzQ6lXdNro9sddtQzcJY8QaoC2GO0DT7xaIokHeyM+mIT0mPMlPvkYzg2xCuHdZg==}
+    deprecated: This package is deprecated. Use destructuring assignment syntax instead.
 
   lodash.padend@4.6.1:
     resolution: {integrity: sha512-sOQs2aqGpbl27tmCS1QNZA09Uqp01ZzWfDUoD+xzTii0E7dSQfRKcRetFwa+uXaxaqL+TKm7CgD2JdKP7aZBSw==}
 
   lodash.pick@4.4.0:
     resolution: {integrity: sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==}
+    deprecated: This package is deprecated. Use destructuring assignment syntax instead.
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
@@ -3010,9 +3012,6 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
-  queue-tick@1.0.1:
-    resolution: {integrity: sha512-kJt5qhMxoszgU/62PLP1CJytzd2NKetjSRnyuj31fDd3Rlcz3fzlFdFLD1SItunPwyqEOkca6GbV612BWfaBag==}
-
   quick-lru@4.0.1:
     resolution: {integrity: sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==}
     engines: {node: '>=8'}
@@ -3191,6 +3190,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.1:
+    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
 
@@ -3331,8 +3335,8 @@ packages:
     resolution: {integrity: sha512-DBp0lSvX5G9KGRDTkR/R+a29H+Wk2xItOF+MpZLLNDWbEV9tGPnqLPxHEYjmiz8xGtJHRIqmI+hCjmNzqoA4nQ==}
     engines: {node: '>=0.10.0'}
 
-  streamx@2.21.1:
-    resolution: {integrity: sha512-PhP9wUnFLa+91CPy3N6tiQsK+gnYyUNuk15S3YG/zjYE7RuPeCjJngqnzpC31ow0lzBHQ+QGO4cNJnd0djYUsw==}
+  streamx@2.22.0:
+    resolution: {integrity: sha512-sLh1evHOzBy/iWRiR6d1zRcLao4gGZr3C1kzNz4fopCOKJb6xD9ub8Mpi9Mr1R6id5o43S+d93fI48UC5uM9aw==}
 
   string-argv@0.3.2:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
@@ -3511,6 +3515,13 @@ packages:
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
 
+  tldts-core@6.1.77:
+    resolution: {integrity: sha512-bCaqm24FPk8OgBkM0u/SrEWJgHnhBWYqeBo6yUmcZJDCHt/IfyWBb+14CXdGi4RInMv4v7eUAin15W0DoA+Ytg==}
+
+  tldts@6.1.77:
+    resolution: {integrity: sha512-lBpoWgy+kYmuXWQ83+R7LlJCnsd9YW8DGpZSHhrMl4b8Ly/1vzOie3OdtmUJDkKxcgRGOehDu5btKkty+JEe+g==}
+    hasBin: true
+
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
@@ -3537,6 +3548,10 @@ packages:
   tough-cookie@4.1.4:
     resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
     engines: {node: '>=6'}
+
+  tough-cookie@5.1.1:
+    resolution: {integrity: sha512-Ek7HndSVkp10hmHP9V4qZO1u+pn1RU5sI0Fw+jCU3lyvuMZcgqsNgc6CmJJZyByK4Vm/qotGRJlfgAX8q+4JiA==}
+    engines: {node: '>=16'}
 
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
@@ -4252,14 +4267,14 @@ snapshots:
     dependencies:
       '@definitelytyped/typescript-versions': 0.1.6
       '@definitelytyped/utils': 0.1.8
-      semver: 7.6.3
+      semver: 7.7.1
 
   '@definitelytyped/typescript-versions@0.1.6': {}
 
   '@definitelytyped/utils@0.1.8':
     dependencies:
       '@qiwi/npm-registry-client': 8.9.1
-      '@types/node': 18.19.71
+      '@types/node': 18.19.75
       cachedir: 2.4.0
       charm: 1.0.2
       minimatch: 9.0.5
@@ -4567,7 +4582,7 @@ snapshots:
 
   '@npmcli/fs@3.1.1':
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -4582,7 +4597,7 @@ snapshots:
       request: 2.88.2
       retry: 0.12.0
       safe-buffer: 5.2.1
-      semver: 7.6.3
+      semver: 7.7.1
       slide: 1.1.6
       ssri: 8.0.1
     optionalDependencies:
@@ -4684,7 +4699,7 @@ snapshots:
 
   '@types/minimist@1.2.5': {}
 
-  '@types/node@18.19.71':
+  '@types/node@18.19.75':
     dependencies:
       undici-types: 5.26.5
 
@@ -6699,7 +6714,7 @@ snapshots:
       jest-util: 28.1.3
       natural-compare: 1.4.0
       pretty-format: 28.1.3
-      semver: 7.6.3
+      semver: 7.7.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6998,7 +7013,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   make-error@1.3.6: {}
 
@@ -7215,7 +7230,7 @@ snapshots:
   npm-package-arg@8.1.5:
     dependencies:
       hosted-git-info: 4.1.0
-      semver: 7.6.3
+      semver: 7.7.1
       validate-npm-package-name: 3.0.0
 
   npm-registry-fetch@14.0.5:
@@ -7478,8 +7493,6 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
-  queue-tick@1.0.1: {}
-
   quick-lru@4.0.1: {}
 
   react-is@18.3.1: {}
@@ -7667,6 +7680,8 @@ snapshots:
 
   semver@7.6.3: {}
 
+  semver@7.7.1: {}
+
   set-blocking@2.0.0: {}
 
   set-cookie-parser@2.6.0: {}
@@ -7823,10 +7838,9 @@ snapshots:
 
   stream-via@1.0.4: {}
 
-  streamx@2.21.1:
+  streamx@2.22.0:
     dependencies:
       fast-fifo: 1.3.2
-      queue-tick: 1.0.1
       text-decoder: 1.2.3
     optionalDependencies:
       bare-events: 2.5.4
@@ -7964,7 +7978,7 @@ snapshots:
     dependencies:
       b4a: 1.6.7
       fast-fifo: 1.3.2
-      streamx: 2.21.1
+      streamx: 2.22.0
 
   tar@6.2.1:
     dependencies:
@@ -8029,6 +8043,12 @@ snapshots:
 
   through@2.3.8: {}
 
+  tldts-core@6.1.77: {}
+
+  tldts@6.1.77:
+    dependencies:
+      tldts-core: 6.1.77
+
   tmp@0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -8054,6 +8074,10 @@ snapshots:
       punycode: 2.3.1
       universalify: 0.2.0
       url-parse: 1.5.10
+
+  tough-cookie@5.1.1:
+    dependencies:
+      tldts: 6.1.77
 
   tr46@0.0.3: {}
 
