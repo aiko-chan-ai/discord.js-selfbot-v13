@@ -3365,6 +3365,7 @@ export abstract class ThreadOnlyChannel extends TextBasedChannelMixin(GuildChann
   'sendTyping',
   'createMessageCollector',
   'awaitMessages',
+  'messages',
 ]) {
   public type: 'GUILD_FORUM' | 'GUILD_MEDIA';
   public threads: GuildForumThreadManager;
