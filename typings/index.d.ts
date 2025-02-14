@@ -338,6 +338,9 @@ export abstract class Application extends Base {
   public icon: string | null;
   public id: Snowflake;
   public name: string | null;
+  public termsOfServiceURL: string | null;
+  public privacyPolicyURL: string | null;
+  public verifyKey: string | null;
   public roleConnectionsVerificationURL: string | null;
   public approximateGuildCount: number | null;
   public botPublic: boolean | null;

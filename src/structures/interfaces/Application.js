@@ -61,6 +61,36 @@ class Application extends Base {
       this.icon ??= null;
     }
 
+    if ('terms_of_service_url' in data) {
+      /**
+       * The URL of the application's terms of service
+       * @type {?string}
+       */
+      this.termsOfServiceURL = data.terms_of_service_url;
+    } else {
+      this.termsOfServiceURL ??= null;
+    }
+
+    if ('privacy_policy_url' in data) {
+      /**
+       * The URL of the application's privacy policy
+       * @type {?string}
+       */
+      this.privacyPolicyURL = data.privacy_policy_url;
+    } else {
+      this.privacyPolicyURL ??= null;
+    }
+
+    if ('verify_key' in data) {
+      /**
+       * The hex-encoded key for verification in interactions and the GameSDK's GetTicket
+       * @type {?string}
+       */
+      this.verifyKey = data.verify_key;
+    } else {
+      this.verifyKey ??= null;
+    }
+
     if ('role_connections_verification_url' in data) {
       /**
        * This application's role connection verification entry point URL
