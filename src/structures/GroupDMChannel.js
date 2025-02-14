@@ -36,12 +36,24 @@ class GroupDMChannel extends Channel {
       this._recipients = [];
     }
 
+    if ('owner_id' in data) {
+      /**
+       * The user id of the owner of this Group DM Channel
+       * @type {?Snowflake}
+       */
+      this.ownerId = data.owner_id;
+    } else {
+      this.ownerId ??= null;
+    }
+
     if ('last_message_id' in data) {
       /**
        * The channel's last message id, if one was sent
        * @type {?Snowflake}
        */
       this.lastMessageId = data.last_message_id;
+    } else {
+      this.lastMessageId ??= null;
     }
 
     if ('last_pin_timestamp' in data) {
@@ -49,17 +61,9 @@ class GroupDMChannel extends Channel {
        * The timestamp when the last pinned message was pinned, if there was one
        * @type {?number}
        */
-      this.lastPinTimestamp = new Date(data.last_pin_timestamp).getTime();
+      this.lastPinTimestamp = data.last_pin_timestamp ? Date.parse(data.last_pin_timestamp) : null;
     } else {
       this.lastPinTimestamp ??= null;
-    }
-
-    if ('owner_id' in data) {
-      /**
-       * Owner ID
-       * @type {Snowflake}
-       */
-      this.ownerId = data.owner_id;
     }
 
     if ('name' in data) {
