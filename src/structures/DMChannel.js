@@ -49,7 +49,7 @@ class DMChannel extends Channel {
        * The timestamp when the last pinned message was pinned, if there was one
        * @type {?number}
        */
-      this.lastPinTimestamp = new Date(data.last_pin_timestamp).getTime();
+      this.lastPinTimestamp = data.last_pin_timestamp ? Date.parse(data.last_pin_timestamp) : null;
     } else {
       this.lastPinTimestamp ??= null;
     }
@@ -67,7 +67,9 @@ class DMChannel extends Channel {
        * The timestamp when the message request was created
        * @type {?number}
        */
-      this.messageRequestTimestamp = new Date(data.is_message_request_timestamp).getTime();
+      this.messageRequestTimestamp = data.is_message_request_timestamp
+        ? Date.parse(data.is_message_request_timestamp)
+        : null;
     }
   }
 
