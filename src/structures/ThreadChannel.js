@@ -398,8 +398,8 @@ class ThreadChannel extends Channel {
    * @param {string} [reason] Reason for changing invite
    * @returns {Promise<ThreadChannel>}
    */
-  setInvitable(invitable = true, reason) {
-    if (this.type !== 'GUILD_PRIVATE_THREAD') return Promise.reject(new RangeError('THREAD_INVITABLE_TYPE', this.type));
+  async setInvitable(invitable = true, reason) {
+    if (this.type !== 'GUILD_PRIVATE_THREAD') throw new RangeError('THREAD_INVITABLE_TYPE', this.type);
     return this.edit({ invitable }, reason);
   }
 

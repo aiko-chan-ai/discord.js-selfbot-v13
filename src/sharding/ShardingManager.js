@@ -248,8 +248,8 @@ class ShardingManager extends EventEmitter {
    * @param {BroadcastEvalOptions} [options={}] The options for the broadcast
    * @returns {Promise<*|Array<*>>} Results of the script execution
    */
-  broadcastEval(script, options = {}) {
-    if (typeof script !== 'function') return Promise.reject(new TypeError('SHARDING_INVALID_EVAL_BROADCAST'));
+  async broadcastEval(script, options = {}) {
+    if (typeof script !== 'function') throw new TypeError('SHARDING_INVALID_EVAL_BROADCAST');
     return this._performOnShards('eval', [`(${script})(this, ${JSON.stringify(options.context)})`], options.shard);
   }
 
@@ -275,15 +275,15 @@ class ShardingManager extends EventEmitter {
    * @returns {Promise<*|Array<*>>} Results of the method execution
    * @private
    */
-  _performOnShards(method, args, shard) {
-    if (this.shards.size === 0) return Promise.reject(new Error('SHARDING_NO_SHARDS'));
+  async _performOnShards(method, args, shard) {
+    if (this.shards.size === 0) throw new Error('SHARDING_NO_SHARDS');
 
     if (typeof shard === 'number') {
       if (this.shards.has(shard)) return this.shards.get(shard)[method](...args);
-      return Promise.reject(new Error('SHARDING_SHARD_NOT_FOUND', shard));
+      throw new Error('SHARDING_SHARD_NOT_FOUND', shard);
     }
 
-    if (this.shards.size !== this.shardList.length) return Promise.reject(new Error('SHARDING_IN_PROCESS'));
+    if (this.shards.size !== this.shardList.length) throw new Error('SHARDING_IN_PROCESS');
 
     const promises = [];
     for (const sh of this.shards.values()) promises.push(sh[method](...args));

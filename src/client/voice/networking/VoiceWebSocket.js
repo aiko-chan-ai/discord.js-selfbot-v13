@@ -104,12 +104,8 @@ class VoiceWebSocket extends EventEmitter {
    * @param {Object} packet The packet to send
    * @returns {Promise<string>}
    */
-  sendPacket(packet) {
-    try {
-      packet = JSON.stringify(packet);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+  async sendPacket(packet) {
+    packet = JSON.stringify(packet);
     return this.send(packet);
   }
 

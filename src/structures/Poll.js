@@ -97,9 +97,9 @@ class Poll extends Base {
    * Ends this poll.
    * @returns {Promise<Message>}
    */
-  end() {
+  async end() {
     if (Date.now() > this.expiresTimestamp) {
-      return Promise.reject(new Error('POLL_ALREADY_EXPIRED'));
+      throw new Error('POLL_ALREADY_EXPIRED');
     }
     return this.message.channel.messages.endPoll(this.message.id);
   }

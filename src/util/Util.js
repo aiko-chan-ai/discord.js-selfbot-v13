@@ -930,7 +930,7 @@ class Util extends null {
     return new Promise((resolve, reject) => {
       // Waiting for MsgCreate / ModalCreate
       let dataFromInteractionSuccess;
-      let dataFromNormal;
+      let dataFromNormalEvent;
       const handler = data => {
         // UnhandledPacket
         if (isHandlerDeferUpdate && data.d?.nonce == nonce && data.t == 'INTERACTION_SUCCESS') {
@@ -946,19 +946,19 @@ class Util extends null {
         client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
         if (isHandlerDeferUpdate) client.removeListener(Events.UNHANDLED_PACKET, handler);
         client.decrementMaxListeners();
-        dataFromNormal = data;
+        dataFromNormalEvent = data;
         resolve(data);
       };
       const timeout = setTimeout(() => {
-        if (dataFromInteractionSuccess || dataFromNormal) {
-          resolve(dataFromNormal || dataFromInteractionSuccess);
+        if (dataFromInteractionSuccess || dataFromNormalEvent) {
+          resolve(dataFromNormalEvent || dataFromInteractionSuccess);
           return;
         }
         client.removeListener(Events.MESSAGE_CREATE, handler);
         client.removeListener(Events.INTERACTION_MODAL_CREATE, handler);
         if (isHandlerDeferUpdate) client.removeListener(Events.UNHANDLED_PACKET, handler);
         client.decrementMaxListeners();
-        reject(new Error('INTERACTION_FAILED'));
+        reject(new DiscordError('INTERACTION_FAILED'));
       }, timeoutMs).unref();
       client.incrementMaxListeners();
       client.on(Events.MESSAGE_CREATE, handler);

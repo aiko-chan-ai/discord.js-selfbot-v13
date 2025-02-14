@@ -738,8 +738,8 @@ class Message extends Base {
    *   .then(msg => console.log(`Updated the content of a message to ${msg.content}`))
    *   .catch(console.error);
    */
-  edit(options) {
-    if (!this.channel) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+  async edit(options) {
+    if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
     return this.channel.messages.edit(this, options);
   }
 
@@ -754,8 +754,8 @@ class Message extends Base {
    *     .catch(console.error);
    * }
    */
-  crosspost() {
-    if (!this.channel) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+  async crosspost() {
+    if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
     return this.channel.messages.crosspost(this.id);
   }
 
@@ -856,8 +856,8 @@ class Message extends Base {
    *   .then(() => console.log(`Replied to message "${message.content}"`))
    *   .catch(console.error);
    */
-  reply(options) {
-    if (!this.channel) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+  async reply(options) {
+    if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
     let data;
 
     if (options instanceof MessagePayload) {
@@ -918,12 +918,12 @@ class Message extends Base {
    * @param {StartThreadOptions} [options] Options for starting a thread on this message
    * @returns {Promise<ThreadChannel>}
    */
-  startThread(options = {}) {
-    if (!this.channel) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+  async startThread(options = {}) {
+    if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
     if (!['GUILD_TEXT', 'GUILD_NEWS'].includes(this.channel.type)) {
-      return Promise.reject(new Error('MESSAGE_THREAD_PARENT'));
+      throw new Error('MESSAGE_THREAD_PARENT');
     }
-    if (this.hasThread) return Promise.reject(new Error('MESSAGE_EXISTING_THREAD'));
+    if (this.hasThread) throw new Error('MESSAGE_EXISTING_THREAD');
     return this.channel.threads.create({ ...options, startMessage: this });
   }
 
@@ -953,8 +953,8 @@ class Message extends Base {
    * @param {boolean} [force=true] Whether to skip the cache check and request the API
    * @returns {Promise<Message>}
    */
-  fetch(force = true) {
-    if (!this.channel) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
+  async fetch(force = true) {
+    if (!this.channel) throw new Error('CHANNEL_NOT_CACHED');
     return this.channel.messages.fetch(this.id, { force });
   }
 
@@ -962,9 +962,9 @@ class Message extends Base {
    * Fetches the webhook used to create this message.
    * @returns {Promise<?Webhook>}
    */
-  fetchWebhook() {
-    if (!this.webhookId) return Promise.reject(new Error('WEBHOOK_MESSAGE'));
-    if (this.webhookId === this.applicationId) return Promise.reject(new Error('WEBHOOK_APPLICATION'));
+  async fetchWebhook() {
+    if (!this.webhookId) throw new Error('WEBHOOK_MESSAGE');
+    if (this.webhookId === this.applicationId) throw new Error('WEBHOOK_APPLICATION');
     return this.client.fetchWebhook(this.webhookId);
   }
 

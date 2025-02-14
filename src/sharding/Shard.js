@@ -237,9 +237,9 @@ class Shard extends EventEmitter {
    *   .then(count => console.log(`${count} guilds in shard ${shard.id}`))
    *   .catch(console.error);
    */
-  fetchClientValue(prop) {
+  async fetchClientValue(prop) {
     // Shard is dead (maybe respawning), don't cache anything and error immediately
-    if (!this.process && !this.worker) return Promise.reject(new Error('SHARDING_NO_CHILD_EXISTS', this.id));
+    if (!this.process && !this.worker) throw new Error('SHARDING_NO_CHILD_EXISTS', this.id);
 
     // Cached promise from previous call
     if (this._fetches.has(prop)) return this._fetches.get(prop);
@@ -277,12 +277,12 @@ class Shard extends EventEmitter {
    * @param {*} [context] The context for the eval
    * @returns {Promise<*>} Result of the script execution
    */
-  eval(script, context) {
+  async eval(script, context) {
     // Stringify the script if it's a Function
     const _eval = typeof script === 'function' ? `(${script})(this, ${JSON.stringify(context)})` : script;
 
     // Shard is dead (maybe respawning), don't cache anything and error immediately
-    if (!this.process && !this.worker) return Promise.reject(new Error('SHARDING_NO_CHILD_EXISTS', this.id));
+    if (!this.process && !this.worker) throw new Error('SHARDING_NO_CHILD_EXISTS', this.id);
 
     // Cached promise from previous call
     if (this._evals.has(_eval)) return this._evals.get(_eval);

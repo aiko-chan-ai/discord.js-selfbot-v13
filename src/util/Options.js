@@ -160,7 +160,12 @@ class Options extends null {
     return {
       DMChannelVoiceStatusSync: 0,
       captchaRetryLimit: 3,
-      captchaSolver: () => Promise.reject(new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED')),
+      captchaSolver: () => {
+        const err = new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED');
+        err.cause =
+          'You need to provide a captcha solver to use this feature\nEx: const sbClient = new Client({ captchaSolver: yourAsyncFunction })';
+        throw err;
+      },
       TOTPKey: null,
       closeTimeout: 5_000,
       waitGuildTimeout: 15_000,

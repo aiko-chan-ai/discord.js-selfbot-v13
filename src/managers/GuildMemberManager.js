@@ -394,7 +394,7 @@ class GuildMemberManager extends CachedManager {
    */
   async kick(user, reason) {
     const id = this.client.users.resolveId(user);
-    if (!id) return Promise.reject(new TypeError('INVALID_TYPE', 'user', 'UserResolvable'));
+    if (!id) throw new TypeError('INVALID_TYPE', 'user', 'UserResolvable');
 
     await this.client.api.guilds(this.guild.id).members(id).delete({ reason });
 

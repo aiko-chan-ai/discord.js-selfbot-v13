@@ -760,15 +760,15 @@ class VoiceConnection extends EventEmitter {
    * @param {UserResolvable} user Discord user
    * @returns {Promise<StreamConnectionReadonly>}
    */
-  joinStreamConnection(user) {
+  async joinStreamConnection(user) {
     const userId = this.client.users.resolveId(user);
     // Check if user is streaming
     if (!userId) {
-      return Promise.reject(new Error('VOICE_USER_MISSING'));
+      throw new Error('VOICE_USER_MISSING');
     }
     const voiceState = this.channel.guild?.voiceStates.cache.get(userId) || this.client.voiceStates.cache.get(userId);
     if (!voiceState || !voiceState.streaming) {
-      return Promise.reject(new Error('VOICE_USER_NOT_STREAMING'));
+      throw new Error('VOICE_USER_NOT_STREAMING');
     }
     // eslint-disable-next-line consistent-return
     return new Promise((resolve, reject) => {
