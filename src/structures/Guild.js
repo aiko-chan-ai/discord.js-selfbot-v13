@@ -548,6 +548,27 @@ class Guild extends AnonymousGuild {
         stickers: data.stickers,
       });
     }
+
+    if ('incidents_data' in data) {
+      /**
+       * Incident actions of a guild.
+       * @typedef {Object} IncidentActions
+       * @property {?Date} invitesDisabledUntil When invites would be enabled again
+       * @property {?Date} dmsDisabledUntil When direct messages would be enabled again
+       * @property {?Date} dmSpamDetectedAt When direct message spam was detected
+       * @property {?Date} raidDetectedAt When a raid was detected
+       */
+
+      /**
+       * The incidents data of this guild.
+       * <info>You will need to fetch the guild using {@link BaseGuild#fetch} if you want to receive
+       * this property.</info>
+       * @type {?IncidentActions}
+       */
+      this.incidentsData = data.incidents_data && Util.transformAPIIncidentsData(data.incidents_data);
+    } else {
+      this.incidentsData ??= null;
+    }
   }
 
   /**
@@ -1379,6 +1400,15 @@ class Guild extends AnonymousGuild {
     const features = this.features.filter(feature => feature !== 'INVITES_DISABLED');
     if (disabled) features.push('INVITES_DISABLED');
     return this.edit({ features });
+  }
+
+  /**
+   * Sets the incident actions for a guild.
+   * @param {IncidentActionsEditOptions} incidentActions The incident actions to set
+   * @returns {Promise<IncidentActions>}
+   */
+  setIncidentActions(incidentActions) {
+    return this.client.guilds.setIncidentActions(this.id, incidentActions);
   }
 
   /**

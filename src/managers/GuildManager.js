@@ -24,6 +24,7 @@ const DataResolver = require('../util/DataResolver');
 const Permissions = require('../util/Permissions');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
 const { resolveColor } = require('../util/Util');
+const Util = require('../util/Util');
 
 let cacheWarningEmitted = false;
 
@@ -298,6 +299,39 @@ class GuildManager extends CachedManager {
 
     const data = await this.client.api.users('@me').guilds.get({ query: options });
     return data.reduce((coll, guild) => coll.set(guild.id, new OAuth2Guild(this.client, guild)), new Collection());
+  }
+
+  /**
+   * Options used to set incident actions. Supplying `null` to any option will disable the action.
+   * @typedef {Object} IncidentActionsEditOptions
+   * @property {?DateResolvable} [invitesDisabledUntil] When invites should be enabled again
+   * @property {?DateResolvable} [dmsDisabledUntil] When direct messages should be enabled again
+   */
+
+  /**
+   * Sets the incident actions for a guild.
+   * @param {GuildResolvable} guild The guild
+   * @param {IncidentActionsEditOptions} incidentActions The incident actions to set
+   * @returns {Promise<IncidentActions>}
+   */
+  async setIncidentActions(guild, { invitesDisabledUntil, dmsDisabledUntil }) {
+    const guildId = this.resolveId(guild);
+
+    const data = await this.client.api.guilds(guildId)['incident-actions'].put({
+      data: {
+        invites_disabled_until: invitesDisabledUntil && new Date(invitesDisabledUntil).toISOString(),
+        dms_disabled_until: dmsDisabledUntil && new Date(dmsDisabledUntil).toISOString(),
+      },
+    });
+
+    const parsedData = Util.transformAPIIncidentsData(data);
+    const resolvedGuild = this.resolve(guild);
+
+    if (resolvedGuild) {
+      resolvedGuild.incidentsData = parsedData;
+    }
+
+    return parsedData;
   }
 }
 

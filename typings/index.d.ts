@@ -1497,6 +1497,7 @@ export class Guild extends AnonymousGuild {
   public shardId: number;
   public stageInstances: StageInstanceManager;
   public stickers: GuildStickerManager;
+  public incidentsData: IncidentActions | null;
   public readonly systemChannel: TextChannel | null;
   public systemChannelFlags: Readonly<SystemChannelFlags>;
   public systemChannelId: Snowflake | null;
@@ -1527,6 +1528,7 @@ export class Guild extends AnonymousGuild {
   public fetchWidgetSettings(): Promise<GuildWidgetSettings>;
   public leave(): Promise<Guild>;
   public disableInvites(disabled?: boolean): Promise<Guild>;
+  public setIncidentActions(incidentActions: IncidentActionsEditOptions): Promise<IncidentActions>;
   public setAFKChannel(afkChannel: VoiceChannelResolvable | null, reason?: string): Promise<Guild>;
   public setAFKTimeout(afkTimeout: number, reason?: string): Promise<Guild>;
   public setBanner(banner: BufferResolvable | Base64Resolvable | null, reason?: string): Promise<Guild>;
@@ -4478,6 +4480,10 @@ export class GuildManager extends CachedManager<Snowflake, Guild, GuildResolvabl
   public create(name: string, options?: GuildCreateOptions): Promise<Guild>;
   public fetch(options: Snowflake | FetchGuildOptions): Promise<Guild>;
   public fetch(options?: FetchGuildsOptions): Promise<Collection<Snowflake, OAuth2Guild>>;
+  public setIncidentActions(
+    guild: GuildResolvable,
+    incidentActions: IncidentActionsEditOptions,
+  ): Promise<IncidentActions>;
 }
 
 export class GuildMemberManager extends CachedManager<Snowflake, GuildMember, GuildMemberResolvable> {
@@ -6824,6 +6830,17 @@ export type GuildVoiceChannelResolvable = VoiceBasedChannel | Snowflake;
 
 export type HexColorString = `#${string}`;
 
+export interface IncidentActions {
+  invitesDisabledUntil: Date | null;
+  dmsDisabledUntil: Date | null;
+  dmSpamDetectedAt: Date | null;
+  raidDetectedAt: Date | null;
+}
+
+export interface IncidentActionsEditOptions {
+  invitesDisabledUntil?: DateResolvable | null | undefined;
+  dmsDisabledUntil?: DateResolvable | null | undefined;
+}
 export interface HTTPAttachmentData {
   attachment: string | Buffer | Stream;
   name: string;
