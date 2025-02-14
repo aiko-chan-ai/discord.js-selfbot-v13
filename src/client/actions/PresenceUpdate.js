@@ -2,11 +2,15 @@
 
 const Action = require('./Action');
 const { Events } = require('../../util/Constants');
+const { PartialTypes } = require('../../util/Constants');
 
 class PresenceUpdateAction extends Action {
   handle(data) {
     let user = this.client.users.cache.get(data.user.id);
     if (!user && data.user?.username) user = this.client.users._add(data.user);
+    if (!user && ('username' in data.user || this.client.options.partials.includes(PartialTypes.USER))) {
+      user = this.client.users._add(data.user);
+    }
     if (!user) return;
 
     if (data.user?.username) {
