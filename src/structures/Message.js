@@ -203,7 +203,7 @@ class Message extends Base {
        * The timestamp the message was last edited at (if applicable)
        * @type {?number}
        */
-      this.editedTimestamp = new Date(data.edited_timestamp).getTime();
+      this.editedTimestamp = data.edited_timestamp ? Date.parse(data.edited_timestamp) : null;
     } else {
       this.editedTimestamp ??= null;
     }
