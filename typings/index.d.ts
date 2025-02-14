@@ -6577,7 +6577,7 @@ export type GuildAuditLogsResolvable = keyof GuildAuditLogsIds | GuildAuditLogsA
 export type GuildAuditLogsTarget = GuildAuditLogsTypes[keyof GuildAuditLogsTypes][0] | 'ALL' | 'UNKNOWN';
 
 export type GuildAuditLogsTargets = {
-  [key in GuildAuditLogsTarget]?: string;
+  [Key in GuildAuditLogsTarget]?: string;
 };
 
 export type GuildBanResolvable = GuildBan | UserResolvable;
