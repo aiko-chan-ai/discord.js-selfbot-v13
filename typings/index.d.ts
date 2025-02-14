@@ -7186,6 +7186,7 @@ export interface MessageOptions {
   allowedMentions?: MessageMentionOptions;
   files?: (FileOptions | BufferResolvable | Stream | MessageAttachment)[];
   reply?: ReplyOptions;
+  forward?: ForwardOptions;
   stickers?: StickerResolvable[];
   attachments?: MessageAttachment[];
   flags?: BitFieldResolvable<'SUPPRESS_EMBEDS' | 'SUPPRESS_NOTIFICATIONS' | 'IS_VOICE_MESSAGE', number>;
@@ -7496,10 +7497,23 @@ export interface ReplyOptions {
   failIfNotExists?: boolean;
 }
 
-export interface ReplyMessageOptions extends Omit<MessageOptions, 'reply'> {
-  failIfNotExists?: boolean;
+export interface BaseForwardOptions {
+  message: MessageResolvable;
+  channel?: TextBasedChannelResolvable;
+  guild?: GuildResolvable;
 }
 
+export type ForwardOptionsWithMandatoryChannel = BaseForwardOptions & Required<Pick<BaseForwardOptions, 'channel'>>;
+
+export interface ForwardOptionsWithOptionalChannel extends BaseForwardOptions {
+  message: Exclude<MessageResolvable, Snowflake>;
+}
+
+export type ForwardOptions = ForwardOptionsWithMandatoryChannel | ForwardOptionsWithOptionalChannel;
+
+export interface ReplyMessageOptions extends Omit<MessageOptions, 'reply' | 'forward'> {
+  failIfNotExists?: boolean;
+}
 export interface ResolvedOverwriteOptions {
   allow: Permissions;
   deny: Permissions;
@@ -7832,7 +7846,7 @@ export interface WebhookFetchMessageOptions {
   threadId?: Snowflake;
 }
 
-export interface WebhookMessageOptions extends Omit<MessageOptions, 'reply' | 'stickers'> {
+export interface WebhookMessageOptions extends Omit<MessageOptions, 'nonce' | 'reply' | 'stickers' | 'forward'> {
   username?: string;
   avatarURL?: string;
   threadId?: Snowflake;

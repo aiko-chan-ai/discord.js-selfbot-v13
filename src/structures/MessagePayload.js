@@ -3,7 +3,7 @@
 const { Buffer } = require('node:buffer');
 const BaseMessageComponent = require('./BaseMessageComponent');
 const MessageEmbed = require('./MessageEmbed');
-const { RangeError } = require('../errors');
+const { RangeError, Error: DjsError } = require('../errors');
 const ActivityFlags = require('../util/ActivityFlags');
 const { PollLayoutTypes, MessageReferenceTypes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
@@ -190,9 +190,21 @@ class MessagePayload {
         };
       }
     }
+
     if (typeof this.options.forward === 'object') {
-      message_reference = this.options.forward;
-      message_reference.type = MessageReferenceTypes.FORWARD;
+      const reference = this.options.forward.message;
+      const channel_id = reference.channelId ?? this.target.client.channels.resolveId(this.options.forward.channel);
+      const guild_id = reference.guildId ?? this.target.client.guilds.resolveId(this.options.forward.guild);
+      const message_id = this.target.messages.resolveId(reference);
+      if (message_id) {
+        if (!channel_id) throw new DjsError('INVALID_TYPE', 'channelId', 'TextBasedChannelResolvable');
+        message_reference = {
+          type: MessageReferenceTypes.FORWARD,
+          message_id,
+          channel_id,
+          guild_id: guild_id ?? undefined,
+        };
+      }
     }
 
     const attachments = this.options.files?.map((file, index) => ({

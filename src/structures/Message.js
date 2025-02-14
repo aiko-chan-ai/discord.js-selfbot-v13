@@ -603,7 +603,10 @@ class Message extends Base {
    */
   get editable() {
     const precheck = Boolean(
-      this.author.id === this.client.user.id && !deletedMessages.has(this) && (!this.guild || this.channel?.viewable),
+      this.author.id === this.client.user.id &&
+        !deletedMessages.has(this) &&
+        (!this.guild || this.channel?.viewable) &&
+        this.reference?.type !== 'FORWARD',
     );
 
     // Regardless of permissions thread messages cannot be edited if
@@ -871,26 +874,20 @@ class Message extends Base {
   }
 
   /**
-   * Forwards this message to a channel.
-   * @param {TextBasedChannelResolvable} channel The channel to forward the message to
+   * Forwards this message
+   * @param {TextBasedChannelResolvable} channel The channel to forward this message to.
    * @returns {Promise<Message>}
    */
   forward(channel) {
-    channel = this.client.channels.resolve(channel);
-    if (!channel || !this.channelId) return Promise.reject(new Error('CHANNEL_NOT_CACHED'));
-    const data = MessagePayload.create(
-      this,
-      {},
-      {
-        forward: {
-          channel_id: this.channelId,
-          guild_id: this.guildId,
-          message_id: this.id,
-          type: 1,
-        },
+    const resolvedChannel = this.client.channels.resolve(channel);
+    if (!resolvedChannel) throw new Error('INVALID_TYPE', 'channel', 'TextBasedChannelResolvable');
+    return resolvedChannel.send({
+      forward: {
+        message: this.id,
+        channel: this.channelId,
+        guild: this.guildId,
       },
-    );
-    return channel.send(data);
+    });
   }
 
   /**
