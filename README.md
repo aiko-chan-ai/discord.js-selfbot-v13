@@ -5,16 +5,13 @@
   </p>
 </div>
 
-> [!TIP]
-> **Based on the results of the poll https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions/1292, I will continue to update on NPM.**
-
 > [!CAUTION]
 > **The use of this module under a different name on NPM (or another source besides this Github) is not associated with this library.**
 > **When using these libraries, you accept the risk of exposing your Discord Token.**
 
 ## About
 
-<strong>Welcome to `discord.js-selfbot-v13@v3.5`, based on `discord.js@13.17` and backport `discord.js@14.18.0`</strong>
+<strong>Welcome to `discord.js-selfbot-v13@v3.6`, based on `discord.js@13.17` and backport `discord.js@14.18.0`</strong>
 
 - discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
 
