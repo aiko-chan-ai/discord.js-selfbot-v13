@@ -396,7 +396,7 @@ class RequestHandler {
           request.retries < 1
         ) {
           // Get mfa code
-          const { otp } = await TOTP.generate(this.options.TOTPKey);
+          const { otp } = await TOTP.generate(this.manager.client.options.TOTPKey);
           this.manager.client.emit(
             DEBUG,
             `${data.message}
