@@ -30,7 +30,7 @@ class TOTP {
       timestamp: Date.now(),
       ...options,
     };
-    const epochSeconds = Math.floor(_options.timestam / 1000);
+    const epochSeconds = Math.floor(_options.timestamp / 1000);
     const timeHex = this.dec2hex(Math.floor(epochSeconds / _options.period)).padStart(16, '0');
 
     const keyBuffer = _options.encoding === 'hex' ? this.base32ToBuffer(key) : this.asciiToBuffer(key);
