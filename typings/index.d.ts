@@ -985,6 +985,8 @@ export class BaseDispatcher extends Writable {
   public timestamp: number;
   public mtu: number;
   public fps: number;
+  public payloadType: number;
+  public extensionEnabled: boolean;
 
   public pause(silence?: boolean): void;
   public resume(): void;
@@ -4819,7 +4821,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setRateLimitPerUser(rateLimitPerUser: number, reason?: string): Promise<this>;
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
-  sendTyping(): Promise<void>;
+  sendTyping(): Promise<{ message_send_cooldown_ms: number; thread_create_cooldown_ms: number } | void>;
   sendSlash(target: UserResolvable, commandName: string, ...args: any[]): Promise<Message | Modal>;
 }
 

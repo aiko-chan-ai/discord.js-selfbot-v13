@@ -388,13 +388,13 @@ class TextBasedChannel {
 
   /**
    * Sends a typing indicator in the channel.
-   * @returns {Promise<void>} Resolves upon the typing status being sent
+   * @returns {Promise<{ message_send_cooldown_ms: number, thread_create_cooldown_ms: number }|void>} Resolves upon the typing status being sent
    * @example
    * // Start typing in a channel
    * channel.sendTyping();
    */
-  async sendTyping() {
-    await this.client.api.channels(this.id).typing.post();
+  sendTyping() {
+    return this.client.api.channels(this.id).typing.post();
   }
 
   /**
