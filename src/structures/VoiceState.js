@@ -302,7 +302,7 @@ class VoiceState extends Base {
     if (!this.streaming) throw new Error('USER_NOT_STREAMING');
     // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
     // URL: https://discord.com/api/v9/streams/call:channelId:userId/preview
-    const streamKey = this.guild.id
+    const streamKey = this.guild?.id
       ? `guild:${this.guild.id}:${this.channelId}:${this.id}`
       : `call:${this.channelId}:${this.id}`;
     const data = await this.client.api.streams[encodeURIComponent(streamKey)].preview.get();
@@ -318,7 +318,7 @@ class VoiceState extends Base {
     if (!this.client.user.id === this.id || !this.streaming) throw new Error('USER_NOT_STREAMING');
     // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
     // URL: https://discord.com/api/v9/streams/call:channelId:userId/preview
-    const streamKey = this.guild.id
+    const streamKey = this.guild?.id
       ? `guild:${this.guild.id}:${this.channelId}:${this.id}`
       : `call:${this.channelId}:${this.id}`;
     return this.client.api.streams[encodeURIComponent(streamKey)].preview.post({
