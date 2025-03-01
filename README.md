@@ -52,7 +52,7 @@
 ## Installation
 
 > [!NOTE]
-> **Node.js 18.17.0 or newer is required**
+> **Node.js 20.18.0 or newer is required**
 
 ```sh-session
 npm install discord.js-selfbot-v13@latest
