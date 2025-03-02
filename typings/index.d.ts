@@ -20,6 +20,7 @@ import {
   underscore,
   userMention,
 } from '@discordjs/builders';
+import { RtpPacket } from 'werift-rtp';
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
@@ -983,8 +984,6 @@ export class BaseDispatcher extends Writable {
   public count: number;
   public sequence: number;
   public timestamp: number;
-  public mtu: number;
-  public fps: number;
   public payloadType: number;
   public extensionEnabled: boolean;
 
@@ -1010,9 +1009,13 @@ export class AudioDispatcher extends VolumeMixin(BaseDispatcher) {
   constructor(player: object, options?: StreamOptions, streams?: object);
   public readonly bitrateEditable: boolean;
 
+  public getTypeDispatcher(): 'audio';
+
   public setBitrate(value: number | 'auto'): boolean;
   public setFEC(enabled: boolean): boolean;
   public setPLP(value: number): boolean;
+
+  public setSyncVideoDispatcher(otherDispatcher: VideoDispatcher): void;
 
   public on(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
   public on(event: string, listener: (...args: any[]) => void): this;
@@ -1023,6 +1026,11 @@ export class AudioDispatcher extends VolumeMixin(BaseDispatcher) {
 
 export class VideoDispatcher extends BaseDispatcher {
   constructor(player: object, options?: StreamOptions, streams?: object, fps?: number);
+
+  public mtu: number;
+  public fps: number;
+
+  public getTypeDispatcher(): 'video';
 
   public setFPSSource(value: number): void;
 }
@@ -1133,60 +1141,53 @@ export class StreamConnectionReadonly extends VoiceConnection {
   public override playVideo(): VideoDispatcher;
 }
 
-export class FFmpegHandler extends EventEmitter {
-  public codec: 'H264';
-  public portUdp: number;
-  public ready: boolean;
-  public stream: ChildProcessWithoutNullStreams;
+export class Recorder<Ready extends boolean = boolean, T = any> extends EventEmitter {
+  constructor(receiver: T, options: { ffmpegArgs: string[]; channels: number; frameDuration: number });
+  private promise: Promise<void>;
+  public readonly receiver: T;
+  public portUdpH264: number;
+  public portUdpOpus: number;
+  public ready: Ready;
+  public stream: If<Ready, ChildProcessWithoutNullStreams>;
   public socket: Socket;
-  public socketAudio: Socket;
   public output: Writable | string;
-  public isEnableAudio: boolean;
   public userId: Snowflake;
-  public sendPayloadToFFmpeg(payload: Buffer, isAudio?: boolean): void;
-  public on(event: 'ready' | 'closed', listener: () => void): this;
-  public once(event: 'ready' | 'closed', listener: () => void): this;
+  public feed(payload: RtpPacket | BufferResolvable): void;
+  public on(event: 'ready' | 'closed', listener: (recorder: Recorder<true, T>) => void): this;
+  public once(event: 'ready' | 'closed', listener: (recorder: Recorder<true, T>) => void): this;
   public destroy(): void;
 }
 
 export class VoiceReceiver extends EventEmitter {
   constructor(connection: VoiceConnection);
-  public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
-  public createVideoStream(
+  public createStream(
     user: UserResolvable,
-    options?: {
-      portUdp: number;
-      output: Writable | string;
-      isEnableAudio: boolean;
-    },
-  ): FFmpegHandler;
+    options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual'; paddingSilence?: boolean },
+  ): Readable;
+  public createVideoStream(user: UserResolvable, output: Writable | string): Recorder<false, any>;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;
   public on(
-    event: 'videoData',
+    event: 'receiverData',
     listener: (
-      ssrc: number,
       ssrcData: {
         userId: Snowflake;
         hasVideo: boolean;
       },
-      headerRaw: Buffer,
-      packetDecrypt: Buffer,
+      packet: RtpPacket,
     ) => void,
   ): this;
   public on(event: string, listener: (...args: any[]) => void): this;
 
   public once(event: 'debug', listener: (error: Error | string) => void): this;
   public once(
-    event: 'videoData',
+    event: 'receiverData',
     listener: (
-      ssrc: number,
       ssrcData: {
         userId: Snowflake;
         hasVideo: boolean;
       },
-      headerRaw: Buffer,
-      packetDecrypt: Buffer,
+      packet: RtpPacket,
     ) => void,
   ): this;
   public once(event: string, listener: (...args: any[]) => void): this;

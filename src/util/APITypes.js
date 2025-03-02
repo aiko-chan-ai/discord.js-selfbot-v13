@@ -39,6 +39,11 @@
  */
 
 /**
+ * @external RtpPacket
+ * @see {@link https://github.com/shinyoshiaki/werift-webrtc/blob/develop/doc/classes/RtpPacket.md}
+ */
+
+/**
  * @external TeamMemberRole
  * @see {@link https://discord-api-types.dev/api/discord-api-types-v10/enum/TeamMemberRole}
  */

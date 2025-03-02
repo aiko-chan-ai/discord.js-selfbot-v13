@@ -23,12 +23,6 @@ class VoiceStateUpdate extends Action {
         member = guild.members._add(data.member);
       }
 
-      // Emit event
-      if (member?.user.id === client.user.id) {
-        client.emit('debug', `[VOICE] received voice state update: ${JSON.stringify(data)}`);
-        client.voice.onVoiceStateUpdate(data);
-      }
-
       /**
        * Emitted whenever a member changes voice state - e.g. joins/leaves a channel, mutes/unmutes.
        * @event Client#voiceStateUpdate
@@ -43,13 +37,12 @@ class VoiceStateUpdate extends Action {
 
       const newState = client.voiceStates._add(data);
 
-      // Emit event
-      if (data.user_id === client.user.id) {
-        client.emit('debug', `[VOICE] received voice state update: ${JSON.stringify(data)}`);
-        client.voice.onVoiceStateUpdate(data);
-      }
-
       client.emit(Events.VOICE_STATE_UPDATE, oldState, newState);
+    }
+    // Emit event
+    if (data.user_id === client.user?.id) {
+      client.emit('debug', `[VOICE] received voice state update: ${JSON.stringify(data)}`);
+      client.voice.onVoiceStateUpdate(data);
     }
   }
 }

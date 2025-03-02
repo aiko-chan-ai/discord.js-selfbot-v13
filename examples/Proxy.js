@@ -12,6 +12,7 @@ const proxy = new ProxyAgent({
 const client = new Discord.Client({
   ws: {
     agent: proxy, // WebSocket Proxy
+    // Do not use the `proxy` option if you don't need to use the WebSocket Proxy
   },
   http: {
     // API Proxy

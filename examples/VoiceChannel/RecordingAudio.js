@@ -36,6 +36,7 @@ client.on('ready', async client => {
   const audio = connection.receiver.createStream('user_id', {
     mode: 'pcm',
     end: 'manual',
+    paddingSilence: true,
   });
 
   audio.pipe(fs.createWriteStream('test.pcm'));

@@ -26,6 +26,8 @@ class VoiceWebSocket extends EventEmitter {
      */
     this.attempts = 0;
 
+    this._sequenceNumber = -1;
+
     this.dead = false;
     this.connection.on('closing', this.shutdown.bind(this));
   }
@@ -75,7 +77,7 @@ class VoiceWebSocket extends EventEmitter {
      * The actual WebSocket used to connect to the Voice WebSocket Server.
      * @type {WebSocket}
      */
-    this.ws = WebSocket.create(`wss://${this.connection.authentication.endpoint}/`, { v: 7 });
+    this.ws = WebSocket.create(`wss://${this.connection.authentication.endpoint}/`, { v: 8 });
     this.emit('debug', `[WS] connecting, ${this.attempts} attempts, ${this.ws.url}`);
     this.ws.onopen = this.onOpen.bind(this);
     this.ws.onmessage = this.onMessage.bind(this);
@@ -144,9 +146,10 @@ class VoiceWebSocket extends EventEmitter {
 
   /**
    * Called whenever the connection to the WebSocket server is lost.
+   * @param {CloseEvent} event The WebSocket close event
    */
-  onClose() {
-    this.emit('debug', `[WS] closed`);
+  onClose(event) {
+    this.emit('debug', `[WS] closed with code ${event.code} and reason: ${event.reason}`);
     if (!this.dead) setTimeout(this.connect.bind(this), this.attempts * 1000).unref();
   }
 
@@ -165,6 +168,7 @@ class VoiceWebSocket extends EventEmitter {
    */
   onPacket(packet) {
     this.emit('debug', `[WS] << ${JSON.stringify(packet)}`);
+    if (packet.seq) this._sequenceNumber = packet.seq;
     switch (packet.op) {
       case VoiceOpcodes.HELLO:
         this.setHeartbeat(packet.d.heartbeat_interval);
@@ -266,7 +270,13 @@ class VoiceWebSocket extends EventEmitter {
    * Sends a heartbeat packet.
    */
   sendHeartbeat() {
-    this.sendPacket({ op: VoiceOpcodes.HEARTBEAT, d: Math.floor(Math.random() * 10e10) }).catch(() => {
+    this.sendPacket({
+      op: VoiceOpcodes.HEARTBEAT,
+      d: {
+        t: Date.now(),
+        seq_ack: this._sequenceNumber,
+      },
+    }).catch(() => {
       this.emit('warn', 'Tried to send heartbeat, but connection is not open');
       this.clearHeartbeat();
     });

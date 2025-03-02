@@ -20,7 +20,7 @@ Please use the @dank074/discord-video-stream library for the best support.
 const EventEmitter = require('events');
 const { Readable: ReadableStream } = require('stream');
 const prism = require('prism-media');
-const { H264NalSplitter } = require('./processing/AnnexBNalSplitter');
+const { H264NalSplitter, H265NalSplitter } = require('./processing/AnnexBNalSplitter');
 const { IvfTransformer } = require('./processing/IvfSplitter');
 const { H264Dispatcher } = require('../dispatcher/AnnexBDispatcher');
 const AudioDispatcher = require('../dispatcher/AudioDispatcher');
@@ -60,6 +60,19 @@ const FFMPEG_H264_ARGUMENTS = options => [
   '0',
   '-bsf:v',
   'h264_metadata=aud=insert',
+];
+
+const FFMPEG_H265_ARGUMENTS = options => [
+  '-c:v',
+  'libx265',
+  '-f',
+  'hevc',
+  '-preset',
+  options?.presetH265 || 'faster',
+  '-profile:v',
+  'main',
+  '-bf',
+  '0',
 ];
 
 /**
@@ -188,13 +201,17 @@ class MediaPlayer extends EventEmitter {
     }
 
     // Get stream type
-    if (this.voiceConnection.videoCodec == 'VP8') {
+    if (this.voiceConnection.videoCodec === 'VP8') {
       args.push(...FFMPEG_VP8_ARGUMENTS);
       // Remove  '-speed', '5' bc bad quality
     }
 
-    if (this.voiceConnection.videoCodec == 'H264') {
+    if (this.voiceConnection.videoCodec === 'H264') {
       args.push(...FFMPEG_H264_ARGUMENTS(options));
+    }
+
+    if (this.voiceConnection.videoCodec === 'H265') {
+      args.push(...FFMPEG_H265_ARGUMENTS(options));
     }
 
     args.push('-force_key_frames', '00:02');
@@ -229,7 +246,7 @@ class MediaPlayer extends EventEmitter {
         return this.playAnnexBVideo(ffmpeg, options, streams, 'H264');
       }
       default: {
-        throw new Error('Invalid codec (Supported: VP8, H264)');
+        throw new Error('Invalid codec (Supported: VP8, H264, H265)');
       }
     }
   }
@@ -247,7 +264,12 @@ class MediaPlayer extends EventEmitter {
   // eslint-disable-next-line no-unused-vars
   playAnnexBVideo(stream, options, streams, type) {
     this.destroyVideoDispatcher();
-    const videoStream = new H264NalSplitter();
+    let videoStream;
+    if (type === 'H264') {
+      videoStream = new H264NalSplitter();
+    } else if (type === 'H265') {
+      videoStream = new H265NalSplitter();
+    }
     stream.pipe(videoStream);
     streams.video = videoStream;
     const dispatcher = this.createVideoDispatcher(options, streams);

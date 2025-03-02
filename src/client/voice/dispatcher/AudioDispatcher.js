@@ -5,6 +5,8 @@ const Util = require('../../../util/Util');
 const Silence = require('../util/Silence');
 const VolumeInterface = require('../util/VolumeInterface');
 
+const CHANNELS = 2;
+
 /**
  * @external WritableStream
  * @see {@link https://nodejs.org/api/stream.html#stream_class_stream_writable}
@@ -35,6 +37,22 @@ class AudioDispatcher extends BaseDispatcher {
     this.setBitrate(bitrate);
     if (typeof fec !== 'undefined') this.setFEC(fec);
     if (typeof plp !== 'undefined') this.setPLP(plp);
+  }
+
+  get TIMESTAMP_INC() {
+    return 480 * CHANNELS;
+  }
+
+  get FRAME_LENGTH() {
+    return 20;
+  }
+
+  /**
+   * Get the type of the dispatcher
+   * @returns {'audio'}
+   */
+  getTypeDispatcher() {
+    return 'audio';
   }
 
   /**
@@ -101,6 +119,17 @@ class AudioDispatcher extends BaseDispatcher {
     this.emit('volumeChange', this.volume, value);
     this.streams.volume.setVolume(value);
     return true;
+  }
+
+  /**
+   * Sync with another video dispatcher to ensure that the audio and video are played at the same time.
+   * @param {VideoDispatcher} otherDispatcher The video dispatcher to sync with
+   */
+  setSyncVideoDispatcher(otherDispatcher) {
+    if (otherDispatcher.getTypeDispatcher() !== 'video') {
+      throw new Error('Dispatcher must be a video dispatcher');
+    }
+    this._syncDispatcher = otherDispatcher;
   }
 
   // Volume stubs for docs
