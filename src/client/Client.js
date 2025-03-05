@@ -16,6 +16,7 @@ const ChannelManager = require('../managers/ChannelManager');
 const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 const GuildManager = require('../managers/GuildManager');
 const PresenceManager = require('../managers/PresenceManager');
+const ReadStateManager = require('../managers/ReadStateManager');
 const RelationshipManager = require('../managers/RelationshipManager');
 const SessionManager = require('../managers/SessionManager');
 const UserManager = require('../managers/UserManager');
@@ -145,6 +146,12 @@ class Client extends BaseClient {
      */
     this.notes = new UserNoteManager(this);
 
+    /**
+     * All of the read read states
+     * @type {ReadStateManager}
+     */
+    this.readStates = new ReadStateManager(this);
+    
     /**
      * All of the relationships {@link User}
      * @type {RelationshipManager}
