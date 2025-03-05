@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Electron/33.0.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Electron/33.0.0 Safari/537.36';
 
 /**
  * Google Chrome v131 TLS ciphers
@@ -478,6 +478,9 @@ exports.Events = {
   MESSAGE_POLL_VOTE_ADD: 'messagePollVoteAdd',
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
   VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
+  MESSAGE_ACK: 'messageAck',
+  GUILD_FEATURE_ACK: 'guildFeatureAck',
+  USER_FEATURE_ACK: 'userFeatureAck',
   // Djs v12
   VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
   VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',
@@ -1774,6 +1777,25 @@ exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
  * @see {@link https://docs.discord.sex/resources/message#poll-layout-type}
  */
 exports.PollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
+
+/**
+ * The {@link ReadState} type
+ * * CHANNEL
+ * * GUILD_SCHEDULED_EVENT
+ * * NOTIFICATION_CENTER
+ * * GUILD_HOME
+ * * GUILD_ONBOARDING_QUESTION
+ * * MESSAGE_REQUESTS
+ * @typedef {string} ReadStateType
+ */
+exports.ReadStateTypes = createEnum([
+  'CHANNEL',
+  'GUILD_SCHEDULED_EVENT',
+  'NOTIFICATION_CENTER',
+  'GUILD_HOME',
+  'GUILD_ONBOARDING_QUESTION',
+  'MESSAGE_REQUESTS',
+]);
 
 /**
  * Relationship Enums:
