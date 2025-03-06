@@ -45,9 +45,9 @@ class ReadState extends Base {
     }
     /**
      * The id of last acknowledged resource in the read state
-     * @type {?Snowflake}
+     * @type {Snowflake}
      */
-    this.lastAckedId = data.last_acked_id ?? data.last_message_id ?? null;
+    this.lastAckedId = data.last_acked_id ?? data.last_message_id ?? '0';
     // TODO Readstateflags
   }
 
