@@ -182,8 +182,8 @@ class ReadStateManager extends CachedManager {
    */
   ackGuildFeature(guild, type, entityId) {
     if (typeof type === 'string') {
-      type = ReadStateTypes.indexOf(type);
-      if (type === -1) throw new TypeError('INVALID_READ_STATE_TYPE');
+      type = ReadStateTypes[type];
+      if (type !== 0 && !type) throw new TypeError('INVALID_READ_STATE_TYPE');
     }
     return this.client.api
       .guilds[this.client.guilds.resolveId(guild)]
@@ -199,8 +199,8 @@ class ReadStateManager extends CachedManager {
    */
   ackUserFeature(type, entityId) {
     if (typeof type === 'string') {
-      type = ReadStateTypes.indexOf(type);
-      if (type === -1) throw new TypeError('INVALID_READ_STATE_TYPE');
+      type = ReadStateTypes[type];
+      if (type !== 0 && !type) throw new TypeError('INVALID_READ_STATE_TYPE');
     }
     return this.client.api
       .users['@me'][type][entity]
@@ -216,8 +216,8 @@ class ReadStateManager extends CachedManager {
    */
   delete(resourceId, type) {
     if (typeof type === 'string') {
-      type = ReadStateTypes.indexOf(type);
-      if (type === -1) throw new TypeError('INVALID_READ_STATE_TYPE');
+      type = ReadStateTypes[type];
+      if (type !== 0 && !type) throw new TypeError('INVALID_READ_STATE_TYPE');
     }
 
     return this.client.api
