@@ -1486,11 +1486,11 @@ class Guild extends AnonymousGuild {
    * Marks the guild as read.
    * @returns {Promise<void>}
    * @example
-   * const guild = client.guilds.cache.get('id');
+   * const guild = client.guilds.cache.get('222078108977594368');
    * guild.markAsRead();
    */
   markAsRead() {
-    return this.client.api.guilds(this.id).ack.post();
+    return this.client.readStates.ackGuild(this.id);
   }
 
   /**
