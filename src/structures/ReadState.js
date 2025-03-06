@@ -55,7 +55,7 @@ class ReadState extends Base {
     return new ReadState(this.client, {
       id: this.id,
       read_state_type: ReadStateTypes.indexOf(this.type),
-      mention_count: this.mentionCount,
+      badge_count: this.badgeCount,
       last_viewed: this.lastViewed,
       last_pin_timestamp: this.lastPinTimestamp?.toISOString(),
       last_acked_id: this.lastAckedId,
