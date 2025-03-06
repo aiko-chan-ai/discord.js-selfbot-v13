@@ -16,6 +16,7 @@ module.exports = (client, { d: data }) => {
     } else {
       after = new ReadState(client, {
         id: data.channel_id,
+        last_acked_id: null,
         last_pin_timestamp: data.timestamp,
         badge_count: 0,
         read_state_type: 0,
@@ -25,7 +26,8 @@ module.exports = (client, { d: data }) => {
   } else {
     after = new ReadState(client, {
       id: data.channel_id,
-      last_acked_id: data.message_id,
+      last_acked_id: null,
+      last_pin_timestamp: data.timestamp,
       badge_count: 0,
       read_state_type: 0,
     });
