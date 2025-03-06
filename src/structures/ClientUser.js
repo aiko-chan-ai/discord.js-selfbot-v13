@@ -131,7 +131,7 @@ class ClientUser extends User {
    * @readonly
    */
   get messageRequestReadState() {
-    return this.client.readStates.get('0', { type: 'MESSAGE_REQUESTS' });
+    return this.client.readStates.get(this.id, { type: 'MESSAGE_REQUESTS' });
   }
   
   /**
@@ -140,7 +140,7 @@ class ClientUser extends User {
    * @readonly
    */
   get notificationCenterReadState() {
-    return this.client.readStates.get('0', { type: 'NOTIFICATION_CENTER' });
+    return this.client.readStates.get(this.id, { type: 'NOTIFICATION_CENTER' });
   }
   
   /**
