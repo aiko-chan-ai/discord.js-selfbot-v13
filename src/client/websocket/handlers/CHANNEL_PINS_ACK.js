@@ -34,7 +34,7 @@ module.exports = (client, { d: data }) => {
 
     readStates = new Collection();
     readStates.set(after.id, after);
-    client.readStates.set(0, readStates);
+    client.readStates.cache.set('CHANNEL', readStates);
   }
 
   /**
