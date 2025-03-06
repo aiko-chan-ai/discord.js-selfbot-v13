@@ -1,11 +1,14 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
-const { Events } = require('../../../util/Constants');
+const { Events, ReadStateTypes } = require('../../../util/Constants');
 const { ReadState } = require('../../../structures/ReadState');
 
 module.exports = (client, { d: data }) => {
-  let readStates = client.readStates.get(data.ack_type);
+  const readStateType = ReadStateTypes[data.ack_type];
+  if (readStateType !== 0 && !readStateType) return;
+  
+  let readStates = client.readStates.cache.get(readStateType);
 
   let before = null, after = null;
   if (readStates) {
@@ -32,7 +35,7 @@ module.exports = (client, { d: data }) => {
 
     readStates = new Collection();
     readStates.set(after.id, after);
-    client.readStates.set(data.ack_type, readStates);
+    client.readStates.cache.set(readStateType, readStates);
   }
 
   /**
