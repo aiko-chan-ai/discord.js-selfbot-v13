@@ -174,6 +174,25 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * The read state for the guild home
+   * @type {ReadState}
+   * @readonly
+   */
+  get homeReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_HOME' });
+  }
+  
+
+  /**
+   * The read state for the onboarding questions
+   * @type {ReadState}
+   * @readonly
+   */
+  get onboardingQuestionReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_ONBOARDING_QUESTION' });
+  }
+  
+  /**
    * The Shard this Guild belongs to.
    * @type {WebSocketShard}
    * @readonly
