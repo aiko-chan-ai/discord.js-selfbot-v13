@@ -122,7 +122,7 @@ class Guild extends AnonymousGuild {
      * All of the settings {@link Object}
      * @type {GuildSettingManager}
      */
-    this.settings = new GuildSettingManager(this);
+    this.settings = new GuildSettingManager(this.client, this.id);
 
     if (!data) return;
     if (data.unavailable) {
