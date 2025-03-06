@@ -39,7 +39,43 @@ class ReadStateManager extends CachedManager {
   }
 
   /**
+   * Acknowledges pins in a channel.
+   * @param {ChannelResolvable} channel The channel to ack pins in
+   * @returns {Promise<void>}
+   */
+  ackPins(channel) {
+    return this.client.api
+      .channels[this.client.channels.resolveId(channel)]
+      .pins
+      .ack
+      .post({ });
+  }
+
+  /**
+   * Acknowledges a guild.
+   * @param {GuildResolvable} guild The guild
+   * @returns {Promise<void>}
+   */
+  ackGuild(guild) {
+    return this.client.api
+      .guilds[this.client.guilds.resolveId(guild)]
+      .ack
+      .post({ });
+  }
+  
+  /**
+   * Options used to acknowledge a message.
+   * @typedef {Object} MessageAckOptions
+   * @property {?boolean} [manual] Whether the message is read manually
+   * @property {?number} [mentionCount] The new mention count
+   */
+   
+  /**
    * Acknowledges a message.
+   * @param {ChannelResolvable} channel The channel
+   * @param {string} message The message
+   * @param {MessageAckOptions} options The options to ack message
+   * @returns {Promise<?string>} The ack token
    */
   ackMessage(channel, message, { manual, mentionCount } = {}) {
     manual = manual === null ? undefined : manual;
@@ -63,21 +99,26 @@ class ReadStateManager extends CachedManager {
   
   /**
    * Acknowledges a guild feature.
+   * @param {GuildResolvable} guild The guild
+   * @param {ReadStateType} type The read state type
+   * @param {string} entityId The entity id to ack
    * @returns {Promise<void>}
    */
-  ackGuildFeature(guild, type, entity) {
+  ackGuildFeature(guild, type, entityId) {
     if (typeof type === 'string') {
       type = ReadStateTypes.indexOf(type);
       if (type === -1) throw new TypeError('INVALID_READ_STATE_TYPE');
     }
     return this.client.api
       .guilds[this.client.guilds.resolveId(guild)]
-      .ack[type][entity.id ? entity.id : entity]
+      .ack[type][entityId]
       .post({ data: {} });
   }
 
   /**
    * Acknowledges an user feature.
+   * @param {ReadStateType} type The read state type
+   * @param {string} entityId The entity id to ack
    * @returns {Promise<void>}
    */
   ackUserFeature(type, entityId) {
