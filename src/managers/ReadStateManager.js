@@ -39,6 +39,62 @@ class ReadStateManager extends CachedManager {
       }
     }
   }
+
+  
+
+  /**
+   * Options used to get a read state.
+   * @typedef {Object} ReadStateGetOptions
+   * @property {boolean} [ifExists=false] Whether to create a new one if read state doesn't exist
+   * @property {string} [lastAckedId='0'] The default acked id for new read states
+   * @property {?Date} [lastPinTimestamp] When the channel pins were last acknowledged (only applicable to new read states)
+   * @property {?number} [lastViewed} Days since 2015 when the resource was last viewed
+   * @property {ReadStateType} [type='CHANNEL'] The read state type
+   */
+
+  /**
+   * Gets a read state for resource or creates a new one if it doesn't
+   * @param {string} resourceId The id of the resource to get read state of
+   * @param {ReadStateGetOptions} options Options for getting read state
+   */
+  get(resourceId, {
+    ifExists = false,
+    lastAckedId = '0',
+    lastPinTimestamp = undefined,
+    lastViewed = undefined,
+    type = 'CHANNEL',
+  } = {}) {
+    if (typeof type === 'number') {
+      type = ReadStateTypes[type];
+      if (!type) throw new TypeError('INVALID_READ_STATE_TYPE');
+    }
+
+    let cache = this.cache.get(type);
+    if (!cache) {
+      if (ifExists) return null;
+      cache = new Collection();
+      this.cache.set(type, cache);
+    }
+
+    let readState = cache.get(resourceId);
+    
+    if (readState) {
+      return readState;
+    } else if (ifExists) {
+      return null;
+    }
+
+    readState = new ReadState(this.client, {
+      id: resourceId,
+      read_state_type: ReadStateTypes[type],
+      badge_count: badgeCount ?? 0,
+      last_viewed: lastViewed ?? 0,
+      last_pin_timestamp: lastPinTimestamp?.toISOString() ?? null,
+      last_acked_id: lastAckedId,
+    });
+    cache.set(readState.id, readState);
+    return readState;
+  })
   
   /**
    * Ack read states in bulk.
