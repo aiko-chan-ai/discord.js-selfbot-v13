@@ -41,5 +41,5 @@ module.exports = (client, { d: data }) => {
    * @param {?ReadState} before Old read state
    * @param {ReadState} after New read state
    */
-  client.emit(Events.USER_NON_CHANNEL_ACK, before, after);
+  client.emit(Events.USER_FEATURE_ACK, before, after);
 };
