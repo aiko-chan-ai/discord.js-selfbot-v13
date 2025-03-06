@@ -24,10 +24,10 @@ class ReadState extends Base {
      */
     this.type = ReadStateTypes[data.read_state_type ?? 0];
     /**
-     * The mention count of the resource
+     * The number of badges in the resource (e.g. mentions)
      * @type {number}
      */
-    this.mentionCount = data.mention_count ?? data.badge_count ?? 0;
+    this.badgeCount = data.mention_count ?? data.badge_count ?? 0;
     /**
      * Days since 2015 when the resource was last viewed
      * @type {?number}
@@ -74,12 +74,11 @@ class ReadState extends Base {
   }
 
   /**
-   * Deletes the read state. Only applicable to 'CHANNEL' read states
-   *
-   * @returns {Promise<>}
+   * Deletes the read state
+   * @returns {Promise<void>}
    */
   delete() {
-    return this.client.api.channels[this.id].messages.ack.delete();
+    return this.client.readStates.delete(this.id, this.type);
   }
 }
 
