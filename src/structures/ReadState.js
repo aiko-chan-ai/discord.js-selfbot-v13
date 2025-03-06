@@ -30,9 +30,9 @@ class ReadState extends Base {
     this.mentionCount = data.mention_count ?? data.badge_count ?? 0;
     /**
      * Days since 2015 when the resource was last viewed
-     * @type {number}
+     * @type {?number}
      */
-    this.lastViewed = data.last_viewed;
+    this.lastViewed = data.last_viewed ?? null;
     if (data.last_pin_timestamp) {
       let lastPinTimestamp = Date.parse(data.last_pin_timestamp);
       /**
@@ -47,8 +47,19 @@ class ReadState extends Base {
      * The id of last acknowledged resource in the read state
      * @type {?Snowflake}
      */
-    this.lastMessageId = data.last_acked_id ?? data.last_message_id ?? null;
+    this.lastAckedId = data.last_acked_id ?? data.last_message_id ?? null;
     // TODO Readstateflags
+  }
+
+  _copy() {
+    return new ReadState(this.client, {
+      id: this.id,
+      read_state_type: ReadStateTypes.indexOf(this.type),
+      mention_count: this.mentionCount,
+      last_viewed: this.lastViewed,
+      last_pin_timestamp: this.lastPinTimestamp?.toISOString(),
+      last_acked_id: this.lastAckedId,
+    });
   }
 
   /**
