@@ -187,7 +187,7 @@ class Options extends null {
       presence: { status: 'online', since: 0, activities: [], afk: true },
       sweepers: {},
       ws: {
-        capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
+        capabilities: 128, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
         properties: {
           os: 'Windows',
           browser: 'Chrome',
