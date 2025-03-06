@@ -479,6 +479,7 @@ exports.Events = {
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
   VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
   MESSAGE_ACK: 'messageAck',
+  CHANNEL_PINS_ACK: 'channelPinsAck',
   GUILD_FEATURE_ACK: 'guildFeatureAck',
   USER_FEATURE_ACK: 'userFeatureAck',
   // Djs v12
