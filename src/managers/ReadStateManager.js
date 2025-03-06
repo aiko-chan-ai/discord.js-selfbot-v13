@@ -66,7 +66,7 @@ class ReadStateManager extends CachedManager {
       .channels[this.client.channels.resolveId(channel)]
       .pins
       .ack
-      .post({ });
+      .post();
   }
 
   /**
@@ -78,7 +78,7 @@ class ReadStateManager extends CachedManager {
     return this.client.api
       .guilds[this.client.guilds.resolveId(guild)]
       .ack
-      .post({ });
+      .post();
   }
   
   /**
@@ -98,13 +98,15 @@ class ReadStateManager extends CachedManager {
   ackMessage(channel, message, { manual, mentionCount } = {}) {
     manual = manual === null ? undefined : manual;
     
-    let data = {
+    let data = manual ? {
+      manual,
+    } : {
       token: this.ackToken,
       manual,
     };
-
+    
     if (mentionCount !== undefined) {
-      data.mention_count = mentionCount === null ? 0;
+      data.mention_count = mentionCount === null ? 0 : mentionCount;
     }
 
     return this.client.api
@@ -148,6 +150,31 @@ class ReadStateManager extends CachedManager {
       .users['@me'][type][entity]
       .ack
       .post({ data: {} });
+  }
+
+  /**
+   * Deletes a read state
+   * @param {string} resourceId The resource id to delete read state of
+   * @param {ReadStateType} type The read state type
+   * @returns {Promise<void>}
+   */
+  delete(resourceId, type) {
+    if (typeof type === 'string') {
+      type = ReadStateTypes.indexOf(type);
+      if (type === -1) throw new TypeError('INVALID_READ_STATE_TYPE');
+    }
+
+    return this.client.api
+      .channels[resourceId]
+      .messages
+      .ack
+      .delete({
+        data: {
+          version: 2,
+          read_state_type: type,
+        },
+      })
+      .then(() => this.cache.get(ReadStateTypes[type])?.delete(resourceId));
   }
 }
 
