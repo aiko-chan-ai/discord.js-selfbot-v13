@@ -84,6 +84,7 @@ class ReadStateManager extends CachedManager {
   /**
    * Options used to acknowledge a message.
    * @typedef {Object} MessageAckOptions
+   * @property {?number} [lastViewed} Days since 2015 when you last viewed channel
    * @property {?boolean} [manual] Whether the message is read manually
    * @property {?number} [mentionCount] The new mention count
    */
@@ -95,7 +96,7 @@ class ReadStateManager extends CachedManager {
    * @param {MessageAckOptions} options The options to ack message
    * @returns {Promise<?string>} The ack token
    */
-  ackMessage(channel, message, { manual, mentionCount } = {}) {
+  ackMessage(channel, message, { lastViewed, manual, mentionCount } = {}) {
     manual = manual === null ? undefined : manual;
     
     let data = manual ? {
@@ -104,10 +105,9 @@ class ReadStateManager extends CachedManager {
       token: this.ackToken,
       manual,
     };
-    
-    if (mentionCount !== undefined) {
-      data.mention_count = mentionCount === null ? 0 : mentionCount;
-    }
+
+    if (lastViewed !== undefined) data.last_viewed = lastViewed;
+    if (mentionCount !== undefined) data.mention_count = mentionCount === null ? 0 : mentionCount;
 
     return this.client.api
       .channels[this.client.channels.resolveId(channel)]
