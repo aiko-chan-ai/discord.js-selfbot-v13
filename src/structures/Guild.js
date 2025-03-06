@@ -182,7 +182,6 @@ class Guild extends AnonymousGuild {
     return this.client.readStates.get(this.id, { type: 'GUILD_HOME' });
   }
   
-
   /**
    * The read state for the onboarding questions
    * @type {ReadState}
@@ -190,6 +189,15 @@ class Guild extends AnonymousGuild {
    */
   get onboardingQuestionReadState() {
     return this.client.readStates.get(this.id, { type: 'GUILD_ONBOARDING_QUESTION' });
+  }
+  
+  /**
+   * The read state for the guild scheduled events
+   * @type {ReadState}
+   * @readonly
+   */
+  get scheduledEventReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_SCHEDULED_EVENTS' });
   }
   
   /**
