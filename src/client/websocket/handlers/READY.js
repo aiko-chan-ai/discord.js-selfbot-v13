@@ -40,11 +40,11 @@ module.exports = (client, { d: data }, shard) => {
 
   // GuildSetting
   for (const gSetting of Array.isArray(data.user_guild_settings) ? data.user_guild_settings : []) {
-    if (gSetting.guild_id) {
+    if (gSetting.guild_id === null) {
+      client.guildSettings._patch(gSetting);
+    } else {
       const guild = client.guilds.cache.get(gSetting.guild_id);
       if (guild) guild.settings._patch(gSetting);
-    } else {
-      client.guildSettings._patch(gSetting);
     }
   }
 
