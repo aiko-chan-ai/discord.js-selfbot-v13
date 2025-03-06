@@ -43,6 +43,10 @@ module.exports = (client, { d: data }, shard) => {
     const guild = client.guilds.cache.get(gSetting.guild_id);
     if (guild) guild.settings._patch(gSetting);
   }
+
+  // Read States
+  client.readStates._setup(data.read_state);
+  
   // Todo: data.auth_session_id_hash
 
   if (data.guilds.length) {
