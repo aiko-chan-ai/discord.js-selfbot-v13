@@ -80,6 +80,7 @@ const handlers = Object.fromEntries([
   ['MESSAGE_POLL_VOTE_ADD', require('./MESSAGE_POLL_VOTE_ADD')],
   ['MESSAGE_POLL_VOTE_REMOVE', require('./MESSAGE_POLL_VOTE_REMOVE')],
   ['MESSAGE_ACK', require('./MESSAGE_ACK')],
+  ['CHANNEL_PINS_ACK', require('./CHANNEL_PINS_ACK')],
   ['GUILD_FEATURE_ACK', require('./GUILD_FEATURE_ACK')],
   ['USER_NON_CHANNEL_ACK', require('./USER_NON_CHANNEL_ACK')],
 ]);
