@@ -54,7 +54,7 @@ class ReadState extends Base {
   _copy() {
     return new ReadState(this.client, {
       id: this.id,
-      read_state_type: ReadStateTypes.indexOf(this.type),
+      read_state_type: ReadStateTypes[this.type],
       badge_count: this.badgeCount,
       last_viewed: this.lastViewed,
       last_pin_timestamp: this.lastPinTimestamp?.toISOString(),
