@@ -5,7 +5,7 @@ const { Events } = require('../../../util/Constants');
 const { ReadState } = require('../../../structures/ReadState');
 
 module.exports = (client, { d: data }) => {
-  let readStates = client.readStates.get(0);
+  let readStates = client.readStates.get('CHANNEL');
 
   const lastViewed = data.last_viewed === 0 || data.last_viewed ? data.last_viewed : undefined;
 
@@ -38,7 +38,7 @@ module.exports = (client, { d: data }) => {
 
     readStates = new Collection();
     readStates.set(after.id, after);
-    client.readStates.set(0, readStates);
+    client.readStates.cache.set('CHANNEL', readStates);
   }
 
   /**
