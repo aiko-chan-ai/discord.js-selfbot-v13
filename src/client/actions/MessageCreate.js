@@ -24,8 +24,20 @@ class MessageCreateAction extends Action {
       const message = existing ?? channel.messages._add(data);
       channel.lastMessageId = data.id;
 
+      let settings = (message.guild?.settings ?? this.client.guildSettings) ?? {
+        muted: false,
+        suppressEveryone: false,
+        suppressRoles: false,
+      };
       let implicitAck = message.author?.id == this.client.user.id;
-      let mentioned = message.mentions.has(this.client.user) && message.author?.relationship !== 'BLOCKED';
+      let mentioned = (
+        message.author?.relationship !== 'BLOCKED'
+        && !(channel.type === 'GROUP_DM' && message.type === 'RECIPIENT_REMOVE')
+        || (['DM', 'GROUP_DM'].includes(channel.type) && (settings.muteConfig?.endTime?.getTime() ?? 0) <= Date.now() && (settings.channelOverrides?.find(override => override.channel_id == channel.id)?.muteConfig?.endTime?.getTime() ?? 0) <= Date.now())
+        || message.mentions.users.has(this.client.user.id)
+        || (message.mentions.everyone && !settings.suppressEveryone)
+        || (message.mentions.roles?.hasAny(message.guild?.members?.me?._roles ?? []) && !settings.suppressRoles)
+      );
       
       if (implicitAck || mentioned) {
         let readStates = client.readStates.cache.get('CHANNEL');
