@@ -15,6 +15,7 @@ const BillingManager = require('../managers/BillingManager');
 const ChannelManager = require('../managers/ChannelManager');
 const ClientUserSettingManager = require('../managers/ClientUserSettingManager');
 const GuildManager = require('../managers/GuildManager');
+const GuildSettingManager = require('../manager/GuildSettingManager');
 const PresenceManager = require('../managers/PresenceManager');
 const ReadStateManager = require('../managers/ReadStateManager');
 const RelationshipManager = require('../managers/RelationshipManager');
@@ -175,6 +176,12 @@ class Client extends BaseClient {
      * @type {ClientUserSettingManager}
      */
     this.settings = new ClientUserSettingManager(this);
+
+    /**
+     * All of the guild settings {@link Object}
+     * @type {GuildSettingManager}
+     */
+    this.guildSettings = new GuildSettingManager(this);
 
     Object.defineProperty(this, 'token', { writable: true });
     if (!this.token && 'DISCORD_TOKEN' in process.env) {
