@@ -482,6 +482,7 @@ exports.Events = {
   CHANNEL_PINS_ACK: 'channelPinsAck',
   GUILD_FEATURE_ACK: 'guildFeatureAck',
   USER_FEATURE_ACK: 'userFeatureAck',
+  USER_GUILD_SETTINGS_UPDATE: 'guildSettingsUpdate',
   // Djs v12
   VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
   VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',
