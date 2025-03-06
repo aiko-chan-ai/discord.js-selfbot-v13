@@ -2,6 +2,8 @@
 
 const process = require('node:process');
 const Action = require('./Action');
+const { Collection } = require('@discordjs/collection');
+const { ReadState } = require('../../structures/ReadState');
 const { Events } = require('../../util/Constants');
 
 let deprecationEmitted = false;
@@ -22,6 +24,42 @@ class MessageCreateAction extends Action {
       const message = existing ?? channel.messages._add(data);
       channel.lastMessageId = data.id;
 
+      let implicitAck = message.author?.id == this.client.user.id;
+      let mentioned = message.mentions.has(this.client.user) && message.author?.relationship !== 'BLOCKED';
+      
+      if (implicitAck || mentioned) {
+        let readStates = client.readStates.cache.get('CHANNEL');
+        if (readStates) {
+          let readState = readStates?.get(channel.id);
+          if (readState) {
+            if (implicitAck) readState.lastAckedId = message.id;
+            if (mentioned) readState.badgeCount++;
+          } else {
+            readState = new ReadState(this.client, {
+              id: channel.id,
+              read_state_type: 0,
+              badge_count: +mentioned,
+              last_viewed: null,
+              last_pin_timestamp: null,
+              last_acked_id: implicitAck ? message.id : null,
+            });
+            readStates.set(readState.id, readState);
+          }
+        } else {
+          readStates = new Collection();
+          let readState = new ReadState(this.client, {
+            id: channel.id,
+            read_state_type: 0,
+            badge_count: +mentioned,
+            last_viewed: null,
+            last_pin_timestamp: null,
+            last_acked_id: implicitAck ? message.id : null,
+          });
+          readStates.set(readState.id, readState);
+          client.readStates.cache.set('CHANNEL', readStates);
+        }
+      }
+      
       /**
        * Emitted whenever a message is created.
        * @event Client#messageCreate
