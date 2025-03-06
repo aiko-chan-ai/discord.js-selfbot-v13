@@ -22,6 +22,24 @@ class ReadStateManager extends CachedManager {
    * @name ReadStateManager#cache
    */
 
+  _setup(readStates) {
+    if (!Array.isArray(readStates)) return;
+    for (const d of readStates) {
+      let type = ReadStateTypes[d.read_state_type ?? 0];
+      if (!type) continue;
+      
+      let cache = this.cache.get(type);
+      if (cache) {
+        let readState = new ReadState(this.client, d);
+        cache.set(readState.id, readState);
+      } else {
+        cache = new Collection();
+        cache.set(readState.id, readState);
+        this.cache.set(type, cache);
+      }
+    }
+  }
+  
   /**
    * Ack read states in bulk.
    * @returns {Promise<Void>}
