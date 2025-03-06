@@ -2,19 +2,19 @@
 
 const BaseManager = require('./BaseManager');
 /**
- * Manages API methods for users and stores their cache.
+ * Manages API methods for user guild settings and stores their cache.
  * @extends {BaseManager}
  * @see {@link https://luna.gitlab.io/discord-unofficial-docs/user_settings.html}
  */
 class GuildSettingManager extends BaseManager {
   #rawSetting = {};
-  constructor(guild) {
-    super(guild.client);
+  constructor(client, guildId = null) {
+    super(client);
     /**
-     * Guild Id
+     * The id of guild
      * @type {?Snowflake}
      */
-    this.guildId = guild.id;
+    this.guildId = guildId;
   }
 
   /**
@@ -31,7 +31,7 @@ class GuildSettingManager extends BaseManager {
    * @readonly
    */
   get guild() {
-    return this.client.guilds.cache.get(this.guildId);
+    return this.guildId ? this.client.guilds.cache.get(this.guildId) : null;
   }
 
   /**
@@ -146,7 +146,15 @@ class GuildSettingManager extends BaseManager {
    * @returns {Promise<GuildSettingManager>}
    */
   async edit(data) {
-    const data_ = await this.client.api.users('@me').settings.patch(data);
+    const data_ = this.guildId === null
+      ? await this.client.api.users['@me'].guilds['@me'].settings.patch();
+      : await this.client.api.users['@me'].guilds.settings.patch({
+        data: {
+          guilds: {
+            [this.guildId]: data,
+          },
+        },
+      }).then((body) => body[0]);
     this._patch(data_);
     return this;
   }
