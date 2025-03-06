@@ -40,8 +40,12 @@ module.exports = (client, { d: data }, shard) => {
 
   // GuildSetting
   for (const gSetting of Array.isArray(data.user_guild_settings) ? data.user_guild_settings : []) {
-    const guild = client.guilds.cache.get(gSetting.guild_id);
-    if (guild) guild.settings._patch(gSetting);
+    if (gSetting.guild_id) {
+      const guild = client.guilds.cache.get(gSetting.guild_id);
+      if (guild) guild.settings._patch(gSetting);
+    } else {
+      client.guildSettings._patch(gSetting);
+    }
   }
 
   // Read States
