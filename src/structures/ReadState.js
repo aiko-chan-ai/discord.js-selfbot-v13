@@ -1,6 +1,7 @@
 'use strict';
 
 const Base = require('./Base');
+const ReadStateFlags = require('../util/ReadStateFlags');
 
 /**
  * Represents a read state for a resource on Discord.
@@ -23,6 +24,11 @@ class ReadState extends Base {
      * @type {?ReadStateType}
      */
     this.type = ReadStateTypes[data.read_state_type ?? 0];
+    /**
+     * Flags that are applied to the read state
+     * @type {Readonly<ReadStateFlags>}
+     */
+    this.flags = new ReadStateFlags(data.flags ?? 0).freeze();
     /**
      * The number of badges in the resource (e.g. mentions)
      * @type {number}
@@ -48,13 +54,13 @@ class ReadState extends Base {
      * @type {Snowflake}
      */
     this.lastAckedId = (data.last_acked_id ?? data.last_message_id).toString() ?? '0';
-    // TODO Readstateflags
   }
 
   _copy() {
     return new ReadState(this.client, {
       id: this.id,
       read_state_type: ReadStateTypes[this.type],
+      flags: this.flags.bitfield,
       badge_count: this.badgeCount,
       last_viewed: this.lastViewed,
       last_pin_timestamp: this.lastPinTimestamp?.toISOString(),
