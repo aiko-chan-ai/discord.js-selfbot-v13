@@ -1,5 +1,6 @@
 'use strict';
 
+const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const ReadState = require('../structures/ReadState');
@@ -32,8 +33,8 @@ class ReadStateManager extends CachedManager {
       if (!type) continue;
       
       let cache = this.cache.get(type);
+			let readState = new ReadState(this.client, d);
       if (cache) {
-        let readState = new ReadState(this.client, d);
         cache.set(readState.id, readState);
       } else {
         cache = new Collection();
