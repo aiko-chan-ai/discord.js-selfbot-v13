@@ -3,7 +3,7 @@
 const process = require('node:process');
 const Action = require('./Action');
 const { Collection } = require('@discordjs/collection');
-const { ReadState } = require('../../structures/ReadState');
+const ReadState = require('../../structures/ReadState');
 const { Events } = require('../../util/Constants');
 
 let deprecationEmitted = false;
