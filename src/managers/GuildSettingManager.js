@@ -17,6 +17,12 @@ class GuildSettingManager extends BaseManager {
     this.guildId = guildId;
   }
 
+  _copy() {
+    let manager = new GuildSettingManager(this.client, this.guildId);
+    if (this.#rawSetting) manager._patch(this.#rawSetting);
+    return manager;
+  }
+
   /**
    * Raw data
    * @type {Object}
@@ -147,7 +153,7 @@ class GuildSettingManager extends BaseManager {
    */
   async edit(data) {
     const data_ = this.guildId === null
-      ? await this.client.api.users['@me'].guilds['@me'].settings.patch();
+      ? await this.client.api.users['@me'].guilds['@me'].settings.patch({ data });
       : await this.client.api.users['@me'].guilds.settings.patch({
         data: {
           guilds: {
