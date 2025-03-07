@@ -112,7 +112,7 @@ class ReadStateManager extends CachedManager {
     });
     cache.set(readState.id, readState);
     return readState;
-  })
+  }
   
   /**
    * Ack read states in bulk.
