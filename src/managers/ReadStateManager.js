@@ -3,7 +3,10 @@
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const ReadState = require('../structures/ReadState');
-const { ReadStateTypes } = require('../util/Constants');
+const {
+  ReadStateTypes,
+  ThreadChannelTypes,
+} = require('../util/Constants');
 const ReadStateFlags = require('../util/ReadStateFlags');
 
 /**
@@ -15,6 +18,7 @@ class ReadStateManager extends CachedManager {
     super(client, ReadState);
     this.ackToken = null;
   }
+  
   /**
    * The cache of Read States
    * @type {Collection<ReadStateType, Collection<Snowflake, ReadState>>}
@@ -39,12 +43,11 @@ class ReadStateManager extends CachedManager {
     }
   }
 
-  
-
   /**
    * Options used to get a read state.
    * @typedef {Object} ReadStateGetOptions
    * @property {boolean} [ifExists=false] Whether to create a new one if read state doesn't exist
+   * @property {?ReadStateFlags} [flags] The default flags for new read states
    * @property {string} [lastAckedId='0'] The default acked id for new read states
    * @property {?Date} [lastPinTimestamp] When the channel pins were last acknowledged (only applicable to new read states)
    * @property {?number} [lastViewed} Days since 2015 when the resource was last viewed
@@ -58,6 +61,7 @@ class ReadStateManager extends CachedManager {
    */
   get(resourceId, {
     ifExists = false,
+    flags = undefined,
     lastAckedId = '0',
     lastPinTimestamp = undefined,
     lastViewed = undefined,
@@ -83,6 +87,20 @@ class ReadStateManager extends CachedManager {
       return null;
     }
 
+    if (flags === undefined) {
+      if (type === 'CHANNEL') {
+        const channel = this.client.channels.get(resourceId);
+        if (channel) {
+          if (channel.type in ThreadChannelTypes)
+            flags = 1;
+          else if (channel.guild)
+            flags = 2;
+        }
+      }
+    } else {
+      flags = ReadStateFlags.resolve(flags);
+    }
+
     readState = new ReadState(this.client, {
       id: resourceId,
       read_state_type: ReadStateTypes[type],
@@ -90,6 +108,7 @@ class ReadStateManager extends CachedManager {
       last_viewed: lastViewed ?? 0,
       last_pin_timestamp: lastPinTimestamp?.toISOString() ?? null,
       last_acked_id: lastAckedId,
+      flags,
     });
     cache.set(readState.id, readState);
     return readState;
