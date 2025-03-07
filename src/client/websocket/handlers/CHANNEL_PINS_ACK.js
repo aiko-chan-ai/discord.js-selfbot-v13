@@ -5,7 +5,7 @@ const { Events } = require('../../../util/Constants');
 const { ReadState } = require('../../../structures/ReadState');
 
 module.exports = (client, { d: data }) => {
-  let readStates = client.readStates.get('CHANNEL');
+  let readStates = client.readStates.cache.get('CHANNEL');
 
   let before = null, after = null;
   if (readStates) {
