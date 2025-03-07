@@ -33,7 +33,7 @@ class ReadStateManager extends CachedManager {
       if (!type) continue;
       
       let cache = this.cache.get(type);
-			let readState = new ReadState(this.client, d);
+      let readState = new ReadState(this.client, d);
       if (cache) {
         cache.set(readState.id, readState);
       } else {
@@ -90,7 +90,7 @@ class ReadStateManager extends CachedManager {
 
     if (flags === undefined) {
       if (type === 'CHANNEL') {
-        const channel = this.client.channels.get(resourceId);
+        const channel = this.client.channels.cache.get(resourceId);
         if (channel) {
           if (channel.type in ThreadChannelTypes)
             flags = 1;
