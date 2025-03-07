@@ -2,7 +2,7 @@
 
 const { Collection } = require('@discordjs/collection');
 const { Events, ReadStateTypes } = require('../../../util/Constants');
-const { ReadState } = require('../../../structures/ReadState');
+const ReadState = require('../../../structures/ReadState');
 
 module.exports = (client, { d: data }) => {
   const readStateType = ReadStateTypes[data.ack_type];
