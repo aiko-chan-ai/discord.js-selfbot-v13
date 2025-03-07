@@ -1,6 +1,7 @@
 'use strict';
 
 const Base = require('./Base');
+const { ReadStateTypes } = require('../util/Constants');
 const ReadStateFlags = require('../util/ReadStateFlags');
 
 /**
@@ -40,7 +41,7 @@ class ReadState extends Base {
      */
     this.lastViewed = data.last_viewed ?? null;
     if (data.last_pin_timestamp) {
-      let lastPinTimestamp = Date.parse(data.last_pin_timestamp);
+      const lastPinTimestamp = new Date(Date.parse(data.last_pin_timestamp));
       /**
        * When the channel pins were last acknowledged
        * @type {?Date}
