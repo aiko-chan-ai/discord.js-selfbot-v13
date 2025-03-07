@@ -1878,6 +1878,7 @@ function createEnum(keys) {
  * @property {Object<InteractionResponseType, number>} InteractionResponseTypes The type of an interaction response.
  * @property {Object<InteractionType, number>} InteractionTypes The type of an {@link Interaction} object.
  * @property {InviteScope[]} InviteScopes The scopes of an invite.
+ * @property {Object<ReadStateType, number>} ReadStateTypes The type of a {@link ReadState} object.
  * @property {Object<RelationshipType, number>} RelationshipTypes Relationship Enums
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
