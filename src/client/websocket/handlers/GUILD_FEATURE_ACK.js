@@ -8,7 +8,7 @@ module.exports = (client, { d: data }) => {
   const readStateType = ReadStateTypes[data.ack_type];
   if (readStateType !== 0 && !readStateType) return;
   
-  let readStates = client.readStates.get(readStateType);
+  let readStates = client.readStates.cache.get(readStateType);
 
   let before = null, after = null;
   if (readStates) {
