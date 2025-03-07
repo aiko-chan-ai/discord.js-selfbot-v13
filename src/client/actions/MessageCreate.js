@@ -42,7 +42,7 @@ class MessageCreateAction extends Action {
       if (implicitAck || mentioned) {
         let readStates = client.readStates.cache.get('CHANNEL');
         if (readStates) {
-          let readState = readStates?.get(channel.id);
+          let readState = readStates.get(channel.id);
           if (readState) {
             if (implicitAck) readState.lastAckedId = message.id;
             if (mentioned) readState.badgeCount++;
@@ -53,7 +53,7 @@ class MessageCreateAction extends Action {
               badge_count: +mentioned,
               last_viewed: null,
               last_pin_timestamp: null,
-              last_acked_id: implicitAck ? message.id : null,
+              last_acked_id: implicitAck ? message.id : '0',
             });
             readStates.set(readState.id, readState);
           }
@@ -65,7 +65,7 @@ class MessageCreateAction extends Action {
             badge_count: +mentioned,
             last_viewed: null,
             last_pin_timestamp: null,
-            last_acked_id: implicitAck ? message.id : null,
+            last_acked_id: implicitAck ? message.id : '0',
           });
           readStates.set(readState.id, readState);
           client.readStates.cache.set('CHANNEL', readStates);
