@@ -335,7 +335,7 @@ export const enum RelationshipTypes {
   IMPLICIT = 5,
 }
 
-export enum ReadStateTypes {
+export const enum ReadStateTypes {
   CHANNEL = 0,
   GUILD_SCHEDULED_EVENT = 1,
   NOTIFICATION_CENTER = 2,
