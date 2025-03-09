@@ -770,6 +770,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;
+  public guildSettings: GuildSettingManager;
   public options: ClientOptions;
   public readyAt: If<Ready, Date>;
   public readonly readyTimestamp: If<Ready, number>;
@@ -782,6 +783,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
   public notes: UserNoteManager;
+  public readStates: ReadStateManager;
   public relationships: RelationshipManager;
   public voiceStates: VoiceStateManager;
   public sessions: SessionManager;
