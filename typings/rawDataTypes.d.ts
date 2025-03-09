@@ -204,6 +204,18 @@ export type RawPermissionOverwriteData = APIOverwrite | PermissionOverwrites;
 
 export type RawPresenceData = GatewayPresenceUpdate;
 
+export type RawReadStateData = {
+  id: Snowflake;
+  read_state_type?: 0 | 1 | 2 | 3 | 4 | 5;
+  flags?: number;
+  mention_count?: number;
+  badge_count?: number;
+  last_viewed?: number;
+  last_pin_timestamp?: string;
+  last_acked_id?: Snowflake;
+  last_message_id?: Snowflake;
+};
+
 export type RawRoleData = APIRole;
 
 export type RawRichPresenceAssets = GatewayActivityAssets;
