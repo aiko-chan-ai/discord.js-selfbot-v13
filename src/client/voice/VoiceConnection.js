@@ -142,10 +142,10 @@ class VoiceConnection extends EventEmitter {
     /**
      * Video codec
      * * `VP8`
-     * * `VP9` (Not supported for encoding)
+     * * `VP9` (Not supported for encoding & decoding)
      * * `H264`
-     * * `H265` (Not supported for encoding, worked for decoding)
-     * * `AV1` (Not supported for encoding)
+     * * `H265` (Not supported for encoding & decoding)
+     * * `AV1` (Not supported for encoding & decoding)
      * @typedef {string} VideoCodec
      */
 

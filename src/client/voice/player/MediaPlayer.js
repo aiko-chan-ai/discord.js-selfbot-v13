@@ -246,7 +246,7 @@ class MediaPlayer extends EventEmitter {
         return this.playAnnexBVideo(ffmpeg, options, streams, 'H264');
       }
       default: {
-        throw new Error('Invalid codec (Supported: VP8, H264, H265)');
+        throw new Error('Invalid codec (Supported: VP8, H264)');
       }
     }
   }
