@@ -209,12 +209,7 @@ export class RichPresence extends Activity {
   public addButton(name: string, url: string): this;
   public setJoinSecret(join?: string): this;
   public setPlatform(platform?: ActivityPlatform): this;
-  public static getExternal(
-    client: Client,
-    applicationId: Snowflake,
-    image1: string,
-    image2: string,
-  ): Promise<ExternalAssets[]>;
+  public static getExternal(client: Client, applicationId: Snowflake, ...images: string[]): Promise<ExternalAssets[]>;
   public toJSON(): object;
   public toString(): string;
 }

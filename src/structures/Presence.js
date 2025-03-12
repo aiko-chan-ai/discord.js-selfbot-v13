@@ -957,33 +957,29 @@ class RichPresence extends Activity {
    */
 
   /**
-   * Get Assets from a RichPresence (Util)
-   * @param {Client} client Discord Client
-   * @param {Snowflake} applicationId Application id
-   * @param {string} image1 URL image 1 (not from Discord)
-   * @param {string} image2 URL image 2 (not from Discord)
-   * @returns {ExternalAssets[]}
+   * Retrieves external assets from a RichPresence
+   * @param {Client} client - The Discord client instance.
+   * @param {Snowflake} applicationId - The application ID associated with the Rich Presence.
+   * @param {...string} images - 1 or 2 external image URLs (not hosted by Discord).
+   * @returns {Promise<ExternalAssets[]>}
    */
-  static async getExternal(client, applicationId, image1 = '', image2 = '') {
+  static async getExternal(client, applicationId, ...images) {
     if (!client || !client.token || !client.api) throw new Error('Client must be set');
     // Check if applicationId is discord snowflake (17 , 18, 19 numbers)
     if (!/^[0-9]{17,19}$/.test(applicationId)) {
       throw new Error('Application id must be a Discord Snowflake');
     }
-    // Check if large_image is a valid url
-    if (image1 && image1.length > 0 && !URL.canParse(image1)) {
-      throw new Error('Image 1 must be a valid url');
+    // Check if images are 1 or 2
+    if (images.length > 2) {
+      throw new Error('RichPresence can only have up to 2 external images');
     }
-    // Check if small_image is a valid url
-    if (image2 && image2.length > 0 && !URL.canParse(image2)) {
-      throw new Error('Image 2 must be a valid url');
+    // Check if all images are valid URLs
+    if (images.some(image => !URL.canParse(image))) {
+      throw new Error('Each image must be a valid URL.');
     }
-    const data_ = [];
-    if (image1) data_.push(image1);
-    if (image2) data_.push(image2);
     const res = await client.api.applications[applicationId]['external-assets'].post({
       data: {
-        urls: data_,
+        urls: images,
       },
     });
     return res;
