@@ -210,8 +210,6 @@ export class RichPresence extends Activity {
   public setJoinSecret(join?: string): this;
   public setPlatform(platform?: ActivityPlatform): this;
   public static getExternal(client: Client, applicationId: Snowflake, ...images: string[]): Promise<ExternalAssets[]>;
-  public toJSON(): object;
-  public toString(): string;
 }
 
 export class DiscordAuthWebsocket extends EventEmitter {
@@ -259,8 +257,6 @@ export class CustomStatus extends Activity {
   public constructor(client: Client, data?: object);
   public setEmoji(emoji?: EmojiIdentifierResolvable): this;
   public setState(state: string): this;
-  public toString(): string;
-  public toJSON(): unknown;
 }
 
 export class Activity {
@@ -291,6 +287,8 @@ export class Activity {
   public type: ActivityType;
   public url: string | null;
   public equals(activity: Activity): boolean;
+  public toJSON(): ActivityOptions;
+  public toString(): string;
 }
 
 export class ActivityFlags extends BitField<ActivityFlagsString> {
@@ -862,7 +860,7 @@ export class ClientUser extends User {
   public readonly presence: ClientPresence;
   public verified: boolean;
   public edit(data: ClientUserEditData): Promise<this>;
-  public setActivity(options?: ActivityOptions): ClientPresence;
+  public setActivity(options?: ActivityOptions | RichPresence | SpotifyRPC | CustomStatus): ClientPresence;
   public setActivity(name: string, options?: Omit<ActivityOptions, 'name'>): ClientPresence;
   public setAFK(afk?: boolean, shardId?: number | number[]): ClientPresence;
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
