@@ -3,10 +3,11 @@
 const EventEmitter = require('events');
 const { Buffer } = require('node:buffer');
 const crypto = require('node:crypto');
-const { nextTick } = require('node:process');
 const { setTimeout } = require('node:timers');
-const FFmpegHandler = require('./FFmpegHandler');
+const { RtpPacket } = require('werift-rtp');
+const Recorder = require('./Recorder');
 const Speaking = require('../../../util/Speaking');
+const Util = require('../../../util/Util');
 const secretbox = require('../util/Secretbox');
 const { SILENCE_FRAME } = require('../util/Silence');
 
@@ -14,7 +15,7 @@ const { SILENCE_FRAME } = require('../util/Silence');
 // https://github.com/discordjs/discord.js/issues/3524#issuecomment-540373200
 const DISCORD_SPEAKING_DELAY = 250;
 
-const HEADER_EXTENSION_BYTE = Buffer.from([0xbe, 0xde]);
+// Unused: const HEADER_EXTENSION_BYTE = Buffer.from([0xbe, 0xde]);
 const UNPADDED_NONCE_LENGTH = 4;
 const AUTH_TAG_LENGTH = 16;
 
@@ -57,16 +58,21 @@ class PacketHandler extends EventEmitter {
     return stream;
   }
 
-  makeVideoStream(user, portUdp, codec, output, isEnableAudio = false) {
+  makeVideoStream(user, output) {
     if (this.videoStreams.has(user)) return this.videoStreams.get(user);
-    const stream = new FFmpegHandler(this, user, codec, portUdp, output, isEnableAudio);
+    const stream = new Recorder(this, {
+      userId: user,
+      output,
+      portUdpH264: 65506,
+      portUdpOpus: 65510,
+    });
     stream.on('ready', () => {
       this.videoStreams.set(user, stream);
     });
     return stream;
   }
 
-  parseBuffer(buffer, shouldReturnTuple = false) {
+  parseBuffer(buffer) {
     const { secret_key, mode } = this.receiver.connection.authentication;
     // Open packet
     if (!secret_key) return new Error('secret_key cannot be null or undefined');
@@ -115,30 +121,21 @@ class PacketHandler extends EventEmitter {
       }
     }
 
-    if (shouldReturnTuple) {
-      return [header, packet];
-    }
-
+    /*
     // Strip decrypted RTP Header Extension if present
     if (buffer.slice(12, 14).compare(HEADER_EXTENSION_BYTE) === 0) {
       const headerExtensionLength = buffer.slice(14).readUInt16BE();
       packet = packet.subarray(4 * headerExtensionLength);
     }
+    */
 
-    return packet;
+    return RtpPacket.deSerialize(Buffer.concat([header, packet]));
   }
 
-  audioReceiver(buffer) {
-    const ssrc = buffer.readUInt32BE(8);
-    const userStat = this.connection.ssrcMap.get(ssrc);
-
-    if (!userStat) return;
-
-    let opusPacket;
+  audioReceiver(ssrc, userStat, opusPacket) {
     const streamInfo = this.streams.get(userStat.userId);
     // If the user is in video, we need to check if the packet is just silence
     if (userStat.hasVideo) {
-      opusPacket = this.parseBuffer(buffer);
       if (opusPacket instanceof Error) {
         // Only emit an error if we were actively receiving packets from this user
         if (streamInfo) {
@@ -146,7 +143,14 @@ class PacketHandler extends EventEmitter {
         }
         return;
       }
-      if (SILENCE_FRAME.equals(opusPacket)) {
+      // Check payload type
+      if (opusPacket.header.payloadType !== Util.getPayloadType('opus')) {
+        return;
+      }
+      if (!opusPacket.payload) {
+        return;
+      }
+      if (SILENCE_FRAME.equals(opusPacket.payload)) {
         // If this is a silence frame, pretend we never received it
         return;
       }
@@ -176,65 +180,68 @@ class PacketHandler extends EventEmitter {
 
     if (streamInfo) {
       const { stream } = streamInfo;
-      if (!opusPacket) {
-        opusPacket = this.parseBuffer(buffer);
-        if (opusPacket instanceof Error) {
-          this.emit('error', opusPacket);
-          return;
-        }
+      if (opusPacket instanceof Error) {
+        this.emit('error', opusPacket);
+        return;
       }
-      if (opusPacket === null) {
-        // ! null marks EOF for stream
-        nextTick(() => this.destroy());
+      if (opusPacket.header.payloadType !== Util.getPayloadType('opus')) {
+        return;
       }
-      stream.push(opusPacket);
+      stream.push(opusPacket.payload);
     }
   }
 
-  audioReceiverForStream(buffer) {
-    const ssrc = buffer.readUInt32BE(8);
-    const userStat = this.connection.ssrcMap.get(ssrc); // Audio_ssrc
-    if (!userStat) return;
+  audioReceiverForStream(ssrc, userStat, packet) {
     const streamInfo = this.videoStreams.get(userStat.userId);
     if (!streamInfo) return;
-    const packet = this.parseBuffer(buffer, true);
     if (packet instanceof Error) {
       return;
     }
-    if (streamInfo.isEnableAudio) {
-      streamInfo.sendPayloadToFFmpeg(Buffer.concat(packet), true);
+    if (packet.header.payloadType !== Util.getPayloadType('opus')) {
+      return;
     }
+    streamInfo.feed(packet);
   }
 
-  videoReceiver(buffer) {
-    const ssrc = buffer.readUInt32BE(8);
-    const userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
-
-    if (!userStat) return;
+  /**
+   * Test
+   * @param {number} ssrc ssrc
+   * @param {Object} userStat { userId, hasVideo }
+   * @param {RtpPacket} packet RtpPacket
+   * @returns {void}
+   */
+  videoReceiver(ssrc, userStat, packet) {
     const streamInfo = this.videoStreams.get(userStat.userId);
     // If the user is in video, we need to check if the packet is just silence
     if (userStat.hasVideo) {
-      const packet = this.parseBuffer(buffer, true);
       if (packet instanceof Error) {
         return;
       }
-      let [header, videoPacket] = packet;
-      if (SILENCE_FRAME.equals(videoPacket)) {
-        // If this is a silence frame, pretend we never received it
+
+      if (packet.header.payloadType === Util.getPayloadType('opus')) {
         return;
       }
-      this.receiver.emit('videoData', ssrc - 1, userStat, header, videoPacket);
 
       if (streamInfo) {
-        streamInfo.sendPayloadToFFmpeg(Buffer.concat(packet));
+        streamInfo.feed(packet);
       }
     }
   }
 
   push(buffer) {
-    this.audioReceiver(buffer);
-    this.videoReceiver(buffer);
-    this.audioReceiverForStream(buffer);
+    const ssrc = buffer.readUInt32BE(8);
+    let userStat, packet;
+    if (this.connection.ssrcMap.has(ssrc)) {
+      userStat = this.connection.ssrcMap.get(ssrc); // Audio_ssrc
+      packet = this.parseBuffer(buffer);
+      this.audioReceiver(ssrc, userStat, packet);
+      this.audioReceiverForStream(ssrc, userStat, packet);
+    } else if (this.connection.ssrcMap.has(ssrc - 1)) {
+      userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
+      packet = this.parseBuffer(buffer);
+      this.videoReceiver(ssrc, userStat, packet);
+    }
+    if (userStat && !(packet instanceof Error)) this.receiver.emit('receiverData', userStat, packet);
   }
 
   // When udp connection is closed (STREAM_DELETE), destroy all streams (Memory leak)

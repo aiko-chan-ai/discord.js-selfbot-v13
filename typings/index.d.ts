@@ -20,6 +20,7 @@ import {
   underscore,
   userMention,
 } from '@discordjs/builders';
+import { RtpPacket } from 'werift-rtp';
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
@@ -210,14 +211,7 @@ export class RichPresence extends Activity {
   public addButton(name: string, url: string): this;
   public setJoinSecret(join?: string): this;
   public setPlatform(platform?: ActivityPlatform): this;
-  public static getExternal(
-    client: Client,
-    applicationId: Snowflake,
-    image1: string,
-    image2: string,
-  ): Promise<ExternalAssets[]>;
-  public toJSON(): object;
-  public toString(): string;
+  public static getExternal(client: Client, applicationId: Snowflake, ...images: string[]): Promise<ExternalAssets[]>;
 }
 
 export class DiscordAuthWebsocket extends EventEmitter {
@@ -265,8 +259,6 @@ export class CustomStatus extends Activity {
   public constructor(client: Client, data?: object);
   public setEmoji(emoji?: EmojiIdentifierResolvable): this;
   public setState(state: string): this;
-  public toString(): string;
-  public toJSON(): unknown;
 }
 
 export class Activity {
@@ -297,6 +289,8 @@ export class Activity {
   public type: ActivityType;
   public url: string | null;
   public equals(activity: Activity): boolean;
+  public toJSON(): ActivityOptions;
+  public toString(): string;
 }
 
 export class ActivityFlags extends BitField<ActivityFlagsString> {
@@ -872,7 +866,7 @@ export class ClientUser extends User {
   public readonly notificationCenterReadState: ReadState;
   public verified: boolean;
   public edit(data: ClientUserEditData): Promise<this>;
-  public setActivity(options?: ActivityOptions): ClientPresence;
+  public setActivity(options?: ActivityOptions | RichPresence | SpotifyRPC | CustomStatus): ClientPresence;
   public setActivity(name: string, options?: Omit<ActivityOptions, 'name'>): ClientPresence;
   public setAFK(afk?: boolean, shardId?: number | number[]): ClientPresence;
   public setAvatar(avatar: BufferResolvable | Base64Resolvable | null): Promise<this>;
@@ -989,8 +983,6 @@ export class BaseDispatcher extends Writable {
   public count: number;
   public sequence: number;
   public timestamp: number;
-  public mtu: number;
-  public fps: number;
   public payloadType: number;
   public extensionEnabled: boolean;
 
@@ -1016,9 +1008,13 @@ export class AudioDispatcher extends VolumeMixin(BaseDispatcher) {
   constructor(player: object, options?: StreamOptions, streams?: object);
   public readonly bitrateEditable: boolean;
 
+  public getTypeDispatcher(): 'audio';
+
   public setBitrate(value: number | 'auto'): boolean;
   public setFEC(enabled: boolean): boolean;
   public setPLP(value: number): boolean;
+
+  public setSyncVideoDispatcher(otherDispatcher: VideoDispatcher): void;
 
   public on(event: 'volumeChange', listener: (oldVolume: number, newVolume: number) => void): this;
   public on(event: string, listener: (...args: any[]) => void): this;
@@ -1029,6 +1025,11 @@ export class AudioDispatcher extends VolumeMixin(BaseDispatcher) {
 
 export class VideoDispatcher extends BaseDispatcher {
   constructor(player: object, options?: StreamOptions, streams?: object, fps?: number);
+
+  public mtu: number;
+  public fps: number;
+
+  public getTypeDispatcher(): 'video';
 
   public setFPSSource(value: number): void;
 }
@@ -1139,60 +1140,53 @@ export class StreamConnectionReadonly extends VoiceConnection {
   public override playVideo(): VideoDispatcher;
 }
 
-export class FFmpegHandler extends EventEmitter {
-  public codec: 'H264';
-  public portUdp: number;
-  public ready: boolean;
-  public stream: ChildProcessWithoutNullStreams;
+export class Recorder<Ready extends boolean = boolean, T = any> extends EventEmitter {
+  constructor(receiver: T, options: { ffmpegArgs: string[]; channels: number; frameDuration: number });
+  private promise: Promise<void>;
+  public readonly receiver: T;
+  public portUdpH264: number;
+  public portUdpOpus: number;
+  public ready: Ready;
+  public stream: If<Ready, ChildProcessWithoutNullStreams>;
   public socket: Socket;
-  public socketAudio: Socket;
   public output: Writable | string;
-  public isEnableAudio: boolean;
   public userId: Snowflake;
-  public sendPayloadToFFmpeg(payload: Buffer, isAudio?: boolean): void;
-  public on(event: 'ready' | 'closed', listener: () => void): this;
-  public once(event: 'ready' | 'closed', listener: () => void): this;
+  public feed(payload: RtpPacket | BufferResolvable): void;
+  public on(event: 'ready' | 'closed', listener: (recorder: Recorder<true, T>) => void): this;
+  public once(event: 'ready' | 'closed', listener: (recorder: Recorder<true, T>) => void): this;
   public destroy(): void;
 }
 
 export class VoiceReceiver extends EventEmitter {
   constructor(connection: VoiceConnection);
-  public createStream(user: UserResolvable, options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual' }): Readable;
-  public createVideoStream(
+  public createStream(
     user: UserResolvable,
-    options?: {
-      portUdp: number;
-      output: Writable | string;
-      isEnableAudio: boolean;
-    },
-  ): FFmpegHandler;
+    options?: { mode?: 'opus' | 'pcm'; end?: 'silence' | 'manual'; paddingSilence?: boolean },
+  ): Readable;
+  public createVideoStream(user: UserResolvable, output: Writable | string): Recorder<false, any>;
 
   public on(event: 'debug', listener: (error: Error | string) => void): this;
   public on(
-    event: 'videoData',
+    event: 'receiverData',
     listener: (
-      ssrc: number,
       ssrcData: {
         userId: Snowflake;
         hasVideo: boolean;
       },
-      headerRaw: Buffer,
-      packetDecrypt: Buffer,
+      packet: RtpPacket,
     ) => void,
   ): this;
   public on(event: string, listener: (...args: any[]) => void): this;
 
   public once(event: 'debug', listener: (error: Error | string) => void): this;
   public once(
-    event: 'videoData',
+    event: 'receiverData',
     listener: (
-      ssrc: number,
       ssrcData: {
         userId: Snowflake;
         hasVideo: boolean;
       },
-      headerRaw: Buffer,
-      packetDecrypt: Buffer,
+      packet: RtpPacket,
     ) => void,
   ): this;
   public once(event: string, listener: (...args: any[]) => void): this;
@@ -4325,7 +4319,7 @@ export class RelationshipManager extends BaseManager {
   public resolveId(user: UserResolvable): Snowflake | undefined;
   public fetch(user?: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes | RelationshipManager>;
   public deleteRelationship(user: UserResolvable): Promise<boolean>;
-  public sendFriendRequest(options: FriendRequestOptions): Promise<boolean>;
+  public sendFriendRequest(options: UserResolvable): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
   public setNickname(user: UserResolvable, nickname: string | null | undefined): Promise<boolean>;
   public addBlocked(user: UserResolvable): Promise<boolean>;
@@ -4890,7 +4884,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   setRateLimitPerUser(rateLimitPerUser: number, reason?: string): Promise<this>;
   setNSFW(nsfw?: boolean, reason?: string): Promise<this>;
   fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
-  sendTyping(): Promise<{ message_send_cooldown_ms: number; thread_create_cooldown_ms: number } | void>;
+  sendTyping(): Promise<{ message_send_cooldown_ms: number; thread_create_cooldown_ms: number } | undefined>;
   sendSlash(target: UserResolvable, commandName: string, ...args: any[]): Promise<Message | Modal>;
 }
 
@@ -7925,15 +7919,6 @@ export interface WebhookClientDataIdWithToken {
 export interface WebhookClientDataURL {
   url: string;
 }
-
-export type FriendRequestOptions =
-  | {
-      user: UserResolvable;
-    }
-  | {
-      username: string;
-      discriminator: number | null;
-    };
 
 export type WebhookClientOptions = Pick<
   ClientOptions,

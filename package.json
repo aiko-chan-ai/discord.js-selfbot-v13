@@ -1,6 +1,6 @@
 {
   "name": "discord.js-selfbot-v13",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "A unofficial discord.js fork for creating selfbots [Based on discord.js v13]",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
@@ -63,16 +63,18 @@
     "tough-cookie": "^4.1.4",
     "tree-kill": "^1.2.2",
     "undici": "^6.21.0",
+    "werift-rtp": "^0.8.4",
     "ws": "^8.16.0"
   },
   "engines": {
-    "node": ">=18.17"
+    "node": ">=20.18"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.0.1",
     "@commitlint/config-angular": "^16.0.0",
     "@discordjs/docgen": "^0.11.1",
     "@favware/npm-deprecate": "^1.0.7",
+    "@types/debug": "^4.1.12",
     "@types/node": "^22.10.7",
     "@types/ws": "^8.5.10",
     "conventional-changelog-cli": "^2.2.2",

@@ -42,7 +42,7 @@ const payloadTypes = [
     payload_type: 103,
     rtx_payload_type: 104,
     encode: false,
-    decode: false, // Working but very glitchy
+    decode: false,
   },
   {
     name: 'H264',
@@ -988,27 +988,43 @@ class Util extends null {
     return payloadTypes;
   }
 
+  /**
+   * Get the payload type of the codec
+   * @param {'opus' | 'H264' | 'H265' | 'VP8' | 'VP9' | 'AV1'} codecName - Codec name
+   * @returns {number}
+   */
   static getPayloadType(codecName) {
     return payloadTypes.find(p => p.name === codecName).payload_type;
   }
 
-  static getSDPCodecName(portUdp, isEnableAudio) {
+  static getSDPCodecName(portUdpH264, portUdpH265, portUdpOpus) {
+    const payloadTypeH264 = Util.getPayloadType('H264');
+    const payloadTypeH265 = Util.getPayloadType('H265');
+    const payloadTypeOpus = Util.getPayloadType('opus');
     let sdpData = `v=0
 o=- 0 0 IN IP4 0.0.0.0
 s=-
 c=IN IP4 0.0.0.0
 t=0 0
 a=tool:libavformat 61.1.100
-m=video ${portUdp} RTP/AVP 105
-a=rtpmap:105 H264/90000
-a=fmtp:105 profile-level-id=42e01f;sprop-parameter-sets=Z0IAH6tAoAt2AtwEBAaQeJEV,aM4JyA==;packetization-mode=1
+m=video ${portUdpH264} RTP/AVP ${payloadTypeH264}
+c=IN IP4 127.0.0.1
+b=AS:1000
+a=rtpmap:${payloadTypeH264} H264/90000
+a=fmtp:${payloadTypeH264} profile-level-id=42e01f;sprop-parameter-sets=Z0IAH6tAoAt2AtwEBAaQeJEV,aM4JyA==;packetization-mode=1
 ${
-  isEnableAudio
-    ? `m=audio ${portUdp + 2} RTP/AVP 120
-a=rtpmap:120 opus/48000/2
-a=fmtp:120 minptime=10;useinbandfec=1`
+  portUdpH265
+    ? `m=video ${portUdpH265} RTP/AVP ${payloadTypeH265}
+c=IN IP4 127.0.0.1
+b=AS:1000
+a=rtpmap:${payloadTypeH265} H265/90000`
     : ''
 }
+m=audio ${portUdpOpus} RTP/AVP ${payloadTypeOpus}
+c=IN IP4 127.0.0.1
+b=AS:96
+a=rtpmap:${payloadTypeOpus} opus/48000/2
+a=fmtp:${payloadTypeOpus} minptime=10;useinbandfec=1
 a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level
 a=extmap:2 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
 a=extmap:3 http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01

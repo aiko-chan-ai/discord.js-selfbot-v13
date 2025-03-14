@@ -123,7 +123,7 @@ class RelationshipManager extends BaseManager {
     if (user instanceof GuildMember) return user.user.id;
     if (user instanceof Message) return user.author.id;
     if (user instanceof User) return user.id;
-    return user;
+    return user.match(/\d{17,19}/)?.[0] || null;
   }
 
   /**
@@ -168,6 +168,8 @@ class RelationshipManager extends BaseManager {
    * @returns {Promise<boolean>}
    */
   async deleteRelationship(user) {
+    throw new Error('Risky action, not finished yet.');
+    // eslint-disable-next-line no-unreachable
     const id = this.resolveId(user);
     if (
       ![RelationshipTypes.FRIEND, RelationshipTypes.BLOCKED, RelationshipTypes.PENDING_OUTGOING].includes(
@@ -183,20 +185,21 @@ class RelationshipManager extends BaseManager {
   }
 
   /**
-   * @typedef {Object} FriendRequestOptions
-   * @property {UserResolvable} [user] Target
-   * @property {string} [username] Discord username
-   * @property {number | null} [discriminator] Discord discriminator
-   */
-
-  /**
    * Sends a friend request.
-   * @param {FriendRequestOptions} options Target
+   * @param {UserResolvable} options Target (User Object, Username, User Id)
    * @returns {Promise<boolean>}
    */
   async sendFriendRequest(options) {
-    if (options?.user) {
-      const username = this.resolveUsername(options.user);
+    throw new Error('Risky action, not finished yet.');
+    // eslint-disable-next-line no-unreachable
+    const id = this.resolveId(options);
+    if (id) {
+      await this.client.api.users['@me'].relationships[id].put({
+        data: {},
+        DiscordContext: { location: 'ContextMenu' },
+      });
+    } else {
+      const username = this.resolveUsername(options);
       await this.client.api.users['@me'].relationships.post({
         versioned: true,
         data: {
@@ -205,18 +208,8 @@ class RelationshipManager extends BaseManager {
         },
         DiscordContext: { location: 'Add Friend' },
       });
-      return true;
-    } else {
-      await this.client.api.users['@me'].relationships.post({
-        versioned: true,
-        data: {
-          username: options.username,
-          discriminator: null,
-        },
-        DiscordContext: { location: 'Add Friend' },
-      });
-      return true;
     }
+    return true;
   }
 
   /**
@@ -225,13 +218,15 @@ class RelationshipManager extends BaseManager {
    * @returns {Promise<boolean>}
    */
   async addFriend(user) {
+    throw new Error('Risky action, not finished yet.');
+    // eslint-disable-next-line no-unreachable
     const id = this.resolveId(user);
     // Check if already friends
     if (this.cache.get(id) === RelationshipTypes.FRIEND) return Promise.resolve(false);
     // Check if outgoing request
     if (this.cache.get(id) === RelationshipTypes.PENDING_OUTGOING) return Promise.resolve(false);
     await this.client.api.users['@me'].relationships[id].put({
-      data: {},
+      data: { confirm_stranger_request: true },
       DiscordContext: { location: 'Friends' },
     });
     return true;
@@ -265,6 +260,8 @@ class RelationshipManager extends BaseManager {
    * @returns {Promise<boolean>}
    */
   async addBlocked(user) {
+    throw new Error('Risky action, not finished yet.');
+    // eslint-disable-next-line no-unreachable
     const id = this.resolveId(user);
     // Check
     if (this.cache.get(id) === RelationshipTypes.BLOCKED) return Promise.resolve(false);

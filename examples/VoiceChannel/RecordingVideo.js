@@ -27,19 +27,13 @@ client.on('ready', async client => {
 
   const connectionStream = await connection.joinStreamConnection('user_id');
 
-  const video = connectionStream.receiver.createVideoStream('user_id', {
-    portUdp: 50004, // Temporary port
-    output: fs.createWriteStream('video.mkv'), // Output file using matroska container
-    // If you want video with audio, set isEnableAudio to true
-    isEnableAudio: false,
-  });
-
-  video.stream.stderr.on('data', data => {
-    console.log(`FFmpeg: ${data}`);
-  });
+  const video = connectionStream.receiver.createVideoStream('user_id', fs.createWriteStream('video.mkv')); // Output file using matroska container
 
   video.on('ready', () => {
     console.log('FFmpeg process ready!');
+    video.stream.stderr.on('data', data => {
+      console.log(`FFmpeg: ${data}`);
+    });
   });
 
   // After 15s

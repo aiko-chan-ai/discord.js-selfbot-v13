@@ -485,7 +485,7 @@ class User extends Base {
    * @returns {Promise<boolean>}
    */
   sendFriendRequest() {
-    return this.client.relationships.sendFriendRequest({ user: this });
+    return this.client.relationships.sendFriendRequest(this);
   }
 
   /**

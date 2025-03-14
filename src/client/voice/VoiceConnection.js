@@ -75,9 +75,9 @@ class VoiceConnection extends EventEmitter {
 
     /**
      * Our current video state
-     * @type {boolean}
+     * @type {boolean | null}
      */
-    this.videoStatus = false;
+    this.videoStatus = null;
 
     /**
      * The authentication data needed to connect to the voice server
@@ -98,7 +98,7 @@ class VoiceConnection extends EventEmitter {
        * @event VoiceConnection#debug
        * @param {string} message The debug message
        */
-      this.emit('debug', `audio player - ${m}`);
+      this.emit('debug', `media player - ${m}`);
     });
 
     this.player.on('error', e => {
@@ -142,10 +142,10 @@ class VoiceConnection extends EventEmitter {
     /**
      * Video codec
      * * `VP8`
-     * * `VP9` (Not supported for encoding)
+     * * `VP9` (Not supported for encoding & decoding)
      * * `H264`
-     * * `H265` (Not supported for encoding, worked for decoding)
-     * * `AV1` (Not supported for encoding)
+     * * `H265` (Not supported for encoding & decoding)
+     * * `AV1` (Not supported for encoding & decoding)
      * @typedef {string} VideoCodec
      */
 
@@ -233,38 +233,54 @@ class VoiceConnection extends EventEmitter {
    * @param {boolean} value Video on or off
    */
   setVideoStatus(value) {
-    if (this.status !== VoiceStatus.CONNECTED) return;
     if (value === this.videoStatus) return;
+    if (this.status !== VoiceStatus.CONNECTED) return;
     this.videoStatus = value;
-    this.sockets.ws
-      .sendPacket({
-        op: VoiceOpcodes.SOURCES,
-        d: {
-          audio_ssrc: this.authentication.ssrc,
-          video_ssrc: value ? this.authentication.ssrc + 1 : 0,
-          rtx_ssrc: value ? this.authentication.ssrc + 2 : 0,
-          streams: [
-            {
-              type: 'video',
-              rid: '100',
-              ssrc: value ? this.authentication.ssrc + 1 : 0,
-              active: true,
-              quality: 100,
-              rtx_ssrc: value ? this.authentication.ssrc + 2 : 0,
-              max_bitrate: 8000000,
-              max_framerate: 60,
-              max_resolution: {
-                type: 'source',
-                width: 0,
-                height: 0,
+    if (!value) {
+      this.sockets.ws
+        .sendPacket({
+          op: VoiceOpcodes.SOURCES,
+          d: {
+            audio_ssrc: this.authentication.ssrc,
+            video_ssrc: 0,
+            rtx_ssrc: 0,
+            streams: [],
+          },
+        })
+        .catch(e => {
+          this.emit('debug', e);
+        });
+    } else {
+      this.sockets.ws
+        .sendPacket({
+          op: VoiceOpcodes.SOURCES,
+          d: {
+            audio_ssrc: this.authentication.ssrc,
+            video_ssrc: this.authentication.ssrc + 1,
+            rtx_ssrc: this.authentication.ssrc + 2,
+            streams: [
+              {
+                type: 'video',
+                rid: '100',
+                ssrc: this.authentication.ssrc + 1,
+                active: true,
+                quality: 100,
+                rtx_ssrc: this.authentication.ssrc + 2,
+                max_bitrate: 8000000,
+                max_framerate: 60,
+                max_resolution: {
+                  type: 'source',
+                  width: 0,
+                  height: 0,
+                },
               },
-            },
-          ],
-        },
-      })
-      .catch(e => {
-        this.emit('debug', e);
-      });
+            ],
+          },
+        })
+        .catch(e => {
+          this.emit('debug', e);
+        });
+    }
   }
 
   /**
@@ -926,9 +942,9 @@ class StreamConnection extends VoiceConnection {
 
     /**
      * Stream state
-     * @type {boolean}
+     * @type {boolean | null}
      */
-    this.isPaused = false;
+    this.isPaused = null;
 
     /**
      * Viewer IDs

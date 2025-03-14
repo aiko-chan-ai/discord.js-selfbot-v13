@@ -26,25 +26,25 @@ class VP8Dispatcher extends VideoDispatcher {
     super(player, highWaterMark, streams, fps, Util.getPayloadType('VP8'));
   }
 
-  makeChunk(buffer, isFirstFrame) {
+  makeChunk(buffer, isFirstPacket) {
     // Vp8 payload descriptor
     const payloadDescriptorBuf = Buffer.alloc(2);
-    payloadDescriptorBuf[0] = isFirstFrame ? 0x90 : 0x80; // Mark S bit, indicates start of frame: payloadDescriptorBuf[0] |= 0b00010000;
+    payloadDescriptorBuf[0] = 0x80;
     payloadDescriptorBuf[1] = 0x80;
+    if (isFirstPacket) {
+      payloadDescriptorBuf[0] |= 1 << 4; // Mark S bit, indicates start of frame
+    }
     // Vp8 pictureid payload extension
     const pictureIdBuf = Buffer.alloc(2);
     pictureIdBuf.writeUintBE(this.count, 0, 2);
     pictureIdBuf[0] |= 0x80;
-    return Buffer.concat([payloadDescriptorBuf, pictureIdBuf, buffer]);
+    return Buffer.concat([this.createPayloadExtension(), payloadDescriptorBuf, pictureIdBuf, buffer]);
   }
 
-  codecCallback(chunk) {
-    const chunkSplit = this.partitionVideoData(chunk);
+  _codecCallback(chunk) {
+    const chunkSplit = this.partitionMtu(chunk).map((c, i) => this.makeChunk(c, i === 0));
     for (let i = 0; i < chunkSplit.length; i++) {
-      this._playChunk(
-        Buffer.concat([this.createPayloadExtension(), this.makeChunk(chunkSplit[i], i == 0)]),
-        i + 1 === chunkSplit.length,
-      );
+      this._playChunk(chunkSplit[i], i + 1 === chunkSplit.length);
     }
   }
 }

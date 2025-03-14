@@ -28,7 +28,7 @@ class AnnexBDispatcher extends VideoDispatcher {
     this._nalFunctions = nalFunctions;
   }
 
-  codecCallback(frame) {
+  _codecCallback(frame) {
     let accessUnit = frame;
     let offset = 0;
 
@@ -43,7 +43,7 @@ class AnnexBDispatcher extends VideoDispatcher {
         this._playChunk(Buffer.concat([this.createPayloadExtension(), nalu]), isLastNal);
       } else {
         const [naluHeader, naluData] = this._nalFunctions.splitHeader(nalu);
-        const dataFragments = this.partitionVideoData(naluData);
+        const dataFragments = this.partitionMtu(naluData);
         // Send as Fragmentation Unit A (FU-A):
         for (let fragmentIndex = 0; fragmentIndex < dataFragments.length; fragmentIndex++) {
           const data = dataFragments[fragmentIndex];
