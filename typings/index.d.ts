@@ -4251,7 +4251,7 @@ export class RelationshipManager extends BaseManager {
   public resolveId(user: UserResolvable): Snowflake | undefined;
   public fetch(user?: UserResolvable, options?: BaseFetchOptions): Promise<RelationshipTypes | RelationshipManager>;
   public deleteRelationship(user: UserResolvable): Promise<boolean>;
-  public sendFriendRequest(options: FriendRequestOptions): Promise<boolean>;
+  public sendFriendRequest(options: UserResolvable): Promise<boolean>;
   public addFriend(user: UserResolvable): Promise<boolean>;
   public setNickname(user: UserResolvable, nickname: string | null | undefined): Promise<boolean>;
   public addBlocked(user: UserResolvable): Promise<boolean>;
@@ -7846,15 +7846,6 @@ export interface WebhookClientDataIdWithToken {
 export interface WebhookClientDataURL {
   url: string;
 }
-
-export type FriendRequestOptions =
-  | {
-      user: UserResolvable;
-    }
-  | {
-      username: string;
-      discriminator: number | null;
-    };
 
 export type WebhookClientOptions = Pick<
   ClientOptions,
