@@ -29,7 +29,7 @@ class MessageCreateAction extends Action {
         suppressEveryone: false,
         suppressRoles: false,
       };
-      let implicitAck = message.author?.id == this.client.user.id;
+      let implicitAck = message.author?.id == this.client.user.id && message.type !== 'POLL_RESULT';
       let mentioned = (
         message.author?.relationship !== 'BLOCKED'
         && !(channel.type === 'GROUP_DM' && message.type === 'RECIPIENT_REMOVE')
