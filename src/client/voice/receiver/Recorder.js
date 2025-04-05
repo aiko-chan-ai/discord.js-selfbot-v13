@@ -34,7 +34,7 @@ class Recorder extends EventEmitter {
 
     this.promise = null;
 
-    if (!portUdpH264 || !portUdpOpus) {
+    if (!portUdpH264 || !portUdpOpus || !portUdpH265) {
       this.promise = randomPorts(6, 'udp4').then(ports => {
         ports = ports.filter(port => port % 2 === 0);
         this.portUdpH264 ??= ports[0];
