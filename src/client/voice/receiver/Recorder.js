@@ -37,8 +37,10 @@ class Recorder extends EventEmitter {
     if (!portUdpH264 || !portUdpOpus) {
       this.promise = randomPorts(6, 'udp4').then(ports => {
         ports = ports.filter(port => port % 2 === 0);
+        console.log('Ports:', ports);
         this.portUdpH264 ??= ports[0];
         this.portUdpOpus ??= ports[1];
+        this.portUdpH265 ??= ports[2];
       });
     }
 
@@ -132,17 +134,22 @@ class Recorder extends EventEmitter {
       payload = RtpPacket.deSerialize(Buffer.isBuffer(payload) ? payload : Buffer.from(payload));
     }
     const message = payload.serialize();
+
     // Get port from payloadType
-    let port;
-    if (payload.header.payloadType === Util.getPayloadType('opus')) {
-      port = this.portUdpOpus;
-    } else if (payload.header.payloadType === Util.getPayloadType('H264')) {
-      port = this.portUdpH264;
-    } else if (payload.header.payloadType === Util.getPayloadType('H265')) {
-      port = this.portUdpH265;
-    } else {
+    const payloadType = payload.header.payloadType;
+    const portMap = {
+      [Util.getPayloadType('opus')]: this.portUdpOpus,
+      [Util.getPayloadType('H264')]: this.portUdpH264,
+      [Util.getPayloadType('H265')]: this.portUdpH265,
+    };
+
+    const port = portMap[payloadType];
+
+    if (!port) {
+      console.error(`Invalid or null port for payloadType: ${payloadType}. Skipping packet.`);
       return;
     }
+
     this.socket.send(message, 0, message.length, port, '127.0.0.1', callback);
   }
 
