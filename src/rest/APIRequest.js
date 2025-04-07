@@ -51,32 +51,30 @@ class APIRequest {
       }
     }
 
-    const API =
+    const api =
       this.options.versioned === false
         ? this.client.options.http.api
         : `${this.client.options.http.api}/v${this.client.options.http.version}`;
-    const url = API + this.path;
+    const url = api + this.path;
 
     let headers = {
-      accept: '*/*',
-      'accept-language': 'en-US',
-      'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"Windows"',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-origin',
-      'x-debug-options': 'bugReporterEnabled',
-      'x-discord-locale': 'en-US',
-      'x-discord-timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
-      'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
-        'base64',
-      )}`,
-      referer: 'https://discord.com/channels/@me',
-      origin: 'https://discord.com',
+      Accept: '*/*',
+      'Accept-Language': 'en-US',
+      'Sec-Ch-Ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+      'Sec-Ch-Ua-mobile': '?0',
+      'Sec-Ch-Ua-platform': '"Windows"',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'X-Debug-Options': 'bugReporterEnabled',
+      'X-Discord-Locale': 'en-US',
+      'X-Discord-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+      'X-Super-Properties': Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString('base64'),
+      Priority: 'u=1, i',
+      Referer: 'https://discord.com/channels/@me',
+      Origin: 'https://discord.com',
       ...this.client.options.http.headers,
       'User-Agent': this.fullUserAgent,
-      priority: 'u=1, i',
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
