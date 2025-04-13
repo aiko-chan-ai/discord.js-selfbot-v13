@@ -61,6 +61,7 @@ class ReadStateManager extends CachedManager {
    * @param {ReadStateGetOptions} options Options for getting read state
    */
   get(resourceId, {
+    badgeCount = 0,
     ifExists = false,
     flags = undefined,
     lastAckedId = '0',
@@ -116,7 +117,16 @@ class ReadStateManager extends CachedManager {
   }
   
   /**
+   * Options used to ack a read state.
+   * @typedef {Object} ReadStateAck
+   * @property {string} [resourceId] The resource id of the read state
+   * @property {string} [entityId] The entity id to ack
+   * @property {?ReadStateType} [type=undefined] The type of the read state
+   */
+  
+  /**
    * Ack read states in bulk.
+   * @param {ReadStateAck[]} readStates The read states to ack
    * @returns {Promise<Void>}
    */
   ackBulk(readStates) {
@@ -125,7 +135,7 @@ class ReadStateManager extends CachedManager {
         read_states: readStates.map(readState => ({
           channel_id: readState.resourceId,
           message_id: readState.entityId,
-          read_state_type: readState.type,
+          read_state_type: readState.type ?? undefined,
         })),
       },
     });
@@ -233,9 +243,11 @@ class ReadStateManager extends CachedManager {
       if (type !== 0 && !type) throw new TypeError('INVALID_READ_STATE_TYPE');
     }
     return this.client.api
-      .users['@me'][type][entity]
+      .users['@me'][type][entityId]
       .ack
-      .post({ data: {} });
+      .post({
+        data: {},
+      });
   }
 
   /**
