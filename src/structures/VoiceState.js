@@ -152,7 +152,7 @@ class VoiceState extends Base {
    * @readonly
    */
   get channel() {
-    return (this.guild || this.client).channels.cache.get(this.channelId) ?? null;
+    return (this.guild?.id ? this.guild : this.client)?.channels?.cache.get(this.channelId) ?? null;
   }
 
   /**
