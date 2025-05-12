@@ -450,6 +450,15 @@ class Role extends Base {
   }
 
   /**
+   * Fetches the member ids for this role in the guild.
+   * <info>This only returns 100 member ids</info>
+   * @returns {Promise<Snowflake[]>}
+   */
+  fetchMemberIds() {
+    return this.guild.roles.fetchMemberIds(this.id);
+  }
+
+  /**
    * A link to the role's icon
    * @param {StaticImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
