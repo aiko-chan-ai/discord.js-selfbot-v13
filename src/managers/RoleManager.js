@@ -74,6 +74,28 @@ class RoleManager extends CachedManager {
   }
 
   /**
+   * Fetches the member counts for each role in the guild.
+   * @returns {Promise<Record<Snowflake, number>>}
+   */
+  async fetchMemberCounts() {
+    const data = await this.client.api.guilds(this.guild.id).roles('member-counts').get();
+
+    return data;
+  }
+
+  /**
+   * Fetches the member ids for a role in the guild.
+   * <info>This only returns 100 member ids</info>
+   * @param {RoleResolvable} id The role to fetch member ids for
+   * @returns {Promise<Snowflake[]>}
+   */
+  async fetchMemberIds(id) {
+    const data = await this.client.api.guilds(this.guild.id).roles(id, 'member-ids').get();
+
+    return data;
+  }
+
+  /**
    * Data that can be resolved to a Role object. This can be:
    * * A Role
    * * A Snowflake

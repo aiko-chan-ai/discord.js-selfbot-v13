@@ -2912,6 +2912,7 @@ export class Role extends Base {
   public setIcon(icon: BufferResolvable | Base64Resolvable | EmojiResolvable | null, reason?: string): Promise<Role>;
   public setPosition(position: number, options?: SetRolePositionOptions): Promise<Role>;
   public setUnicodeEmoji(unicodeEmoji: string | null, reason?: string): Promise<Role>;
+  public fetchMemberIds(): Promise<Snowflake[]>;
   public toJSON(): unknown;
   public toString(): RoleMention;
 
@@ -4709,6 +4710,8 @@ export class RoleManager extends CachedManager<Snowflake, Role, RoleResolvable> 
   public setPosition(role: RoleResolvable, position: number, options?: SetRolePositionOptions): Promise<Role>;
   public setPositions(rolePositions: readonly RolePosition[]): Promise<Guild>;
   public comparePositions(role1: RoleResolvable, role2: RoleResolvable): number;
+  public fetchMemberCounts(): Promise<Record<Snowflake, number>>;
+  public fetchMemberIds(role: RoleResolvable): Promise<Snowflake[]>;
 }
 
 export class StageInstanceManager extends CachedManager<Snowflake, StageInstance, StageInstanceResolvable> {
