@@ -86,10 +86,13 @@ class RoleManager extends CachedManager {
   /**
    * Fetches the member ids for a role in the guild.
    * <info>This only returns 100 member ids</info>
-   * @param {RoleResolvable} id The role to fetch member ids for
+   * @param {RoleResolvable} role The role to fetch member ids for
    * @returns {Promise<Snowflake[]>}
    */
-  async fetchMemberIds(id) {
+  async fetchMemberIds(role) {
+    const id = this.resolveId(role);
+    if (!id) throw new TypeError('INVALID_TYPE', 'role', 'RoleResolvable');
+
     const data = await this.client.api.guilds(this.guild.id).roles(id, 'member-ids').get();
 
     return data;
