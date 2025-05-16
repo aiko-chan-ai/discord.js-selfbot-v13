@@ -502,6 +502,16 @@ class TextBasedChannel {
     return this.edit({ nsfw }, reason);
   }
 
+  /**
+   * The read state for the channel
+   * @type {ReadState}
+   * @readonly
+   */
+  get readState() {
+    const lastAckedId = (BigInt(this.guild?.members?.me?.joinedAt?.getTime() ?? 0) >> 22n).toString();
+    return this.client.readStates.get(this.id, { lastAckedId });
+  }
+
   static applyToClass(structure, full = false, ignore = []) {
     const props = ['send'];
     if (full) {
@@ -519,6 +529,7 @@ class TextBasedChannel {
         'createWebhook',
         'setRateLimitPerUser',
         'setNSFW',
+        'readState',
       );
     }
     for (const prop of props) {

@@ -1212,16 +1212,18 @@ class Message extends Base {
     });
     return Util.createPromiseInteraction(this.client, nonce, 5_000, true, this);
   }
-
+   
   /**
    * Marks the message as unread.
+   * @param {Object} options The options for marking message as read
+   * @param {?number} options.mentionCount The new mention count
    * @returns {Promise<void>}
    */
-  markUnread() {
-    return this.client.api.channels[this.channelId].messages[this.id].ack.post({
+  markUnread({ mentionCount } = {}) {
+    return this.client.readStates.ackMessage(this.channelId, (BigInt(this.id) - BigInt(1)).toString(), {
       data: {
         manual: true,
-        mention_count: 1,
+        mention_count: mentionCount === undefined ? +this.mentions.has(this.client.user) : mentionCount === null ? undefined : mentionCount,
       },
     });
   }
@@ -1230,11 +1232,11 @@ class Message extends Base {
    * Marks the message as read.
    * @returns {Promise<void>}
    */
-  markRead() {
-    return this.client.api.channels[this.channelId].messages[this.id].ack.post({
-      data: {
-        token: null,
-      },
+  markRead({ lastViewed, mentionCount } = {}) {
+    return this.client.readStates.ackMessage(this.channelId, this.id, {
+      manual: true,
+      lastViewed,
+      mentionCount: mentionCount === undefined ? 0 : mentionCount,
     });
   }
 

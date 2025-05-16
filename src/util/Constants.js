@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Electron/33.4.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36';
 
 /**
  * Chrome TLS ciphers
@@ -478,6 +478,11 @@ exports.Events = {
   MESSAGE_POLL_VOTE_ADD: 'messagePollVoteAdd',
   MESSAGE_POLL_VOTE_REMOVE: 'messagePollVoteRemove',
   VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
+  MESSAGE_ACK: 'messageAck',
+  CHANNEL_PINS_ACK: 'channelPinsAck',
+  GUILD_FEATURE_ACK: 'guildFeatureAck',
+  USER_FEATURE_ACK: 'userFeatureAck',
+  USER_GUILD_SETTINGS_UPDATE: 'guildSettingsUpdate',
   // Djs v12
   VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
   VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',
@@ -1776,6 +1781,25 @@ exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
 exports.PollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
 
 /**
+ * The {@link ReadState} type
+ * * CHANNEL
+ * * GUILD_SCHEDULED_EVENT
+ * * NOTIFICATION_CENTER
+ * * GUILD_HOME
+ * * GUILD_ONBOARDING_QUESTION
+ * * MESSAGE_REQUESTS
+ * @typedef {string} ReadStateType
+ */
+exports.ReadStateTypes = createEnum([
+  'CHANNEL',
+  'GUILD_SCHEDULED_EVENT',
+  'NOTIFICATION_CENTER',
+  'GUILD_HOME',
+  'GUILD_ONBOARDING_QUESTION',
+  'MESSAGE_REQUESTS',
+]);
+
+/**
  * Relationship Enums:
  * * 0: NONE
  * * 1: FRIEND
@@ -1854,6 +1878,7 @@ function createEnum(keys) {
  * @property {Object<InteractionResponseType, number>} InteractionResponseTypes The type of an interaction response.
  * @property {Object<InteractionType, number>} InteractionTypes The type of an {@link Interaction} object.
  * @property {InviteScope[]} InviteScopes The scopes of an invite.
+ * @property {Object<ReadStateType, number>} ReadStateTypes The type of a {@link ReadState} object.
  * @property {Object<RelationshipType, number>} RelationshipTypes Relationship Enums
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
