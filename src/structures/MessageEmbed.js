@@ -522,7 +522,7 @@ class MessageEmbed {
   toJSON() {
     return {
       title: this.title,
-      type: 'rich',
+      type: this.type,
       description: this.description,
       url: this.url,
       timestamp: this.timestamp && new Date(this.timestamp),
@@ -534,6 +534,16 @@ class MessageEmbed {
         name: this.author.name,
         url: this.author.url,
         icon_url: this.author.iconURL,
+      },
+      video: this.video && {
+        url: this.video.url,
+        proxyURL: this.video.proxyURL,
+        height: this.video.height,
+        width: this.video.width,
+      },
+      provider: this.provider && {
+        name: this.provider.name,
+        url: this.provider.url,
       },
       footer: this.footer && {
         text: this.footer.text,
