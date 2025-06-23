@@ -91,6 +91,41 @@ class BaseMessageComponent {
         component = data instanceof TextInputComponent ? data : new TextInputComponent(data);
         break;
       }
+      case MessageComponentTypes.SECTION: {
+        const SectionComponent = require('./SectionComponent');
+        component = data instanceof SectionComponent ? data : new SectionComponent(data);
+        break;
+      }
+      case MessageComponentTypes.TEXT_DISPLAY: {
+        const TextDisplayComponent = require('./TextDisplayComponent');
+        component = data instanceof TextDisplayComponent ? data : new TextDisplayComponent(data);
+        break;
+      }
+      case MessageComponentTypes.THUMBNAIL: {
+        const ThumbnailComponent = require('./ThumbnailComponent');
+        component = data instanceof ThumbnailComponent ? data : new ThumbnailComponent(data);
+        break;
+      }
+      case MessageComponentTypes.MEDIA_GALLERY: {
+        const MediaGalleryComponent = require('./MediaGalleryComponent');
+        component = data instanceof MediaGalleryComponent ? data : new MediaGalleryComponent(data);
+        break;
+      }
+      case MessageComponentTypes.FILE: {
+        const FileComponent = require('./FileComponent');
+        component = data instanceof FileComponent ? data : new FileComponent(data);
+        break;
+      }
+      case MessageComponentTypes.SEPARATOR: {
+        const SeparatorComponent = require('./SeparatorComponent');
+        component = data instanceof SeparatorComponent ? data : new SeparatorComponent(data);
+        break;
+      }
+      case MessageComponentTypes.CONTAINER: {
+        const ContainerComponent = require('./ContainerComponent');
+        component = data instanceof ContainerComponent ? data : new ContainerComponent(data);
+        break;
+      }
       default:
         if (client) {
           client.emit(Events.DEBUG, `[BaseMessageComponent] Received component with unknown type: ${data.type}`);
