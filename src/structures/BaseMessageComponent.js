@@ -49,6 +49,7 @@ class BaseMessageComponent {
      * The type of this component
      * @type {?MessageComponentType}
      */
+    this.rawData = data;
     this.type = 'type' in data ? BaseMessageComponent.resolveType(data.type) : null;
   }
 

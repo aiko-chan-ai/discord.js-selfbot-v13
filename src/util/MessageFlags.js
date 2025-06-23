@@ -57,7 +57,7 @@ MessageFlags.FLAGS = {
   SUPPRESS_NOTIFICATIONS: 1 << 12,
   IS_VOICE_MESSAGE: 1 << 13,
   HAS_SNAPSHOT: 1 << 14,
-  IS_UIKIT_COMPONENTS: 1 << 15,
+  IS_COMPONENTS_V2: 1 << 15,
 };
 
 module.exports = MessageFlags;
