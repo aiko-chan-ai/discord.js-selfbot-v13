@@ -1,7 +1,7 @@
 'use strict';
 
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { UnfurledMediaItem } = require('./UnfurledMediaItem');
+const UnfurledMediaItem = require('./UnfurledMediaItem');
 const { MessageComponentTypes } = require('../util/Constants');
 
 class FileComponent extends BaseMessageComponent {

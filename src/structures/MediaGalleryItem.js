@@ -1,6 +1,6 @@
 'use strict';
 
-const { UnfurledMediaItem } = require('./UnfurledMediaItem');
+const UnfurledMediaItem = require('./UnfurledMediaItem');
 
 class MediaGalleryItem {
   constructor(data = {}) {

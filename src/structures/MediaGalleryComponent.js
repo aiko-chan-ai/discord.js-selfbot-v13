@@ -1,7 +1,7 @@
 'use strict';
 
 const BaseMessageComponent = require('./BaseMessageComponent');
-const { MediaGalleryItem } = require('./MediaGalleryItem');
+const MediaGalleryItem = require('./MediaGalleryItem');
 const { MessageComponentTypes } = require('../util/Constants');
 
 class MediaGalleryComponent extends BaseMessageComponent {

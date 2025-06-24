@@ -8,7 +8,7 @@ class SectionComponent extends BaseMessageComponent {
   constructor(data = {}) {
     super({ type: 'SECTION' });
     this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? [];
-    this.accessory = BaseMessageComponent.create(c) ?? null;
+    this.accessory = BaseMessageComponent.create(data.accessory) ?? null;
   }
 
   toJSON() {
