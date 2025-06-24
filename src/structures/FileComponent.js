@@ -6,7 +6,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class FileComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'FILE' });
+    super({ type: 'FILE' }, data);
     this.file = new UnfurledMediaItem(data.file) ?? null;
     this.spoiler = data.spoiler ?? false;
   }

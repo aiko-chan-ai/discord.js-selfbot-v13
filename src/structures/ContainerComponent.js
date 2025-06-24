@@ -5,7 +5,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class ContainerComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'CONTAINER' });
+    super({ type: 'CONTAINER' }, data);
     this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? null;
     this.accent_color = data.accent_color ?? null;
     this.spoiler = data.spoiler ?? false;

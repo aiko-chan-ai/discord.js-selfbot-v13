@@ -6,7 +6,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class ThumbnailComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'THUMBNAIL' });
+    super({ type: 'THUMBNAIL' }, data);
     this.media = new UnfurledMediaItem(data.media) ?? null;
     this.description = data.description ?? null;
     this.spoiler = data.spoiler ?? false;

@@ -44,12 +44,12 @@ class BaseMessageComponent {
   /**
    * @param {BaseMessageComponent|BaseMessageComponentOptions} [data={}] The options for this component
    */
-  constructor(data) {
+  constructor(data, componentData = {}) {
     /**
      * The type of this component
      * @type {?MessageComponentType}
      */
-    this.rawData = data;
+    this.rawData = componentData;
     this.type = 'type' in data ? BaseMessageComponent.resolveType(data.type) : null;
   }
 

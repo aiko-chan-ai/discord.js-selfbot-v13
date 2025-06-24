@@ -5,7 +5,7 @@ const { MessageComponentTypes, SeparatorSpacingSizes } = require('../util/Consta
 
 class SeparatorComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'SEPARATOR' });
+    super({ type: 'SEPARATOR' }, data);
     this.spacing = data.spacing ?? SeparatorSpacingSizes.SMALL;
     this.divider = data.divider ?? true;
   }

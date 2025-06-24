@@ -5,7 +5,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class TextDisplayComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'TEXT_DISPLAY' });
+    super({ type: 'TEXT_DISPLAY' }, data);
     this.content = data.content ?? null;
   }
 

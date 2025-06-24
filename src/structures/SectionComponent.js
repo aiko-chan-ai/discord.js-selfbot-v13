@@ -6,7 +6,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class SectionComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'SECTION' });
+    super({ type: 'SECTION' }, data);
     this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? [];
     this.accessory = BaseMessageComponent.create(data.accessory) ?? null;
   }

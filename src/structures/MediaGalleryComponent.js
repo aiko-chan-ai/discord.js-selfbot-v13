@@ -6,7 +6,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 
 class MediaGalleryComponent extends BaseMessageComponent {
   constructor(data = {}) {
-    super({ type: 'MEDIA_GALLERY' });
+    super({ type: 'MEDIA_GALLERY' }, data);
     this.items = data.items?.map(item => new MediaGalleryItem(item)) ?? [];
   }
 
