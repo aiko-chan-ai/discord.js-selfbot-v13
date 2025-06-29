@@ -88,13 +88,14 @@ import {
   GuildFeature,
   LocalizationMap,
 } from 'discord-api-types/v10';
-import { GuildChannel, Guild, PermissionOverwrites } from '.';
+import { GuildChannel, Guild, PermissionOverwrites, MessageActionRow } from '.';
 import type {
   AutoModerationActionTypes,
   AutoModerationRuleEventTypes,
   AutoModerationRuleKeywordPresetTypes,
   AutoModerationRuleTriggerTypes,
   ApplicationRoleConnectionMetadataTypes,
+  MessageComponentTypes,
 } from './enums';
 
 export type RawActivityData = GatewayActivity;
@@ -341,6 +342,15 @@ export interface APIApplicationRoleConnectionMetadata {
   description_localizations?: LocalizationMap;
 }
 
+export interface APIBaseComponent<T extends MessageComponentTypes> {
+  type: T;
+  id?: Number;
+}
+
 export interface APIUnfurledMediaItem {
   url: String;
+}
+
+export interface APIContainerComponent extends APIBaseComponent<MessageComponentTypes.CONTAINER> {
+  components: MessageActionRow
 }
