@@ -21,7 +21,7 @@ class FileComponent extends BaseMessageComponent {
      * This unfurled media item is unique in that it only supports attachment references using the attachment://<filename> syntax
      * @type {UnfurledMediaItem} 
      */
-    this.file = new UnfurledMediaItem(data.file) ?? null;
+    this.file = new UnfurledMediaItem(data.file);
 
     /**
      * Whether the container should be a spoiler (or blurred out). Defaults to false.
@@ -38,6 +38,7 @@ class FileComponent extends BaseMessageComponent {
     return {
       type: MessageComponentTypes[this.type],
       file: this.content,
+      spoiler: this.spoiler,
     };
   }
 }

@@ -333,7 +333,7 @@ export const enum RelationshipTypes {
   IMPLICIT = 5,
 }
 
-export const enum SeparatorSpacingSize {
+export const enum SeparatorSpacingSizes {
   SMALL = 1,
   LARGE = 2,
 }

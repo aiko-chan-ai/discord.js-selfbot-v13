@@ -12,7 +12,7 @@ class ContainerComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {} [data={}]
+   * @param {ContainerComponent | APIContainerComponent} [data={}]
    */
   constructor(data = {}) {
     super({ type: 'CONTAINER' }, data);
@@ -20,7 +20,7 @@ class ContainerComponent extends BaseMessageComponent {
      * Components of the type action row, text display, section, media gallery, separator, or file
      * @type {ContainerComponents[]}
      */
-    this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? null;
+    this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? [];
 
     /**
      * Color for the accent on the container as RGB from 0x000000 to 0xFFFFFF
