@@ -340,3 +340,7 @@ export interface APIApplicationRoleConnectionMetadata {
   description: string;
   description_localizations?: LocalizationMap;
 }
+
+export interface APIUnfurledMediaItem {
+  url: String;
+}

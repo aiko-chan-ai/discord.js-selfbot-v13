@@ -4,6 +4,10 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const { MessageComponentTypes } = require('../util/Constants');
 
 class ContainerComponent extends BaseMessageComponent {
+  /**
+   * 
+   * @param {*} data 
+   */
   constructor(data = {}) {
     super({ type: 'CONTAINER' }, data);
     this.components = data.components?.map(c => BaseMessageComponent.create(c)) ?? null;
