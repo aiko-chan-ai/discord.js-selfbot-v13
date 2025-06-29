@@ -325,3 +325,21 @@ export const enum RelationshipTypes {
   PENDING_OUTGOING = 4,
   IMPLICIT = 5,
 }
+
+export const enum RelationshipTypes {
+  NONE = 0,
+  FRIEND = 1,
+  BLOCKED = 2,
+  PENDING_INCOMING = 3,
+  PENDING_OUTGOING = 4,
+  IMPLICIT = 5,
+}
+
+export const enum ReadStateTypes {
+  CHANNEL = 0,
+  GUILD_SCHEDULED_EVENT = 1,
+  NOTIFICATION_CENTER = 2,
+  GUILD_HOME = 3,
+  GUILD_ONBOARDING_QUESTION = 4,
+  MESSAGE_REQUESTS = 5,
+}

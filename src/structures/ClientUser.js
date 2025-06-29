@@ -126,6 +126,24 @@ class ClientUser extends User {
   }
 
   /**
+   * The read state for the message requests
+   * @type {ReadState}
+   * @readonly
+   */
+  get messageRequestReadState() {
+    return this.client.readStates.get(this.id, { type: 'MESSAGE_REQUESTS' });
+  }
+  
+  /**
+   * The read state for the notification center
+   * @type {ReadState}
+   * @readonly
+   */
+  get notificationCenterReadState() {
+    return this.client.readStates.get(this.id, { type: 'NOTIFICATION_CENTER' });
+  }
+  
+  /**
    * Data used to edit the logged in client
    * @typedef {Object} ClientUserEditData
    * @property {string} [username] The new username

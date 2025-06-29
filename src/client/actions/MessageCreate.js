@@ -2,6 +2,8 @@
 
 const process = require('node:process');
 const Action = require('./Action');
+const { Collection } = require('@discordjs/collection');
+const ReadState = require('../../structures/ReadState');
 const { Events } = require('../../util/Constants');
 
 let deprecationEmitted = false;
@@ -22,6 +24,54 @@ class MessageCreateAction extends Action {
       const message = existing ?? channel.messages._add(data);
       channel.lastMessageId = data.id;
 
+      let settings = (message.guild?.settings ?? this.client.guildSettings) ?? {
+        muted: false,
+        suppressEveryone: false,
+        suppressRoles: false,
+      };
+      let implicitAck = message.author?.id == this.client.user.id && message.type !== 'POLL_RESULT';
+      let mentioned = (
+        message.author?.relationship !== 'BLOCKED'
+        && !(channel.type === 'GROUP_DM' && message.type === 'RECIPIENT_REMOVE')
+        || (['DM', 'GROUP_DM'].includes(channel.type) && (settings.muteConfig?.endTime?.getTime() ?? 0) <= Date.now() && (settings.channelOverrides?.find(override => override.channel_id == channel.id)?.muteConfig?.endTime?.getTime() ?? 0) <= Date.now())
+        || message.mentions.users.has(this.client.user.id)
+        || (message.mentions.everyone && !settings.suppressEveryone)
+        || (message.mentions.roles?.hasAny(message.guild?.members?.me?._roles ?? []) && !settings.suppressRoles)
+      );
+      
+      if (implicitAck || mentioned) {
+        let readStates = client.readStates.cache.get('CHANNEL');
+        if (readStates) {
+          let readState = readStates.get(channel.id);
+          if (readState) {
+            if (implicitAck) readState.lastAckedId = message.id;
+            if (mentioned) readState.badgeCount++;
+          } else {
+            readState = new ReadState(this.client, {
+              id: channel.id,
+              read_state_type: 0,
+              badge_count: +mentioned,
+              last_viewed: null,
+              last_pin_timestamp: null,
+              last_acked_id: implicitAck ? message.id : '0',
+            });
+            readStates.set(readState.id, readState);
+          }
+        } else {
+          readStates = new Collection();
+          let readState = new ReadState(this.client, {
+            id: channel.id,
+            read_state_type: 0,
+            badge_count: +mentioned,
+            last_viewed: null,
+            last_pin_timestamp: null,
+            last_acked_id: implicitAck ? message.id : '0',
+          });
+          readStates.set(readState.id, readState);
+          client.readStates.cache.set('CHANNEL', readStates);
+        }
+      }
+      
       /**
        * Emitted whenever a message is created.
        * @event Client#messageCreate

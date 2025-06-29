@@ -116,6 +116,7 @@ import {
   PollLayoutTypes,
   ReactionTypes,
   MessageReferenceTypes,
+  ReadStateTypes,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -158,6 +159,7 @@ import {
   RawPartialMessageData,
   RawPermissionOverwriteData,
   RawPresenceData,
+  RawReadStateData,
   RawReactionEmojiData,
   RawRichPresenceAssets,
   RawRoleData,
@@ -762,6 +764,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;
+  public guildSettings: GuildSettingManager;
   public options: ClientOptions;
   public readyAt: If<Ready, Date>;
   public readonly readyTimestamp: If<Ready, number>;
@@ -774,6 +777,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public voice: ClientVoiceManager;
   public ws: WebSocketManager;
   public notes: UserNoteManager;
+  public readStates: ReadStateManager;
   public relationships: RelationshipManager;
   public voiceStates: VoiceStateManager;
   public sessions: SessionManager;
@@ -858,6 +862,8 @@ export class ClientPresence extends Presence {
 export class ClientUser extends User {
   public mfaEnabled: boolean;
   public readonly presence: ClientPresence;
+  public readonly messageRequestReadState: ReadState;
+  public readonly notificationCenterReadState: ReadState;
   public verified: boolean;
   public edit(data: ClientUserEditData): Promise<this>;
   public setActivity(options?: ActivityOptions | RichPresence | SpotifyRPC | CustomStatus): ClientPresence;
@@ -1467,6 +1473,7 @@ export class Guild extends AnonymousGuild {
   public discoverySplash: string | null;
   public emojis: GuildEmojiManager;
   public explicitContentFilter: ExplicitContentFilterLevel;
+  public readonly homeReadState: ReadState;
   public invites: GuildInviteManager;
   public readonly joinedAt: Date;
   public joinedTimestamp: number;
@@ -1478,6 +1485,7 @@ export class Guild extends AnonymousGuild {
   public memberCount: number;
   public members: GuildMemberManager;
   public mfaLevel: MFALevel;
+  public readonly onboardingQuestionReadState: ReadState;
   public ownerId: Snowflake;
   public preferredLocale: string;
   public premiumProgressBarEnabled: boolean;
@@ -1490,6 +1498,7 @@ export class Guild extends AnonymousGuild {
   public rulesChannelId: Snowflake | null;
   public readonly safetyAlertsChannel: TextChannel | null;
   public safetyAlertsChannelId: Snowflake | null;
+  public readonly scheduledEventReadState: ReadState;
   public scheduledEvents: GuildScheduledEventManager;
   public settings: GuildSettingManager;
   public readonly shard: WebSocketShard;
@@ -2858,6 +2867,28 @@ export class ReactionEmoji extends Emoji {
   public toJSON(): unknown;
 }
 
+export type ReadStateType = keyof typeof ReadStateTypes;
+
+export class ReadStateFlags extends BitField<ReadStateFlagsString> {
+  public static FLAGS: Record<ReadStateFlagsString, number>;
+  public static resolve(bit?: BitFieldResolvable<ReadStateFlagsString, number>): number;
+}
+
+export type ReadStateFlagsString = 'GUILD_CHANNEL' | 'THREAD';
+
+export class ReadState extends Base {
+  private constructor(client: Client, data: RawReadStateData);
+  public id: Snowflake;
+  public type: ReadStateType;
+  public flags: ReadStateFlags;
+  public badgeCount: number;
+  public lastViewed: number | null;
+  public lastPinTimestamp: Date | null;
+  public lastAckedId: Snowflake;
+  public readonly resource: TextBasedChannel | Guild | ClientUser;
+  delete(): Promise<void>;
+}
+
 export class RichPresenceAssets {
   private constructor(activity: Activity, assets: RawRichPresenceAssets);
   public readonly activity: Activity;
@@ -4034,6 +4065,7 @@ export const Constants: {
   GuildScheduledEventStatuses: EnumHolder<typeof GuildScheduledEventStatuses>;
   IntegrationExpireBehaviors: IntegrationExpireBehaviors[];
   SelectMenuComponentTypes: EnumHolder<typeof SelectMenuComponentTypes>;
+  ReadStateTypes: EnumHolder<typeof ReadStateTypes>;
   RelationshipTypes: EnumHolder<typeof RelationshipTypes>;
   MembershipStates: EnumHolder<typeof MembershipStates>;
   MessageButtonStyles: EnumHolder<typeof MessageButtonStyles>;
@@ -4230,6 +4262,42 @@ export class ChannelManager extends CachedManager<Snowflake, AnyChannel, Channel
   public createGroupDM(recipients?: UserResolvable[]): Promise<GroupDMChannel>;
 }
 
+export interface ReadStateGetOptions {
+  ifExists?: boolean;
+  flags?: ReadStateFlags;
+  lastAckedId?: string;
+  lastPinTimestamp?: Date;
+  lastViewed?: number;
+  type?: ReadStateType;
+}
+
+export interface MessageAckOptions {
+  flags?: ReadStateFlags;
+  lastViewed?: number;
+  manual?: boolean;
+  mentionCount?: number;
+}
+
+export class ReadStateManager extends CachedManager<ReadStateType, ReadState, ReadStateType> {
+  public ackToken: string | null;
+
+  public get(resourceId: Snowflake, options: ReadStateGetOptions & { ifExists: false } = {}): ReadState;
+  public get(resourceId: Snowflake, options: ReadStateGetOptions & { ifExists: true } = {}): ReadState | null;
+  public get(resourceId: Snowflake, options: ReadStateGetOptions = { ifExists: false }): ReadState | null;
+  public ackBulk(readStates: {
+    resourceId: Snowflake,
+    entityId: Snowflake,
+    type: ReadStateType,
+  }[]): Promise<void>;
+  public ackPins(channel: ChannelResolvable): Promise<void>;
+  public ackGuild(guild: GuildResolvable): Promise<void>;
+  public ackMessage(
+    channel: ChannelResolvable,
+    message: Snowflake,
+    options: MessageAckOptions = {},
+  ): Promise<string | null>;
+}
+
 export class RelationshipManager extends BaseManager {
   constructor(
     client: Client,
@@ -4300,7 +4368,7 @@ export class ClientUserSettingManager extends BaseManager {
 }
 
 export class GuildSettingManager extends BaseManager {
-  private constructor(guild: Guild);
+  private constructor(client: Client, guildId: string | null = null);
   public readonly raw?: RawGuildSettingsData;
   public suppressEveryone?: boolean;
   public suppressRoles?: boolean;
@@ -4811,6 +4879,7 @@ export interface TextBasedChannelFields extends PartialTextBasedChannelFields {
   readonly lastMessage: Message | null;
   lastPinTimestamp: number | null;
   readonly lastPinAt: Date | null;
+  readonly readState: ReadState;
   messages: MessageManager;
   awaitMessages(options?: AwaitMessagesOptions): Promise<Collection<Snowflake, Message>>;
   createMessageCollector(options?: MessageCollectorOptions): MessageCollector;
@@ -5786,6 +5855,10 @@ export interface ClientEvents extends BaseClientEvents {
   callDelete: [call: CallState];
   messagePollVoteAdd: [pollAnswer: PollAnswer, userId: Snowflake];
   messagePollVoteRemove: [pollAnswer: PollAnswer, userId: Snowflake];
+  guildSettingsUpdate: [before: GuildSettingManager, after: GuildSettingManager];
+  messageAck: [before: ReadState | null, after: ReadState];
+  guildFeatureAck: [before: ReadState | null, after: ReadState];
+  userFeatureAck: [before: ReadState | null, after: ReadState];
 }
 
 export interface ClientFetchInviteOptions {

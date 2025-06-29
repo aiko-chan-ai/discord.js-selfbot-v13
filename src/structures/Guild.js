@@ -122,7 +122,7 @@ class Guild extends AnonymousGuild {
      * All of the settings {@link Object}
      * @type {GuildSettingManager}
      */
-    this.settings = new GuildSettingManager(this);
+    this.settings = new GuildSettingManager(this.client, this.id);
 
     if (!data) return;
     if (data.unavailable) {
@@ -173,6 +173,33 @@ class Guild extends AnonymousGuild {
     else deletedGuilds.delete(this);
   }
 
+  /**
+   * The read state for the guild home
+   * @type {ReadState}
+   * @readonly
+   */
+  get homeReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_HOME' });
+  }
+  
+  /**
+   * The read state for the onboarding questions
+   * @type {ReadState}
+   * @readonly
+   */
+  get onboardingQuestionReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_ONBOARDING_QUESTION' });
+  }
+  
+  /**
+   * The read state for the guild scheduled events
+   * @type {ReadState}
+   * @readonly
+   */
+  get scheduledEventReadState() {
+    return this.client.readStates.get(this.id, { type: 'GUILD_SCHEDULED_EVENTS' });
+  }
+  
   /**
    * The Shard this Guild belongs to.
    * @type {WebSocketShard}
@@ -1486,11 +1513,11 @@ class Guild extends AnonymousGuild {
    * Marks the guild as read.
    * @returns {Promise<void>}
    * @example
-   * const guild = client.guilds.cache.get('id');
+   * const guild = client.guilds.cache.get('222078108977594368');
    * guild.markAsRead();
    */
   markAsRead() {
-    return this.client.api.guilds(this.id).ack.post();
+    return this.client.readStates.ackGuild(this.id);
   }
 
   /**

@@ -187,7 +187,7 @@ class Options extends null {
       presence: { status: 'online', since: 0, activities: [], afk: true },
       sweepers: {},
       ws: {
-        capabilities: 0, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
+        capabilities: 128, // https://discord-userdoccers.vercel.app/topics/gateway#gateway-capabilities
         properties: {
           os: 'Windows',
           browser: 'Chrome',
@@ -195,14 +195,14 @@ class Options extends null {
           system_locale: 'en-US',
           has_client_mods: false,
           browser_user_agent: UserAgent,
-          browser_version: '134.0.0.0',
+          browser_version: '135.0.0.0',
           os_version: '10',
           referrer: '',
           referring_domain: '',
           referrer_current: '',
           referring_domain_current: '',
           release_channel: 'stable',
-          client_build_number: 377668,
+          client_build_number: 386691,
           client_event_source: null,
         },
         compress: false,
