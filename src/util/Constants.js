@@ -1615,6 +1615,15 @@ exports.MessageComponentTypes = createEnum([
   'ROLE_SELECT',
   'MENTIONABLE_SELECT',
   'CHANNEL_SELECT',
+  'SECTION',
+  'TEXT_DISPLAY',
+  'THUMBNAIL',
+  'MEDIA_GALLERY',
+  'FILE',
+  'SEPARATOR',
+  null,
+  null,
+  'CONTAINER',
 ]);
 
 /**
@@ -1796,6 +1805,12 @@ exports.RelationshipTypes = createEnum([
   'IMPLICIT',
 ]);
 
+exports.SeparatorSpacingSizes = createEnum([
+  null,
+  'SMALL',
+  'LARGE',
+]);
+
 exports._cleanupSymbol = Symbol('djsCleanup');
 
 function keyMirror(arr) {
@@ -1855,6 +1870,7 @@ function createEnum(keys) {
  * @property {Object<InteractionType, number>} InteractionTypes The type of an {@link Interaction} object.
  * @property {InviteScope[]} InviteScopes The scopes of an invite.
  * @property {Object<RelationshipType, number>} RelationshipTypes Relationship Enums
+ * * @property {Object<SeparatorSpacingSize, number>} SeparatorSpacingSize Relationship Enums
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
  * @property {Object<MessageComponentType, number>} MessageComponentTypes The type of a message component.

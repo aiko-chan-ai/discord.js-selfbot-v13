@@ -24,7 +24,7 @@ class MessageButton extends BaseMessageComponent {
    * @param {MessageButton|MessageButtonOptions} [data={}] MessageButton to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: 'BUTTON' });
+    super({ type: 'BUTTON' }, data);
 
     this.setup(data);
   }

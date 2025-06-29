@@ -116,6 +116,7 @@ import {
   PollLayoutTypes,
   ReactionTypes,
   MessageReferenceTypes,
+  SeparatorSpacingSizes,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -178,6 +179,15 @@ import {
   RawWelcomeScreenData,
   RawWidgetData,
   RawWidgetMemberData,
+  APIUnfurledMediaItem,
+  APIContainerComponent,
+  APIFileComponent,
+  APISectionComponent,
+  APISeparatorComponent,
+  APIThumbnailComponent,
+  APITextDisplayComponent,
+  APIMediaGalleryComponent,
+  APIMediaGalleryItem,
 } from './rawDataTypes';
 import { Socket } from 'node:dgram';
 
@@ -2297,6 +2307,71 @@ export class MessageButton extends BaseMessageComponent {
   public setURL(url: string): this;
   public toJSON(): APIButtonComponent;
   private static resolveStyle(style: MessageButtonStyleResolvable): MessageButtonStyle;
+}
+
+export class UnfurledMediaItem {
+  public constructor(data?: UnfurledMediaItem | APIUnfurledMediaItem);
+  public url: string | null;
+  public toJSON(): APIUnfurledMediaItem;
+}
+
+export class MediaGalleryItem {
+  public constructor(data?: MediaGalleryItem | APIMediaGalleryItem);
+  public media: UnfurledMediaItem;
+  public description: string | null;
+  public spoiler: boolean;
+  public toJSON(): APIMediaGalleryItem;
+}
+
+export class MediaGalleryComponent extends BaseMessageComponent {
+  public constructor(data?: MediaGalleryComponent | APIMediaGalleryComponent);
+  public items: MediaGalleryItem[];
+  public toJSON(): APIMediaGalleryComponent;
+  }
+
+export class FileComponent extends BaseMessageComponent {
+  public constructor(data?: FileComponent | APIFileComponent);
+  public file: UnfurledMediaItem;
+  public spoiler: boolean;
+  public toJSON(): APIFileComponent;
+}
+
+export class SeparatorComponent extends BaseMessageComponent {
+  public constructor(data?: SeparatorComponent | APISeparatorComponent);
+  public spacing: SeparatorSpacingSizes;
+  public divider: boolean;
+  public toJSON(): APISeparatorComponent;
+}
+
+export class TextDisplayComponent extends BaseMessageComponent {
+  public constructor(data?: TextDisplayComponent | APITextDisplayComponent);
+  public content: string | null;
+  public toJSON(): APITextDisplayComponent;
+}
+
+export class ThumbnailComponent extends BaseMessageComponent {
+  public constructor(data?: ThumbnailComponent | APIThumbnailComponent);
+  public media: UnfurledMediaItem;
+  public description: string | null;
+  public spoiler: boolean;
+}
+
+export class SectionComponent<T extends ThumbnailComponent | MessageButton> extends BaseMessageComponent {
+  public constructor(data?: SectionComponent<T> | APISectionComponent);
+  public components: TextDisplayComponent[];
+  public accessory: T[];
+  public toJSON(): APISectionComponent;
+}
+
+export class ContainerComponent<
+  U extends ThumbnailComponent | MessageButton,
+  T extends MessageActionRow | TextDisplayComponent | SectionComponent<U> | MediaGalleryComponent | SeparatorComponent | FileComponent
+> extends BaseMessageComponent {
+  public constructor(data?: ContainerComponent<U, T> | APIContainerComponent);
+  public components: T[];
+  public accent_color: number | null;
+  public spoiler: boolean;
+  public toJSON(): APIContainerComponent;
 }
 
 export class MessageCollector extends Collector<Snowflake, Message> {
