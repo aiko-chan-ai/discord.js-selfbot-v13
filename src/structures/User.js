@@ -155,10 +155,9 @@ class User extends Base {
       this.avatarDecorationData = null;
     }
 
-    if ('clan' in data && data.clan) {
+    if ('primary_guild' in data && data.primary_guild) {
       /**
        * User Clan Structure
-       * @see {@link https://docs.discord.sex/resources/user#user-clan-structure}
        * @typedef {Object} UserClan
        * @property {?Snowflake} identityGuildId The ID of the user's primary clan
        * @property {boolean} identityEnabled Whether the user is displaying their clan tag
@@ -170,10 +169,10 @@ class User extends Base {
        * @type {?UserClan}
        */
       this.clan = {
-        identityGuildId: data.clan.identity_guild_id,
-        identityEnabled: data.clan.identity_enabled,
-        tag: data.clan.tag,
-        badge: data.clan.badge,
+        identityGuildId: data.primary_guild.identity_guild_id,
+        identityEnabled: data.primary_guild.identity_enabled,
+        tag: data.primary_guild.tag,
+        badge: data.primary_guild.badge,
       };
     } else {
       this.clan ??= null;
