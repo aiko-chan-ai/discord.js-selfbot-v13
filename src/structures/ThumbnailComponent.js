@@ -7,7 +7,7 @@ const { MessageComponentTypes } = require('../util/Constants');
 class ThumbnailComponent extends BaseMessageComponent {
   /**
    * @property {UnfurledMediaItem} [media] A url or attachment
-   * @property {String} [description] 	Alt text for the media, max 1024 characters
+   * @property {String} [description] Alt text for the media, max 1024 characters
    * @property {Boolean} [spoiler] Whether the thumbnail should be a spoiler (or blurred out). Defaults to false
    */
 
@@ -16,8 +16,23 @@ class ThumbnailComponent extends BaseMessageComponent {
    */
   constructor(data = {}) {
     super({ type: 'THUMBNAIL' }, data);
+
+    /**
+     * A url or attachment
+     * @type {UnfurledMediaItem}
+     */
     this.media = new UnfurledMediaItem(data.media);
+
+    /**
+     * Alt text for the media, max 1024 characters
+     * @type {String}
+     */
     this.description = data.description ?? null;
+
+    /**
+     * Whether the thumbnail should be a spoiler (or blurred out). Defaults to false
+     * @type {Boolean}
+     */
     this.spoiler = data.spoiler ?? false;
   }
 

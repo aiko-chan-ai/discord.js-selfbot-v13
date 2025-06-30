@@ -10,7 +10,7 @@ class MediaGalleryComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {} [data={}]
+   * @param {MediaGalleryComponent | APIMediaGalleryComponent} [data={}]
    */
   constructor(data = {}) {
     super({ type: 'MEDIA_GALLERY' }, data);

@@ -389,7 +389,6 @@ export interface APISectionComponent extends APIBaseComponent<MessageComponentTy
   accessory: APIThumbnailComponent | APIMessageButtonInteractionData
 }
 
-// APIActionRowComponent<APIActionRowComponentTypes> ???
 export type APIContainerComponents = APIActionRowComponent<APIActionRowComponentTypes> | APITextDisplayComponent | APISectionComponent | APIMediaGalleryComponent | APISeparatorComponent | APIFileComponent;
 export interface APIContainerComponent extends APIBaseComponent<MessageComponentTypes.CONTAINER> {
   components: APIContainerComponents[];

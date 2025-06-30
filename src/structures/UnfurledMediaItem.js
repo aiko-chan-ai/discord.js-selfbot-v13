@@ -4,6 +4,9 @@ class UnfurledMediaItem {
   /**
    * @property {string} [url] Supports arbitrary urls and `attachment://<filename>` references
   */
+  /**
+   * @param {UnfurledMediaItem | APIUnfurledMediaItem} [data={}]
+   */
   constructor(data = {}) {
     /**
      * @type {string}

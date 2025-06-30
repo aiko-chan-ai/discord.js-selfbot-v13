@@ -4,11 +4,26 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const { MessageComponentTypes } = require('../util/Constants');
 
 class TextDisplayComponent extends BaseMessageComponent {
+  /**
+   * @property {String} [content] Text that will be displayed similar to a message
+   */
+
+  /**
+   * @param {TextDisplayComponent | APITextDisplayComponent} [data={}]
+   */
   constructor(data = {}) {
     super({ type: 'TEXT_DISPLAY' }, data);
+
+    /**
+     * Text that will be displayed similar to a message
+     * @type {String}
+     */
     this.content = data.content ?? null;
   }
 
+  /**
+   * @returns {APITextDisplayComponent}
+   */
   toJSON() {
     return {
       type: MessageComponentTypes[this.type],

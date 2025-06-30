@@ -10,7 +10,7 @@ class MediaGalleryItem {
    */
 
   /**
-   * @param {} [data={}]
+   * @param {MediaGalleryItem | APIMediaGalleryItem} [data={}]
    */
   constructor(data = {}) {
     /**
