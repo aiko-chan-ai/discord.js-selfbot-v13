@@ -3,7 +3,7 @@
 class UnfurledMediaItem {
   /**
    * @property {string} [url] Supports arbitrary urls and `attachment://<filename>` references
-  */
+   */
   /**
    * @param {UnfurledMediaItem | APIUnfurledMediaItem} [data={}] The data
    */
@@ -14,7 +14,7 @@ class UnfurledMediaItem {
     this.url = data.url ?? null;
   }
   /**
-   * 
+   *
    * @returns {APIUnfurledMediaItem}
    */
   toJSON() {

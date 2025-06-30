@@ -37,7 +37,7 @@ class ThumbnailComponent extends BaseMessageComponent {
   }
 
   /**
-   * @returns {APIThumbnailComponent}  
+   * @returns {APIThumbnailComponent}
    */
   toJSON() {
     return {

@@ -43,7 +43,7 @@ class BaseMessageComponent {
 
   /**
    * @param {BaseMessageComponent|BaseMessageComponentOptions} [data={}] The options for this component
-   * * @param {MessageComponentOptions} [componentData={}] The raw data for component
+   * @param {MessageComponentOptions} [componentData={}] The raw data for component
    */
   constructor(data, componentData = {}) {
     /**

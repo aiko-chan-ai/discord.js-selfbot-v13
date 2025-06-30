@@ -1805,11 +1805,7 @@ exports.RelationshipTypes = createEnum([
   'IMPLICIT',
 ]);
 
-exports.SeparatorSpacingSizes = createEnum([
-  null,
-  'SMALL',
-  'LARGE',
-]);
+exports.SeparatorSpacingSizes = createEnum([null, 'SMALL', 'LARGE']);
 
 exports._cleanupSymbol = Symbol('djsCleanup');
 
