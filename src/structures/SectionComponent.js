@@ -10,7 +10,7 @@ class SectionComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {SectionComponent | APISectionComponent} [data={}]
+   * @param {SectionComponent | APISectionComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'SECTION' }, data);

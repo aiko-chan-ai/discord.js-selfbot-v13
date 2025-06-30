@@ -10,7 +10,7 @@ class SeparatorComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {SeparatorComponent | APISeparatorComponent} [data={}]
+   * @param {SeparatorComponent | APISeparatorComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'SEPARATOR' }, data);

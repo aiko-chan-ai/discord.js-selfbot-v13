@@ -12,7 +12,7 @@ class ContainerComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {ContainerComponent | APIContainerComponent} [data={}]
+   * @param {ContainerComponent | APIContainerComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'CONTAINER' }, data);

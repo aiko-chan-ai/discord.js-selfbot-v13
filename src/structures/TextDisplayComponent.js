@@ -9,7 +9,7 @@ class TextDisplayComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {TextDisplayComponent | APITextDisplayComponent} [data={}]
+   * @param {TextDisplayComponent | APITextDisplayComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'TEXT_DISPLAY' }, data);

@@ -12,7 +12,7 @@ class ThumbnailComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {ThumbnailComponent | APIThumbnailComponent} [data={}]
+   * @param {ThumbnailComponent | APIThumbnailComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'THUMBNAIL' }, data);

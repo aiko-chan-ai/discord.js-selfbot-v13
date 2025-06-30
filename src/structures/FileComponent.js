@@ -12,7 +12,7 @@ class FileComponent extends BaseMessageComponent {
    */
 
   /**
-   * @param {FileComponent | APIFileComponent} [data={}]
+   * @param {FileComponent | APIFileComponent} [data={}] The data
    */
   constructor(data = {}) {
     super({ type: 'FILE' }, data);
