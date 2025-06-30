@@ -41,7 +41,7 @@
 				"singleQuote": true,
 				"quoteProps": "as-needed",
 				"trailingComma": "all",
-				"endOfLine": "auto",
+				"endOfLine": "lf",
 				"arrowParens": "avoid"
 			}
 		],
@@ -153,7 +153,7 @@
 			"error",
 			"$this"
 		],
-		"eol-last": "warn",
+		"eol-last": "error",
 		"func-names": "error",
 		"func-name-matching": "error",
 		"func-style": [
@@ -203,7 +203,7 @@
 		],
 		"no-new-object": "error",
 		"no-spaced-func": "error",
-		"no-trailing-spaces": "warn",
+		"no-trailing-spaces": "error",
 		"no-unneeded-ternary": "error",
 		"no-whitespace-before-property": "error",
 		"nonblock-statement-body-position": "error",

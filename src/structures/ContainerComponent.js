@@ -36,7 +36,7 @@ class ContainerComponent extends BaseMessageComponent {
   }
 
   /**
-   * @returns {APIContainerComponent}  
+   * @returns {APIContainerComponent}
    */
   toJSON() {
     return {

@@ -23,7 +23,7 @@ class MediaGalleryComponent extends BaseMessageComponent {
   }
 
   /**
-   * @returns {APIMediaGalleryComponent}  
+   * @returns {APIMediaGalleryComponent}
    */
   toJSON() {
     return {

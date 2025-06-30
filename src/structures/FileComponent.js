@@ -4,7 +4,6 @@ const BaseMessageComponent = require('./BaseMessageComponent');
 const UnfurledMediaItem = require('./UnfurledMediaItem');
 const { MessageComponentTypes } = require('../util/Constants');
 
-
 class FileComponent extends BaseMessageComponent {
   /**
    * @property {UnfurledMediaItem} [file] This unfurled media item is unique in that it only supports attachment references using the attachment://<filename> syntax
@@ -16,10 +15,10 @@ class FileComponent extends BaseMessageComponent {
    */
   constructor(data = {}) {
     super({ type: 'FILE' }, data);
-    
+
     /**
      * This unfurled media item is unique in that it only supports attachment references using the attachment://<filename> syntax
-     * @type {UnfurledMediaItem} 
+     * @type {UnfurledMediaItem}
      */
     this.file = new UnfurledMediaItem(data.file);
 
@@ -30,9 +29,8 @@ class FileComponent extends BaseMessageComponent {
     this.spoiler = data.spoiler ?? false;
   }
 
-  
   /**
-   * @returns {APIFileComponent}  
+   * @returns {APIFileComponent}
    */
   toJSON() {
     return {

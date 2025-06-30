@@ -33,7 +33,7 @@ class MediaGalleryItem {
   }
 
   /**
-   * @returns {APIMediaGalleryItem}  
+   * @returns {APIMediaGalleryItem}
    */
   toJSON() {
     return {
