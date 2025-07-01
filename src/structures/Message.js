@@ -25,7 +25,6 @@ const MessageFlags = require('../util/MessageFlags');
 const Permissions = require('../util/Permissions');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
-const ContainerComponent = require('./ContainerComponent');
 
 /**
  * @type {WeakSet<Message>}
