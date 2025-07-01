@@ -27,7 +27,7 @@ class TextInputComponent extends BaseMessageComponent {
    * @param {TextInputComponent|TextInputComponentOptions} [data={}] TextInputComponent to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: 'TEXT_INPUT' });
+    super({ type: 'TEXT_INPUT' }, data);
 
     this.setup(data);
   }

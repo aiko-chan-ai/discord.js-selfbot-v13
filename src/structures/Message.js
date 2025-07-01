@@ -162,8 +162,8 @@ class Message extends Base {
 
     if ('components' in data) {
       /**
-       * A list of MessageActionRows in the message
-       * @type {MessageActionRow[]}
+       * A list of components in the message
+       * @type {MessageActionRow[] | ContainerComponent[]}
        */
       this.components = data.components.map(c => BaseMessageComponent.create(c, this.client));
     } else {
