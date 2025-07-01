@@ -235,6 +235,17 @@ export const enum MessageComponentTypes {
   CONTAINER = 17,
 }
 
+export const enum MessageComponentInteractables {
+  ACTION_ROW = 1,
+  BUTTON = 2,
+  STRING_SELECT = 3,
+  TEXT_INPUT = 4,
+  USER_SELECT = 5,
+  ROLE_SELECT = 6,
+  MENTIONABLE_SELECT = 7,
+  CHANNEL_SELECT = 8,
+}
+
 export const enum SelectMenuComponentTypes {
   STRING_SELECT = 3,
   USER_SELECT = 5,

@@ -92,6 +92,7 @@ import {
   MembershipStates,
   MessageButtonStyles,
   MessageComponentTypes,
+  MessageComponentInteractables,
   MessageTypes,
   MFALevels,
   NSFWLevels,
@@ -1604,8 +1605,8 @@ export class GuildAuditLogsEntry<
   TAction = TActionRaw extends keyof GuildAuditLogsIds
     ? GuildAuditLogsIds[TActionRaw]
     : TActionRaw extends null
-    ? 'ALL'
-    : TActionRaw,
+      ? 'ALL'
+      : TActionRaw,
   TActionType extends GuildAuditLogsActionType = TAction extends keyof GuildAuditLogsTypes
     ? GuildAuditLogsTypes[TAction][1]
     : 'ALL',
@@ -1952,10 +1953,10 @@ export type CacheTypeReducer<
 > = [State] extends ['cached']
   ? CachedType
   : [State] extends ['raw']
-  ? RawType
-  : [State] extends ['raw' | 'cached']
-  ? PresentType
-  : Fallback;
+    ? RawType
+    : [State] extends ['raw' | 'cached']
+      ? PresentType
+      : Fallback;
 
 export class Interaction<Cached extends CacheType = CacheType> extends Base {
   // This a technique used to brand different cached types. Or else we'll get `never` errors on typeguard checks.
@@ -2132,7 +2133,7 @@ export interface StringMappedInteractionTypes<Cached extends CacheType = CacheTy
 export type WrapBooleanCache<T extends boolean> = If<T, 'cached', CacheType>;
 
 export type MappedInteractionTypes<Cached extends boolean = boolean> = EnumValueMapped<
-  typeof MessageComponentTypes,
+  typeof MessageComponentInteractables,
   {
     BUTTON: ButtonInteraction<WrapBooleanCache<Cached>>;
     STRING_SELECT: StringSelectInteraction<WrapBooleanCache<Cached>>;
@@ -2327,7 +2328,7 @@ export class MediaGalleryComponent extends BaseMessageComponent {
   public constructor(data?: MediaGalleryComponent | APIMediaGalleryComponent);
   public items: MediaGalleryItem[];
   public toJSON(): APIMediaGalleryComponent;
-  }
+}
 
 export class FileComponent extends BaseMessageComponent {
   public constructor(data?: FileComponent | APIFileComponent);
@@ -2365,7 +2366,13 @@ export class SectionComponent<T extends ThumbnailComponent | MessageButton> exte
 
 export class ContainerComponent<
   U extends ThumbnailComponent | MessageButton,
-  T extends MessageActionRow | TextDisplayComponent | SectionComponent<U> | MediaGalleryComponent | SeparatorComponent | FileComponent
+  T extends
+    | MessageActionRow
+    | TextDisplayComponent
+    | SectionComponent<U>
+    | MediaGalleryComponent
+    | SeparatorComponent
+    | FileComponent,
 > extends BaseMessageComponent {
   public constructor(data?: ContainerComponent<U, T> | APIContainerComponent);
   public components: T[];
@@ -6908,8 +6915,8 @@ export type GuildScheduledEventResolvable = Snowflake | GuildScheduledEvent;
 export type GuildScheduledEventSetStatusArg<T extends GuildScheduledEventStatus> = T extends 'SCHEDULED'
   ? 'ACTIVE' | 'CANCELED'
   : T extends 'ACTIVE'
-  ? 'COMPLETED'
-  : never;
+    ? 'COMPLETED'
+    : never;
 
 export type GuildScheduledEventStatus = keyof typeof GuildScheduledEventStatuses;
 
@@ -7152,9 +7159,9 @@ export type MessageComponentOptions =
   | MessageButtonOptions
   | MessageSelectMenuOptions;
 
-export type MessageComponentType = keyof typeof MessageComponentTypes;
+export type MessageComponentType = keyof typeof MessageComponentInteractables;
 
-export type MessageComponentTypeResolvable = MessageComponentType | MessageComponentTypes;
+export type MessageComponentTypeResolvable = MessageComponentType | MessageComponentInteractables;
 
 export type GuildForumThreadMessageCreateOptions = Omit<MessageOptions, 'poll'> &
   Pick<MessageOptions, 'flags' | 'stickers'>;
@@ -8059,14 +8066,14 @@ export type WSEventType =
 export type Serialized<T> = T extends symbol | bigint | (() => any)
   ? never
   : T extends number | string | boolean | undefined
-  ? T
-  : T extends { toJSON(): infer R }
-  ? R
-  : T extends ReadonlyArray<infer V>
-  ? Serialized<V>[]
-  : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
-  ? {}
-  : { [K in keyof T]: Serialized<T[K]> };
+    ? T
+    : T extends { toJSON(): infer R }
+      ? R
+      : T extends ReadonlyArray<infer V>
+        ? Serialized<V>[]
+        : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
+          ? {}
+          : { [K in keyof T]: Serialized<T[K]> };
 
 //#endregion
 
