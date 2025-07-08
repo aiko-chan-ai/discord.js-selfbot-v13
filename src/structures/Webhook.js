@@ -120,6 +120,8 @@ class Webhook {
    * @property {MessageFlags} [flags] Which flags to set for the message. Only `SUPPRESS_EMBEDS` can be set.
    * @property {Snowflake[]} [appliedTags]
    * The tags to apply to the created thread (only available if the webhook is in a forum channel)
+   * @property {boolean} [withComponents] Whether to allow sending non-interactive components in the message.
+   * <info>For application-owned webhooks, this property is ignored</info>
    */
 
   /**
@@ -134,6 +136,8 @@ class Webhook {
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {Snowflake} [threadId] The id of the thread this message belongs to
    * <info>For interaction webhooks, this property is ignored</info>
+   * @property {boolean} [withComponents] Whether to allow sending non-interactive components in the message.
+   * <info>For application-owned webhooks, this property is ignored</info>
    */
 
   /**
@@ -199,7 +203,11 @@ class Webhook {
     const d = await this.client.api.webhooks(this.id, this.token).post({
       data,
       files,
-      query: { thread_id: messagePayload.options.threadId, wait: true, with_components: data?.components?.length > 0 },
+      query: {
+        thread_id: messagePayload.options.threadId,
+        wait: true,
+        with_components: messagePayload.options.withComponents,
+      },
       auth: false,
       webhook: true,
     });
@@ -339,6 +347,7 @@ class Webhook {
         files,
         query: {
           thread_id: messagePayload.options.threadId,
+          with_components: messagePayload.options.withComponents,
         },
         auth: false,
         webhook: true,

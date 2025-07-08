@@ -7981,6 +7981,7 @@ export interface WebhookMessageOptions extends Omit<MessageOptions, 'nonce' | 'r
   threadId?: Snowflake;
   threadName?: string;
   appliedTags?: Snowflake[];
+  withComponents?: boolean;
 }
 
 export type WebhookType = keyof typeof WebhookTypes;
