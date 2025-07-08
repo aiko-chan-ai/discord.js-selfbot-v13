@@ -380,7 +380,7 @@ class Client extends BaseClient {
   async fetchInvite(invite, options) {
     const code = DataResolver.resolveInviteCode(invite);
     const data = await this.api.invites(code).get({
-      query: { with_counts: true, with_expiration: true, guild_scheduled_event_id: options?.guildScheduledEventId },
+      query: { with_counts: true, guild_scheduled_event_id: options?.guildScheduledEventId },
     });
     return new Invite(this, data);
   }
