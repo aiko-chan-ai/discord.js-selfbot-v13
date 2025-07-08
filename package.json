@@ -57,7 +57,7 @@
     "@sapphire/shapeshift": "^3.9.5",
     "discord-api-types": "^0.37.117",
     "fetch-cookie": "^2.1.0",
-    "find-process": "^1.4.10",
+    "find-process": "^2.0.0",
     "prism-media": "^1.3.5",
     "qrcode": "^1.5.4",
     "tough-cookie": "^4.1.4",
