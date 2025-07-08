@@ -199,7 +199,7 @@ class Webhook {
     const d = await this.client.api.webhooks(this.id, this.token).post({
       data,
       files,
-      query: { thread_id: messagePayload.options.threadId, wait: true },
+      query: { thread_id: messagePayload.options.threadId, wait: true, with_components: data?.components?.length > 0 },
       auth: false,
       webhook: true,
     });
