@@ -141,7 +141,6 @@ class ClientUser extends User {
    */
   async edit(options = {}) {
     const data = await this.client.api.users('@me').patch({ data: options });
-    this.client.token = data.token;
     const { updated } = this.client.actions.UserUpdate.handle(data);
     return updated ?? this;
   }
