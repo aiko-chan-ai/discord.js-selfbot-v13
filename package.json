@@ -72,7 +72,7 @@
   "devDependencies": {
     "@discordjs/docgen": "^0.11.1",
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.10.7",
+    "@types/node": "^24.0.10",
     "@types/ws": "^8.5.10",
     "dtslint": "^4.2.1",
     "eslint": "^8.39.0",
