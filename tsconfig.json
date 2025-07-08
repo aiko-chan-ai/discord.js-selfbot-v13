@@ -42,7 +42,7 @@
         // Output Formatting
         "pretty": false,
         // Completeness
-        "skipLibCheck": false,
+        "skipLibCheck": true,
         "skipDefaultLibCheck": true,
     }
 }

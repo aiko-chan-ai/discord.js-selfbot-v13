@@ -1,5 +1,6 @@
 'use strict';
 
+const { randomUUID } = require('node:crypto');
 const { UserAgent } = require('./Constants');
 const Intents = require('./Intents');
 
@@ -163,7 +164,7 @@ class Options extends null {
       captchaSolver: () => {
         const err = new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED');
         err.cause =
-          'You need to provide a captcha solver to use this feature\nEx: const sbClient = new Client({ captchaSolver: yourAsyncFunction })';
+          'You need to provide a captcha solver to use this feature\nExample: const client = new Client({ captchaSolver: yourAsyncFunction })';
         throw err;
       },
       TOTPKey: null,
@@ -199,11 +200,18 @@ class Options extends null {
           os_version: '10',
           referrer: '',
           referring_domain: '',
-          referrer_current: '',
-          referring_domain_current: '',
+          referrer_current: 'https://discord.com/channels/@me',
+          referring_domain_current: 'discord.com',
           release_channel: 'stable',
-          client_build_number: 377668,
+          client_build_number: 416351,
           client_event_source: null,
+          client_launch_id: randomUUID(), // ?
+          client_heartbeat_session_id: randomUUID(), // ?
+          client_app_state: 'focused',
+          is_fast_connect: false,
+          latest_headless_tasks: [],
+          latest_headless_task_run_seconds_before: null,
+          gateway_connect_reasons: 'AppSkeleton',
         },
         compress: false,
         client_state: {
