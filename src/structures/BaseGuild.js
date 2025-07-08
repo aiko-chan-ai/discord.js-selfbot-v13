@@ -28,7 +28,7 @@ class BaseGuild extends Base {
      * The icon hash of this guild
      * @type {?string}
      */
-    this.icon = data.icon;
+    this.icon = data.icon ?? null;
 
     /**
      * An array of features available to this guild

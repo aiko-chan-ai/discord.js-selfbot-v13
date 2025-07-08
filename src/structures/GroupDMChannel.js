@@ -79,7 +79,7 @@ class GroupDMChannel extends Channel {
        * The hash of the channel icon
        * @type {?string}
        */
-      this.icon = data.icon;
+      this.icon = data.icon ?? null;
     }
   }
 
