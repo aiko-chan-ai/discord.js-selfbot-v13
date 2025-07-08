@@ -3612,7 +3612,7 @@ export class Typing extends Base {
   };
 }
 
-export interface UserClan {
+export interface PrimaryGuild {
   identityGuildId?: Snowflake;
   identityEnabled?: boolean;
   tag?: string;
@@ -3654,7 +3654,9 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly voice?: VoiceState;
   public readonly relationship: RelationshipTypes;
   public readonly friendNickname: string | null | undefined;
-  public clan: UserClan | null;
+  public primaryGuild: PrimaryGuild | null;
+  /** @deprecated Use {@link User.primaryGuild} instead */
+  public clan: PrimaryGuild | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public avatarDecorationURL(options?: Omit<StaticImageURLOptions, 'format'>): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;

@@ -157,26 +157,36 @@ class User extends Base {
 
     if ('primary_guild' in data && data.primary_guild) {
       /**
-       * User Clan Structure
-       * @typedef {Object} UserClan
+       * Primary Guild Structure
+       * @see {@link https://docs.discord.food/resources/user#primary-guild-structure}
+       * @typedef {Object} PrimaryGuild
        * @property {?Snowflake} identityGuildId The ID of the user's primary clan
-       * @property {boolean} identityEnabled Whether the user is displaying their clan tag
-       * @property {?string} tag The text of the user's clan tag (max 4 characters)
-       * @property {?string} badge The clan's badge hash
+       * @property {?boolean} identityEnabled Whether the user is displaying their guild tag
+       * @property {?string} tag The user's guild tag (max 4 characters)
+       * @property {?string} badge The guild tag badge hash
        */
       /**
        * The primary clan the user is in
-       * @type {?UserClan}
+       * @type {?PrimaryGuild}
        */
-      this.clan = {
+      this.primaryGuild = {
         identityGuildId: data.primary_guild.identity_guild_id,
         identityEnabled: data.primary_guild.identity_enabled,
         tag: data.primary_guild.tag,
         badge: data.primary_guild.badge,
       };
     } else {
-      this.clan ??= null;
+      this.primaryGuild ??= null;
     }
+  }
+
+  /**
+   * The primary clan the user is in
+   * @type {?PrimaryGuild}
+   * @deprecated Use `primaryGuild` instead
+   */
+  get clan() {
+    return this.primaryGuild;
   }
 
   /**
