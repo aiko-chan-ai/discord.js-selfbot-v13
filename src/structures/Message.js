@@ -1003,7 +1003,11 @@ class Message extends Base {
    * @returns {?MessageActionRowComponent}
    */
   resolveComponent(customId) {
-    return this.components.flatMap(row => row.components).find(component => component.customId === customId) ?? null;
+    return (
+      this.components
+        .flatMap(BaseMessageComponent.extractInteractiveComponents)
+        .find(component => (component.customId ?? component.custom_id) === customId) ?? null
+    );
   }
 
   /**

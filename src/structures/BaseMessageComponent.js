@@ -161,6 +161,19 @@ class BaseMessageComponent {
   static resolveType(type) {
     return typeof type === 'string' ? type : MessageComponentTypes[type];
   }
+
+  static extractInteractiveComponents(component) {
+    switch (component.type) {
+      case MessageComponentTypes.ACTION_ROW:
+        return component.components;
+      case MessageComponentTypes.SECTION:
+        return [...component.components, component.accessory];
+      case MessageComponentTypes.CONTAINER:
+        return component.components.flatMap(BaseMessageComponent.extractInteractiveComponents);
+      default:
+        return [component];
+    }
+  }
 }
 
 module.exports = BaseMessageComponent;

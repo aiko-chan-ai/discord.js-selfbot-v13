@@ -257,7 +257,7 @@ class MessagePayload {
       username,
       avatar_url: avatarURL,
       allowed_mentions:
-        typeof content === 'undefined' && typeof message_reference === 'undefined' ? undefined : allowedMentions,
+        this.isMessage && this.target?.author?.id !== this.target?.client?.user?.id ? undefined : allowedMentions,
       flags,
       message_reference,
       attachments: this.options.attachments,

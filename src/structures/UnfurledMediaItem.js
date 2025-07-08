@@ -12,15 +12,17 @@ class UnfurledMediaItem {
      * @type {string}
      */
     this.url = data.url ?? null;
+    /**
+     * @type {APIUnfurledMediaItem}
+     */
+    this.data = data;
   }
   /**
-   *
+   * Returns the API-compatible JSON for this media item
    * @returns {APIUnfurledMediaItem}
    */
   toJSON() {
-    return {
-      url: this.url,
-    };
+    return { ...this.data };
   }
 }
 
