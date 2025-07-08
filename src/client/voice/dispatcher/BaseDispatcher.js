@@ -265,7 +265,7 @@ class BaseDispatcher extends Writable {
 
   /**
    * Creates a one-byte extension header & a single extension of type playout-delay
-   * @see https://docs.discord.sex/topics/voice-connections#sending-and-receiving-voice
+   * @see https://docs.discord.food/topics/voice-connections#sending-and-receiving-voice
    * Discord expects a playout delay RTP extension header on every video packet.
    * @see https://webrtc.googlesource.com/src/+/refs/heads/main/docs/native-code/rtp-hdrext/playout-delay
    * @returns {Buffer} playout-delay extension <Buffer 51 00 00 00>
@@ -354,7 +354,7 @@ class BaseDispatcher extends Writable {
       return null;
     }
     // Header
-    // https://docs.discord.sex/topics/voice-connections#rtp-packet-structure
+    // https://docs.discord.food/topics/voice-connections#rtp-packet-structure
     let rtpHeader = buffer.slice(0, 12); // RTP_HEADER_SIZE
     rtpHeader[0] = 0x80; // Version + Flags (1 byte)
     rtpHeader[1] = this.payloadType; // Payload Type (1 byte)

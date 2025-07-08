@@ -14,8 +14,13 @@ class FileComponent extends BaseMessageComponent {
    * @param {FileComponent | APIFileComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'FILE' }, data);
+    super({ type: 'FILE' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * This unfurled media item is unique in that it only supports attachment references using the attachment://<filename> syntax
      * @type {UnfurledMediaItem}

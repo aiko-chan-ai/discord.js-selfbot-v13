@@ -60,7 +60,7 @@ class PresenceManager extends CachedManager {
    */
   async fetch() {
     const data = await this.client.api.presences.get();
-    // https://docs.discord.sex/resources/presence#endpoints
+    // https://docs.discord.food/resources/presence#endpoints
     data.presences.forEach(presence => {
       this._add(presence, true);
     });

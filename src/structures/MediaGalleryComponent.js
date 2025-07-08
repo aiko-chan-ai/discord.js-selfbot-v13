@@ -13,8 +13,13 @@ class MediaGalleryComponent extends BaseMessageComponent {
    * @param {MediaGalleryComponent | APIMediaGalleryComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'MEDIA_GALLERY' }, data);
+    super({ type: 'MEDIA_GALLERY' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * 1 to 10 media gallery items
      * @type {MediaGalleryItem[]}

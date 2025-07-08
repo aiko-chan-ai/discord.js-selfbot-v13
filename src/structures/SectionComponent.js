@@ -13,8 +13,13 @@ class SectionComponent extends BaseMessageComponent {
    * @param {SectionComponent | APISectionComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'SECTION' }, data);
+    super({ type: 'SECTION' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * One to three text components
      * @type {TextDisplayComponent[]}

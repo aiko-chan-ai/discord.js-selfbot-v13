@@ -27,12 +27,13 @@ class TextInputComponent extends BaseMessageComponent {
    * @param {TextInputComponent|TextInputComponentOptions} [data={}] TextInputComponent to clone or raw data
    */
   constructor(data = {}) {
-    super({ type: 'TEXT_INPUT' }, data);
+    super({ type: 'TEXT_INPUT' });
 
     this.setup(data);
   }
 
   setup(data) {
+    super.setup(data);
     /**
      * A unique string to be sent in the interaction when submitted
      * @type {?string}

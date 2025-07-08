@@ -13,8 +13,13 @@ class SeparatorComponent extends BaseMessageComponent {
    * @param {SeparatorComponent | APISeparatorComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'SEPARATOR' }, data);
+    super({ type: 'SEPARATOR' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * Size of separator padding — SeparatorSpacingSizes.SMALL for small padding, SeparatorSpacingSizes.LARGE for large padding. Defaults to SeparatorSpacingSizes.SMALL
      * @type {SeparatorSpacingSizes}

@@ -43,15 +43,30 @@ class BaseMessageComponent {
 
   /**
    * @param {BaseMessageComponent|BaseMessageComponentOptions} [data={}] The options for this component
-   * @param {MessageComponentOptions} [componentData={}] The raw data for component
    */
-  constructor(data, componentData = {}) {
+  constructor(data) {
     /**
      * The type of this component
      * @type {?MessageComponentType}
      */
-    this.rawData = componentData;
     this.type = 'type' in data ? BaseMessageComponent.resolveType(data.type) : null;
+  }
+
+  setup(data) {
+    /**
+     * The data for this component
+     * @type {MessageComponentOptions}
+     */
+    this.data = data;
+  }
+
+  /**
+   * The id of this component
+   * @type {number}
+   * @readonly
+   */
+  get id() {
+    return this.data.id;
   }
 
   /**

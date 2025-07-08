@@ -42,13 +42,15 @@ class MessageActionRow extends BaseMessageComponent {
    * @param {Client} [client] The client constructing this MessageActionRow, if provided
    */
   constructor(data = {}, client = null) {
-    super({ type: 'ACTION_ROW' }, data);
+    super({ type: 'ACTION_ROW' });
 
     /**
      * The components in this action row
      * @type {MessageActionRowComponent[]}
      */
     this.components = data.components?.map(c => BaseMessageComponent.create(c, client)) ?? [];
+
+    super.setup(data);
   }
 
   /**

@@ -737,7 +737,7 @@ exports.IntegrationExpireBehaviors = createEnum(['REMOVE_ROLE', 'KICK']);
  * * NITRO_NOTIFICATION
  * @typedef {string} MessageType
  * @see {@link https://discord.com/developers/docs/resources/channel#message-object-message-types}
- * @see {@link https://docs.discord.sex/resources/message#message-type}
+ * @see {@link https://docs.discord.food/resources/message#message-type}
  */
 exports.MessageTypes = [
   'DEFAULT', // 0
@@ -1780,7 +1780,7 @@ exports.ForumLayoutTypes = createEnum(['NOT_SET', 'LIST_VIEW', 'GALLERY_VIEW']);
  * * DEFAULT
  * * IMAGE_ONLY_ANSWERS
  * @typedef {string} PollLayoutType
- * @see {@link https://docs.discord.sex/resources/message#poll-layout-type}
+ * @see {@link https://docs.discord.food/resources/message#poll-layout-type}
  */
 exports.PollLayoutTypes = createEnum([null, 'DEFAULT', 'IMAGE_ONLY_ANSWERS']);
 
@@ -1866,7 +1866,7 @@ function createEnum(keys) {
  * @property {Object<InteractionType, number>} InteractionTypes The type of an {@link Interaction} object.
  * @property {InviteScope[]} InviteScopes The scopes of an invite.
  * @property {Object<RelationshipType, number>} RelationshipTypes Relationship Enums
- * * @property {Object<SeparatorSpacingSize, number>} SeparatorSpacingSize Relationship Enums
+ * @property {Object<SeparatorSpacingSize, number>} SeparatorSpacingSize Size of separator padding (Enums)
  * @property {Object<MembershipState, number>} MembershipStates The value set for a team members membership state.
  * @property {Object<MessageButtonStyle, number>} MessageButtonStyles The style of a message button.
  * @property {Object<MessageComponentType, number>} MessageComponentTypes The type of a message component.

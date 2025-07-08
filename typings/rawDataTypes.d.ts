@@ -386,10 +386,16 @@ export interface APIMediaGalleryComponent extends APIBaseComponent<MessageCompon
 
 export interface APISectionComponent extends APIBaseComponent<MessageComponentTypes.SECTION> {
   components: APITextDisplayComponent[];
-  accessory: APIThumbnailComponent | APIMessageButtonInteractionData
+  accessory: APIThumbnailComponent | APIMessageButtonInteractionData;
 }
 
-export type APIContainerComponents = APIActionRowComponent<APIActionRowComponentTypes> | APITextDisplayComponent | APISectionComponent | APIMediaGalleryComponent | APISeparatorComponent | APIFileComponent;
+export type APIContainerComponents =
+  | APIActionRowComponent<APIActionRowComponentTypes>
+  | APITextDisplayComponent
+  | APISectionComponent
+  | APIMediaGalleryComponent
+  | APISeparatorComponent
+  | APIFileComponent;
 export interface APIContainerComponent extends APIBaseComponent<MessageComponentTypes.CONTAINER> {
   components: APIContainerComponents[];
   accent_color: number;

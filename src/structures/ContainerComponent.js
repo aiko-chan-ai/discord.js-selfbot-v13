@@ -15,7 +15,13 @@ class ContainerComponent extends BaseMessageComponent {
    * @param {ContainerComponent | APIContainerComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'CONTAINER' }, data);
+    super({ type: 'CONTAINER' });
+
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * Components of the type action row, text display, section, media gallery, separator, or file
      * @type {ContainerComponents[]}
@@ -26,13 +32,24 @@ class ContainerComponent extends BaseMessageComponent {
      * Color for the accent on the container as RGB from 0x000000 to 0xFFFFFF
      * @type {Number}
      */
-    this.accent_color = data.accent_color ?? null;
+    this.accentColor = data.accent_color ?? null;
 
     /**
      * Whether the container should be a spoiler (or blurred out). Defaults to false.
      * @type {Boolean}
      */
     this.spoiler = data.spoiler ?? false;
+  }
+
+  /**
+   * The hex accent color of this container
+   * @type {?string}
+   * @readonly
+   */
+  get hexAccentColor() {
+    return typeof this.accentColor === 'number'
+      ? `#${this.accentColor.toString(16).padStart(6, '0')}`
+      : this.accentColor ?? null;
   }
 
   /**

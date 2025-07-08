@@ -15,8 +15,13 @@ class ThumbnailComponent extends BaseMessageComponent {
    * @param {ThumbnailComponent | APIThumbnailComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'THUMBNAIL' }, data);
+    super({ type: 'THUMBNAIL' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * A url or attachment
      * @type {UnfurledMediaItem}

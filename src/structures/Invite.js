@@ -178,7 +178,7 @@ class Invite extends Base {
      * * 1: GROUP_DM
      * * 2: FRIEND
      * @typedef {number} InviteType
-     * @see {@link https://docs.discord.sex/resources/invite#invite-type}
+     * @see {@link https://docs.discord.food/resources/invite#invite-type}
      */
     if ('type' in data) {
       /**

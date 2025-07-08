@@ -12,8 +12,13 @@ class TextDisplayComponent extends BaseMessageComponent {
    * @param {TextDisplayComponent | APITextDisplayComponent} [data={}] The data
    */
   constructor(data = {}) {
-    super({ type: 'TEXT_DISPLAY' }, data);
+    super({ type: 'TEXT_DISPLAY' });
 
+    this.setup(data);
+  }
+
+  setup(data) {
+    super.setup(data);
     /**
      * Text that will be displayed similar to a message
      * @type {String}

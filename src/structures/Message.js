@@ -160,10 +160,14 @@ class Message extends Base {
       this.embeds = this.embeds?.slice() ?? [];
     }
 
+    /**
+     * @typedef {MessageActionRow|ContainerComponent|FileComponent|MediaGalleryComponent|SectionComponent|SeparatorComponent|TextDisplayComponent} TopLevelComponent
+     */
+
     if ('components' in data) {
       /**
-       * A list of components in the message
-       * @type {MessageActionRow[] | ContainerComponent[]}
+       * An array of components in the message
+       * @type {TopLevelComponent[]}
        */
       this.components = data.components.map(c => BaseMessageComponent.create(c, this.client));
     } else {

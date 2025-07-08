@@ -651,6 +651,8 @@ export class BaseGuildVoiceChannel extends TextBasedChannelMixin(GuildChannel, [
 export class BaseMessageComponent {
   protected constructor(data?: BaseMessageComponent | BaseMessageComponentOptions);
   public type: MessageComponentType | null;
+  public readonly id: number;
+  public data: MessageComponentOptions;
   private static create(data: MessageComponentOptions, client?: Client | WebhookClient): MessageComponent | undefined;
   private static resolveType(type: MessageComponentTypeResolvable): MessageComponentType;
 }
@@ -1605,8 +1607,8 @@ export class GuildAuditLogsEntry<
   TAction = TActionRaw extends keyof GuildAuditLogsIds
     ? GuildAuditLogsIds[TActionRaw]
     : TActionRaw extends null
-      ? 'ALL'
-      : TActionRaw,
+    ? 'ALL'
+    : TActionRaw,
   TActionType extends GuildAuditLogsActionType = TAction extends keyof GuildAuditLogsTypes
     ? GuildAuditLogsTypes[TAction][1]
     : 'ALL',
@@ -1953,10 +1955,10 @@ export type CacheTypeReducer<
 > = [State] extends ['cached']
   ? CachedType
   : [State] extends ['raw']
-    ? RawType
-    : [State] extends ['raw' | 'cached']
-      ? PresentType
-      : Fallback;
+  ? RawType
+  : [State] extends ['raw' | 'cached']
+  ? PresentType
+  : Fallback;
 
 export class Interaction<Cached extends CacheType = CacheType> extends Base {
   // This a technique used to brand different cached types. Or else we'll get `never` errors on typeguard checks.
@@ -2099,21 +2101,21 @@ export class LimitedCollection<K, V> extends Collection<K, V> {
 }
 
 export type MessageCollectorOptionsParams<
-  T extends MessageComponentTypeResolvable,
+  T extends MessageComponentInteractableResolvable,
   Cached extends boolean = boolean,
 > = {
   componentType?: T;
 } & MessageComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
 
 export type MessageChannelCollectorOptionsParams<
-  T extends MessageComponentTypeResolvable,
+  T extends MessageComponentInteractableResolvable,
   Cached extends boolean = boolean,
 > = {
   componentType?: T;
 } & MessageChannelComponentCollectorOptions<MappedInteractionTypes<Cached>[T]>;
 
 export type AwaitMessageCollectorOptionsParams<
-  T extends MessageComponentTypeResolvable,
+  T extends MessageComponentInteractableResolvable,
   Cached extends boolean = boolean,
 > = { componentType?: T } & Pick<
   InteractionCollectorOptions<MappedInteractionTypes<Cached>[T]>,
@@ -2159,7 +2161,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public readonly channel: If<Cached, GuildTextBasedChannel, TextBasedChannel>;
   public channelId: Snowflake;
   public readonly cleanContent: string;
-  public components: MessageActionRow[];
+  public components: TopLevelComponent[];
   public content: string;
   public readonly createdAt: Date;
   public createdTimestamp: number;
@@ -2357,26 +2359,28 @@ export class ThumbnailComponent extends BaseMessageComponent {
   public spoiler: boolean;
 }
 
-export class SectionComponent<T extends ThumbnailComponent | MessageButton> extends BaseMessageComponent {
-  public constructor(data?: SectionComponent<T> | APISectionComponent);
+export class SectionComponent<
+  AccessoryType extends MessageButton | ThumbnailComponent = MessageButton | ThumbnailComponent,
+> extends BaseMessageComponent {
+  public constructor(data?: SectionComponent<AccessoryType> | APISectionComponent);
   public components: TextDisplayComponent[];
-  public accessory: T[];
+  public accessory: AccessoryType[];
   public toJSON(): APISectionComponent;
 }
 
-export class ContainerComponent<
-  U extends ThumbnailComponent | MessageButton,
-  T extends
-    | MessageActionRow
-    | TextDisplayComponent
-    | SectionComponent<U>
-    | MediaGalleryComponent
-    | SeparatorComponent
-    | FileComponent,
-> extends BaseMessageComponent {
-  public constructor(data?: ContainerComponent<U, T> | APIContainerComponent);
-  public components: T[];
-  public accent_color: number | null;
+export type ComponentInContainer =
+  | MessageActionRow
+  | FileComponent
+  | MediaGalleryComponent
+  | SectionComponent
+  | SeparatorComponent
+  | TextDisplayComponent;
+
+export class ContainerComponent extends BaseMessageComponent {
+  public constructor(data?: ComponentInContainer | APIContainerComponent);
+  public components: ComponentInContainer[];
+  public accentColor: number | null;
+  public readonly hexAccentColor: HexColorString | null;
   public spoiler: boolean;
   public toJSON(): APIContainerComponent;
 }
@@ -6917,8 +6921,8 @@ export type GuildScheduledEventResolvable = Snowflake | GuildScheduledEvent;
 export type GuildScheduledEventSetStatusArg<T extends GuildScheduledEventStatus> = T extends 'SCHEDULED'
   ? 'ACTIVE' | 'CANCELED'
   : T extends 'ACTIVE'
-    ? 'COMPLETED'
-    : never;
+  ? 'COMPLETED'
+  : never;
 
 export type GuildScheduledEventStatus = keyof typeof GuildScheduledEventStatuses;
 
@@ -7161,12 +7165,25 @@ export type MessageComponentOptions =
   | MessageButtonOptions
   | MessageSelectMenuOptions;
 
-export type MessageComponentType = keyof typeof MessageComponentInteractables;
+export type MessageComponentType = keyof typeof MessageComponentTypes;
 
-export type MessageComponentTypeResolvable = MessageComponentType | MessageComponentInteractables;
+export type MessageComponentInteractableType = keyof typeof MessageComponentInteractables;
+
+export type MessageComponentTypeResolvable = MessageComponentType | MessageComponentTypes;
+
+export type MessageComponentInteractableResolvable = MessageComponentInteractableType | MessageComponentInteractables;
 
 export type GuildForumThreadMessageCreateOptions = Omit<MessageOptions, 'poll'> &
   Pick<MessageOptions, 'flags' | 'stickers'>;
+
+export type TopLevelComponent =
+  | MessageActionRow
+  | ContainerComponent
+  | FileComponent
+  | MediaGalleryComponent
+  | SectionComponent
+  | SeparatorComponent
+  | TextDisplayComponent;
 
 export interface MessageEditOptions {
   attachments?: MessageAttachment[];
@@ -7252,7 +7269,7 @@ export type MessageFlagsString =
   | 'SUPPRESS_NOTIFICATIONS'
   | 'IS_VOICE_MESSAGE'
   | 'HAS_SNAPSHOT'
-  | 'IS_UIKIT_COMPONENTS';
+  | 'IS_COMPONENTS_V2';
 
 export interface MessageInteraction {
   id: Snowflake;
@@ -8068,14 +8085,14 @@ export type WSEventType =
 export type Serialized<T> = T extends symbol | bigint | (() => any)
   ? never
   : T extends number | string | boolean | undefined
-    ? T
-    : T extends { toJSON(): infer R }
-      ? R
-      : T extends ReadonlyArray<infer V>
-        ? Serialized<V>[]
-        : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
-          ? {}
-          : { [K in keyof T]: Serialized<T[K]> };
+  ? T
+  : T extends { toJSON(): infer R }
+  ? R
+  : T extends ReadonlyArray<infer V>
+  ? Serialized<V>[]
+  : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
+  ? {}
+  : { [K in keyof T]: Serialized<T[K]> };
 
 //#endregion
 
