@@ -96,8 +96,7 @@ exports.Endpoints = {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/avatars/${userId}/${hash}`, { format, size });
       },
-      AvatarDecoration: (hash, size) =>
-        makeImageUrl(`${root}/avatar-decoration-presets/${hash}`, { format: 'png', size }),
+      AvatarDecoration: hash => makeImageUrl(`${root}/avatar-decoration-presets/${hash}`, { format: 'png' }),
       ClanBadge: (guildId, hash) => `${root}/clan-badges/${guildId}/${hash}.png`,
       GuildMemberAvatar: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';

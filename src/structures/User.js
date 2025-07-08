@@ -238,13 +238,11 @@ class User extends Base {
 
   /**
    * A link to the user's avatar decoration.
-   * @param {StaticImageURLOptions} [options={}] Options for the image URL
-   * <info> The `format` option is not supported for this image URL</info>
    * @returns {?string}
    */
-  avatarDecorationURL({ size } = {}) {
+  avatarDecorationURL() {
     if (!this.avatarDecorationData) return null;
-    return this.client.rest.cdn.AvatarDecoration(this.avatarDecorationData.asset, size);
+    return this.client.rest.cdn.AvatarDecoration(this.avatarDecorationData.asset);
   }
 
   /**

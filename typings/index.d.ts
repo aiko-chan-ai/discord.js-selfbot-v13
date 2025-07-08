@@ -1702,6 +1702,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   private constructor(client: Client, data: RawGuildMemberData, guild: Guild);
   private _roles: Snowflake[];
   public avatar: string | null;
+  public avatarDecorationData: AvatarDecorationData | null;
   public banner: string | null;
   public readonly bannable: boolean;
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
@@ -1730,6 +1731,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public user: User;
   public readonly voice: VoiceState;
   public avatarURL(options?: ImageURLOptions): string | null;
+  public avatarDecorationURL(): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public ban(options?: BanOptions): Promise<GuildMember>;
   public disableCommunicationUntil(timeout: DateResolvable | null, reason?: string): Promise<GuildMember>;
@@ -1739,6 +1741,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public deleteDM(): Promise<DMChannel>;
   public displayAvatarURL(options?: ImageURLOptions): string;
   public displayBannerURL(options?: ImageURLOptions): string | null;
+  public displayAvatarDecorationURL(): string | null;
   public edit(data: GuildMemberEditData, reason?: string): Promise<GuildMember>;
   public isCommunicationDisabled(): this is GuildMember & {
     communicationDisabledUntilTimestamp: number;
@@ -3662,7 +3665,7 @@ export class User extends PartialTextBasedChannel(Base) {
   /** @deprecated Use {@link User.primaryGuild} instead */
   public clan: PrimaryGuild | null;
   public avatarURL(options?: ImageURLOptions): string | null;
-  public avatarDecorationURL(options?: Omit<StaticImageURLOptions, 'format'>): string | null;
+  public avatarDecorationURL(): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public clanBadgeURL(): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -4065,7 +4068,7 @@ export const Constants: {
         size: AllowedImageSize,
         dynamic: boolean,
       ): string;
-      AvatarDecoration(hash: string, size: AllowedImageSize): string;
+      AvatarDecoration(hash: string): string;
       ClanBadge(guildId: Snowflake, hash: string): string;
       Banner(id: Snowflake, hash: string, format: DynamicImageFormat, size: AllowedImageSize, dynamic: boolean): string;
       DefaultAvatar(index: number): string;

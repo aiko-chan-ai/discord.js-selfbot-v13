@@ -120,6 +120,19 @@ class GuildMember extends Base {
     } else {
       this.flags ??= new GuildMemberFlags().freeze();
     }
+
+    if (data.avatar_decoration_data) {
+      /**
+       * The member avatar decoration's data
+       * @type {?AvatarDecorationData}
+       */
+      this.avatarDecorationData = {
+        asset: data.avatar_decoration_data.asset,
+        skuId: data.avatar_decoration_data.sku_id,
+      };
+    } else {
+      this.avatarDecorationData = null;
+    }
   }
 
   _clone() {
@@ -186,6 +199,15 @@ class GuildMember extends Base {
   }
 
   /**
+   * A link to the user's avatar decoration.
+   * @returns {?string}
+   */
+  avatarDecorationURL() {
+    if (!this.avatarDecorationData) return null;
+    return this.client.rest.cdn.AvatarDecoration(this.avatarDecorationData.asset);
+  }
+
+  /**
    * A link to the member's guild avatar.
    * @param {ImageURLOptions} [options={}] Options for the Image URL
    * @returns {?string}
@@ -204,6 +226,15 @@ class GuildMember extends Base {
     return (
       this.banner && this.client.rest.cdn.GuildMemberBanner(this.guild.id, this.id, this.banner, format, size, dynamic)
     );
+  }
+
+  /**
+   * A link to the member's guild avatar decoration if they have one.
+   * Otherwise, a link to their {@link User#avatarDecorationURL} will be returned.
+   * @returns {?string}
+   */
+  displayAvatarDecorationURL() {
+    return this.avatarDecorationURL() ?? this.user.avatarDecorationURL();
   }
 
   /**
@@ -520,7 +551,9 @@ class GuildMember extends Base {
       this.communicationDisabledUntilTimestamp === member.communicationDisabledUntilTimestamp &&
       this.flags.equals(member.flags) &&
       (this._roles === member._roles ||
-        (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i])))
+        (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i]))) &&
+      this.avatarDecorationData?.asset === member.avatarDecorationData?.asset &&
+      this.avatarDecorationData?.skuId === member.avatarDecorationData?.skuId
     );
   }
 
@@ -546,6 +579,7 @@ class GuildMember extends Base {
     json.bannerURL = this.bannerURL();
     json.displayAvatarURL = this.displayAvatarURL();
     json.displayBannerURL = this.displayBannerURL();
+    json.avatarDecorationURL = this.avatarDecorationURL();
     return json;
   }
 
