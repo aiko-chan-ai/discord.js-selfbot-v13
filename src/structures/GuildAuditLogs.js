@@ -55,6 +55,9 @@ const Targets = {
   THREAD: 'THREAD',
   APPLICATION_COMMAND: 'APPLICATION_COMMAND',
   AUTO_MODERATION: 'AUTO_MODERATION',
+  SOUNDBOARD_SOUND: 'SOUNDBOARD_SOUND',
+  GUILD_ONBOARDING_PROMPT: 'GUILD_ONBOARDING_PROMPT',
+  GUILD_ONBOARDING: 'GUILD_ONBOARDING',
   UNKNOWN: 'UNKNOWN',
 };
 
@@ -299,7 +302,11 @@ class GuildAuditLogs {
     if (target < 110) return Targets.GUILD_SCHEDULED_EVENT;
     if (target < 120) return Targets.THREAD;
     if (target < 130) return Targets.APPLICATION_COMMAND;
-    if (target >= 140 && target < 150) return Targets.AUTO_MODERATION;
+    if (target < 140) return Targets.SOUNDBOARD_SOUND; // !Todo
+    if (target < 143) return Targets.AUTO_MODERATION;
+    if (target < 146) return Targets.USER;
+    if (target >= 163 && target <= 165) return Targets.GUILD_ONBOARDING_PROMPT; // !Todo
+    if (target >= 160 && target < 170) return Targets.GUILD_ONBOARDING; // !Todo
     return Targets.UNKNOWN;
   }
 
@@ -485,7 +492,6 @@ class GuildAuditLogsEntry {
 
       case Actions.MEMBER_MOVE:
       case Actions.MESSAGE_DELETE:
-      case Actions.MESSAGE_BULK_DELETE:
         this.extra = {
           channel: guild.channels.cache.get(data.options.channel_id) ?? { id: data.options.channel_id },
           count: Number(data.options.count),
@@ -499,6 +505,7 @@ class GuildAuditLogsEntry {
         };
         break;
 
+      case Actions.MESSAGE_BULK_DELETE:
       case Actions.MEMBER_DISCONNECT:
         this.extra = {
           count: Number(data.options.count),
@@ -699,8 +706,13 @@ class GuildAuditLogsEntry {
           ),
           guild,
         );
+    } else if (targetType === Targets.ROLE) {
+      this.target = guild.roles.cache.get(data.target_id) ?? { id: data.target_id };
+    } else if (targetType === Targets.EMOJI) {
+      this.target = guild.emojis.cache.get(data.target_id) ?? { id: data.target_id };
     } else if (data.target_id) {
-      this.target = guild[`${targetType.toLowerCase()}s`]?.cache.get(data.target_id) ?? { id: data.target_id };
+      // Missing SoundboardSound & Onboarding
+      this.target = { id: data.target_id };
     }
   }
 
