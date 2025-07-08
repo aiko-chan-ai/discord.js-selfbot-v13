@@ -43,12 +43,14 @@ class BaseMessageComponent {
 
   /**
    * @param {BaseMessageComponent|BaseMessageComponentOptions} [data={}] The options for this component
+   * @param {MessageComponentOptions} [componentData={}] The raw data for component
    */
-  constructor(data) {
+  constructor(data, componentData = {}) {
     /**
      * The type of this component
      * @type {?MessageComponentType}
      */
+    this.rawData = componentData;
     this.type = 'type' in data ? BaseMessageComponent.resolveType(data.type) : null;
   }
 
@@ -88,6 +90,41 @@ class BaseMessageComponent {
       case MessageComponentTypes.TEXT_INPUT: {
         const TextInputComponent = require('./TextInputComponent');
         component = data instanceof TextInputComponent ? data : new TextInputComponent(data);
+        break;
+      }
+      case MessageComponentTypes.SECTION: {
+        const SectionComponent = require('./SectionComponent');
+        component = data instanceof SectionComponent ? data : new SectionComponent(data);
+        break;
+      }
+      case MessageComponentTypes.TEXT_DISPLAY: {
+        const TextDisplayComponent = require('./TextDisplayComponent');
+        component = data instanceof TextDisplayComponent ? data : new TextDisplayComponent(data);
+        break;
+      }
+      case MessageComponentTypes.THUMBNAIL: {
+        const ThumbnailComponent = require('./ThumbnailComponent');
+        component = data instanceof ThumbnailComponent ? data : new ThumbnailComponent(data);
+        break;
+      }
+      case MessageComponentTypes.MEDIA_GALLERY: {
+        const MediaGalleryComponent = require('./MediaGalleryComponent');
+        component = data instanceof MediaGalleryComponent ? data : new MediaGalleryComponent(data);
+        break;
+      }
+      case MessageComponentTypes.FILE: {
+        const FileComponent = require('./FileComponent');
+        component = data instanceof FileComponent ? data : new FileComponent(data);
+        break;
+      }
+      case MessageComponentTypes.SEPARATOR: {
+        const SeparatorComponent = require('./SeparatorComponent');
+        component = data instanceof SeparatorComponent ? data : new SeparatorComponent(data);
+        break;
+      }
+      case MessageComponentTypes.CONTAINER: {
+        const ContainerComponent = require('./ContainerComponent');
+        component = data instanceof ContainerComponent ? data : new ContainerComponent(data);
         break;
       }
       default:

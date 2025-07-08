@@ -87,6 +87,8 @@ import {
   GuildVerificationLevel,
   GuildFeature,
   LocalizationMap,
+  APIActionRowComponent,
+  APIActionRowComponentTypes,
 } from 'discord-api-types/v10';
 import { GuildChannel, Guild, PermissionOverwrites } from '.';
 import type {
@@ -95,6 +97,8 @@ import type {
   AutoModerationRuleKeywordPresetTypes,
   AutoModerationRuleTriggerTypes,
   ApplicationRoleConnectionMetadataTypes,
+  MessageComponentTypes,
+  SeparatorSpacingSizes,
 } from './enums';
 
 export type RawActivityData = GatewayActivity;
@@ -339,4 +343,55 @@ export interface APIApplicationRoleConnectionMetadata {
   name_localizations?: LocalizationMap;
   description: string;
   description_localizations?: LocalizationMap;
+}
+
+export interface APIBaseComponent<T extends MessageComponentTypes> {
+  type: T;
+  id?: number;
+}
+
+export interface APIUnfurledMediaItem {
+  url: string;
+}
+
+export interface APIMediaGalleryItem {
+  media: APIUnfurledMediaItem;
+  description: string;
+  spoiler: boolean;
+}
+
+export interface APISeparatorComponent extends APIBaseComponent<MessageComponentTypes.SEPARATOR> {
+  spacing: SeparatorSpacingSizes;
+  divider: boolean;
+}
+
+export interface APITextDisplayComponent extends APIBaseComponent<MessageComponentTypes.TEXT_DISPLAY> {
+  content: string;
+}
+
+export interface APIThumbnailComponent extends APIBaseComponent<MessageComponentTypes.THUMBNAIL> {
+  media: APIUnfurledMediaItem;
+  description: string;
+  spoiler: boolean;
+}
+
+export interface APIFileComponent extends APIBaseComponent<MessageComponentTypes.FILE> {
+  file: APIUnfurledMediaItem;
+  spoiler: boolean;
+}
+
+export interface APIMediaGalleryComponent extends APIBaseComponent<MessageComponentTypes.MEDIA_GALLERY> {
+  items: APIMediaGalleryItem;
+}
+
+export interface APISectionComponent extends APIBaseComponent<MessageComponentTypes.SECTION> {
+  components: APITextDisplayComponent[];
+  accessory: APIThumbnailComponent | APIMessageButtonInteractionData
+}
+
+export type APIContainerComponents = APIActionRowComponent<APIActionRowComponentTypes> | APITextDisplayComponent | APISectionComponent | APIMediaGalleryComponent | APISeparatorComponent | APIFileComponent;
+export interface APIContainerComponent extends APIBaseComponent<MessageComponentTypes.CONTAINER> {
+  components: APIContainerComponents[];
+  accent_color: number;
+  spoiler: boolean;
 }
