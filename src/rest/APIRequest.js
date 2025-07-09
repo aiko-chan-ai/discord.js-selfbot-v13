@@ -9,7 +9,7 @@ const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
 const cookieJar = new CookieJar();
-const fetch = makeFetchCookie(fetchOriginal, cookieJar);
+const fetch = makeFetchCookie.default(fetchOriginal, cookieJar);
 
 let agent = null;
 
