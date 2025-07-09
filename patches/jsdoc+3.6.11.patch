@@ -1,0 +1,21 @@
+diff --git a/node_modules/jsdoc/lib/jsdoc/util/dumper.js b/node_modules/jsdoc/lib/jsdoc/util/dumper.js
+index 515c972..975757b 100644
+--- a/node_modules/jsdoc/lib/jsdoc/util/dumper.js
++++ b/node_modules/jsdoc/lib/jsdoc/util/dumper.js
+@@ -95,13 +95,13 @@ class ObjectWalker {
+                 return newArray;
+             });
+         }
+-        else if ( util.isRegExp(o) ) {
++        else if ( util.types.isRegExp(o) ) {
+             result = `<RegExp ${o}>`;
+         }
+-        else if ( util.isDate(o) ) {
++        else if ( util.types.isDate(o) ) {
+             result = `<Date ${o.toUTCString()}>`;
+         }
+-        else if ( util.isError(o) ) {
++        else if ( Object.prototype.toString.call(o) === '[object Error]' ) {
+             result = { message: o.message };
+         }
+         else if ( this.isFunction(o) ) {

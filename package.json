@@ -17,7 +17,8 @@
     "lint:all": "npm run lint &&  npm run lint:typings",
     "docs": "docgen --source src --custom docs/index.yml --output docs/main.json",
     "docs:test": "docgen --source src --custom docs/index.yml",
-    "build": "npm run lint:fix && npm run lint:typings:fix && npm run format && npm run docs"
+    "build": "npm run lint:fix && npm run lint:typings:fix && npm run format && npm run docs",
+    "postinstall": "patch-package"
   },
   "files": [
     "src",
@@ -79,6 +80,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
+    "patch-package": "^8.0.0",
     "prettier": "^2.8.8",
     "tsd": "^0.32.0",
     "tslint": "^6.1.3",
