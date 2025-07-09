@@ -18,7 +18,7 @@
     "docs": "docgen --source src --custom docs/index.yml --output docs/main.json",
     "docs:test": "docgen --source src --custom docs/index.yml",
     "build": "npm run lint:fix && npm run lint:typings:fix && npm run format && npm run docs",
-    "postinstall": "patch-package"
+    "prepare": "npx patch-package"
   },
   "files": [
     "src",
