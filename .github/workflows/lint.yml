@@ -17,10 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Node.js v20
+      - name: Install Node.js v22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm i -g pnpm
-      - run: pnpm i
+          node-version: 22
+      - run: npm install --verbose
       - run: npm run test
