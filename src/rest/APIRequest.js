@@ -60,23 +60,23 @@ class APIRequest {
     let headers = {
       accept: '*/*',
       'accept-language': 'en-US',
-      'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
+      priority: 'u=1, i',
+      referer: 'https://discord.com/channels/@me',
+      'sec-ch-ua': '"Not:A-Brand";v="24", "Chromium";v="134"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      'x-debug-options': 'bugReporterEnabled',
       'x-discord-locale': 'en-US',
       'x-discord-timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
       'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
         'base64',
       )}`,
-      referer: 'https://discord.com/channels/@me',
       origin: 'https://discord.com',
+      'x-debug-options': 'bugReporterEnabled',
       ...this.client.options.http.headers,
       'User-Agent': this.fullUserAgent,
-      priority: 'u=1, i',
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
