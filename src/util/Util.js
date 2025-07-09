@@ -582,7 +582,7 @@ class Util extends null {
    */
   static discordSort(collection) {
     const isGuildChannel = collection.first() instanceof GuildChannel;
-    return collection.sorted(
+    return collection.toSorted(
       isGuildChannel
         ? (a, b) => a.rawPosition - b.rawPosition || Number(BigInt(a.id) - BigInt(b.id))
         : (a, b) => a.rawPosition - b.rawPosition || Number(BigInt(b.id) - BigInt(a.id)),

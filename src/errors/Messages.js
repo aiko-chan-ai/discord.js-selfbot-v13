@@ -177,7 +177,7 @@ const Messages = {
   SLASH_COMMAND_REQUIRED_OPTIONS_MISSING: (req, opt) => `Value required (${req}) missing (Options: ${opt})`,
   SLASH_COMMAND_SUB_COMMAND_GROUP_INVALID: n => `${n} is not a valid sub command group`,
   SLASH_COMMAND_SUB_COMMAND_INVALID: n => `${n} is not a valid sub command`,
-  INTERACTION_FAILED: 'No responsed from Application Command',
+  INTERACTION_FAILED: 'No responsed from Application',
   USER_NOT_STREAMING: 'User is not streaming',
   BULK_BAN_USERS_OPTION_EMPTY: 'Option "users" array or collection is empty',
 
