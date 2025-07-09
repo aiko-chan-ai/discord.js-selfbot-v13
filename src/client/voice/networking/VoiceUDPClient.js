@@ -2,7 +2,7 @@
 
 const udp = require('dgram');
 const EventEmitter = require('events');
-const { isIPv4 } = require('net');
+const { isIP } = require('net');
 const { Buffer } = require('node:buffer');
 const { Error } = require('../../../errors');
 const { VoiceOpcodes } = require('../../../util/Constants');
@@ -160,7 +160,7 @@ function parseLocalPacket(message) {
   try {
     const packet = Buffer.from(message);
     const address = packet.subarray(8, packet.indexOf(0, 8)).toString('utf8');
-    if (!isIPv4(address)) {
+    if (!isIP(address)) {
       throw new Error('UDP_ADDRESS_MALFORMED');
     }
     const port = packet.readUInt16BE(packet.length - 2);
