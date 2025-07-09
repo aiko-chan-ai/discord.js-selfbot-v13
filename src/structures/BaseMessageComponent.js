@@ -163,7 +163,9 @@ class BaseMessageComponent {
   }
 
   static extractInteractiveComponents(component) {
-    switch (component.type) {
+    let type = component.type;
+    if (typeof type === 'string') type = MessageComponentTypes[type];
+    switch (type) {
       case MessageComponentTypes.ACTION_ROW:
         return component.components;
       case MessageComponentTypes.SECTION:

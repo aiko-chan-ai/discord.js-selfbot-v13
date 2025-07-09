@@ -1086,49 +1086,20 @@ class Message extends Base {
   }
 
   /**
-   * Click specific button with X and Y
-   * @typedef {Object} MessageButtonLocation
-   * @property {number} X Index of the row
-   * @property {number} Y Index of the column
-   */
-
-  /**
-   * Click specific button or automatically click first button if no button is specified.
-   * @param {MessageButtonLocation|string|undefined} button button
+   * Click a specified button in the message based on the button's CustomID
+   * @param {string} buttonid customId of the button to click
+   *
+   * To be compatible with Components V2, the following methods have been removed in this version:
+   * - Clicking by coordinates (using ActionRow)
+   * - Clicking the first button in the message
+   *
+   * Currently, only clicking by CustomID is supported.
    * @returns {Promise<Message|Modal>}
-   * @example
-   * // Demo msg
-   * Some content
-   *  ――――――――――――――――――――――――――――――――> X from 0
-   *  │ [button1] [button2] [button3]
-   *  │ [button4] [button5] [button6]
-   *  ↓
-   *  Y from 0
-   * // Click button6 with X and Y
-   * [0,0] [1,0] [2,0]
-   * [0,1] [1,1] [2,1]
-   * // Code
-   * message.clickButton({
-   *  X: 2, Y: 1,
-   * });
-   * // Click button with customId (Ex button 5)
-   * message.clickButton('button5');
-   * // Click button 1
-   * message.clickButton();
    */
-  clickButton(button) {
-    if (typeof button == 'undefined') {
-      button = this.components
-        .flatMap(row => row.components)
-        .find(b => b.type === 'BUTTON' && b.customId && !b.disabled);
-    } else if (typeof button == 'string') {
-      button = this.components.flatMap(row => row.components).find(b => b.type === 'BUTTON' && b.customId == button);
-    } else {
-      button = this.components[button.Y]?.components[button.X];
-    }
-    if (!button) throw new TypeError('BUTTON_NOT_FOUND');
-    button = button.toJSON();
-    if (!button.custom_id || button.disabled) throw new TypeError('BUTTON_CANNOT_CLICK');
+  clickButton(buttonid) {
+    const button = this.resolveComponent(buttonid);
+    if (!button || button.type !== 'BUTTON') throw new TypeError('BUTTON_NOT_FOUND');
+    if (button.disabled) throw new TypeError('BUTTON_CANNOT_CLICK');
     const nonce = SnowflakeUtil.generate();
     const data = {
       type: InteractionTypes.MESSAGE_COMPONENT,
@@ -1141,7 +1112,7 @@ class Message extends Base {
       message_flags: this.flags.bitfield,
       data: {
         component_type: MessageComponentTypes.BUTTON,
-        custom_id: button.custom_id,
+        custom_id: button.customId,
       },
     };
     this.client.api.interactions.post({

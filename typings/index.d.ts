@@ -2225,7 +2225,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public inGuild(): this is Message<true> & this;
 
   public readonly isMessage: true;
-  public clickButton(button?: { X: number; Y: number } | string): Promise<Message | Modal>;
+  public clickButton(button: string): Promise<Message | Modal>;
   public selectMenu(
     menu: 0 | 1 | 2 | 3 | 4 | string,
     vales: (UserResolvable | RoleResolvable | ChannelResolvable | string)[],
