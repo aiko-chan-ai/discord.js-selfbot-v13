@@ -366,7 +366,7 @@ class RequestHandler {
           // Retry the request after a captcha is solved
           this.manager.client.emit(
             DEBUG,
-            `Hit a captcha while executing a request (${data.captcha_key.join(', ')})
+            `[Request Handler] Hit a captcha while executing a request (${data.captcha_key.join(', ')})
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
@@ -376,7 +376,7 @@ class RequestHandler {
           const captcha = await this.manager.client.options.captchaSolver(data, request.fullUserAgent);
           this.manager.client.emit(
             DEBUG,
-            `Captcha details:
+            `[Request Handler] Captcha details:
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
