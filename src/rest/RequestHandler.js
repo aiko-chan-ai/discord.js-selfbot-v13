@@ -332,7 +332,7 @@ class RequestHandler {
 
         this.manager.client.emit(
           DEBUG,
-          `Hit a 429 while executing a request.
+          `[Request Handler] Hit a 429 while executing a request.
     Global  : ${isGlobal}
     Method  : ${request.method}
     Path    : ${request.path}
@@ -397,6 +397,7 @@ class RequestHandler {
            *         ticket: string;
            *         methods: {
            *             type: "password" | "totp" | "sms" | "backup" | "webauthn";
+           *             backup_codes_allowed?: boolean;
            *         }[];
            *     };
            * };
@@ -409,7 +410,7 @@ class RequestHandler {
             const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
             this.manager.client.emit(
               DEBUG,
-              `${data.message}
+              `[Request Handler] ${data.message}
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}

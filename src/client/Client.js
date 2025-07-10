@@ -874,6 +874,10 @@ class Client extends BaseClient {
     ) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'rejectOnRateLimit', 'an array or a function');
     }
+    if (typeof options.TOTPKey === 'string') {
+      // Convert to base32 if not already
+      options.TOTPKey = options.TOTPKey.replace(/ +/g, '').toUpperCase();
+    }
     // Hardcode
     this.options.shardCount = 1;
     this.options.shards = [0];
