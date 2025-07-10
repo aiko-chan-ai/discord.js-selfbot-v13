@@ -5,6 +5,7 @@ const process = require('node:process');
 const { setInterval } = require('node:timers');
 const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
+const { authenticator } = require('otplib');
 const BaseClient = require('./BaseClient');
 const ActionsManager = require('./actions/ActionsManager');
 const ClientVoiceManager = require('./voice/ClientVoiceManager');
@@ -36,7 +37,6 @@ const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
-const TOTP = require('../util/Totp');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -195,6 +195,18 @@ class Client extends BaseClient {
      */
     this.readyAt = null;
 
+    /**
+     * The authenticator used for TOTP
+     * @type {Object}
+     */
+    this.authenticator = authenticator;
+
+    this.authenticator.options = {
+      step: 30,
+      digits: 6,
+      algorithm: 'sha1',
+    };
+
     if (this.options.messageSweepInterval > 0) {
       process.emitWarning(
         'The message sweeping client options are deprecated, use the global sweepers instead.',
@@ -306,7 +318,7 @@ class Client extends BaseClient {
       return this.login(initial.token);
     } else if ('ticket' in initial) {
       if (!this.options.TOTPKey) throw new Error('TOTPKEY_MISSING');
-      const { otp } = await TOTP.generate(this.options.TOTPKey);
+      const otp = this.authenticator.generate(this.options.TOTPKey);
       const totp = await this.api.auth.mfa.totp.post({
         auth: false,
         versioned: true,

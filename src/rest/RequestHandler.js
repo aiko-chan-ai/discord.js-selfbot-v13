@@ -9,7 +9,6 @@ const RateLimitError = require('./RateLimitError');
 const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
-const TOTP = require('../util/Totp');
 
 const captchaMessage = [
   'incorrect-captcha',
@@ -396,7 +395,7 @@ class RequestHandler {
           request.retries < 1
         ) {
           // Get mfa code
-          const { otp } = await TOTP.generate(this.manager.client.options.TOTPKey);
+          const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
           this.manager.client.emit(
             DEBUG,
             `${data.message}

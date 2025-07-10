@@ -20,7 +20,6 @@ import {
   underscore,
   userMention,
 } from '@discordjs/builders';
-import { RtpPacket } from 'werift-rtp';
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
@@ -73,6 +72,9 @@ import { AgentOptions } from 'node:https';
 import { Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
+import { authenticator } from "otplib";
+import { CookieJar } from 'tough-cookie';
+import { RtpPacket } from 'werift-rtp';
 import * as WebSocket from 'ws';
 import {
   ActivityTypes,
@@ -460,10 +462,22 @@ export abstract class Base {
   public valueOf(): string;
 }
 
+export class RESTManager {
+  private constructor(client: Client);
+  public readonly client: Client;
+  public handlers: Collection<string, unknown>;
+  public versioned: true;
+  public cookieJar: CookieJar;
+  public fetch: typeof globalThis.fetch;
+  public getAuth(): string;
+  public readonly api: unknown;
+  public readonly cdn: unknown;
+}
+
 export class BaseClient extends EventEmitter {
   public constructor(options?: ClientOptions | WebhookClientOptions);
-  private readonly api: unknown;
-  private rest: unknown;
+  public readonly api: RESTManager['api'];
+  public rest: RESTManager;
   private decrementMaxListeners(): void;
   private incrementMaxListeners(): void;
 
@@ -769,6 +783,7 @@ export type If<T extends boolean, A, B = null> = T extends true ? A : T extends 
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions);
   private actions: unknown;
+  public authenticator: typeof authenticator;
   private presence: ClientPresence;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;

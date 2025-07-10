@@ -2,14 +2,9 @@
 
 const Buffer = require('node:buffer').Buffer;
 const { setTimeout } = require('node:timers');
-const makeFetchCookie = require('fetch-cookie');
-const { CookieJar } = require('tough-cookie');
-const { fetch: fetchOriginal, FormData, buildConnector, Client, ProxyAgent } = require('undici');
+const { FormData, buildConnector, Client, ProxyAgent } = require('undici');
 const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
-
-const cookieJar = new CookieJar();
-const fetch = makeFetchCookie.default(fetchOriginal, cookieJar);
 
 let agent = null;
 
@@ -142,15 +137,17 @@ class APIRequest {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.client.options.restRequestTimeout).unref();
-    return fetch(url, {
-      method: this.method.toUpperCase(), // Undici doesn't normalize "patch" into "PATCH" (which surprisingly follows the spec).
-      headers,
-      body,
-      signal: controller.signal,
-      redirect: 'follow',
-      dispatcher: agent,
-      credentials: 'include',
-    }).finally(() => clearTimeout(timeout));
+    return this.rest
+      .fetch(url, {
+        method: this.method.toUpperCase(), // Undici doesn't normalize "patch" into "PATCH" (which surprisingly follows the spec).
+        headers,
+        body,
+        signal: controller.signal,
+        redirect: 'follow',
+        dispatcher: agent,
+        credentials: 'include',
+      })
+      .finally(() => clearTimeout(timeout));
   }
 }
 
