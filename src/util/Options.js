@@ -53,7 +53,10 @@ const Intents = require('./Intents');
  * @property {number} [DMChannelVoiceStatusSync=0] The amount of time in milliseconds that the Client to register the event with each DM channel (0=Disable)
  * @property {number} [captchaRetryLimit=3] Captcha retry limit
  * @property {CaptchaSolver} [captchaSolver] Captcha Solver
- * @property {string} [TOTPKey] TOTP key for two-factor authentication
+ * @property {string} [TOTPKey] TOTP key / 2FA Key for two-factor authentication
+ * This is a 32-character Base32 string (excluding spaces), typically shown only once during your 2FA setup (QR code), or in the "Manual Entry" section.
+ * The library automatically removes spaces and converts the secret to uppercase.
+ * Example value: 'ftc3 uz6q 5lpw 2kew 4thr vtyp n2cu topn' or 'WSLIVE6EKYSRMVRBZLFGG2KVIVJMMQY5'
  * @property {number} [closeTimeout=5000] The amount of time in milliseconds to wait for the close frame to be received
  * from the WebSocket.
  * <info>Don't have this too high/low. It's best to have it between 2000-6000 ms.</info>

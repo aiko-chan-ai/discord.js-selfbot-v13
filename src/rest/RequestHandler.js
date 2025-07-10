@@ -386,36 +386,48 @@ class RequestHandler {
           return this.execute(request, captcha, data.captcha_rqtoken);
         }
         // Two factor handling
-        if (
-          data?.code &&
-          data.code == 60003 && // Two factor is required for this operation
-          data.mfa.methods.find(o => o.type === 'totp') && // TOTP is available
-          typeof this.manager.client.options.TOTPKey === 'string' &&
-          request.options.auth !== false &&
-          request.retries < 1
-        ) {
-          // Get mfa code
-          const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
-          this.manager.client.emit(
-            DEBUG,
-            `${data.message}
+        if (data?.code && data.code == 60003 && request.options.auth !== false && request.retries < 1) {
+          // https://gist.github.com/Dziurwa14/de2498e5ee28d2089f095aa037957cbb
+          // 60003: Two factor is required for this operation
+          /**
+           * {
+           *     message: "Two factor is required for this operation";
+           *     code: 60003;
+           *     mfa: {
+           *         ticket: string;
+           *         methods: {
+           *             type: "password" | "totp" | "sms" | "backup" | "webauthn";
+           *         }[];
+           *     };
+           * };
+           */
+          if (
+            data.mfa.methods.find(o => o.type === 'totp') &&
+            typeof this.manager.client.options.TOTPKey === 'string'
+          ) {
+            // Get mfa code
+            const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
+            this.manager.client.emit(
+              DEBUG,
+              `${data.message}
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
     mfaCode : ${otp}`,
-          );
-          // Get ticket
-          const mfaData = data.mfa;
-          const mfaPost = await this.manager.client.api.mfa.finish.post({
-            data: {
-              ticket: mfaData.ticket,
-              data: otp,
-              mfa_type: 'totp',
-            },
-          });
-          request.options.mfaToken = mfaPost.token;
-          request.retries++;
-          return this.execute(request);
+            );
+            // Get ticket
+            const mfaData = data.mfa;
+            const mfaPost = await this.manager.client.api.mfa.finish.post({
+              data: {
+                ticket: mfaData.ticket,
+                data: otp,
+                mfa_type: 'totp',
+              },
+            });
+            request.options.mfaToken = mfaPost.token;
+            request.retries++;
+            return this.execute(request);
+          }
         }
       } catch (err) {
         throw new HTTPError(err.message, err.constructor.name, err.status, request);
