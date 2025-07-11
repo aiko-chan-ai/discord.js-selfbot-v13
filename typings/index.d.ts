@@ -72,7 +72,7 @@ import { AgentOptions } from 'node:https';
 import { Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
-import { authenticator } from "otplib";
+import { authenticator } from 'otplib';
 import { CookieJar } from 'tough-cookie';
 import { RtpPacket } from 'werift-rtp';
 import * as WebSocket from 'ws';
@@ -2557,7 +2557,7 @@ export class WebEmbed {
 
 export class SessionManager extends CachedManager<string, Session, any> {
   private constructor(client: Client, iterable: Iterable<any>);
-  public fetch(): Promise<this>;
+  public fetch(): Promise<Collection<string, Session>>;
   public logoutAllDevices(): Promise<void>;
 }
 

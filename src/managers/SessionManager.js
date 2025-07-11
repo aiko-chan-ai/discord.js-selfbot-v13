@@ -22,18 +22,14 @@ class SessionManager extends CachedManager {
    * @returns {Promise<Collection<string, Session>>}
    */
   fetch() {
-    return this.client.api.auth.sessions
-      .get()
-      .then(data => {
-        const allData = data.user_sessions;
-      
-        this.cache.clear();
-        for (const session of allData) {
-          this._add(session, true, { id: session.id_hash });
-        }
-
-        return this.cache;
-      });
+    return this.client.api.auth.sessions.get().then(data => {
+      const allData = data.user_sessions;
+      this.cache.clear();
+      for (const session of allData) {
+        this._add(session, true, { id: session.id_hash });
+      }
+      return this.cache;
+    });
   }
 
   /**
