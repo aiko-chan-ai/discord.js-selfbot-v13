@@ -2557,6 +2557,8 @@ export class WebEmbed {
 
 export class SessionManager extends CachedManager<string, Session, any> {
   private constructor(client: Client, iterable: Iterable<any>);
+  public currentSessionIdHash: string | null;
+  public readonly currentSession: Session | null;
   public fetch(): Promise<Collection<string, Session>>;
   public logoutAllDevices(): Promise<void>;
 }

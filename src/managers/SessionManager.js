@@ -10,6 +10,12 @@ const Session = require('../structures/Session');
 class SessionManager extends CachedManager {
   constructor(client, iterable) {
     super(client, Session, iterable);
+
+    /**
+     * The current session ID hash of the client.
+     * @type {string}
+     */
+    this.currentSessionIdHash = null;
   }
   /**
    * The cache of Sessions
@@ -42,6 +48,18 @@ class SessionManager extends CachedManager {
         session_id_hashes: this.cache.map(session => session.id),
       },
     });
+  }
+
+  /**
+   * Get the current session of the client.
+   * You must call `fetch()` first to populate the cache.
+   * @returns {?Session}
+   */
+  get currentSession() {
+    if (!this.currentSessionIdHash) {
+      return null;
+    }
+    return this.cache.get(this.currentSessionIdHash) || null;
   }
 }
 

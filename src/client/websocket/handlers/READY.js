@@ -44,6 +44,7 @@ module.exports = (client, { d: data }, shard) => {
     if (guild) guild.settings._patch(gSetting);
   }
   // Todo: data.auth_session_id_hash
+  client.sessions.currentSessionIdHash = data.auth_session_id_hash;
 
   if (data.guilds.length) {
     if (data.guilds.length > 80) {
