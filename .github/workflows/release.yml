@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '3*' # Trigger on version 3.x.x tags
+  workflow_dispatch:
 
 jobs:
   release:
