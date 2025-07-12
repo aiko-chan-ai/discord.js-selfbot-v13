@@ -6,6 +6,10 @@ on:
       - '3*' # Trigger on version 3.x.x tags
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
