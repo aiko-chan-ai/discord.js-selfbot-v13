@@ -53,7 +53,7 @@ class SessionManager extends CachedManager {
   /**
    * Get the current session of the client.
    * You must call `fetch()` first to populate the cache.
-   * @returns {?Session}
+   * @type {?Session}
    */
   get currentSession() {
     if (!this.currentSessionIdHash) {

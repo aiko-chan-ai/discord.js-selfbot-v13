@@ -32,6 +32,7 @@ const StickerPack = require('../structures/StickerPack');
 const VoiceRegion = require('../structures/VoiceRegion');
 const Webhook = require('../structures/Webhook');
 const Widget = require('../structures/Widget');
+const Application = require('../structures/interfaces/Application');
 const { Events, Status } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const Intents = require('../util/Intents');
@@ -798,15 +799,49 @@ class Client extends BaseClient {
   }
 
   /**
-   * Deauthorize an application.
-   * @param {Snowflake} applicationId Discord Application id
-   * @returns {Promise<void>}
+   * Deauthorizes an application or token.
+   * @param {Snowflake} id - The ID of the Discord Application or Token.
+   * @param {'application' | 'token'} [type='application'] - The type of the ID provided. Defaults to 'application'.
+   * @returns {Promise<void>} A promise that resolves when the deauthorization is complete.
    */
-  deauthorize(applicationId) {
-    return this.api.oauth2.tokens
-      .get()
-      .then(data => data.find(o => o.application.id == applicationId))
-      .then(o => this.api.oauth2.tokens(o.id).delete());
+  deauthorize(id, type = 'application') {
+    if (type === 'application') {
+      return this.api.oauth2.tokens
+        .get()
+        .then(data => data.find(o => o.application.id == id))
+        .then(o => this.api.oauth2.tokens(o.id).delete());
+    } else {
+      return this.api.oauth2.tokens(id).delete();
+    }
+  }
+
+  /**
+   * @typedef {Object} AuthorizedApplicationData
+   * @property {Application} application - The application object.
+   * @property {Snowflake} authorizedApplicationId - The ID of the OAuth2 token.
+   * @property {string[]} scopes - The scopes that were granted to this token.
+   * @property {function(): Promise<void>} deauthorize - Function to revoke this token.
+   */
+
+  /**
+   * Retrieves the list of authorized applications (OAuth2 tokens).
+   * @returns {Promise<Collection<Snowflake, AuthorizedApplicationData>>}
+   */
+  authorizedApplications() {
+    return this.api.oauth2.tokens.get().then(data => {
+      const results = new Collection();
+      for (const o of data) {
+        const application = new Application(this, o.application);
+        const data = {
+          application,
+          authorizedApplicationId: o.id,
+          scopes: o.scopes,
+          deauthorize: () => this.deauthorize(o.id, 'token'),
+        };
+        results.set(o.application.id, data);
+      }
+      return results;
+    });
   }
 
   /**

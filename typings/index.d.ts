@@ -120,6 +120,7 @@ import {
   ReactionTypes,
   MessageReferenceTypes,
   SeparatorSpacingSizes,
+  ApplicationType,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -350,7 +351,9 @@ export abstract class Application extends Base {
   public verifyKey: string | null;
   public roleConnectionsVerificationURL: string | null;
   public approximateGuildCount: number | null;
+  /** @deprecated */
   public botPublic: boolean | null;
+  /** @deprecated */
   public botRequireCodeGrant: boolean | null;
   public commands: ApplicationCommandManager;
   public cover: string | null;
@@ -363,6 +366,55 @@ export abstract class Application extends Base {
   public owner: User | Team | null;
   public readonly partial: boolean;
   public rpcOrigins: string[];
+  public splash: string | null;
+  public type: ApplicationType | null;
+  public primarySkuId: Snowflake | null;
+  public eulaId: Snowflake | null;
+  public slug: string | null;
+  public aliases: string[];
+  public executables: { os: string; name: string; is_launcher: boolean }[] | null;
+  public thirdPartySkus: { id: Snowflake | null; sku: string | null; distributor: string }[] | null;
+  public hook: boolean | null;
+  public overlay: boolean | null;
+  public overlayMethods: number | null;
+  public overlayWarn: boolean | null;
+  public overlayCompatibilityHook: boolean | null;
+  public bot: PartialUser | null;
+  public developers: { id: Snowflake; name: string }[] | null;
+  public publishers: { id: Snowflake; name: string }[] | null;
+  public redirectUris: string[] | null;
+  public deeplinkUri: string | null;
+  public integrationPublic: boolean | null;
+  public integrationRequireCodeGrant: boolean | null;
+  public botDisabled: boolean | null;
+  public botQuarantined: boolean | null;
+  public approximateUserInstallCount: number | null;
+  public approximateUserAuthorizationCount: number | null;
+  public internalGuildRestriction: number | null;
+  public interactionsEndpointUrl: string | null;
+  public interactionsVersion: number | null;
+  public interactionsEventTypes: string[] | null;
+  public eventWebhooksStatus: number | null;
+  public eventWebhooksUrl: string | null;
+  public eventWebhooksTypes: string[] | null;
+  public explicitContentFilter: number | null;
+  public integrationTypesConfig: Record<
+    number,
+    { oauth2_install_params: ClientApplicationInstallParams | null }
+  > | null;
+  public isVerified: boolean | null;
+  public verificationState: number | null;
+  public storeApplicationState: number | null;
+  public rpcApplicationState: number | null;
+  public creatorMonetizationState: number | null;
+  public isDiscoverable: boolean | null;
+  public discoverabilityState: number | null;
+  public discoveryEligibilityFlags: number | null;
+  public isMonetized: boolean | null;
+  public storefrontAvailable: boolean | null;
+  public monetizationState: number | null;
+  public monetizationEligibilityFlags: number | null;
+  public maxParticipants: number | null;
   public fetch(): Promise<Application>;
   public fetchRoleConnectionMetadataRecords(): Promise<ApplicationRoleConnectionMetadata[]>;
   public coverURL(options?: StaticImageURLOptions): string | null;
@@ -836,7 +888,18 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public redeemNitro(nitro: string, channel?: TextChannelResolvable, paymentSourceId?: Snowflake): Promise<any>;
   public authorizeURL(urlOAuth2: string, options?: OAuth2AuthorizeOptions): Promise<{ location: string }>;
   public installUserApps(applicationId: Snowflake): Promise<void>;
-  public deauthorize(applicationId: Snowflake): Promise<void>;
+  public deauthorize(id: Snowflake, type?: 'application' | 'token'): Promise<void>;
+  public authorizedApplications(): Promise<
+    Collection<
+      Snowflake,
+      {
+        application: Application;
+        scopes: string[];
+        authorizedApplicationId: Snowflake;
+        deauthorize: () => Promise<void>;
+      }
+    >
+  >;
 
   public on<K extends keyof ClientEvents>(event: K, listener: (...args: ClientEvents[K]) => Awaitable<void>): this;
   public on<S extends string | symbol>(

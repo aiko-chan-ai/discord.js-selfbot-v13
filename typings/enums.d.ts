@@ -348,3 +348,23 @@ export const enum SeparatorSpacingSizes {
   SMALL = 1,
   LARGE = 2,
 }
+
+export const enum ApplicationType {
+  /**
+   * A game integrating with Discord
+   */
+  GAME = 1,
+  /**
+   * A music service integrating with Discord
+   * @deprecated
+   */
+  MUSIC = 2,
+  /**
+   * A limited application used for ticketed event SKUs
+   */
+  TICKETED_EVENTS = 3,
+  /**
+   * A limited application used for creator monetization (e.g. role subscription) SKUs
+   */
+  CREATOR_MONETIZATION = 4,
+}
