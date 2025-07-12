@@ -273,9 +273,7 @@ class TextBasedChannel {
     );
     // Filter Bot
     botOrApplicationId = this.client.users.resolveId(botOrApplicationId);
-    const application = data.applications.find(
-      obj => obj.id == botOrApplicationId || obj.bot?.id == botOrApplicationId,
-    );
+    const application = data.applications.find(obj => obj.id == botOrApplicationId || obj.bot_id == botOrApplicationId);
     if (!application) {
       throw new Error('INVALID_APPLICATION_COMMAND', "Bot/Application doesn't exist");
     }
