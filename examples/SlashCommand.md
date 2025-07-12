@@ -96,21 +96,34 @@ await message.channel.sendSlash('718642000898818048', 'sauce', a)
 ```js
 const channel = client.channels.cache.get('id');
 channel
-	.sendSlash('289066747443675143', 'osu', 'Accolibed')
-	.then(async (message) => {
-		if (message.flags.has('LOADING')) { // owo is thinking...
-			return new Promise((r, rej) => {
-				let t = setTimeout(() => rej('timeout'), 15 * 60 * 1000); // 15m (DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE)
-				message.client.on('messageUpdate', (_, m) => {
-					if (_.id == message.id) {
-						clearTimeout(t);
-						r(m);
-					}
-				});
-			});
-		} else {
-			return Promise.resolve(message);
-		}
-	})
-	.then(console.log);
+    .sendSlash('289066747443675143', 'osu', 'Accolibed')
+    .then(async (message) => {
+        if (message.flags.has('LOADING')) { // owo is thinking...
+            return new Promise((resolve, reject) => {
+                let done = false;
+                const timeout = setTimeout(() => {
+                    if (!done) {
+                        done = true;
+                        client.off('messageUpdate', onUpdate);
+                        reject('timeout');
+                    }
+                }, 15 * 60 * 1000);  // 15m (DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE)
+
+                function onUpdate(_, m) {
+                    if (_.id === message.id) {
+                        if (!done) {
+                            done = true;
+                            clearTimeout(timeout);
+                            client.off('messageUpdate', onUpdate);
+                            resolve(m);
+                        }
+                    }
+                }
+                client.on('messageUpdate', onUpdate);
+            });
+        } else {
+            return Promise.resolve(message);
+        }
+    })
+    .then(console.log);
 ```
