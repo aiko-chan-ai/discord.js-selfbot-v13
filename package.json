@@ -1,7 +1,7 @@
 {
   "name": "discord.js-selfbot-v13",
   "version": "3.7.0",
-  "description": "A unofficial discord.js fork for creating selfbots [Based on discord.js v13]",
+  "description": "An unofficial discord.js fork for creating selfbots",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {
