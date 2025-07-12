@@ -20,6 +20,10 @@ jobs:
         with:
           node-version: 22
 
+      - name: Configure npm for publishing
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
       - name: Publish to NPM
         run: npm publish --provenance --access public
         env:
