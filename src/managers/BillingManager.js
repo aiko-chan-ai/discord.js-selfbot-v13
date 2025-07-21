@@ -58,7 +58,43 @@ class BillingManager extends BaseManager {
   async fetchCurrentSubscription() {
     // https://discord.com/api/v9/users/@me/billing/subscriptions
     const d = await this.client.api.users('@me').billing.subscriptions.get();
-    this.currentSubscription = new Collection(d.map(s => [s.id, s]));
+  
+    const currentSubscription = d.map(subscription => {
+      return {
+        ...subscription,
+        /**
+         * Cancels the subscription
+         * @returns {Promise<void>}
+         */
+        cancel: async () => {
+          // https://discord.com/api/v9/users/@me/billing/subscriptions/{subscription.id}?location_stack=user%20settings&location_stack=subscription%20header&location_stack=premium%20subscription%20cancellation%20modal
+          return void await this.client.api.users('@me').billing.subscriptions(subscription.id).patch({
+            data: {
+              payment_source_token: null,
+              gateway_checkout_context: null,
+              expected_invoice_price: {
+                amount: 0,
+                currency: subscription.currency
+              },
+              expected_renewal_price: {
+                amount: 0,
+                currency: subscription.currency
+              },
+              items: []
+            },
+            query: {
+              location_stack: [
+                "user settings",
+                "subscription header", 
+                "premium subscription cancellation modal"
+              ]
+            }
+          });
+        }
+      };
+    });
+  
+    this.currentSubscription = new Collection(currentSubscription.map(s => [s.id, s]));
     return this.currentSubscription;
   }
 }
