@@ -368,3 +368,12 @@ export const enum ApplicationType {
    */
   CREATOR_MONETIZATION = 4,
 }
+
+export const enum GuildMemberJoinSourceTypes {
+  BOT_INVITE = 1,
+  DISCOVERY = 3,
+  STUDENT_HUB = 4,
+  VANITY = 6,
+  MANUAL_VERIFICATION = 7,
+  LINKED_CHANNEL = 8
+}

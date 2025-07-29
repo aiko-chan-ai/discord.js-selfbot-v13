@@ -1806,6 +1806,20 @@ exports.RelationshipTypes = createEnum([
 
 exports.SeparatorSpacingSizes = createEnum([null, 'SMALL', 'LARGE']);
 
+/**
+ * The types of sources from which a guild member can join.
+ * @readonly
+ * @enum {number}
+ */
+exports.GuildMemberJoinSourceTypes = {
+  BOT_INVITE: 1,
+  DISCOVERY: 3,
+  STUDENT_HUB: 4,
+  VANITY: 6,
+  MANUAL_VERIFICATION: 7,
+  LINKED_CHANNEL: 8,
+};
+
 exports._cleanupSymbol = Symbol('djsCleanup');
 
 function keyMirror(arr) {
