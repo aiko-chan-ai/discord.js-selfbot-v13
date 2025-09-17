@@ -607,20 +607,20 @@ class Client extends BaseClient {
    * @returns {Promise<DMChannel>}
    */
   async createDM(user, { cache = true, force = false } = {}) {
-    const id = this.resolveId(user);
+    const id = this.users.resolveId(user);
 
     if (!force) {
-      const dmChannel = this.dmChannel(id);
+      const dmChannel = this.users.dmChannel(id);
       if (dmChannel && !dmChannel.partial) return dmChannel;
     }
 
-    const data = await this.client.api.users['@me'].channels.post({
+    const data = await this.api.users['@me'].channels.post({
       data: {
         recipients: [id],
       },
     });
 
-    const dm_channel = await this.client.channels._add(data, null, { cache });
+    const dm_channel = await this.channels._add(data, null, { cache });
     dm_channel.sync();
     return dm_channel;
   }
