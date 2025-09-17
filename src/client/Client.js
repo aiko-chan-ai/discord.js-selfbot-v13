@@ -601,6 +601,31 @@ class Client extends BaseClient {
   }
 
   /**
+   * Creates a {@link DMChannel} between the client and a user.
+   * @param {UserResolvable} user The UserResolvable to identify
+   * @param {BaseFetchOptions} [options] Additional options for this fetch
+   * @returns {Promise<DMChannel>}
+   */
+  async createDM(user, { cache = true, force = false } = {}) {
+    const id = this.resolveId(user);
+
+    if (!force) {
+      const dmChannel = this.dmChannel(id);
+      if (dmChannel && !dmChannel.partial) return dmChannel;
+    }
+
+    const data = await this.client.api.users['@me'].channels.post({
+      data: {
+        recipients: [id],
+      },
+    });
+
+    const dm_channel = await this.client.channels._add(data, null, { cache });
+    dm_channel.sync();
+    return dm_channel;
+  }
+
+  /**
    * Options for {@link Client#acceptInvite}.
    * @typedef {Object} AcceptInviteOptions
    * @property {boolean} [bypassOnboarding=true] Whether to bypass onboarding
