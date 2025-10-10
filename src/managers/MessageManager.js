@@ -82,9 +82,11 @@ class MessageManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetchPinned(cache = true) {
-    const data = await this.client.api.channels[this.channel.id].pins.get();
+    const data = await this.client.api.channels[this.channel.id].messages.pins.get({
+      query: { limit: 50 },
+    });
     const messages = new Collection();
-    for (const message of data) messages.set(message.id, this._add(message, cache));
+    for (const message of data?.items || []) messages.set(message.id, this._add(message, cache));
     return messages;
   }
 
@@ -182,7 +184,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    await this.client.api.channels(this.channel.id).pins(message).put({ reason });
+    await this.client.api.channels(this.channel.id).messages.pins(message).put({ reason });
   }
 
   /**
@@ -195,7 +197,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    await this.client.api.channels(this.channel.id).pins(message).delete({ reason });
+    await this.client.api.channels(this.channel.id).messages.pins(message).delete({ reason });
   }
 
   /**

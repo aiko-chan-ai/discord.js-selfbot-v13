@@ -143,40 +143,81 @@ class User extends Base {
      */
 
     if (data.avatar_decoration_data) {
-      /**
-       * The user avatar decoration's data
-       * @type {?AvatarDecorationData}
-       */
-      this.avatarDecorationData = {
-        asset: data.avatar_decoration_data.asset,
-        skuId: data.avatar_decoration_data.sku_id,
-      };
+      if (data.avatar_decoration_data) {
+        /**
+         * The user avatar decoration's data
+         * @type {?AvatarDecorationData}
+         */
+        this.avatarDecorationData = {
+          asset: data.avatar_decoration_data.asset,
+          skuId: data.avatar_decoration_data.sku_id,
+        };
+      } else {
+        this.avatarDecorationData = null;
+      }
     } else {
-      this.avatarDecorationData = null;
+      this.avatarDecorationData ??= null;
     }
 
-    if ('primary_guild' in data && data.primary_guild) {
-      /**
-       * Primary Guild Structure
-       * @see {@link https://docs.discord.food/resources/user#primary-guild-structure}
-       * @typedef {Object} PrimaryGuild
-       * @property {?Snowflake} identityGuildId The ID of the user's primary clan
-       * @property {?boolean} identityEnabled Whether the user is displaying their guild tag
-       * @property {?string} tag The user's guild tag (max 4 characters)
-       * @property {?string} badge The guild tag badge hash
-       */
-      /**
-       * The primary clan the user is in
-       * @type {?PrimaryGuild}
-       */
-      this.primaryGuild = {
-        identityGuildId: data.primary_guild.identity_guild_id,
-        identityEnabled: data.primary_guild.identity_enabled,
-        tag: data.primary_guild.tag,
-        badge: data.primary_guild.badge,
-      };
+    /**
+     * @typedef {Object} UserPrimaryGuild
+     * @property {?Snowflake} identityGuildId The id of the user's primary guild
+     * @property {?boolean} identityEnabled Whether the user is displaying the primary guild's tag
+     * @property {?string} tag The user's guild tag. Limited to 4 characters
+     * @property {?string} badge The guild tag badge hash
+     */
+
+    if ('primary_guild' in data) {
+      if (data.primary_guild) {
+        /**
+         * The primary guild of the user
+         * @type {?UserPrimaryGuild}
+         */
+        this.primaryGuild = {
+          identityGuildId: data.primary_guild.identity_guild_id,
+          identityEnabled: data.primary_guild.identity_enabled,
+          tag: data.primary_guild.tag,
+          badge: data.primary_guild.badge,
+        };
+      } else {
+        this.primaryGuild = null;
+      }
     } else {
       this.primaryGuild ??= null;
+    }
+
+    /**
+     * @typedef {Object} NameplateData
+     * @property {Snowflake} skuId The id of the nameplate's SKU
+     * @property {string} asset The nameplate's asset path
+     * @property {string} label The nameplate's label
+     * @property {NameplatePalette} palette Background color of the nameplate
+     */
+
+    /**
+     * @typedef {Object} Collectibles
+     * @property {?NameplateData} nameplate The user's nameplate data
+     */
+
+    if (data.collectibles) {
+      if (data.collectibles.nameplate) {
+        /**
+         * The user's collectibles
+         * @type {?Collectibles}
+         */
+        this.collectibles = {
+          nameplate: {
+            skuId: data.collectibles.nameplate.sku_id,
+            asset: data.collectibles.nameplate.asset,
+            label: data.collectibles.nameplate.label,
+            palette: data.collectibles.nameplate.palette,
+          },
+        };
+      } else {
+        this.collectibles = { nameplate: null };
+      }
+    } else {
+      this.collectibles ??= null;
     }
   }
 
@@ -246,12 +287,21 @@ class User extends Base {
   }
 
   /**
-   * A link to the user's clan badge.
+   * A link to the user's guild tag badge.
    * @returns {?string}
+   * @deprecated
    */
   clanBadgeURL() {
-    if (!this.clan || !this.clan.identityGuildId || !this.clan.badge) return null;
-    return this.client.rest.cdn.ClanBadge(this.clan.identityGuildId, this.clan.badge);
+    return this.guildTagBadgeURL();
+  }
+
+  /**
+   * A link to the user's guild tag badge.
+   * @returns {?string}
+   */
+  guildTagBadgeURL() {
+    if (!this.primaryGuild || !this.primaryGuild.identityGuildId || !this.primaryGuild.badge) return null;
+    return this.client.rest.cdn.GuildTagBadge(this.primaryGuild.identityGuildId, this.primaryGuild.badge);
   }
 
   /**
@@ -367,7 +417,15 @@ class User extends Base {
       this.banner === user.banner &&
       this.accentColor === user.accentColor &&
       this.avatarDecorationData?.asset === user.avatarDecorationData?.asset &&
-      this.avatarDecorationData?.skuId === user.avatarDecorationData?.skuId
+      this.avatarDecorationData?.skuId === user.avatarDecorationData?.skuId &&
+      this.collectibles?.nameplate?.skuId === user.collectibles?.nameplate?.skuId &&
+      this.collectibles?.nameplate?.asset === user.collectibles?.nameplate?.asset &&
+      this.collectibles?.nameplate?.label === user.collectibles?.nameplate?.label &&
+      this.collectibles?.nameplate?.palette === user.collectibles?.nameplate?.palette &&
+      this.primaryGuild?.identityGuildId === user.primaryGuild?.identityGuildId &&
+      this.primaryGuild?.identityEnabled === user.primaryGuild?.identityEnabled &&
+      this.primaryGuild?.tag === user.primaryGuild?.tag &&
+      this.primaryGuild?.badge === user.primaryGuild?.badge
     );
   }
 
@@ -391,6 +449,18 @@ class User extends Base {
       ('avatar_decoration_data' in user
         ? this.avatarDecorationData?.asset === user.avatar_decoration_data?.asset &&
           this.avatarDecorationData?.skuId === user.avatar_decoration_data?.sku_id
+        : true) &&
+      ('collectibles' in user
+        ? this.collectibles?.nameplate?.skuId === user.collectibles?.nameplate?.sku_id &&
+          this.collectibles?.nameplate?.asset === user.collectibles?.nameplate?.asset &&
+          this.collectibles?.nameplate?.label === user.collectibles?.nameplate?.label &&
+          this.collectibles?.nameplate?.palette === user.collectibles?.nameplate?.palette
+        : true) &&
+      ('primary_guild' in user
+        ? this.primaryGuild?.identityGuildId === user.primary_guild?.identity_guild_id &&
+          this.primaryGuild?.identityEnabled === user.primary_guild?.identity_enabled &&
+          this.primaryGuild?.tag === user.primary_guild?.tag &&
+          this.primaryGuild?.badge === user.primary_guild?.badge
         : true)
     );
   }
@@ -451,6 +521,7 @@ class User extends Base {
     json.avatarURL = this.avatarURL();
     json.displayAvatarURL = this.displayAvatarURL();
     json.bannerURL = this.banner ? this.bannerURL() : this.banner;
+    json.guildTagBadgeURL = this.guildTagBadgeURL();
     return json;
   }
 

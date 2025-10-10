@@ -94,6 +94,7 @@ exports.Channel = require('./structures/Channel').Channel;
 exports.ClientPresence = require('./structures/ClientPresence');
 exports.ClientUser = require('./structures/ClientUser');
 exports.Collector = require('./structures/interfaces/Collector');
+exports.DirectoryChannel = require('./structures/DirectoryChannel');
 exports.DMChannel = require('./structures/DMChannel');
 exports.Emoji = require('./structures/Emoji').Emoji;
 exports.ForumChannel = require('./structures/ForumChannel');

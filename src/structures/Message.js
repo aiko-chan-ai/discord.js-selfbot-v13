@@ -710,6 +710,7 @@ class Message extends Base {
     return Boolean(
       channel?.type === 'GUILD_NEWS' &&
         !this.flags.has(MessageFlags.FLAGS.CROSSPOSTED) &&
+        this.reference?.type !== 'FORWARD' &&
         this.type === 'DEFAULT' &&
         !this.poll &&
         channel.viewable &&

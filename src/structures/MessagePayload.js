@@ -8,6 +8,7 @@ const ActivityFlags = require('../util/ActivityFlags');
 const { PollLayoutTypes, MessageReferenceTypes } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const MessageFlags = require('../util/MessageFlags');
+const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
 /**
@@ -131,7 +132,7 @@ class MessagePayload {
     const content = this.makeContent();
     const tts = Boolean(this.options.tts);
 
-    let nonce;
+    let nonce = SnowflakeUtil.generate();
     if (typeof this.options.nonce !== 'undefined') {
       nonce = this.options.nonce;
       // eslint-disable-next-line max-len

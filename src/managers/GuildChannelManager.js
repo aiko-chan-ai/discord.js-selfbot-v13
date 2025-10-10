@@ -216,13 +216,13 @@ class GuildChannelManager extends CachedManager {
   async createWebhook(channel, name, { avatar, reason } = {}) {
     const id = this.resolveId(channel);
     if (!id) throw new TypeError('INVALID_TYPE', 'channel', 'GuildChannelResolvable');
-    if (typeof avatar === 'string' && !avatar.startsWith('data:')) {
-      avatar = await DataResolver.resolveImage(avatar);
-    }
+
+    const resolvedImage = await DataResolver.resolveImage(avatar);
+
     const data = await this.client.api.channels[id].webhooks.post({
       data: {
         name,
-        avatar,
+        avatar: resolvedImage,
       },
       reason,
     });

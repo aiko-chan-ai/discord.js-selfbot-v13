@@ -244,10 +244,11 @@ class GuildChannel extends Channel {
       return new Permissions(Permissions.ALL).freeze();
     }
 
+    const basePermissions = new Permissions([role.permissions, role.guild.roles.everyone.permissions]);
     const everyoneOverwrites = this.permissionOverwrites.cache.get(this.guild.id);
     const roleOverwrites = this.permissionOverwrites.cache.get(role.id);
 
-    return role.permissions
+    return basePermissions
       .remove(everyoneOverwrites?.deny ?? Permissions.defaultBit)
       .add(everyoneOverwrites?.allow ?? Permissions.defaultBit)
       .remove(roleOverwrites?.deny ?? Permissions.defaultBit)

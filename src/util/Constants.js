@@ -97,7 +97,7 @@ exports.Endpoints = {
         return makeImageUrl(`${root}/avatars/${userId}/${hash}`, { format, size });
       },
       AvatarDecoration: hash => makeImageUrl(`${root}/avatar-decoration-presets/${hash}`, { format: 'png' }),
-      ClanBadge: (guildId, hash) => `${root}/clan-badges/${guildId}/${hash}.png`,
+      GuildTagBadge: (guildId, hash) => `${root}/guild-tag-badges/${guildId}/${hash}.png`,
       GuildMemberAvatar: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
         if (dynamic && hash.startsWith('a_')) format = 'gif';
         return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/avatars/${hash}`, { format, size });
@@ -1045,6 +1045,21 @@ exports.Colors = {
 };
 
 /**
+ * Holographic color values for role styling.
+ * When using `tertiaryColor`, the API enforces these specific values for holographic effect.
+ *
+ * * PRIMARY: 11127295 (0xA9FFFF)
+ * * SECONDARY: 16759788 (0xFFCCCC)
+ * * TERTIARY: 16761760 (0xFFE0A0)
+ * @typedef {Object<string, number>} HolographicStyle
+ */
+exports.HolographicStyles = {
+  PRIMARY: 11_127_295,
+  SECONDARY: 16_759_788,
+  TERTIARY: 16_761_760,
+};
+
+/**
  * The value set for the explicit content filter levels for a guild:
  * * DISABLED
  * * MEMBERS_WITHOUT_ROLES
@@ -1895,4 +1910,5 @@ function createEnum(keys) {
  * @property {Object<WebhookType, number>} WebhookTypes The value set for a webhooks type.
  * @property {WSCodes} WSCodes The types of WebSocket error codes.
  * @property {Object<WSEventType, WSEventType>} WSEvents The type of a WebSocket message event.
+ * @property {HolographicStyle} HolographicStyles Holographic color values for role styling.
  */

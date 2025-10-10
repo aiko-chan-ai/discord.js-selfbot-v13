@@ -457,10 +457,10 @@ module.exports = RequestHandler;
 
 /**
  * @external HTTPMethod
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods}
+ * @see {@link https://developer.mozilla.org/docs/Web/HTTP/Methods}
  */
 
 /**
  * @external Response
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Response}
+ * @see {@link https://developer.mozilla.org/docs/Web/API/Response}
  */

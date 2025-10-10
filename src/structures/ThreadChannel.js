@@ -343,7 +343,7 @@ class ThreadChannel extends Channel {
 
     const newData = await this.client.api.channels(this.id).patch({
       data: {
-        name: (data.name ?? this.name).trim(),
+        name: data.name,
         archived: data.archived,
         auto_archive_duration: autoArchiveDuration,
         rate_limit_per_user: data.rateLimitPerUser,

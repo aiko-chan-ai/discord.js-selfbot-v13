@@ -352,17 +352,17 @@ class WebSocketShard extends EventEmitter {
 
   /**
    * @external CloseEvent
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent}
+   * @see {@link https://developer.mozilla.org/docs/Web/API/CloseEvent}
    */
 
   /**
    * @external ErrorEvent
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent}
+   * @see {@link https://developer.mozilla.org/docs/Web/API/ErrorEvent}
    */
 
   /**
    * @external MessageEvent
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent}
+   * @see {@link https://developer.mozilla.org/docs/Web/API/MessageEvent}
    */
 
   /**

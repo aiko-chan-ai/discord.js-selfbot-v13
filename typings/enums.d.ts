@@ -266,6 +266,75 @@ export const enum NSFWLevels {
   AGE_RESTRICTED = 3,
 }
 
+/**
+ * Background color of a nameplate.
+ * @see {@link https://docs.discord.food/resources/user#nameplate-color-palette}
+ */
+export enum NameplatePalette {
+  /**
+   * Value: none
+   * Name: None
+   */
+  None = 'none',
+  /**
+   * Value: crimson
+   * Name: Crimson
+   */
+  Crimson = 'crimson',
+  /**
+   * Value: berry
+   * Name: Berry
+   */
+  Berry = 'berry',
+  /**
+   * Value: sky
+   * Name: Sky
+   */
+  Sky = 'sky',
+  /**
+   * Value: teal
+   * Name: Teal
+   */
+  Teal = 'teal',
+  /**
+   * Value: forest
+   * Name: Forest
+   */
+  Forest = 'forest',
+  /**
+   * Value: bubble_gum
+   * Name: BubbleGum
+   */
+  BubbleGum = 'bubble_gum',
+  /**
+   * Value: violet
+   * Name: Violet
+   */
+  Violet = 'violet',
+  /**
+   * Value: cobalt
+   * Name: Cobalt
+   */
+  Cobalt = 'cobalt',
+  /**
+   * Value: clover
+   * Name: Clover
+   */
+  Clover = 'clover',
+  /**
+   * Value: lemon
+   * Name: Lemon
+   */
+  Lemon = 'lemon',
+  /**
+   * Value: white
+   * Name: White
+   */
+  White = 'white',
+}
+
+
+
 export const enum OverwriteTypes {
   role = 0,
   member = 1,

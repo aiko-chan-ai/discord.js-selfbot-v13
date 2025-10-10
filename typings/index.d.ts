@@ -121,6 +121,7 @@ import {
   MessageReferenceTypes,
   SeparatorSpacingSizes,
   ApplicationType,
+  NameplatePalette,
 } from './enums';
 import {
   APIApplicationRoleConnectionMetadata,
@@ -2133,8 +2134,8 @@ export class Invite extends Base {
   public inviterId: Snowflake | null;
   public maxAge: number | null;
   public maxUses: number | null;
-  public memberCount: number;
-  public presenceCount: number;
+  public memberCount: number | null;
+  public presenceCount: number | null;
   public type: InviteTypes | null;
   public targetApplication: IntegrationApplication | null;
   public targetUser: User | null;
@@ -3044,9 +3045,23 @@ export class RichPresenceAssets {
   public setSmallText(text?: string): this;
 }
 
+export interface RoleColors {
+  primaryColor: number;
+  secondaryColor: number | null;
+  tertiaryColor: number | null;
+}
+
+export interface RoleColorsResolvable {
+  primaryColor: ColorResolvable;
+  secondaryColor?: ColorResolvable;
+  tertiaryColor?: ColorResolvable;
+}
+
 export class Role extends Base {
   private constructor(client: Client, data: RawRoleData, guild: Guild);
+  /** @deprecated Use {@link Role.colors} instead. */
   public color: number;
+  public colors: RoleColors;
   public readonly createdAt: Date;
   public readonly createdTimestamp: number;
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
@@ -3073,7 +3088,9 @@ export class Role extends Base {
   public equals(role: Role): boolean;
   public iconURL(options?: StaticImageURLOptions): string | null;
   public permissionsIn(channel: NonThreadGuildBasedChannel | Snowflake, checkAdmin?: boolean): Readonly<Permissions>;
+  /** @deprecated Use {@link Role.setColors} instead. */
   public setColor(color: ColorResolvable, reason?: string): Promise<Role>;
+  public setColors(colors: RoleColorsResolvable, reason?: string): Promise<Role>;
   public setHoist(hoist?: boolean, reason?: string): Promise<Role>;
   public setMentionable(mentionable?: boolean, reason?: string): Promise<Role>;
   public setName(name: string, reason?: string): Promise<Role>;
@@ -3699,16 +3716,27 @@ export class Typing extends Base {
   };
 }
 
-export interface PrimaryGuild {
-  identityGuildId?: Snowflake;
-  identityEnabled?: boolean;
-  tag?: string;
-  badge?: string;
+export interface UserPrimaryGuild {
+  badge: string | null;
+  identityEnabled: boolean | null;
+  identityGuildId: Snowflake | null;
+  tag: string | null;
 }
 
 export interface AvatarDecorationData {
   asset: string;
   skuId: Snowflake;
+}
+
+export interface NameplateData {
+  asset: string;
+  label: string;
+  palette: NameplatePalette;
+  skuId: Snowflake;
+}
+
+export interface Collectibles {
+  nameplate: NameplateData | null;
 }
 
 export class User extends PartialTextBasedChannel(Base) {
@@ -3725,6 +3753,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public bot: boolean;
   public readonly createdAt: Date;
   public readonly createdTimestamp: number;
+  public collectibles: Collectibles | null;
   public discriminator: string;
   public readonly displayName: string;
   public readonly defaultAvatarURL: string;
@@ -3741,13 +3770,15 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly voice?: VoiceState;
   public readonly relationship: RelationshipTypes;
   public readonly friendNickname: string | null | undefined;
-  public primaryGuild: PrimaryGuild | null;
+  public primaryGuild: UserPrimaryGuild | null;
   /** @deprecated Use {@link User.primaryGuild} instead */
   public clan: PrimaryGuild | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public avatarDecorationURL(): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
+  /** @deprecated Use {@link User.guildTagBadgeURL} instead */
   public clanBadgeURL(): string | null;
+  public guildTagBadgeURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
   public deleteDM(): Promise<DMChannel>;
   public displayAvatarURL(options?: ImageURLOptions): string;
@@ -4149,7 +4180,7 @@ export const Constants: {
         dynamic: boolean,
       ): string;
       AvatarDecoration(hash: string): string;
-      ClanBadge(guildId: Snowflake, hash: string): string;
+      GuildTagBadge(guildId: Snowflake, hash: string): string;
       Banner(id: Snowflake, hash: string, format: DynamicImageFormat, size: AllowedImageSize, dynamic: boolean): string;
       DefaultAvatar(index: number): string;
       DiscoverySplash(guildId: Snowflake, hash: string, format: AllowedImageFormat, size: AllowedImageSize): string;
@@ -4203,6 +4234,11 @@ export const Constants: {
   GuildScheduledEventEntityTypes: EnumHolder<typeof GuildScheduledEventEntityTypes>;
   GuildScheduledEventPrivacyLevels: EnumHolder<typeof GuildScheduledEventPrivacyLevels>;
   GuildScheduledEventStatuses: EnumHolder<typeof GuildScheduledEventStatuses>;
+  HolographicStyles: {
+    PRIMARY: 11_127_295;
+    SECONDARY: 16_759_788;
+    TERTIARY: 16_761_760;
+  };
   IntegrationExpireBehaviors: IntegrationExpireBehaviors[];
   SelectMenuComponentTypes: EnumHolder<typeof SelectMenuComponentTypes>;
   RelationshipTypes: EnumHolder<typeof RelationshipTypes>;
@@ -7742,7 +7778,9 @@ export interface ResolvedOverwriteOptions {
 
 export interface RoleData {
   name?: string;
+  /** @deprecated Use {@link RoleData.colors} instead. */
   color?: ColorResolvable;
+  colors?: RoleColorsResolvable;
   hoist?: boolean;
   position?: number;
   permissions?: PermissionResolvable;
