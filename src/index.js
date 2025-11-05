@@ -149,6 +149,7 @@ exports.ThreadOnlyChannel = require('./structures/ThreadOnlyChannel');
 exports.ThreadMember = require('./structures/ThreadMember');
 exports.Typing = require('./structures/Typing');
 exports.User = require('./structures/User');
+exports.UserProfile = require('./structures/UserProfile');
 exports.VoiceChannel = require('./structures/VoiceChannel');
 exports.VoiceChannelEffect = require('./structures/VoiceChannelEffect');
 exports.VoiceRegion = require('./structures/VoiceRegion');

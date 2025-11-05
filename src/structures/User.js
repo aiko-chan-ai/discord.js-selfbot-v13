@@ -478,26 +478,16 @@ class User extends Base {
   }
 
   /**
-   * Returns a user profile object for a given user ID.
-   * <info>This endpoint requires one of the following:
-   * - The user is a bot
-   * - The user shares a mutual guild with the current user
-   * - The user is a friend of the current user
-   * - The user is a friend suggestion of the current user
-   * - The user has an outgoing friend request to the current user</info>
-   * @param {Snowflake} [guildId] The guild ID to get the user's member profile in
-   * @returns {Promise<Object>}
-   * @see {@link https://discord-userdoccers.vercel.app/resources/user#response-body}
+   * Fetches the user's profile.
+   * @param {Object} [options] Options for fetching the profile
+   * @param {boolean} [options.withMutualGuilds=true] Whether to fetch mutual guilds
+   * @param {boolean} [options.withMutualFriends=true] Whether to fetch mutual friends
+   * @param {boolean} [options.withMutualFriendsCount=false] Whether to fetch the mutual friends count
+   * @param {string} [options.type='popout'] The type of profile to fetch
+   * @returns {Promise<UserProfile>}
    */
-  getProfile(guildId) {
-    return this.client.api.users(this.id).profile.get({
-      query: {
-        with_mutual_guilds: true,
-        with_mutual_friends: true,
-        with_mutual_friends_count: true,
-        guild_id: guildId,
-      },
-    });
+  fetchProfile(options) {
+    return this.client.users.fetchProfile(this.id, options);
   }
 
   /**

@@ -6,6 +6,7 @@ const { GuildMember } = require('../structures/GuildMember');
 const { Message } = require('../structures/Message');
 const ThreadMember = require('../structures/ThreadMember');
 const User = require('../structures/User');
+const UserProfile = require('../structures/UserProfile');
 
 /**
  * Manages API methods for users and stores their cache.
@@ -97,6 +98,32 @@ class UserManager extends CachedManager {
 
     const data = await this.client.api.users(id).get();
     return this._add(data, cache);
+  }
+
+  /**
+   * Fetches a user's profile.
+   * @param {UserResolvable} user The user to fetch the profile of
+   * @param {Object} [options] Options for fetching the profile
+   * @param {boolean} [options.withMutualGuilds=true] Whether to fetch mutual guilds
+   * @param {boolean} [options.withMutualFriends=true] Whether to fetch mutual friends
+   * @param {boolean} [options.withMutualFriendsCount=false] Whether to fetch the mutual friends count
+   * @param {string} [options.type='popout'] The type of profile to fetch
+   * @returns {Promise<UserProfile>}
+   */
+  async fetchProfile(
+    user,
+    { withMutualGuilds = true, withMutualFriends = true, withMutualFriendsCount = false, type = 'popout' } = {},
+  ) {
+    const id = this.resolveId(user);
+    const data = await this.client.api.users(id).profile.get({
+      query: {
+        with_mutual_guilds: withMutualGuilds,
+        with_mutual_friends: withMutualFriends,
+        with_mutual_friends_count: withMutualFriendsCount,
+        type,
+      },
+    });
+    return new UserProfile(this.client, data);
   }
 
   /**
